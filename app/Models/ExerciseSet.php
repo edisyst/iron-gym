@@ -34,15 +34,14 @@ class ExerciseSet extends Model
     {
         return [
             'completed_at' => 'datetime',
-            'is_warmup'    => 'boolean',
+            'is_warmup' => 'boolean',
         ];
     }
 
     /**
      * SessionExercise a cui appartiene il set
-     *
-     * @return BelongsTo<SessionExercise, self>
-     */
+     *     */
+    /** @return BelongsTo<SessionExercise, $this> */
     public function sessionExercise(): BelongsTo
     {
         return $this->belongsTo(SessionExercise::class);

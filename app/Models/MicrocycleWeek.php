@@ -21,17 +21,16 @@ class MicrocycleWeek extends Model
     protected function casts(): array
     {
         return [
-            'is_deload'  => 'boolean',
+            'is_deload' => 'boolean',
             'start_date' => 'date',
-            'end_date'   => 'date',
+            'end_date' => 'date',
         ];
     }
 
     /**
      * Mesociclo padre
-     *
-     * @return BelongsTo<Mesocycle, self>
-     */
+     *     */
+    /** @return BelongsTo<Mesocycle, $this> */
     public function mesocycle(): BelongsTo
     {
         return $this->belongsTo(Mesocycle::class);
@@ -39,9 +38,8 @@ class MicrocycleWeek extends Model
 
     /**
      * Sessioni di questa settimana
-     *
-     * @return HasMany<TrainingSession, self>
-     */
+     *     */
+    /** @return HasMany<TrainingSession, $this> */
     public function sessions(): HasMany
     {
         return $this->hasMany(TrainingSession::class, 'microcycle_week_id');

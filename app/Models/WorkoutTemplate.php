@@ -34,9 +34,8 @@ class WorkoutTemplate extends Model
 
     /**
      * Trainer che ha creato il template
-     *
-     * @return BelongsTo<User, self>
-     */
+     *     */
+    /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
@@ -44,9 +43,8 @@ class WorkoutTemplate extends Model
 
     /**
      * Sessioni del template (struttura scheda)
-     *
-     * @return HasMany<TemplateSession, self>
-     */
+     *     */
+    /** @return HasMany<TemplateSession, $this> */
     public function templateSessions(): HasMany
     {
         return $this->hasMany(TemplateSession::class);
@@ -54,9 +52,8 @@ class WorkoutTemplate extends Model
 
     /**
      * Mesocicli istanziati da questo template
-     *
-     * @return HasMany<Mesocycle, self>
-     */
+     *     */
+    /** @return HasMany<Mesocycle, $this> */
     public function mesocycles(): HasMany
     {
         return $this->hasMany(Mesocycle::class, 'template_id');

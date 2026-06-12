@@ -34,9 +34,8 @@ class Mesocycle extends Model
 
     /**
      * Atleta a cui è assegnato il mesociclo
-     *
-     * @return BelongsTo<User, self>
-     */
+     *     */
+    /** @return BelongsTo<User, $this> */
     public function athlete(): BelongsTo
     {
         return $this->belongsTo(User::class, 'athlete_id');
@@ -44,9 +43,8 @@ class Mesocycle extends Model
 
     /**
      * Trainer che ha creato/assegnato il mesociclo
-     *
-     * @return BelongsTo<User, self>
-     */
+     *     */
+    /** @return BelongsTo<User, $this> */
     public function trainer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'trainer_id');
@@ -54,9 +52,8 @@ class Mesocycle extends Model
 
     /**
      * Template da cui è stato istanziato (nullable: può essere creato da zero)
-     *
-     * @return BelongsTo<WorkoutTemplate, self>
-     */
+     *     */
+    /** @return BelongsTo<WorkoutTemplate, $this> */
     public function template(): BelongsTo
     {
         return $this->belongsTo(WorkoutTemplate::class);
@@ -64,9 +61,8 @@ class Mesocycle extends Model
 
     /**
      * Settimane del mesociclo
-     *
-     * @return HasMany<MicrocycleWeek, self>
-     */
+     *     */
+    /** @return HasMany<MicrocycleWeek, $this> */
     public function weeks(): HasMany
     {
         return $this->hasMany(MicrocycleWeek::class);
@@ -74,9 +70,8 @@ class Mesocycle extends Model
 
     /**
      * Tutte le sessioni del mesociclo (through microcycle_weeks)
-     *
-     * @return HasManyThrough<TrainingSession, MicrocycleWeek, self>
-     */
+     *     */
+    /** @return HasManyThrough<TrainingSession, MicrocycleWeek, $this> */
     public function sessions(): HasManyThrough
     {
         return $this->hasManyThrough(TrainingSession::class, MicrocycleWeek::class);

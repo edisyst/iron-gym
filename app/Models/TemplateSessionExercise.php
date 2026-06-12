@@ -24,9 +24,8 @@ class TemplateSessionExercise extends Model
 
     /**
      * Sessione del template padre
-     *
-     * @return BelongsTo<TemplateSession, self>
-     */
+     *     */
+    /** @return BelongsTo<TemplateSession, $this> */
     public function templateSession(): BelongsTo
     {
         return $this->belongsTo(TemplateSession::class);
@@ -34,9 +33,8 @@ class TemplateSessionExercise extends Model
 
     /**
      * Esercizio del catalogo
-     *
-     * @return BelongsTo<Exercise, self>
-     */
+     *     */
+    /** @return BelongsTo<Exercise, $this> */
     public function exercise(): BelongsTo
     {
         return $this->belongsTo(Exercise::class);

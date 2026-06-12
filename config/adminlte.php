@@ -22,7 +22,7 @@ return [
     |
     */
 
-    'title' => 'AdminLTE 3',
+    'title' => 'Iron Gym',
     'title_prefix' => '',
     'title_postfix' => '',
 
@@ -71,12 +71,12 @@ return [
     |
     */
 
-    'logo' => '<b>Admin</b>LTE',
+    'logo' => '<b>Iron</b> Gym',
     'logo_img' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
     'logo_img_class' => 'brand-image img-circle elevation-3',
     'logo_img_xl' => null,
     'logo_img_xl_class' => 'brand-image-xs',
-    'logo_img_alt' => 'Admin Logo',
+    'logo_img_alt' => 'Iron Gym',
 
     /*
     |--------------------------------------------------------------------------
@@ -265,8 +265,9 @@ return [
     */
 
     'use_route_url' => false,
-    'dashboard_url' => 'home',
+    'dashboard_url' => 'backoffice/dashboard',
     'logout_url' => 'logout',
+    'user_menu' => true,
     'login_url' => 'login',
     'register_url' => 'register',
     'password_reset_url' => 'password/reset',
@@ -307,7 +308,7 @@ return [
     */
 
     'menu' => [
-        // Navbar items:
+        // Navbar: ricerca e fullscreen
         [
             'type' => 'navbar-search',
             'text' => 'search',
@@ -318,87 +319,46 @@ return [
             'topnav_right' => true,
         ],
 
-        // Sidebar items:
+        // Sidebar
         [
             'type' => 'sidebar-menu-search',
             'text' => 'search',
         ],
         [
-            'text' => 'blog',
-            'url' => 'admin/blog',
-            'can' => 'manage-blog',
+            'text' => 'Dashboard',
+            'url' => 'backoffice/dashboard',
+            'icon' => 'fas fa-tachometer-alt',
+        ],
+        ['header' => 'GESTIONALE'],
+        [
+            'text' => 'Tesserati',
+            'url' => 'backoffice/members',
+            'icon' => 'fas fa-users',
         ],
         [
-            'text' => 'pages',
-            'url' => 'admin/pages',
-            'icon' => 'far fa-fw fa-file',
-            'label' => 4,
-            'label_color' => 'success',
-        ],
-        ['header' => 'account_settings'],
-        [
-            'text' => 'profile',
-            'url' => 'admin/settings',
-            'icon' => 'fas fa-fw fa-user',
+            'text' => 'Abbonamenti',
+            'url' => 'backoffice/subscriptions',
+            'icon' => 'fas fa-id-card',
         ],
         [
-            'text' => 'change_password',
-            'url' => 'admin/settings',
-            'icon' => 'fas fa-fw fa-lock',
+            'text' => 'Accessi',
+            'url' => 'backoffice/access-logs',
+            'icon' => 'fas fa-door-open',
         ],
+        ['header' => 'TRAINING'],
         [
-            'text' => 'multilevel',
-            'icon' => 'fas fa-fw fa-share',
-            'submenu' => [
-                [
-                    'text' => 'level_one',
-                    'url' => '#',
-                ],
-                [
-                    'text' => 'level_one',
-                    'url' => '#',
-                    'submenu' => [
-                        [
-                            'text' => 'level_two',
-                            'url' => '#',
-                        ],
-                        [
-                            'text' => 'level_two',
-                            'url' => '#',
-                            'submenu' => [
-                                [
-                                    'text' => 'level_three',
-                                    'url' => '#',
-                                ],
-                                [
-                                    'text' => 'level_three',
-                                    'url' => '#',
-                                ],
-                            ],
-                        ],
-                    ],
-                ],
-                [
-                    'text' => 'level_one',
-                    'url' => '#',
-                ],
-            ],
-        ],
-        ['header' => 'labels'],
-        [
-            'text' => 'important',
-            'icon_color' => 'red',
+            'text' => 'Esercizi',
             'url' => '#',
+            'icon' => 'fas fa-dumbbell',
+            'label' => 'Step 2',
+            'label_color' => 'warning',
         ],
         [
-            'text' => 'warning',
-            'icon_color' => 'yellow',
+            'text' => 'Schede',
             'url' => '#',
-        ],
-        [
-            'text' => 'information',
-            'icon_color' => 'cyan',
-            'url' => '#',
+            'icon' => 'fas fa-clipboard-list',
+            'label' => 'Step 2',
+            'label_color' => 'warning',
         ],
     ],
 

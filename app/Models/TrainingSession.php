@@ -28,16 +28,15 @@ class TrainingSession extends Model
     {
         return [
             'scheduled_date' => 'date',
-            'started_at'     => 'datetime',
-            'completed_at'   => 'datetime',
+            'started_at' => 'datetime',
+            'completed_at' => 'datetime',
         ];
     }
 
     /**
      * Settimana del mesociclo a cui appartiene la sessione
-     *
-     * @return BelongsTo<MicrocycleWeek, self>
-     */
+     *     */
+    /** @return BelongsTo<MicrocycleWeek, $this> */
     public function week(): BelongsTo
     {
         return $this->belongsTo(MicrocycleWeek::class, 'microcycle_week_id');
@@ -45,9 +44,8 @@ class TrainingSession extends Model
 
     /**
      * Gruppi di esercizi (superset, giant set, circuit) della sessione
-     *
-     * @return HasMany<SessionExerciseGroup, self>
-     */
+     *     */
+    /** @return HasMany<SessionExerciseGroup, $this> */
     public function exerciseGroups(): HasMany
     {
         return $this->hasMany(SessionExerciseGroup::class, 'session_id');
@@ -55,9 +53,8 @@ class TrainingSession extends Model
 
     /**
      * Esercizi della sessione (inclusi quelli dentro gruppi)
-     *
-     * @return HasMany<SessionExercise, self>
-     */
+     *     */
+    /** @return HasMany<SessionExercise, $this> */
     public function sessionExercises(): HasMany
     {
         return $this->hasMany(SessionExercise::class, 'session_id');
@@ -65,9 +62,8 @@ class TrainingSession extends Model
 
     /**
      * Feedback post-sessione compilato dall'atleta
-     *
-     * @return HasOne<SessionFeedback, self>
-     */
+     *     */
+    /** @return HasOne<SessionFeedback, $this> */
     public function feedback(): HasOne
     {
         return $this->hasOne(SessionFeedback::class, 'session_id');

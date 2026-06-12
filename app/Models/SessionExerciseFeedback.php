@@ -18,9 +18,8 @@ class SessionExerciseFeedback extends Model
 
     /**
      * SessionExercise a cui si riferisce il feedback mirato
-     *
-     * @return BelongsTo<SessionExercise, self>
-     */
+     *     */
+    /** @return BelongsTo<SessionExercise, $this> */
     public function sessionExercise(): BelongsTo
     {
         return $this->belongsTo(SessionExercise::class);

@@ -27,9 +27,8 @@ class SessionExercise extends Model
 
     /**
      * Sessione padre
-     *
-     * @return BelongsTo<TrainingSession, self>
-     */
+     *     */
+    /** @return BelongsTo<TrainingSession, $this> */
     public function session(): BelongsTo
     {
         return $this->belongsTo(TrainingSession::class, 'session_id');
@@ -37,9 +36,8 @@ class SessionExercise extends Model
 
     /**
      * Gruppo di appartenenza (NULL se straight set isolato)
-     *
-     * @return BelongsTo<SessionExerciseGroup, self>
-     */
+     *     */
+    /** @return BelongsTo<SessionExerciseGroup, $this> */
     public function group(): BelongsTo
     {
         return $this->belongsTo(SessionExerciseGroup::class, 'group_id');
@@ -47,9 +45,8 @@ class SessionExercise extends Model
 
     /**
      * Esercizio del catalogo
-     *
-     * @return BelongsTo<Exercise, self>
-     */
+     *     */
+    /** @return BelongsTo<Exercise, $this> */
     public function exercise(): BelongsTo
     {
         return $this->belongsTo(Exercise::class);
@@ -57,9 +54,8 @@ class SessionExercise extends Model
 
     /**
      * Set dell'esercizio in questa sessione
-     *
-     * @return HasMany<ExerciseSet, self>
-     */
+     *     */
+    /** @return HasMany<ExerciseSet, $this> */
     public function sets(): HasMany
     {
         return $this->hasMany(ExerciseSet::class, 'session_exercise_id');
@@ -67,9 +63,8 @@ class SessionExercise extends Model
 
     /**
      * Feedback specifico per questo esercizio (joint pain mirato)
-     *
-     * @return HasOne<SessionExerciseFeedback, self>
-     */
+     *     */
+    /** @return HasOne<SessionExerciseFeedback, $this> */
     public function feedback(): HasOne
     {
         return $this->hasOne(SessionExerciseFeedback::class, 'session_exercise_id');

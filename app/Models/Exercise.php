@@ -29,9 +29,8 @@ class Exercise extends Model
 
     /**
      * Pattern motorio compound (XOR con joint_action_id)
-     *
-     * @return BelongsTo<MovementPattern, self>
-     */
+     *     */
+    /** @return BelongsTo<MovementPattern, $this> */
     public function compoundPattern(): BelongsTo
     {
         return $this->belongsTo(MovementPattern::class, 'compound_pattern_id');
@@ -39,9 +38,8 @@ class Exercise extends Model
 
     /**
      * Azione articolare (XOR con compound_pattern_id)
-     *
-     * @return BelongsTo<MovementPattern, self>
-     */
+     *     */
+    /** @return BelongsTo<MovementPattern, $this> */
     public function jointAction(): BelongsTo
     {
         return $this->belongsTo(MovementPattern::class, 'joint_action_id');
@@ -49,9 +47,8 @@ class Exercise extends Model
 
     /**
      * Muscoli coinvolti nell'esercizio (con ruolo e contribution_pct)
-     *
-     * @return BelongsToMany<Muscle, self>
-     */
+     *     */
+    /** @return BelongsToMany<Muscle, $this, ExerciseMuscle> */
     public function muscles(): BelongsToMany
     {
         return $this->belongsToMany(Muscle::class, 'exercise_muscle')
@@ -61,9 +58,8 @@ class Exercise extends Model
 
     /**
      * Attrezzatura richiesta per l'esercizio
-     *
-     * @return BelongsToMany<Equipment, self>
-     */
+     *     */
+    /** @return BelongsToMany<Equipment, $this> */
     public function equipment(): BelongsToMany
     {
         return $this->belongsToMany(Equipment::class, 'exercise_equipment');
@@ -71,9 +67,8 @@ class Exercise extends Model
 
     /**
      * Trainer che ha creato l'esercizio nel catalogo
-     *
-     * @return BelongsTo<User, self>
-     */
+     *     */
+    /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');

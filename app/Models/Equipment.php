@@ -13,9 +13,8 @@ class Equipment extends Model
 
     /**
      * Esercizi che richiedono questo equipment
-     *
-     * @return BelongsToMany<Exercise, self>
-     */
+     *     */
+    /** @return BelongsToMany<Exercise, $this> */
     public function exercises(): BelongsToMany
     {
         return $this->belongsToMany(Exercise::class, 'exercise_equipment');

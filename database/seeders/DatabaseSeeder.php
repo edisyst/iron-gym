@@ -10,12 +10,18 @@ class DatabaseSeeder extends Seeder
     use WithoutModelEvents;
 
     /**
-     * Seed the application's database.
+     * Esegue tutti i seeder nell'ordine corretto.
      */
     public function run(): void
     {
         $this->call([
+            RoleSeeder::class,
             ExerciseSeeder::class,
         ]);
+
+        // DemoSeeder solo in ambiente locale
+        if (app()->isLocal()) {
+            $this->call(DemoSeeder::class);
+        }
     }
 }

@@ -40,10 +40,10 @@ return new class extends Migration
 
         // Vincolo XOR solo su MySQL 8.0.16+: SQLite non supporta ALTER TABLE ... ADD CONSTRAINT CHECK
         if (DB::getDriverName() === 'mysql') {
-            DB::statement("ALTER TABLE exercises ADD CONSTRAINT chk_pattern_xor CHECK (
+            DB::statement('ALTER TABLE exercises ADD CONSTRAINT chk_pattern_xor CHECK (
                 (compound_pattern_id IS NOT NULL AND joint_action_id IS NULL)
                 OR  (compound_pattern_id IS NULL  AND joint_action_id IS NOT NULL)
-            )");
+            )');
         }
     }
 

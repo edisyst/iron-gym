@@ -24,9 +24,8 @@ class SessionFeedback extends Model
 
     /**
      * Sessione a cui si riferisce il feedback
-     *
-     * @return BelongsTo<TrainingSession, self>
-     */
+     *     */
+    /** @return BelongsTo<TrainingSession, $this> */
     public function session(): BelongsTo
     {
         return $this->belongsTo(TrainingSession::class, 'session_id');

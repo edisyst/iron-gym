@@ -20,9 +20,8 @@ class SessionExerciseGroup extends Model
 
     /**
      * Sessione a cui appartiene il gruppo
-     *
-     * @return BelongsTo<TrainingSession, self>
-     */
+     *     */
+    /** @return BelongsTo<TrainingSession, $this> */
     public function session(): BelongsTo
     {
         return $this->belongsTo(TrainingSession::class, 'session_id');
@@ -30,9 +29,8 @@ class SessionExerciseGroup extends Model
 
     /**
      * Esercizi del gruppo (superset/giant set/circuit)
-     *
-     * @return HasMany<SessionExercise, self>
-     */
+     *     */
+    /** @return HasMany<SessionExercise, $this> */
     public function sessionExercises(): HasMany
     {
         return $this->hasMany(SessionExercise::class, 'group_id');

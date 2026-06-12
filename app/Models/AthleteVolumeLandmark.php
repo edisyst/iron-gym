@@ -20,9 +20,8 @@ class AthleteVolumeLandmark extends Model
 
     /**
      * Muscolo a cui si riferiscono i landmarks di volume
-     *
-     * @return BelongsTo<Muscle, self>
-     */
+     *     */
+    /** @return BelongsTo<Muscle, $this> */
     public function muscle(): BelongsTo
     {
         return $this->belongsTo(Muscle::class);
@@ -30,9 +29,8 @@ class AthleteVolumeLandmark extends Model
 
     /**
      * Atleta proprietario dei landmarks
-     *
-     * @return BelongsTo<User, self>
-     */
+     *     */
+    /** @return BelongsTo<User, $this> */
     public function athlete(): BelongsTo
     {
         return $this->belongsTo(User::class, 'athlete_id');
@@ -40,9 +38,8 @@ class AthleteVolumeLandmark extends Model
 
     /**
      * Trainer che ha modificato i landmarks da ultimo
-     *
-     * @return BelongsTo<User, self>
-     */
+     *     */
+    /** @return BelongsTo<User, $this> */
     public function updatedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by');

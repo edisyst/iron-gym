@@ -5,6 +5,7 @@ namespace Tests\Feature\Auth;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Volt\Volt;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class AuthenticationTest extends TestCase
@@ -56,15 +57,16 @@ class AuthenticationTest extends TestCase
 
     public function test_navigation_menu_can_be_rendered(): void
     {
+        Role::firstOrCreate(['name' => 'gestore']);
         $user = User::factory()->create();
+        $user->assignRole('gestore');
 
         $this->actingAs($user);
 
         $response = $this->get('/dashboard');
 
-        $response
-            ->assertOk()
-            ->assertSeeVolt('layout.navigation');
+        // /dashboard reindirizza al backoffice
+        $response->assertRedirect(route('backoffice.dashboard'));
     }
 
     public function test_users_can_logout(): void

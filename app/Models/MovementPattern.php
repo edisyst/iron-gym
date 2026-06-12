@@ -38,9 +38,8 @@ class MovementPattern extends Model
 
     /**
      * Esercizi che usano questo pattern come compound_pattern
-     *
-     * @return HasMany<Exercise, self>
-     */
+     *     */
+    /** @return HasMany<Exercise, $this> */
     public function exercisesAsCompound(): HasMany
     {
         return $this->hasMany(Exercise::class, 'compound_pattern_id');
@@ -48,9 +47,8 @@ class MovementPattern extends Model
 
     /**
      * Esercizi che usano questo pattern come joint_action
-     *
-     * @return HasMany<Exercise, self>
-     */
+     *     */
+    /** @return HasMany<Exercise, $this> */
     public function exercisesAsJointAction(): HasMany
     {
         return $this->hasMany(Exercise::class, 'joint_action_id');

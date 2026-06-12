@@ -1,9 +1,9 @@
 <?php
 
+use App\Models\Equipment;
 use App\Models\Exercise;
 use App\Models\MovementPattern;
 use App\Models\Muscle;
-use App\Models\Equipment;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Support\Facades\DB;
 

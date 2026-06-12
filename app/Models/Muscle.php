@@ -14,9 +14,8 @@ class Muscle extends Model
 
     /**
      * Esercizi che coinvolgono questo muscolo (con ruolo e contribution_pct)
-     *
-     * @return BelongsToMany<Exercise, self>
-     */
+     *     */
+    /** @return BelongsToMany<Exercise, $this, ExerciseMuscle> */
     public function exercises(): BelongsToMany
     {
         return $this->belongsToMany(Exercise::class, 'exercise_muscle')
@@ -26,9 +25,8 @@ class Muscle extends Model
 
     /**
      * Volume landmarks degli atleti per questo muscolo
-     *
-     * @return HasMany<AthleteVolumeLandmark, self>
-     */
+     *     */
+    /** @return HasMany<AthleteVolumeLandmark, $this> */
     public function volumeLandmarks(): HasMany
     {
         return $this->hasMany(AthleteVolumeLandmark::class);

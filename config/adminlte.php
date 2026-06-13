@@ -348,17 +348,13 @@ return [
         ['header' => 'TRAINING'],
         [
             'text' => 'Esercizi',
-            'url' => '#',
+            'url' => 'backoffice/exercises',
             'icon' => 'fas fa-dumbbell',
-            'label' => 'Step 2',
-            'label_color' => 'warning',
         ],
         [
-            'text' => 'Schede',
-            'url' => '#',
+            'text' => 'Schede template',
+            'url' => 'backoffice/templates',
             'icon' => 'fas fa-clipboard-list',
-            'label' => 'Step 2',
-            'label_color' => 'warning',
         ],
     ],
 

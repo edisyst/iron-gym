@@ -2,11 +2,16 @@
 
 namespace App\Models;
 
+use Database\Factories\TemplateSessionExerciseFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TemplateSessionExercise extends Model
 {
+    /** @use HasFactory<TemplateSessionExerciseFactory> */
+    use HasFactory;
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -20,6 +25,8 @@ class TemplateSessionExercise extends Model
         'planned_rir',
         'planned_rest_sec',
         'note',
+        'group_key',
+        'group_type',
     ];
 
     /**

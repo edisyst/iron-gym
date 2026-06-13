@@ -2,10 +2,16 @@
 
 use App\Livewire\Backoffice\Access\AccessLogList;
 use App\Livewire\Backoffice\Dashboard;
+use App\Livewire\Backoffice\Exercises\ExerciseDetail;
+use App\Livewire\Backoffice\Exercises\ExerciseForm;
+use App\Livewire\Backoffice\Exercises\ExerciseList;
 use App\Livewire\Backoffice\Members\MemberForm;
 use App\Livewire\Backoffice\Members\MemberList;
 use App\Livewire\Backoffice\Subscriptions\SubscriptionForm;
 use App\Livewire\Backoffice\Subscriptions\SubscriptionList;
+use App\Livewire\Backoffice\Templates\TemplateBuilder;
+use App\Livewire\Backoffice\Templates\TemplateForm;
+use App\Livewire\Backoffice\Templates\TemplateList;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('backoffice')
@@ -22,4 +28,15 @@ Route::prefix('backoffice')
         Route::get('/subscriptions/create', SubscriptionForm::class)->name('subscriptions.create');
 
         Route::get('/access-logs', AccessLogList::class)->name('access-logs.index');
+
+        // Libreria esercizi (Step 2)
+        Route::get('/exercises', ExerciseList::class)->name('exercises.index');
+        Route::get('/exercises/create', ExerciseForm::class)->name('exercises.create');
+        Route::get('/exercises/{exercise}', ExerciseDetail::class)->name('exercises.show');
+        Route::get('/exercises/{exercise}/edit', ExerciseForm::class)->name('exercises.edit');
+
+        // Template schede (Step 2)
+        Route::get('/templates', TemplateList::class)->name('templates.index');
+        Route::get('/templates/create', TemplateForm::class)->name('templates.create');
+        Route::get('/templates/{template}/builder', TemplateBuilder::class)->name('templates.builder');
     });

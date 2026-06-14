@@ -2,11 +2,18 @@
 
 namespace App\Models;
 
+use Database\Factories\SessionExerciseFeedbackFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SessionExerciseFeedback extends Model
 {
+    /** @use HasFactory<SessionExerciseFeedbackFactory> */
+    use HasFactory;
+
+    protected $table = 'session_exercise_feedbacks';
+
     public $timestamps = false;
 
     protected $fillable = [

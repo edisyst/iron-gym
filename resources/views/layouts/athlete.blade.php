@@ -181,8 +181,8 @@
             <span>Storico</span>
         </a>
 
-        {{-- Progressi (placeholder) --}}
-        <a href="#"
+        {{-- Progressi --}}
+        <a href="{{ route('athlete.progress') }}"
            class="{{ request()->routeIs('athlete.progress*') ? 'active' : '' }}">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -202,6 +202,7 @@
         </a>
     </nav>
 
+    @stack('scripts')
     @livewireScripts
 </body>
 </html>

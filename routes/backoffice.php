@@ -1,6 +1,8 @@
 <?php
 
 use App\Livewire\Backoffice\Access\AccessLogList;
+use App\Livewire\Backoffice\Athletes\AthleteAnalytics;
+use App\Livewire\Backoffice\Athletes\BodyMeasurementForm;
 use App\Livewire\Backoffice\Dashboard;
 use App\Livewire\Backoffice\Exercises\ExerciseDetail;
 use App\Livewire\Backoffice\Exercises\ExerciseForm;
@@ -49,4 +51,8 @@ Route::prefix('backoffice')
         Route::get('/mesocycles/assign', MesocycleAssign::class)->name('mesocycles.assign');
         Route::get('/mesocycles/{mesocycle}', MesocycleDetail::class)->name('mesocycles.show');
         Route::get('/athletes/{athleteId}/volume-landmarks', VolumeLandmarkManager::class)->name('athletes.volume-landmarks');
+
+        // Step 5 — tracking corporeo e analytics
+        Route::get('/athletes/{athleteId}/measurements', BodyMeasurementForm::class)->name('athletes.measurements');
+        Route::get('/athletes/{athleteId}/analytics', AthleteAnalytics::class)->name('athletes.analytics');
     });

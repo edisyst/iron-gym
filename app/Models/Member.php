@@ -20,7 +20,7 @@ class Member extends Model
     protected $fillable = [
         'user_id', 'first_name', 'last_name', 'email', 'phone',
         'date_of_birth', 'fiscal_code', 'address', 'city', 'postal_code',
-        'medical_cert_expiry', 'notes', 'is_active',
+        'medical_cert_expiry', 'notes', 'is_active', 'height_cm',
     ];
 
     protected function casts(): array
@@ -29,6 +29,7 @@ class Member extends Model
             'date_of_birth' => 'date',
             'medical_cert_expiry' => 'date',
             'is_active' => 'boolean',
+            'height_cm' => 'decimal:1',
         ];
     }
 

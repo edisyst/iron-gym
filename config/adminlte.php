@@ -356,6 +356,11 @@ return [
             'url' => 'backoffice/templates',
             'icon' => 'fas fa-clipboard-list',
         ],
+        [
+            'text' => 'Mesocicli',
+            'url' => 'backoffice/mesocycles',
+            'icon' => 'fas fa-calendar-alt',
+        ],
     ],
 
     /*

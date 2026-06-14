@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SessionFeedback extends Model
 {
+    protected $table = 'session_feedbacks';
+
     // Solo created_at: il feedback è immutabile dopo la compilazione
     const UPDATED_AT = null;
 

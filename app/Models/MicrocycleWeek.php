@@ -2,12 +2,22 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Database\Factories\MicrocycleWeekFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property Carbon $start_date
+ * @property Carbon $end_date
+ */
 class MicrocycleWeek extends Model
 {
+    /** @use HasFactory<MicrocycleWeekFactory> */
+    use HasFactory;
+
     public $timestamps = false;
 
     protected $fillable = [

@@ -15,3 +15,4 @@ Route::view('profile', 'profile')
 
 require __DIR__.'/auth.php';
 require __DIR__.'/backoffice.php';
+require __DIR__.'/athlete.php';

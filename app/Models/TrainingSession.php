@@ -2,13 +2,23 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Database\Factories\TrainingSessionFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
+/**
+ * @property Carbon|null $started_at
+ * @property Carbon|null $completed_at
+ */
 class TrainingSession extends Model
 {
+    /** @use HasFactory<TrainingSessionFactory> */
+    use HasFactory;
+
     // Usa training_sessions per non collidere con la tabella sessions delle HTTP session di Laravel
     protected $table = 'training_sessions';
 

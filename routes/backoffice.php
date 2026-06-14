@@ -7,6 +7,8 @@ use App\Livewire\Backoffice\Exercises\ExerciseForm;
 use App\Livewire\Backoffice\Exercises\ExerciseList;
 use App\Livewire\Backoffice\Members\MemberForm;
 use App\Livewire\Backoffice\Members\MemberList;
+use App\Livewire\Backoffice\Mesocycles\MesocycleAssign;
+use App\Livewire\Backoffice\Mesocycles\MesocycleList;
 use App\Livewire\Backoffice\Subscriptions\SubscriptionForm;
 use App\Livewire\Backoffice\Subscriptions\SubscriptionList;
 use App\Livewire\Backoffice\Templates\TemplateBuilder;
@@ -39,4 +41,8 @@ Route::prefix('backoffice')
         Route::get('/templates', TemplateList::class)->name('templates.index');
         Route::get('/templates/create', TemplateForm::class)->name('templates.create');
         Route::get('/templates/{template}/builder', TemplateBuilder::class)->name('templates.builder');
+
+        // Mesocicli (Step 3)
+        Route::get('/mesocycles', MesocycleList::class)->name('mesocycles.index');
+        Route::get('/mesocycles/assign', MesocycleAssign::class)->name('mesocycles.assign');
     });

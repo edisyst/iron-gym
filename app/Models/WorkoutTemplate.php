@@ -52,7 +52,7 @@ class WorkoutTemplate extends Model
     /** @return HasMany<TemplateSession, $this> */
     public function templateSessions(): HasMany
     {
-        return $this->hasMany(TemplateSession::class);
+        return $this->hasMany(TemplateSession::class, 'template_id');
     }
 
     /**

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Database\Factories\MesocycleFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,7 +12,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Mesocycle extends Model
 {
-    use SoftDeletes;
+    /** @use HasFactory<MesocycleFactory> */
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'athlete_id',

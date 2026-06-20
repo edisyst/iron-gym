@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 class TrainerAvailability extends Model
 {
@@ -106,6 +107,16 @@ class TrainerAvailability extends Model
      * @return Collection<int, array{start: string, end: string}>
      */
     public static function getAvailableSlots(int $trainerId, Carbon $date, int $durationMinutes = 60): Collection
+    {
+        $cacheKey = "slots:{$trainerId}:{$date->toDateString()}";
+
+        return Cache::remember($cacheKey, 300, fn () => self::computeAvailableSlots($trainerId, $date, $durationMinutes));
+    }
+
+    /**
+     * @return Collection<int, array{start: string, end: string}>
+     */
+    protected static function computeAvailableSlots(int $trainerId, Carbon $date, int $durationMinutes): Collection
     {
         // 1. Carica tutti gli slot di disponibilità del trainer per la data
         $availabilitySlots = static::where('trainer_id', $trainerId)

@@ -65,7 +65,7 @@ Le decisioni architetturali prese sono definitive salvo discussione esplicita. I
 - **Step 6 — Prenotazioni e calendario.**
 - **Step 7 — CRM, comunicazione, notifiche.**
 - **Step 8 — Reportistica gestore e finanza.**
-- **Step 9 — Hardening, DevOps, deployment.**
+- **Step 9 — Hardening, DevOps, deployment. (✅ completato)**
 - **Step 10 — Pilota in palestra reale e iterazione.**
 
 ## Indicazioni operative per Claude Code
@@ -77,6 +77,13 @@ Le decisioni architetturali prese sono definitive salvo discussione esplicita. I
 - **Proattività:** non suggerire approcci alternativi o best practice se non richiesti esplicitamente.
 - **Rischi:** segnalare side effect solo se critici (sicurezza, perdita irreversibile di dati). Omettere avvertenze minori.
 - **Niente emoji.**
+
+## Secrets GitHub Actions richiesti
+
+Per il job `deploy-staging`:
+- `STAGING_HOST` — IP/hostname del server di staging
+- `STAGING_USER` — utente SSH
+- `STAGING_KEY` — chiave privata SSH (RSA/ED25519, PEM format)
 
 ## Comandi utili (dopo lo Step 1)
 
@@ -103,3 +110,53 @@ php artisan migrate:fresh --seed
 # Reset DB di dev
 php artisan migrate:fresh --seed
 ```
+
+## Operazioni di manutenzione
+
+```bash
+# Backup manuale immediato
+php artisan backup:run
+
+# Pulizia backup vecchi (segue la retention config)
+php artisan backup:clean
+
+# Lista backup esistenti con stato salute
+php artisan backup:list
+php artisan backup:monitor
+
+# Flush cache Redis (tutti i tag)
+php artisan cache:clear
+
+# Flush cache per tag specifico (da tinker)
+# Cache::tags(['kpi'])->flush();
+# Cache::tags(['exercises'])->flush();
+
+# Health check manuale
+curl http://localhost:8000/health
+
+# Genera icone PWA da resources/images/icon.png
+php artisan pwa:generate-icons
+
+# Build produzione asset (minified, con chunk separati)
+npm run build
+
+# Ottimizzazione produzione Laravel
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan icons:cache   # se si usa Blade Icons
+
+# Restart queue worker dopo deploy
+php artisan queue:restart
+
+# Telescope (solo local): accesso via /telescope
+# Abilitato tramite TELESCOPE_ENABLED=true in .env
+```
+
+### Struttura backup
+
+I backup vengono salvati in `storage/app/iron-gym/` (disco `local`).
+In produzione/staging impostare `BACKUP_DISK=s3` e configurare `config/filesystems.php` con il disco S3.
+Il fallimento del backup invia una mail a `BACKUP_NOTIFY_EMAIL`.
+
+Retention: 7 giornalieri → 4 settimanali → 3 mensili.

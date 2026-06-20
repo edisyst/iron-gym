@@ -8,4 +8,22 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    build: {
+        minify: 'esbuild',
+        rollupOptions: {
+            output: {
+                manualChunks(id) {
+                    if (id.includes('alpinejs') || id.includes('@alpinejs')) {
+                        return 'vendor-alpine';
+                    }
+                    if (id.includes('chart.js') || id.includes('chartjs')) {
+                        return 'vendor-chartjs';
+                    }
+                    if (id.includes('node_modules')) {
+                        return 'vendor';
+                    }
+                },
+            },
+        },
+    },
 });

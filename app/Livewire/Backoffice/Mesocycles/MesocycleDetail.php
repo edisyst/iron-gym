@@ -4,7 +4,6 @@ namespace App\Livewire\Backoffice\Mesocycles;
 
 use App\Models\Mesocycle;
 use App\Models\MicrocycleWeek;
-use App\Models\TrainingSession;
 use App\Services\DeloadEvaluator;
 use App\Services\WeeklyProgressionService;
 use App\Services\WeeklyVolumeCalculator;
@@ -31,11 +30,13 @@ class MesocycleDetail extends Component
     public function mount(int $mesocycle): void
     {
         $this->mesocycleId = $mesocycle;
-        $meso = Mesocycle::with('weeks')->findOrFail($mesocycle);
+        $meso = Mesocycle::with([
+            'weeks' => fn ($q) => $q->withCount(['sessions' => fn ($q2) => $q2->where('status', 'completed')]),
+        ])->findOrFail($mesocycle);
 
         // Seleziona la settimana con più sessioni completed, altrimenti la prima
         $bestWeek = $meso->weeks
-            ->sortByDesc(fn ($w) => TrainingSession::where('microcycle_week_id', $w->id)->where('status', 'completed')->count())
+            ->sortByDesc('sessions_count')
             ->first();
 
         $this->selectedWeekNumber = $bestWeek !== null ? $bestWeek->week_number : 1;

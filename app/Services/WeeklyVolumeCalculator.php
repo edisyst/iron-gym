@@ -3,68 +3,64 @@
 namespace App\Services;
 
 use App\Models\MicrocycleWeek;
-use App\Models\TrainingSession;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class WeeklyVolumeCalculator
 {
     /**
      * Calcola il volume settimanale per muscolo per una settimana del mesociclo.
+     * Usa una singola query JOIN per minimizzare i round-trip al DB.
+     * Risultato cachato per 15 minuti per chiave volume:{athleteId}:{weekId}.
      *
      * @return array<string, array{hard_sets: float, mev: int|null, mav_min: int|null, mav_max: int|null, mrv: int|null, status: string}>
      */
     public function calculate(int $athleteId, int $microcycleWeekId): array
     {
-        $week = MicrocycleWeek::findOrFail($microcycleWeekId);
+        $cacheKey = "volume:{$athleteId}:{$microcycleWeekId}";
 
-        // Sessioni completed della settimana con set working completati
-        $sessions = TrainingSession::where('microcycle_week_id', $week->id)
-            ->where('status', 'completed')
-            ->with([
-                'sessionExercises.sets' => fn ($q) => $q
-                    ->where('is_warmup', false)
-                    ->whereNotNull('completed_at'),
-            ])
-            ->get();
+        return Cache::remember($cacheKey, 900, function () use ($athleteId, $microcycleWeekId) {
+            return $this->computeVolume($athleteId, $microcycleWeekId);
+        });
+    }
 
-        // Raccoglie exercise_id distinti presenti nella settimana
-        $exerciseIds = $sessions
-            ->flatMap(fn ($s) => $s->sessionExercises->pluck('exercise_id'))
-            ->unique()
-            ->values()
-            ->all();
+    /**
+     * Invalida la cache del volume per una settimana specifica.
+     */
+    public function forget(int $athleteId, int $microcycleWeekId): void
+    {
+        Cache::forget("volume:{$athleteId}:{$microcycleWeekId}");
+    }
 
-        // Carica contribution_pct via DB per evitare accesso a ->pivot non tipizzato
-        $musclePctByExercise = DB::table('exercise_muscle')
-            ->join('muscles', 'muscles.id', '=', 'exercise_muscle.muscle_id')
-            ->whereIn('exercise_muscle.exercise_id', $exerciseIds)
-            ->select('exercise_muscle.exercise_id', 'muscles.slug', 'exercise_muscle.contribution_pct')
+    /**
+     * @return array<string, array{hard_sets: float, mev: int|null, mav_min: int|null, mav_max: int|null, mrv: int|null, status: string}>
+     */
+    private function computeVolume(int $athleteId, int $microcycleWeekId): array
+    {
+        // Verifica esistenza settimana (query 1)
+        MicrocycleWeek::findOrFail($microcycleWeekId);
+
+        // Singola query JOIN: aggrega hard_sets per muscolo (query 2)
+        $muscleRows = DB::table('exercise_sets as es')
+            ->join('session_exercises as se', 'se.id', '=', 'es.session_exercise_id')
+            ->join('training_sessions as ts', 'ts.id', '=', 'se.session_id')
+            ->join('exercise_muscle as em', 'em.exercise_id', '=', 'se.exercise_id')
+            ->join('muscles', 'muscles.id', '=', 'em.muscle_id')
+            ->where('ts.microcycle_week_id', $microcycleWeekId)
+            ->where('ts.status', 'completed')
+            ->where('es.is_warmup', false)
+            ->whereNotNull('es.completed_at')
+            ->select('muscles.slug', DB::raw('SUM(em.contribution_pct / 100.0) as hard_sets_total'))
+            ->groupBy('muscles.id', 'muscles.slug')
             ->get()
-            ->groupBy('exercise_id');
+            ->keyBy('slug');
 
-        // Accumula hard_sets per muscle_slug
-        /** @var array<string, float> $volume */
         $volume = [];
-
-        foreach ($sessions as $session) {
-            foreach ($session->sessionExercises as $se) {
-                $workingSets = $se->sets;
-                if ($workingSets->isEmpty()) {
-                    continue;
-                }
-
-                $muscleRows = $musclePctByExercise[$se->exercise_id] ?? collect();
-
-                foreach ($muscleRows as $row) {
-                    $pct = $row->contribution_pct / 100;
-                    $slug = $row->slug;
-
-                    $volume[$slug] = ($volume[$slug] ?? 0.0) + $workingSets->count() * $pct;
-                }
-            }
+        foreach ($muscleRows as $slug => $row) {
+            $volume[$slug] = round((float) $row->hard_sets_total, 2);
         }
 
-        // Carica i landmark dell'atleta dal DB (override del config)
+        // Landmark atleta con override DB (query 3)
         $dbLandmarks = DB::table('athlete_volume_landmarks')
             ->join('muscles', 'muscles.id', '=', 'athlete_volume_landmarks.muscle_id')
             ->where('athlete_volume_landmarks.athlete_id', $athleteId)
@@ -76,19 +72,16 @@ class WeeklyVolumeCalculator
         $defaultLandmarks = config('volume_landmarks', []);
 
         $result = [];
-
-        // Unisce muscoli con volume calcolato e muscoli con solo landmark
         $allSlugs = array_unique(array_merge(array_keys($volume), array_keys($defaultLandmarks)));
 
         foreach ($allSlugs as $slug) {
-            $hardSets = round($volume[$slug] ?? 0.0, 2);
+            $hardSets = $volume[$slug] ?? 0.0;
 
             if (isset($dbLandmarks[$slug])) {
                 $lm = (array) $dbLandmarks[$slug];
             } elseif (isset($defaultLandmarks[$slug])) {
                 $lm = $defaultLandmarks[$slug];
             } else {
-                // Muscolo senza landmark (secondary/stabilizer): includi solo se ha volume
                 if ($hardSets === 0.0) {
                     continue;
                 }

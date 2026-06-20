@@ -7,31 +7,29 @@ on:
     branches: [main, develop]
 
 jobs:
-  ci:
-    name: PHP 8.3 — Pint, PHPStan, Pest
+  test:
     runs-on: ubuntu-latest
 
     services:
       mysql:
         image: mysql:8.0
         env:
-          MYSQL_ROOT_PASSWORD: ""
-          MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
-          MYSQL_DATABASE: iron_gym
-        ports:
-          - 3306:3306
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: iron_gym_test
+        ports: ['3306:3306']
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+      redis:
+        image: redis:7
+        ports: ['6379:6379']
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup PHP 8.3
-        uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.3"
-          extensions: mbstring, pdo, pdo_mysql, redis, bcmath, exif, gd
-          coverage: none
+          php-version: '8.3'
+          extensions: mbstring, pdo_mysql, redis, bcmath, exif, gd
+          coverage: xdebug
 
       - name: Cache Composer
         uses: actions/cache@v4
@@ -40,27 +38,66 @@ jobs:
           key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
 
-      - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-interaction --no-progress
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
 
-      - name: Copy .env
-        run: cp .env.example .env
+      - name: Setup environment
+        run: |
+          cp .env.example .env.testing
+          sed -i 's/DB_DATABASE=.*/DB_DATABASE=iron_gym_test/' .env.testing
+          sed -i 's/DB_USERNAME=.*/DB_USERNAME=root/' .env.testing
+          sed -i 's/DB_PASSWORD=.*/DB_PASSWORD=password/' .env.testing
+          sed -i 's/CACHE_STORE=.*/CACHE_STORE=array/' .env.testing
+          sed -i 's/QUEUE_CONNECTION=.*/QUEUE_CONNECTION=sync/' .env.testing
+          php artisan key:generate --env=testing
 
-      - name: Generate application key
-        run: php artisan key:generate
+      - name: Run migrations and seed
+        run: php artisan migrate:fresh --seed --env=testing
 
-      - name: Check code style (Pint dry-run)
-        run: ./vendor/bin/pint --test
-
-      - name: Static analysis (PHPStan livello 6)
-        run: ./vendor/bin/phpstan analyse --no-progress
-
-      - name: Run test suite (Pest)
-        run: ./vendor/bin/pest --no-coverage
+      - name: Run tests with coverage
+        run: ./vendor/bin/pest --coverage --min=70
         env:
           DB_CONNECTION: mysql
           DB_HOST: 127.0.0.1
           DB_PORT: 3306
-          DB_DATABASE: iron_gym
+          DB_DATABASE: iron_gym_test
           DB_USERNAME: root
-          DB_PASSWORD: ""
+          DB_PASSWORD: password
+          CACHE_STORE: array
+          QUEUE_CONNECTION: sync
+          SESSION_DRIVER: array
+
+      - name: Static analysis
+        run: ./vendor/bin/phpstan analyse --no-progress
+
+      - name: Code style
+        run: ./vendor/bin/pint --test
+
+  deploy-staging:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to staging
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.STAGING_USER }}
+          key: ${{ secrets.STAGING_KEY }}
+          script: |
+            cd /var/www/iron-gym-staging
+            git pull origin develop
+            composer install --no-dev --optimize-autoloader
+            php artisan migrate --force
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+            php artisan queue:restart
+
+      - name: Health check post-deploy
+        run: |
+          sleep 15
+          curl -f https://staging.iron-gym.test/health || exit 1

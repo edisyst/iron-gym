@@ -4,6 +4,7 @@ namespace App\Livewire\Backoffice\Exercises;
 
 use App\Models\Equipment;
 use App\Models\Exercise;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -58,8 +59,16 @@ class ExerciseList extends Component
 
     public function render(): View
     {
+        $filters = [
+            'search' => $this->search,
+            'muscleGroup' => $this->muscleGroup,
+            'mechanic' => $this->mechanic,
+            'skillLevel' => $this->skillLevel,
+            'equipment' => $this->equipmentFilter,
+        ];
+
         $query = Exercise::with([
-            'muscles',
+            'muscles' => fn ($q) => $q->wherePivot('role', 'primary'),
             'compoundPattern',
             'jointAction',
             'equipment',
@@ -79,9 +88,11 @@ class ExerciseList extends Component
             })
             ->orderBy('name_it');
 
+        $allEquipment = Cache::remember('exercises:equipment', 86400, fn () => Equipment::orderBy('name_it')->get());
+
         return view('livewire.backoffice.exercises.exercise-list', [
             'exercises' => $query->paginate(20),
-            'allEquipment' => Equipment::orderBy('name_it')->get(),
+            'allEquipment' => $allEquipment,
         ])->layout('layouts.backoffice')
             ->layoutData(['page_title' => 'Libreria esercizi']);
     }

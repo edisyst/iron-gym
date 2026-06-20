@@ -16,9 +16,9 @@ class DemoSeeder extends Seeder
     {
         // Account staff per ogni ruolo
         $staff = [
-            ['email' => 'gestore@iron-gym.test',     'name' => 'Mario Rossi',  'role' => 'gestore'],
-            ['email' => 'trainer@iron-gym.test',      'name' => 'Luca Bianchi', 'role' => 'trainer'],
-            ['email' => 'receptionist@iron-gym.test', 'name' => 'Sara Verdi',   'role' => 'receptionist'],
+            ['email' => 'admin@admin.admin',                        'name' => 'Mario Rossi',  'role' => 'gestore'],
+            ['email' => 'trainer@trainer.trainer',                  'name' => 'Luca Bianchi', 'role' => 'trainer'],
+            ['email' => 'receptionist@receptionist.receptionist',   'name' => 'Sara Verdi',   'role' => 'receptionist'],
         ];
 
         $receptionist = null;
@@ -49,6 +49,13 @@ class DemoSeeder extends Seeder
 
         // Tesserati con scadenze certificate miste
         $membersData = [
+            [
+                'first_name' => 'Atleta',
+                'last_name' => 'Test',
+                'email' => 'atleta@atleta.atleta',
+                'date_of_birth' => '1985-03-12',
+                'medical_cert_expiry' => now()->addMonths(6)->toDateString(),
+            ],
             [
                 'first_name' => 'Giovanni',
                 'last_name' => 'Ferrari',

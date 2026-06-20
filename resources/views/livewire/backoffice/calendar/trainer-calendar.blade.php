@@ -181,7 +181,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Riceve eventi aggiornati da PHP (navigazione settimana / cambio trainer)
     Livewire.on('calendar-refresh', function (payload) {
         const data = Array.isArray(payload) ? payload[0] : payload;
-        calendar.removeAllEvents();
+        calendar.getEventSources().forEach(function (s) { s.remove(); });
         calendar.addEventSource(data.events);
         calendar.gotoDate(data.weekStart);
     });

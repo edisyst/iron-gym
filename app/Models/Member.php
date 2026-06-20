@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Database\Factories\MemberFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -15,7 +17,8 @@ use Illuminate\Support\Carbon;
  */
 class Member extends Model
 {
-    use SoftDeletes;
+    /** @use HasFactory<MemberFactory> */
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'user_id', 'first_name', 'last_name', 'email', 'phone',

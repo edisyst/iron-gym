@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProgressPhotoController;
 use App\Livewire\Athlete\BodyMeasurementForm;
+use App\Livewire\Athlete\Booking;
 use App\Livewire\Athlete\Dashboard;
 use App\Livewire\Athlete\History;
 use App\Livewire\Athlete\Progress;
@@ -20,4 +21,7 @@ Route::prefix('athlete')
         Route::get('/measurements', BodyMeasurementForm::class)->name('measurements');
         Route::get('/photos/upload', ProgressPhotoUpload::class)->name('photos.upload');
         Route::get('/photos/{progressPhoto}', [ProgressPhotoController::class, 'show'])->name('photos.show');
+
+        // Step 6 — prenotazioni
+        Route::get('/bookings', Booking::class)->name('bookings');
     });

@@ -361,6 +361,27 @@ return [
             'url' => 'backoffice/mesocycles',
             'icon' => 'fas fa-calendar-alt',
         ],
+        ['header' => 'CALENDARIO'],
+        [
+            'text' => 'Calendario',
+            'url' => 'backoffice/calendar',
+            'icon' => 'fas fa-calendar-alt',
+        ],
+        [
+            'text' => 'Disponibilità',
+            'url' => 'backoffice/calendar/availability',
+            'icon' => 'fas fa-clock',
+        ],
+        [
+            'text' => 'Prenotazioni PT',
+            'url' => 'backoffice/bookings',
+            'icon' => 'fas fa-user-clock',
+        ],
+        [
+            'text' => 'Corsi collettivi',
+            'url' => 'backoffice/group-classes',
+            'icon' => 'fas fa-users',
+        ],
     ],
 
     /*

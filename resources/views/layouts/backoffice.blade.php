@@ -3,7 +3,10 @@
 @section('title', config('adminlte.title', 'Iron Gym'))
 
 @section('content_header')
-    <h1>{{ $page_title ?? 'Dashboard' }}</h1>
+    <div class="d-flex justify-content-between align-items-center">
+        <h1>{{ $page_title ?? 'Dashboard' }}</h1>
+        @livewire('backoffice.shared.notification-bell')
+    </div>
 @stop
 
 @section('content')

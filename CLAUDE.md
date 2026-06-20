@@ -86,6 +86,12 @@ docker compose up -d
 php artisan serve
 npm run dev
 
+# Worker coda Redis (Step 7+)
+php artisan queue:work redis --queue=default
+
+# Scheduler (sviluppo locale)
+php artisan schedule:run
+
 # Migrazioni e seed
 php artisan migrate:fresh --seed
 

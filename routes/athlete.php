@@ -1,13 +1,16 @@
 <?php
 
 use App\Http\Controllers\ProgressPhotoController;
+use App\Http\Controllers\PushSubscriptionController;
 use App\Livewire\Athlete\BodyMeasurementForm;
 use App\Livewire\Athlete\Booking;
 use App\Livewire\Athlete\Dashboard;
 use App\Livewire\Athlete\History;
+use App\Livewire\Athlete\Messages;
 use App\Livewire\Athlete\Progress;
 use App\Livewire\Athlete\ProgressPhotoUpload;
 use App\Livewire\Athlete\WorkoutSession;
+use App\Models\Message;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('athlete')
@@ -24,4 +27,11 @@ Route::prefix('athlete')
 
         // Step 6 — prenotazioni
         Route::get('/bookings', Booking::class)->name('bookings');
+
+        // Step 7 — messaggistica e push
+        Route::get('/messages', Messages::class)->name('messages');
+        Route::get('/messages-unread-count', function () {
+            return response()->json(['count' => Message::where('receiver_id', auth()->id())->whereNull('read_at')->count()]);
+        })->name('messages.unread-count');
+        Route::post('/push-subscribe', [PushSubscriptionController::class, 'store'])->name('push-subscribe');
     });

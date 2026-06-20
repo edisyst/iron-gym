@@ -29,8 +29,10 @@
             </div>
         </div>
         <div class="card-body p-2">
-            {{-- Contenitore FullCalendar --}}
-            <div id="calendar" style="min-height:600px"></div>
+            {{-- wire:ignore evita che Livewire demolisca FullCalendar al re-render --}}
+            <div wire:ignore>
+                <div id="calendar" style="min-height:600px"></div>
+            </div>
         </div>
     </div>
 
@@ -144,9 +146,6 @@
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6/index.global.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // Dati eventi serializzati lato server
-    const events = @json($events);
-
     const calendarEl = document.getElementById('calendar');
     const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'timeGridWeek',
@@ -154,13 +153,12 @@ document.addEventListener('DOMContentLoaded', function () {
         slotMinTime: '07:00:00',
         slotMaxTime: '22:00:00',
         locale: 'it',
-        headerToolbar: false, // usiamo toolbar Livewire
+        headerToolbar: false,
         height: 'auto',
         selectable: true,
         selectMirror: true,
-        events: events,
+        events: @json($events),
 
-        // Click su un evento: apre modale dettaglio
         eventClick: function (info) {
             const props = info.event.extendedProps;
             if (props.type === 'pt') {
@@ -170,7 +168,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         },
 
-        // Selezione range temporale: apre modale creazione PT
         select: function (info) {
             const dateStr = info.startStr.substring(0, 10);
             const startStr = info.startStr.substring(11, 16);
@@ -181,16 +178,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     calendar.render();
 
-    // Aggiorna il calendario quando Livewire emette eventi
-    document.addEventListener('livewire:update', function () {
-        // Ricarica eventi dopo ogni update Livewire
-        setTimeout(function () {
-            calendar.removeAllEvents();
-            calendar.addEventSource(events);
-        }, 100);
+    // Riceve eventi aggiornati da PHP (navigazione settimana / cambio trainer)
+    Livewire.on('calendar-refresh', function (payload) {
+        const data = Array.isArray(payload) ? payload[0] : payload;
+        calendar.removeAllEvents();
+        calendar.addEventSource(data.events);
+        calendar.gotoDate(data.weekStart);
     });
 
-    // Ascolta l'evento di prenotazione creata per ricaricare gli eventi
     Livewire.on('booking-created', function () {
         window.location.reload();
     });

@@ -201,6 +201,45 @@
             <span>Prenota</span>
         </a>
 
+        {{-- Messaggi --}}
+        <a href="{{ route('athlete.messages') }}"
+           class="{{ request()->routeIs('athlete.messages') ? 'active' : '' }}"
+           style="position: relative;"
+           x-data="{ unread: 0 }"
+           x-init="
+               fetch('/athlete/messages-unread-count')
+                   .then(r => r.ok ? r.json() : {count:0})
+                   .then(d => unread = d.count ?? 0)
+                   .catch(() => {})
+           "
+        >
+            <span style="position: relative; display: inline-flex;">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                </svg>
+                <span
+                    x-show="unread > 0"
+                    x-text="unread > 9 ? '9+' : unread"
+                    style="
+                        position: absolute;
+                        top: -6px; right: -8px;
+                        background: #ef4444;
+                        color: #fff;
+                        border-radius: 999px;
+                        font-size: 9px;
+                        min-width: 16px;
+                        height: 16px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        padding: 0 3px;
+                    "
+                ></span>
+            </span>
+            <span>Messaggi</span>
+        </a>
+
         {{-- Profilo --}}
         <a href="{{ route('profile') }}"
            class="{{ request()->routeIs('profile') ? 'active' : '' }}">
@@ -214,5 +253,37 @@
 
     @stack('scripts')
     @livewireScripts
+
+    {{-- Registrazione service worker e permesso push --}}
+    @auth
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').then(function (registration) {
+                if (!('PushManager' in window)) return;
+
+                Notification.requestPermission().then(function (permission) {
+                    if (permission !== 'granted') return;
+
+                    const vapidPublicKey = '{{ config("services.vapid.public_key") }}';
+                    if (!vapidPublicKey) return;
+
+                    registration.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: vapidPublicKey,
+                    }).then(function (subscription) {
+                        fetch('{{ route("athlete.push-subscribe") }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            },
+                            body: JSON.stringify(subscription.toJSON()),
+                        });
+                    });
+                });
+            });
+        }
+    </script>
+    @endauth
 </body>
 </html>

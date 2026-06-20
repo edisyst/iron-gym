@@ -55,6 +55,8 @@ class TrainerCalendar extends Component
         $this->weekStart = Carbon::parse($this->weekStart)
             ->subWeek()
             ->toDateString();
+
+        $this->dispatchCalendarRefresh();
     }
 
     public function nextWeek(): void
@@ -62,6 +64,21 @@ class TrainerCalendar extends Component
         $this->weekStart = Carbon::parse($this->weekStart)
             ->addWeek()
             ->toDateString();
+
+        $this->dispatchCalendarRefresh();
+    }
+
+    public function updatedSelectedTrainerId(): void
+    {
+        $this->dispatchCalendarRefresh();
+    }
+
+    private function dispatchCalendarRefresh(): void
+    {
+        $this->dispatch('calendar-refresh', [
+            'events' => $this->getEventsForWeek(),
+            'weekStart' => $this->weekStart,
+        ]);
     }
 
     /**

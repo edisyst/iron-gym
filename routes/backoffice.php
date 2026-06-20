@@ -7,6 +7,7 @@ use App\Livewire\Backoffice\Calendar\AvailabilityManager;
 use App\Livewire\Backoffice\Calendar\BookingList;
 use App\Livewire\Backoffice\Calendar\GroupClassManager;
 use App\Livewire\Backoffice\Calendar\TrainerCalendar;
+use App\Livewire\Backoffice\Communications\CommunicationCampaign;
 use App\Livewire\Backoffice\Dashboard;
 use App\Livewire\Backoffice\Exercises\ExerciseDetail;
 use App\Livewire\Backoffice\Exercises\ExerciseForm;
@@ -17,6 +18,7 @@ use App\Livewire\Backoffice\Mesocycles\MesocycleAssign;
 use App\Livewire\Backoffice\Mesocycles\MesocycleDetail;
 use App\Livewire\Backoffice\Mesocycles\MesocycleList;
 use App\Livewire\Backoffice\Mesocycles\VolumeLandmarkManager;
+use App\Livewire\Backoffice\Messages\MessageThread;
 use App\Livewire\Backoffice\Subscriptions\SubscriptionForm;
 use App\Livewire\Backoffice\Subscriptions\SubscriptionList;
 use App\Livewire\Backoffice\Templates\TemplateBuilder;
@@ -65,4 +67,8 @@ Route::prefix('backoffice')
         Route::get('/calendar/availability', AvailabilityManager::class)->name('calendar.availability');
         Route::get('/bookings', BookingList::class)->name('bookings.index');
         Route::get('/group-classes', GroupClassManager::class)->name('group-classes.index');
+
+        // Step 7 — messaggistica e comunicazione
+        Route::get('/athletes/{athleteId}/messages', MessageThread::class)->name('athletes.messages');
+        Route::get('/communications/campaign', CommunicationCampaign::class)->name('communications.campaign');
     });

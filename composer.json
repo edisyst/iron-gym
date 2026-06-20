@@ -12,6 +12,7 @@
         "laravel/tinker": "^3.0",
         "livewire/livewire": "^3.6.4",
         "livewire/volt": "^1.7.0",
+        "minishlink/web-push": "^10.1",
         "predis/predis": "^3.5",
         "spatie/laravel-permission": "^8.0"
     },

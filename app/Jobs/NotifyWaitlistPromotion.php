@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\ClassBooking;
+use App\Notifications\WaitlistPromotionNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -21,6 +22,9 @@ class NotifyWaitlistPromotion implements ShouldQueue
 
     public function handle(): void
     {
-        // Step 7: implementazione notifica multicanale (mail, push, SMS)
+        $member = $this->booking->member;
+        if ($member?->user !== null) {
+            $member->user->notify(new WaitlistPromotionNotification($this->booking->groupClass));
+        }
     }
 }

@@ -382,6 +382,12 @@ return [
             'url' => 'backoffice/group-classes',
             'icon' => 'fas fa-users',
         ],
+        ['header' => 'COMUNICAZIONE'],
+        [
+            'text' => 'Campagne',
+            'url' => 'backoffice/communications/campaign',
+            'icon' => 'fas fa-bullhorn',
+        ],
     ],
 
     /*

@@ -19,6 +19,9 @@ use App\Livewire\Backoffice\Mesocycles\MesocycleDetail;
 use App\Livewire\Backoffice\Mesocycles\MesocycleList;
 use App\Livewire\Backoffice\Mesocycles\VolumeLandmarkManager;
 use App\Livewire\Backoffice\Messages\MessageThread;
+use App\Livewire\Backoffice\Reports\FinancialReport;
+use App\Livewire\Backoffice\Reports\ManagerDashboard;
+use App\Livewire\Backoffice\Reports\TrainingReport;
 use App\Livewire\Backoffice\Subscriptions\SubscriptionForm;
 use App\Livewire\Backoffice\Subscriptions\SubscriptionList;
 use App\Livewire\Backoffice\Templates\TemplateBuilder;
@@ -71,4 +74,27 @@ Route::prefix('backoffice')
         // Step 7 — messaggistica e comunicazione
         Route::get('/athletes/{athleteId}/messages', MessageThread::class)->name('athletes.messages');
         Route::get('/communications/campaign', CommunicationCampaign::class)->name('communications.campaign');
+
+        // Step 8 — reportistica gestore
+        Route::get('/reports/manager', ManagerDashboard::class)
+            ->middleware('role:gestore')
+            ->name('reports.manager');
+
+        Route::get('/reports/financial', FinancialReport::class)
+            ->middleware('role:gestore')
+            ->name('reports.financial');
+
+        Route::get('/reports/training', TrainingReport::class)
+            ->middleware('role:gestore|trainer')
+            ->name('reports.training');
+
+        Route::get('/reports/download/{file}', function (string $file) {
+            // Sicurezza: solo nome file senza path traversal
+            $basename = basename($file);
+            $path = storage_path("app/private/reports/{$basename}");
+
+            abort_unless(file_exists($path), 404);
+
+            return response()->download($path, $basename);
+        })->middleware('role:gestore')->name('reports.download');
     });

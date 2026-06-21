@@ -20,7 +20,44 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             min-height: 100vh;
             padding-bottom: 72px; /* spazio per la bottom nav */
+            padding-top: 48px;   /* spazio per la top bar */
         }
+        .app-topbar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 48px;
+            background-color: #1E1E1E;
+            border-bottom: 1px solid #2A2A2A;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            z-index: 1000;
+        }
+        .app-topbar .app-brand {
+            font-size: 16px;
+            font-weight: 700;
+            color: #FF6B00;
+            letter-spacing: 0.02em;
+        }
+        .app-topbar .user-name {
+            font-size: 13px;
+            color: #aaa;
+        }
+        .app-topbar .logout-btn {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            padding: 6px 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            text-decoration: none;
+            transition: color 0.15s;
+        }
+        .app-topbar .logout-btn:hover { color: #ef4444; }
         .app-main {
             max-width: 600px;
             margin: 0 auto;
@@ -154,6 +191,22 @@
     </style>
 </head>
 <body>
+    <header class="app-topbar">
+        <span class="app-brand">Iron Gym</span>
+        <span class="user-name">{{ auth()->user()->name }}</span>
+        <a href="{{ route('logout') }}" class="logout-btn"
+           onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+            </svg>
+            Esci
+        </a>
+        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none">
+            @csrf
+        </form>
+    </header>
+
     <main class="app-main">
         {{ $slot }}
     </main>

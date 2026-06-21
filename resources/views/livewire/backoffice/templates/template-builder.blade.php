@@ -1,19 +1,42 @@
 <div>
-    {{-- Tab settimane --}}
-    <ul class="nav nav-tabs mb-3">
-        @for ($w = 1; $w <= $template->weeks_count; $w++)
-            <li class="nav-item">
-                <a href="#"
-                   class="nav-link {{ $activeWeek === $w ? 'active' : '' }}"
-                   wire:click.prevent="$set('activeWeek', {{ $w }})">
-                    Settimana {{ $w }}
-                    @if ($w === $template->weeks_count)
-                        <span class="badge badge-warning ml-1">Deload</span>
-                    @endif
-                </a>
-            </li>
-        @endfor
-    </ul>
+    {{-- Tab settimane + copia settimana --}}
+    <div class="d-flex align-items-center justify-content-between flex-wrap mb-3">
+        <ul class="nav nav-tabs mb-0">
+            @for ($w = 1; $w <= $template->weeks_count; $w++)
+                <li class="nav-item">
+                    <a href="#"
+                       class="nav-link {{ $activeWeek === $w ? 'active' : '' }}"
+                       wire:click.prevent="$set('activeWeek', {{ $w }})">
+                        Settimana {{ $w }}
+                        @if ($w === $template->weeks_count)
+                            <span class="badge badge-warning ml-1">Deload</span>
+                        @endif
+                    </a>
+                </li>
+            @endfor
+        </ul>
+
+        @if ($template->weeks_count > 1)
+            <div class="d-flex align-items-center gap-2 ml-3">
+                <small class="text-muted text-nowrap">Copia sett. {{ $activeWeek }} in:</small>
+                <select wire:model="copyToWeek" class="form-control form-control-sm" style="width: 110px">
+                    <option value="0">— scegli —</option>
+                    @for ($w = 1; $w <= $template->weeks_count; $w++)
+                        @if ($w !== $activeWeek)
+                            <option value="{{ $w }}">Settimana {{ $w }}</option>
+                        @endif
+                    @endfor
+                </select>
+                <button type="button"
+                        class="btn btn-sm btn-outline-info text-nowrap"
+                        wire:click="copyWeek"
+                        wire:loading.attr="disabled"
+                        @disabled($copyToWeek === 0)>
+                    <i class="fas fa-clone"></i> Copia
+                </button>
+            </div>
+        @endif
+    </div>
 
     <div class="row">
         {{-- Colonna sessioni --}}

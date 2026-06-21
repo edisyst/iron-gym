@@ -7,6 +7,7 @@ use App\Models\TemplateSession;
 use App\Models\TemplateSessionExercise;
 use App\Models\WorkoutTemplate;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
@@ -19,11 +20,76 @@ class TemplateBuilder extends Component
 
     public int $activeWeek = 1;
 
+    public int $copyToWeek = 0;
+
     public string $exerciseSearch = '';
 
     public function mount(WorkoutTemplate $template): void
     {
         $this->template = $template;
+    }
+
+    /**
+     * Copia tutte le sessioni della settimana attiva nella settimana $copyToWeek.
+     * Le sessioni già presenti nel target vengono mantenute (append).
+     */
+    public function copyWeek(): void
+    {
+        if ($this->copyToWeek === 0 || $this->copyToWeek === $this->activeWeek) {
+            return;
+        }
+
+        $sourceWeek = $this->activeWeek;
+        $targetWeek = $this->copyToWeek;
+
+        DB::transaction(function () use ($sourceWeek, $targetWeek): void {
+            $sourceSessions = TemplateSession::where('template_id', $this->template->id)
+                ->where('week_number', $sourceWeek)
+                ->with(['templateExercises' => fn ($q) => $q->orderBy('order_in_session')])
+                ->orderBy('order_in_week')
+                ->get();
+
+            $targetOffset = TemplateSession::where('template_id', $this->template->id)
+                ->where('week_number', $targetWeek)
+                ->count();
+
+            foreach ($sourceSessions as $index => $session) {
+                $newSession = TemplateSession::create([
+                    'template_id' => $this->template->id,
+                    'week_number' => $targetWeek,
+                    'name' => $session->name,
+                    'order_in_week' => $targetOffset + $index + 1,
+                ]);
+
+                $groupKeyMap = [];
+                foreach ($session->templateExercises as $ex) {
+                    $newGroupKey = null;
+                    if ($ex->group_key !== null) {
+                        if (! isset($groupKeyMap[$ex->group_key])) {
+                            $groupKeyMap[$ex->group_key] = Str::uuid()->toString();
+                        }
+                        $newGroupKey = $groupKeyMap[$ex->group_key];
+                    }
+
+                    TemplateSessionExercise::create([
+                        'template_session_id' => $newSession->id,
+                        'exercise_id' => $ex->exercise_id,
+                        'order_in_session' => $ex->order_in_session,
+                        'technique_type' => $ex->technique_type,
+                        'tempo' => $ex->tempo,
+                        'planned_sets_count' => $ex->planned_sets_count,
+                        'planned_reps' => $ex->planned_reps,
+                        'planned_rir' => $ex->planned_rir,
+                        'planned_rest_sec' => $ex->planned_rest_sec,
+                        'note' => $ex->note,
+                        'group_key' => $newGroupKey,
+                        'group_type' => $ex->group_type,
+                    ]);
+                }
+            }
+        });
+
+        $this->copyToWeek = 0;
     }
 
     /** Aggiunge una nuova sessione alla settimana attiva */

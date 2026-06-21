@@ -80,10 +80,17 @@
                                     <span class="badge badge-secondary">Archiviato</span>
                                 @endif
                             </td>
-                            <td>
+                            <td class="text-nowrap">
                                 <a href="{{ route('backoffice.templates.builder', $template) }}" class="btn btn-xs btn-primary">
                                     <i class="fas fa-tools"></i> Apri builder
                                 </a>
+                                <button type="button"
+                                        class="btn btn-xs btn-outline-secondary ml-1"
+                                        wire:click="duplicate({{ $template->id }})"
+                                        wire:loading.attr="disabled"
+                                        wire:confirm="Duplicare '{{ $template->name }}'? Verrai reindirizzato al builder della copia.">
+                                    <i class="fas fa-copy"></i> Duplica
+                                </button>
                             </td>
                         </tr>
                     @empty

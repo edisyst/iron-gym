@@ -17,9 +17,13 @@
         </ul>
 
         @if ($template->weeks_count > 1)
-            <div class="d-flex align-items-center gap-2 ml-3">
+            <div class="d-flex align-items-center gap-2 ml-3"
+                 x-data="{ target: '0' }">
                 <small class="text-muted text-nowrap">Copia sett. {{ $activeWeek }} in:</small>
-                <select wire:model="copyToWeek" class="form-control form-control-sm" style="width: 110px">
+                <select wire:model="copyToWeek"
+                        x-model="target"
+                        class="form-control form-control-sm"
+                        style="width: 110px">
                     <option value="0">— scegli —</option>
                     @for ($w = 1; $w <= $template->weeks_count; $w++)
                         @if ($w !== $activeWeek)
@@ -31,7 +35,7 @@
                         class="btn btn-sm btn-outline-info text-nowrap"
                         wire:click="copyWeek"
                         wire:loading.attr="disabled"
-                        @disabled($copyToWeek === 0)>
+                        :disabled="target === '0'">
                     <i class="fas fa-clone"></i> Copia
                 </button>
             </div>

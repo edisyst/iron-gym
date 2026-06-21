@@ -20,7 +20,7 @@ class TemplateBuilder extends Component
 
     public int $activeWeek = 1;
 
-    public int $copyToWeek = 0;
+    public string $copyToWeek = '0';
 
     public string $exerciseSearch = '';
 
@@ -35,12 +35,14 @@ class TemplateBuilder extends Component
      */
     public function copyWeek(): void
     {
-        if ($this->copyToWeek === 0 || $this->copyToWeek === $this->activeWeek) {
+        $target = (int) $this->copyToWeek;
+
+        if ($target === 0 || $target === $this->activeWeek) {
             return;
         }
 
         $sourceWeek = $this->activeWeek;
-        $targetWeek = $this->copyToWeek;
+        $targetWeek = $target;
 
         DB::transaction(function () use ($sourceWeek, $targetWeek): void {
             $sourceSessions = TemplateSession::where('template_id', $this->template->id)
@@ -89,7 +91,7 @@ class TemplateBuilder extends Component
             }
         });
 
-        $this->copyToWeek = 0;
+        $this->copyToWeek = '0';
     }
 
     /** Aggiunge una nuova sessione alla settimana attiva */

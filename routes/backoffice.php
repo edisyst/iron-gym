@@ -5,7 +5,6 @@ use App\Livewire\Backoffice\Admin\FeatureFlagManager;
 use App\Livewire\Backoffice\Admin\FeedbackList;
 use App\Livewire\Backoffice\Athletes\AthleteAnalytics;
 use App\Livewire\Backoffice\Athletes\AthleteProfile;
-use App\Livewire\Backoffice\Athletes\AthleteSessionHistory;
 use App\Livewire\Backoffice\Athletes\BodyMeasurementForm;
 use App\Livewire\Backoffice\Calendar\AvailabilityManager;
 use App\Livewire\Backoffice\Calendar\BookingList;

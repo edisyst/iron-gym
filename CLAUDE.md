@@ -93,6 +93,14 @@ reportistica gestore, feature flags.
 - Feedback post-sessione su scala 0-3.
 - Ruoli spatie: atleta, trainer, gestore, receptionist.
 
+## Componenti Livewire aggiunti (post step 10)
+
+**Backoffice:**
+- `Backoffice/Athletes/AthleteProfile` — contenitore profilo atleta con tab Alpine.js (storico, analytics, misurazioni, landmarks, messaggi). Route: `backoffice.athletes.profile`.
+- `Backoffice/Athletes/AthleteSessionHistory` — storico sessioni atleta lato backoffice; filtra per `athlete_id`, mostra trainer, set, durata, feedback con badge 0-3, dettaglio inline con e1RM.
+
+**Nota architetturale:** le view Livewire che usavano `@extends('adminlte::page')` sono state convertite a wrapper `<div>` (pattern standard Livewire 3). Il layout standalone è gestito con `->layout('layouts.backoffice')` nel `render()`.
+
 ## Stato sviluppo
 
 Tutti gli step 1-10 sono stati implementati. Il sistema è in fase di verifica

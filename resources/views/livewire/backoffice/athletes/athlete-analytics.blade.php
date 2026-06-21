@@ -1,12 +1,4 @@
-@extends('adminlte::page')
-
-@section('title', 'Analytics — ' . $athlete->name)
-
-@section('content_header')
-    <h1>Analytics atleta — {{ $athlete->name }}</h1>
-@stop
-
-@section('content')
+<div>
     <div class="row">
         {{-- Card peso --}}
         <div class="col-md-6">
@@ -171,39 +163,35 @@
             @endif
         </div>
     </div>
-@stop
 
-@section('plugins.js')
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const ctx = document.getElementById('weightChart');
-        if (!ctx) return;
-        const labels = @json($weightChartData['labels']);
-        const data = @json($weightChartData['data']);
-        if (!labels.length) return;
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels,
-                datasets: [{
-                    label: 'Peso (kg)',
-                    data,
-                    borderColor: '#007bff',
-                    backgroundColor: 'rgba(0,123,255,0.08)',
-                    tension: 0.3,
-                    pointRadius: 3,
-                    fill: true,
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: false } }
-            }
-        });
-    });
-</script>
-@stop
-
-@section('plugins.Livewire', true)
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script>
+        (function () {
+            const ctx = document.getElementById('weightChart');
+            if (!ctx) return;
+            const labels = @json($weightChartData['labels']);
+            const data = @json($weightChartData['data']);
+            if (!labels.length) return;
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Peso (kg)',
+                        data,
+                        borderColor: '#007bff',
+                        backgroundColor: 'rgba(0,123,255,0.08)',
+                        tension: 0.3,
+                        pointRadius: 3,
+                        fill: true,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: false } }
+                }
+            });
+        })();
+    </script>
+</div>

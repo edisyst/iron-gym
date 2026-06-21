@@ -218,4 +218,45 @@ Tutto il lavoro notevole per versione/step. Ordine cronologico crescente.
 
 ---
 
+## 2026-06-22 — Storico atleta e navigazione backoffice
+
+### Fix bug nomi colonne feedback in TrainingReport
+
+- `TrainingReport::loadDrilldown()`: corretti nomi colonna da `energy_level`, `motivation_level`, `joint_pain_level`, `overall_rating`, `notes` ai nomi reali dello schema: `pump`, `soreness_prev`, `perceived_effort`, `joint_pain`, `performance`, `note`.
+- `training-report.blade.php`: aggiornato il drilldown con le cinque label corrette e badge colorati (0 → grigio, 1 → verde, 2 → giallo, 3 → rosso).
+
+### Fix bug MesocycleDetail::forceDeload()
+
+- `forceDeload()` usava `$this->lastProgressionResult` (proprietà inesistente) invece di `$this->lastProgressionResultData` (array serializzabile). Corretto allineandosi al pattern di `applyProgression()`.
+
+### Pagina profilo atleta nel backoffice
+
+- Nuovo componente `Backoffice/Athletes/AthleteProfile`: contenitore con tab Alpine.js (Storico allenamenti, Analytics, Misurazioni, Volume landmarks, Messaggi).
+- Route `GET /backoffice/athletes/{athleteId}/profile` con middleware `role:gestore|trainer`.
+- Header con avatar iniziali, nome, email, ruolo, mesociclo attivo + settimana corrente.
+
+### Storico sessioni atleta (backoffice)
+
+- Nuovo componente `Backoffice/Athletes/AthleteSessionHistory`: versione backoffice dello storico, filtrabile per mesociclo.
+- Tabella con colonne Data, Sessione, Mesociclo, Trainer, Set (completati/totali), Durata, Feedback.
+- Pannello dettaglio inline con esercizi, set planned → actual, e1RM calcolato, badge feedback per tutti e 5 i campi.
+- Sicurezza: `showDetail()` carica solo sessioni dell'atleta specificato via `whereHas('week.mesocycle', ...)`.
+
+### Fix view @extends → componenti Livewire embeddabili
+
+- `athlete-analytics.blade.php` e `body-measurement-form.blade.php`: convertiti da `@extends('adminlte::page')` a wrapper `<div>`. Le view con @extends causavano l'override del layout quando embedded via @livewire in AthleteProfile.
+
+### Navigazione
+
+- `MemberList`: link "Profilo allenamento" verso `backoffice.athletes.profile` per tesserati con account.
+- `MesocycleList`: nuova colonna azioni con link "Profilo atleta" e "Dettaglio mesociclo".
+- `MesocycleDetail`: link "Vedi profilo completo atleta" nell'header.
+- `config/adminlte.php`: voce "Report allenamento" nella sidebar sezione TRAINING.
+
+### Test
+
+- `tests/Feature/AthleteHistoryTest.php`: 4 test (trainer vede atleta suo, trainer non vede sessioni atleta altrui — 200 con dati filtrati, atleta bloccato 403, gestore vede tutti).
+
+---
+
 *Ogni step ha lasciato test Pest verdi, PHPStan L6 a 0 errori, Pint conforme.*

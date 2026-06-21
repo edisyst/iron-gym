@@ -7,7 +7,6 @@ use App\Models\MicrocycleWeek;
 use App\Services\DeloadEvaluator;
 use App\Services\WeeklyProgressionService;
 use App\Services\WeeklyVolumeCalculator;
-use App\ValueObjects\DeloadSignal;
 use App\ValueObjects\ProgressionResult;
 use Illuminate\View\View;
 use Livewire\Attributes\Title;
@@ -91,7 +90,13 @@ class MesocycleDetail extends Component
         $nextWeek->update(['is_deload' => true]);
 
         $service = app(WeeklyProgressionService::class);
-        $this->lastProgressionResult = $service->progressWeek($this->mesocycleId, $this->selectedWeekNumber);
+        $result = $service->progressWeek($this->mesocycleId, $this->selectedWeekNumber);
+        $this->lastProgressionResultData = [
+            'setsAddedByMuscle' => $result->setsAddedByMuscle,
+            'feedbackTriggers' => $result->feedbackTriggers,
+            'action' => $result->action,
+            'note' => $result->note,
+        ];
 
         session()->flash('success', 'Deload forzato applicato alla settimana '.$nextWeek->week_number.'.');
 

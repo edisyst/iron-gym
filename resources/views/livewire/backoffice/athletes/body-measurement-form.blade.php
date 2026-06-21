@@ -1,12 +1,4 @@
-@extends('adminlte::page')
-
-@section('title', 'Misurazioni corporee')
-
-@section('content_header')
-    <h1>Misurazioni corporee — {{ $athlete->name }}</h1>
-@stop
-
-@section('content')
+<div>
     @if (session('success'))
         <div class="alert alert-success alert-dismissible">
             <button type="button" class="close" data-dismiss="alert">&times;</button>
@@ -155,6 +147,4 @@
             </div>
         </div>
     </div>
-@stop
-
-@section('plugins.Livewire', true)
+</div>

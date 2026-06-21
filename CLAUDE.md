@@ -57,16 +57,16 @@ Le decisioni architetturali prese sono definitive salvo discussione esplicita. I
 ## Step di sviluppo
 
 - **Step 0 — Discovery (✅ completato):** dominio, ERD, schema SQL preliminare, catalogo esercizi. Vedi `docs/domain/`.
-- **Step 1 — Skeleton + core gestionale minimo (IN CORSO):** struttura Laravel, Docker compose, CI GitHub Actions, migration dello schema training-core, seed catalogo, autenticazione e ruoli, anagrafica tesserati base.
-- **Step 2 — Libreria esercizi e workout builder.**
-- **Step 3 — App atleta v1 e workout logging.**
-- **Step 4 — Periodizzazione e autoregolazione (volume landmarks, deload).**
-- **Step 5 — Tracking corporeo e analytics.**
-- **Step 6 — Prenotazioni e calendario.**
-- **Step 7 — CRM, comunicazione, notifiche.**
-- **Step 8 — Reportistica gestore e finanza.**
-- **Step 9 — Hardening, DevOps, deployment. (✅ completato)**
-- **Step 10 — Pilota in palestra reale e iterazione.**
+- **Step 1 — Skeleton + core gestionale minimo (✅ completato):** struttura Laravel, Docker compose, CI GitHub Actions, migration dello schema training-core, seed catalogo, autenticazione e ruoli, anagrafica tesserati base.
+- **Step 2 — Libreria esercizi e workout builder (✅ completato).**
+- **Step 3 — App atleta v1 e workout logging (✅ completato).**
+- **Step 4 — Periodizzazione e autoregolazione (volume landmarks, deload) (✅ completato).**
+- **Step 5 — Tracking corporeo e analytics (✅ completato).**
+- **Step 6 — Prenotazioni e calendario (✅ completato).**
+- **Step 7 — CRM, comunicazione, notifiche (✅ completato).**
+- **Step 8 — Reportistica gestore e finanza (✅ completato).**
+- **Step 9 — Hardening, DevOps, deployment (✅ completato).**
+- **Step 10 — Pilota in palestra reale e iterazione (PROSSIMO).**
 
 ## Indicazioni operative per Claude Code
 

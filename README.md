@@ -2,73 +2,86 @@
 
 Software di gestione per palestra di bodybuilding e fitness con focus sulla personalizzazione dell'allenamento e autoregolazione del volume.
 
-**Stack:** PHP 8.3, Laravel 11, Livewire 3 + Alpine.js, AdminLTE 3, MySQL 8, Redis 7, Vite, Pest, Larastan L6.
+## Stack tecnico
 
-**Status:** tutti e 10 gli step completati. Pronto per go-live in palestra reale.
+- **Backend:** PHP 8.3, Laravel 11.x
+- **Frontend backoffice:** Livewire 3 + Alpine.js, tema AdminLTE 3.x
+- **App atleta:** stesse tecnologie, layout dedicato su prefisso `/athlete`
+- **Database:** MySQL 8.0 (database: `iron_gym`)
+- **Cache / queue:** Redis 7
+- **Auth:** Laravel Breeze (stack Livewire)
+- **Permissions:** spatie/laravel-permission
+- **Static analysis:** Larastan livello 6
+- **Code style:** Laravel Pint
+- **Test:** Pest
+- **Container:** Docker Compose (app, db, redis, node)
+- **CI/CD:** GitHub Actions
 
----
+## Funzionalità implementate
 
-## Documentazione
+**Gestionale:** anagrafica tesserati con certificati medici e scadenze, piani abbonamento (durata, prezzo, ingressi inclusi), abbonamenti attivi con rinnovo, registro accessi in struttura.
 
-- **CLAUDE.md** — specifiche di progetto, convenzioni, comandi, secrets GitHub Actions.
-- **CHANGELOG.md** — storia completa di tutti gli step di sviluppo.
-- **docs/domain/step-0-discovery.md** — modello di dominio completo (glossario BB, ERD, schema SQL, regole progressione).
-- **docs/domain/exercises-catalog.md** — catalogo 83 esercizi, 26 muscoli, 14 equipment, 27 movement patterns con seed SQL.
-- **docs/domain/glossary.md** — glossario rapido (terminologia, personas, tassonomia).
-- **docs/devops/go-live-checklist.md** — checklist pre-go-live.
+**Training:** catalogo esercizi (83 esercizi, 26 muscoli, 14 equipment, 27 movement pattern) con tassonomia completa e ruoli muscolari. Template di scheda riutilizzabili (gym-wide). Mesocicli assegnati agli atleti, generati da template con snapshot al momento dell'istanziamento. Logging sessioni con set pianificati e set effettivi separati, supporto superset e giant set, tecniche speciali. Periodizzazione con volume landmarks per atleta-muscolo (MEV/MAV/MRV), progressione automatica settimana per settimana, trigger di deload. Feedback post-sessione su scala 0-3 con autoregolazione del carico.
 
-## Prerequisiti
+**Tracking corporeo:** misurazioni periodiche (peso, circonferenze, plicometria), foto progressi per pose standard, grafici andamento.
 
-- PHP 8.3
-- Composer 2.x
-- Node 20 LTS
-- Docker (MySQL 8 + Redis 7)
+**Prenotazioni:** disponibilità settimanale trainer, prenotazioni sessioni PT, corsi collettivi con gestione lista d'attesa.
 
-## Setup dev
+**Messaggistica e notifiche:** messaggistica interna trainer-atleta, campagne di comunicazione con log invii, notifiche push PWA (Web Push con VAPID), notifiche automatiche per scadenze certificati e abbonamenti.
+
+**Reportistica:** dashboard gestore con KPI (ingressi, fatturato, churn, utilizzo), report finanziari, export dati.
+
+**Sistema:** feature flags con Laravel Pennant per roll-out graduale, feedback in-app utenti, health check endpoint, backup automatico con retention configurabile.
+
+## Setup sviluppo
 
 ```bash
-# 1. Avvia container
+# 1. Clona il repository
+git clone <repo-url> iron-gym
+cd iron-gym
+
+# 2. Avvia i container (MySQL 8 + Redis 7)
 docker compose up -d
 
-# 2. Configura env
+# 3. Configura l'ambiente
 cp .env.example .env
-php artisan key:generate
+# Imposta DB_DATABASE=iron_gym, DB_USERNAME, DB_PASSWORD,
+# REDIS_HOST=127.0.0.1 (o il nome del container se usi la rete Docker)
 
-# 3. Dipendenze
+# 4. Dipendenze
 composer install
 npm install
 
-# 4. Migration + seed
-php artisan migrate --seed
+# 5. Genera la chiave applicazione
+php artisan key:generate
 
-# 5. Dev server
-php artisan serve
-npm run dev
+# 6. Migrazione e seed completo (catalogo esercizi + dati demo)
+php artisan migrate:fresh --seed
+
+# 7. Avvia i quattro processi (terminali separati)
+php artisan serve          # http://localhost:8000
+npm run dev                # asset Vite con HMR
+php artisan queue:work redis --queue=default
+php artisan schedule:work
 ```
 
 ## Comandi rapidi
 
 ```bash
-# Reset completo DB
-php artisan migrate:fresh --seed
-
 # Test (Pest)
 ./vendor/bin/pest
 
 # Smoke test su staging (richiede MySQL reale)
 ./vendor/bin/pest tests/Feature/SmokeTest.php --no-coverage
 
-# Code style (Pint)
+# Code style check
+./vendor/bin/pint --test
+
+# Code style fix
 ./vendor/bin/pint
 
 # Static analysis (Larastan L6)
-./vendor/bin/phpstan analyse
-
-# Queue worker (Step 7+)
-php artisan queue:work redis --queue=default
-
-# Scheduler
-php artisan schedule:run
+./vendor/bin/phpstan analyse --memory-limit=512M
 
 # Health check
 curl http://localhost:8000/health
@@ -79,16 +92,14 @@ php artisan pilot:init
 
 ## Struttura
 
-- **app/Livewire/** — Componenti Livewire (Backoffice, Atleta, Admin, Shared)
-- **resources/views/livewire/** — Template Blade associate
-- **database/migrations/** — Una per tabella, metodo `down()` sempre implementato
+- **app/Livewire/Backoffice/** — Componenti backoffice (Exercises, Templates, Mesocycles, Members, Bookings, Reports...)
+- **app/Livewire/Athlete/** — Componenti app atleta
+- **app/Services/** — Servizi dominio (MesocycleInstantiationService, WeeklyProgressionService, KpiService...)
+- **resources/views/livewire/** — Template Blade dei componenti
+- **database/migrations/** — Una per tabella, `down()` sempre implementato
 - **database/seeders/sql/** — `exercises_seed.sql` (83 esercizi)
-- **database/seeders/PilotSeeder.php** — Seed go-live (piani reali + account gestore)
 - **tests/Feature, tests/Unit** — Pest (naming descrittivo)
-- **config/features.php** — Feature flags (beta trainers, group classes)
-- **config/pilot.php** — Piani abbonamento e credenziali gestore per go-live
-- **config/backup.php** — Backup automatico con retention (7G → 4W → 3M)
-- **.github/workflows/ci.yml** — GitHub Actions (test, pint, phpstan)
+- **docs/domain/** — Documentazione di dominio (ERD, catalogo, glossario)
 
 ## Feature flags (Laravel Pennant)
 
@@ -105,7 +116,7 @@ Gestione via backoffice: `/backoffice/admin/feature-flags` (solo gestore).
 
 | Persona | Area | Accesso |
 |---|---|---|
-| Atleta | PWA + App | Vede schede, esegue workout, registra feedback, consulta grafici |
+| Atleta | /athlete | Vede schede, esegue workout, registra feedback, consulta grafici |
 | Trainer | Backoffice | Crea template, assegna mesocicli, monitora, autoregola |
 | Gestore | Backoffice | KPI, dati finanziari, staff, listini. Privilegi trainer. |
 | Receptionist | Backoffice | Check-in, anagrafica, certificati, abbonamenti. Training in lettura |
@@ -113,23 +124,23 @@ Gestione via backoffice: `/backoffice/admin/feature-flags` (solo gestore).
 ## Variabili .env rilevanti
 
 ```
-# Flare error tracking
-FLARE_KEY=
-
 # Feature flags
 FEATURE_BETA_TRAINERS=trainer1@email.com,trainer2@email.com
 FEATURE_GROUP_CLASSES=false
 
+# Push PWA
+VAPID_PUBLIC_KEY=...
+VAPID_PRIVATE_KEY=...
+
 # Feedback in-app
 FEEDBACK_EMAIL=feedback@iron-gym.local
+
+# Flare error tracking
+FLARE_KEY=
 
 # Go-live
 PILOT_MANAGER_EMAIL=gestore@palestra.it
 PILOT_MANAGER_PASSWORD=password-sicura
-
-# Push PWA
-VAPID_PUBLIC_KEY=...
-VAPID_PRIVATE_KEY=...
 ```
 
 ## Secrets GitHub Actions

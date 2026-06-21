@@ -1,182 +1,137 @@
 # iron-gym
 
-Software di gestione per palestra di bodybuilding e fitness con focus sulla personalizzazione dell'allenamento.
+Gestionale per palestra di bodybuilding e fitness. Copre: anagrafica tesserati,
+abbonamenti, accessi, libreria esercizi, schede di allenamento (template e mesocicli),
+logging sessioni atleta, periodizzazione con volume landmarks, tracking corporeo,
+prenotazioni PT e corsi, messaggistica trainer-atleta, notifiche automatiche,
+reportistica gestore, feature flags.
 
 ## Stack tecnico
 
 - **Backend:** PHP 8.3, Laravel 11.x
 - **Frontend backoffice:** Livewire 3 + Alpine.js, tema AdminLTE 3.x
-- **App atleta:** PWA con Alpine.js
+- **App atleta:** stesse tecnologie, layout dedicato su prefisso /athlete
 - **Database:** MySQL 8.0 (database: `iron_gym`)
-- **Cache / queue:** Redis 7
-- **Storage:** filesystem locale (MinIO/S3 in produzione)
-- **Dev server:** `php artisan serve` (no Nginx in dev)
-- **Asset build:** Vite + Node 20 LTS
+- **Cache / code:** Redis 7
 - **Auth:** Laravel Breeze (stack Livewire)
 - **Permissions:** spatie/laravel-permission
-- **Feature flags:** laravel/pennant
-- **Error tracking:** spatie/laravel-flare
 - **Static analysis:** Larastan livello 6
 - **Code style:** Laravel Pint
 - **Test:** Pest
-- **Container:** Docker Compose per dev (app, db, redis, node)
-- **CI/CD:** GitHub Actions (`.github/workflows/ci.yml`)
-- **Repo:** GitHub.com
-- **Branch model:** `main` (produzione), `develop` (integrazione), feature branches da `develop`
+- **Container:** Docker Compose (app, db, redis, node)
+- **CI/CD:** GitHub Actions
 
 ## Convenzioni
 
-- **Lingua:** rispondere sempre in italiano, tono informale. Termini tecnici in inglese.
-- **Commenti nel codice:** in italiano (termini tecnici in inglese).
-- **Naming DB:** tabelle plurali snake_case, FK con suffisso `_id`, soft delete solo dove serve audit.
-- **Naming PHP:** PSR-12, classi PascalCase, metodi camelCase, costanti UPPER_SNAKE.
-- **Migration:** una per tabella, naming Laravel standard (`create_<table>_table`), `down()` sempre implementato.
-- **Seeder:** uno per dominio (es. `MovementPatternSeeder`, `MuscleSeeder`, `EquipmentSeeder`, `ExerciseSeeder`). Il seeder esercizi carica il file SQL `database/seeders/sql/exercises_seed.sql`.
-- **Livewire components:** in `app/Livewire/<Area>/<NomeComponent>` (es. `app/Livewire/Backoffice/Exercises/ExerciseList`).
-- **Blade views:** in `resources/views/livewire/<area>/...` per componenti, `resources/views/<area>/...` per pagine.
-- **Test:** Pest, in `tests/Feature` e `tests/Unit`, naming descrittivo (`it('crea un mesociclo con n settimane', ...)`).
+- Lingua: italiano nel codice (commenti, messaggi), termini tecnici in inglese.
+- Modelli singolari PascalCase, tabelle plurali snake_case.
+- Form Request per la validazione, mai inline nei controller.
+- Livewire per CRUD e form complessi, Blade puro per pagine statiche.
+- Migration sempre con down() implementato.
+- Naming Livewire: app/Livewire/Backoffice/<Area>/<Nome> e app/Livewire/Athlete/<Nome>.
 
-## Documentazione di dominio (fonte di verità)
+## Dominio — entità principali
 
-File in `docs/domain/` — caricare manualmente con `@` solo nei prompt pertinenti:
+**Gestionale:**
+- Member: tesserato, anagrafica, certificato medico con scadenza
+- SubscriptionPlan: tipologia abbonamento (durata, prezzo, ingressi)
+- Subscription: abbonamento attivo di un Member
+- AccessLog: registro accessi in struttura
 
-- `docs/domain/step-0-discovery.md` — ERD, schema SQL, regole progressione MEV/MAV/MRV, autoregolazione, feedback. Caricare per: Step 4, Step 5, modifiche a mesocicli/sets/progressione.
-- `docs/domain/exercises-catalog.md` — 83 esercizi, 26 muscoli, 14 equipment, 27 movement patterns, seed SQL. Caricare per: esercizi, tassonomia, catalogo, workout builder.
-- `docs/domain/glossary.md` — terminologia BB, tecniche speciali, personas. Caricare quando serve riferimento rapido di dominio.
+**Training core:**
+- MovementPattern: lookup pattern motori (compound_pattern / joint_action)
+- Muscle, Equipment: lookup tassonomia esercizi
+- Exercise: catalogo esercizi con relazioni N-M su Muscle (pivot ExerciseMuscle con role e contribution_pct) e Equipment
+- WorkoutTemplate: template di scheda riutilizzabile (gym-wide)
+- TemplateSession, TemplateSessionExercise: struttura del template
+- Mesocycle: istanza concreta assegnata a un atleta, generata da WorkoutTemplate
+- MicrocycleWeek: settimana del mesociclo (is_deload, start_date, end_date)
+- TrainingSession: sessione giornaliera (planned/in_progress/completed/skipped)
+- SessionExerciseGroup: raggruppamento superset/giant_set
+- SessionExercise: esercizio in sessione con technique_type
+- ExerciseSet: set atomico con campi planned_* e actual_* separati
+- SessionFeedback, SessionExerciseFeedback: feedback post-sessione scala 0-3
+- AthleteVolumeLandmark: MEV/MAV/MRV personalizzati per atleta-muscolo
 
-Le decisioni architetturali prese sono definitive salvo discussione esplicita. In particolare:
+**Prenotazioni:**
+- TrainerAvailability: disponibilità settimanale trainer
+- PtBooking: prenotazione sessione PT
+- GroupClass: corso collettivo
+- ClassBooking: iscrizione a corso con waitlist
 
-- Single-tenant (una palestra, niente `gym_id`).
-- `movement_pattern` è tabella di lookup (`movement_patterns`) con colonna `category` (`compound_pattern` / `joint_action`).
-- `muscles` ed `equipment` sono tabelle di lookup.
-- Altri ENUM (`mechanic`, `plane`, `laterality`, `skill_level`, `measurement_type`, `goal`, `periodization_model`, `technique_type`, `group_type`) restano ENUM nativi MySQL.
-- Mesociclo è "snapshottato" all'istanziamento da template (modifiche al template non si propagano).
-- Esercizi unilaterali: un Set = un effort per coppia di lati (no granularità DX/SX nell'MVP).
-- Tempo dell'esecuzione: campo `tempo VARCHAR(7)` (es. `3-1-1-0`) presente fin dallo Step 0.
+**Comunicazione:**
+- Message: messaggistica interna trainer-atleta
+- CommunicationTemplate, CommunicationLog: campagne e log invii
+- PushSubscription: endpoint Web Push per notifiche PWA
+
+**Tracking e analytics:**
+- BodyMeasurement: misurazioni corporee periodiche
+- ProgressPhoto: foto progressi per pose
+
+**Sistema:**
+- FeedbackSubmission: feedback in-app utenti
+- Feature (Pennant): feature flags per roll-out graduale
+
+## Servizi disponibili
+
+- MesocycleInstantiationService: crea la gerarchia completa da template
+- WeeklyVolumeCalculator: calcola hard set settimanali pesati per contribution_pct
+- WeeklyProgressionService: applica progressione MEV→MRV con lettura feedback
+- DeloadEvaluator: valuta i quattro trigger di deload
+- KpiService: metriche aggregate per la dashboard gestore
+- PtBookingService: prenotazioni PT con verifica disponibilità
+- ClassBookingService: iscrizioni corsi con gestione waitlist
+- E1rmCalculator: formula Epley per stima 1RM
+
+## Decisioni architetturali fisse
+
+- Single-tenant: niente gym_id.
+- movement_patterns è tabella di lookup con category (compound_pattern / joint_action).
+- CHECK XOR su exercises: esattamente una tra compound_pattern_id e joint_action_id valorizzata.
+- Mesociclo snapshottato all'istanziamento: modifiche al template non si propagano.
+- Set unilaterali: un ExerciseSet per coppia di lati, niente granularità DX/SX nell'MVP.
 - Feedback post-sessione su scala 0-3.
-- Lingua applicazione: solo italiano nell'MVP.
+- Ruoli spatie: atleta, trainer, gestore, receptionist.
 
-## Step di sviluppo
+## Stato sviluppo
 
-- **Step 0 — Discovery (✅ completato):** dominio, ERD, schema SQL preliminare, catalogo esercizi. Vedi `docs/domain/`.
-- **Step 1 — Skeleton + core gestionale minimo (✅ completato):** struttura Laravel, Docker compose, CI GitHub Actions, migration dello schema training-core, seed catalogo, autenticazione e ruoli, anagrafica tesserati base.
-- **Step 2 — Libreria esercizi e workout builder (✅ completato).**
-- **Step 3 — App atleta v1 e workout logging (✅ completato).**
-- **Step 4 — Periodizzazione e autoregolazione (volume landmarks, deload) (✅ completato).**
-- **Step 5 — Tracking corporeo e analytics (✅ completato).**
-- **Step 6 — Prenotazioni e calendario (✅ completato).**
-- **Step 7 — CRM, comunicazione, notifiche (✅ completato).**
-- **Step 8 — Reportistica gestore e finanza (✅ completato).**
-- **Step 9 — Hardening, DevOps, deployment (✅ completato).**
-- **Step 10 — Pilota in palestra reale e iterazione (✅ completato).**
+Tutti gli step 1-10 sono stati implementati. Il sistema è in fase di verifica
+funzionale e test pre-pilota. Prossima attività: test end-to-end del flusso
+training core (assegnazione mesociclo → logging sessione → calcolo volume → progressione).
 
-## Indicazioni operative per Claude Code
+## Documenti di dominio
 
-- **Search-first:** prima di rispondere su librerie, versioni, comandi, best practice o tool, cercare sempre online. Preferire risposte aggiornate.
-- **Ambiguità:** se una richiesta è incompleta o ambigua, chiedere chiarimenti prima di procedere. Niente assunzioni silenziose.
-- **Codice:** mantenere esattamente formattazione, spaziatura e indentazione dell'utente. Per blocchi brevi mostrare il file/blocco completo; per blocchi lunghi solo le parti modificate con contesto minimo sufficiente.
-- **Spiegazioni:** brevi, dirette, in prosa continua. Niente liste puntate salvo richiesta esplicita. Non approfondire oltre quanto chiesto.
-- **Proattività:** non suggerire approcci alternativi o best practice se non richiesti esplicitamente.
-- **Rischi:** segnalare side effect solo se critici (sicurezza, perdita irreversibile di dati). Omettere avvertenze minori.
-- **Niente emoji.**
+Disponibili in docs/domain/ ma NON caricati automaticamente per non saturare
+il contesto. Richiedili esplicitamente quando servono:
+- docs/domain/step-0-discovery.md — ERD, schema SQL, regole di progressione
+- docs/domain/exercises-catalog.md — catalogo 83 esercizi con seed SQL
+- docs/domain/glossary.md — terminologia BB e tassonomia (documento corto, ok includerlo)
 
-## Secrets GitHub Actions richiesti
+## Cosa NON fare
 
-Per il job `deploy-staging`:
-- `STAGING_HOST` — IP/hostname del server di staging
-- `STAGING_USER` — utente SSH
-- `STAGING_KEY` — chiave privata SSH (RSA/ED25519, PEM format)
+- Non proporre Vue.js, Inertia, SPA.
+- Non proporre Filament, Nova, Backpack.
+- Non introdurre multi-tenancy.
+- Non aggiungere colonne o tabelle senza discuterne prima.
+- Non usare emoji nel codice o nei commenti.
 
 ## Comandi utili
 
 ```bash
-# Avvio ambiente dev
+# Ambiente dev
 docker compose up -d
 php artisan serve
 npm run dev
-
-# Worker coda Redis (Step 7+)
 php artisan queue:work redis --queue=default
 
-# Scheduler (sviluppo locale)
-php artisan schedule:run
-
-# Migrazioni e seed
+# DB
 php artisan migrate:fresh --seed
 
-# Test e qualità codice
+# Qualità
 ./vendor/bin/pest
-./vendor/bin/pint
-./vendor/bin/phpstan analyse
+./vendor/bin/phpstan analyse --memory-limit=512M
+./vendor/bin/pint --test
 
-# Smoke test su staging (richiede MySQL reale, non SQLite)
-./vendor/bin/pest tests/Feature/SmokeTest.php --no-coverage
-
-# Go-live: inizializza piani abbonamento reali e account gestore
-# (chiede conferma interattiva — risponde 'no' per dry-run sicuro)
-php artisan pilot:init
+# Scheduler (dev)
+php artisan schedule:work
 ```
-
-## Operazioni di manutenzione
-
-```bash
-# Backup manuale immediato
-php artisan backup:run
-
-# Pulizia backup vecchi (segue la retention config)
-php artisan backup:clean
-
-# Lista backup esistenti con stato salute
-php artisan backup:list
-php artisan backup:monitor
-
-# Flush cache Redis (tutti i tag)
-php artisan cache:clear
-
-# Flush cache per tag specifico (da tinker)
-# Cache::tags(['kpi'])->flush();
-# Cache::tags(['exercises'])->flush();
-
-# Health check manuale
-curl http://localhost:8000/health
-
-# Genera icone PWA da resources/images/icon.png
-php artisan pwa:generate-icons
-
-# Build produzione asset (minified, con chunk separati)
-npm run build
-
-# Ottimizzazione produzione Laravel
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
-
-# Restart queue worker dopo deploy
-php artisan queue:restart
-
-# Telescope (solo local): accesso via /telescope
-# Abilitato tramite TELESCOPE_ENABLED=true in .env
-```
-
-### Struttura backup
-
-I backup vengono salvati in `storage/app/iron-gym/` (disco `local`).
-In produzione/staging impostare `BACKUP_DISK=s3` e configurare `config/filesystems.php` con il disco S3.
-Il fallimento del backup invia una mail a `BACKUP_NOTIFY_EMAIL`.
-
-Retention: 7 giornalieri → 4 settimanali → 3 mensili.
-
-## Feature flags (laravel/pennant)
-
-I flag sono definiti in `app/Providers/AppServiceProvider::defineFeatureFlags()`.
-La Blade directive `@feature('nome_flag')` è registrata globalmente.
-
-| Flag | Logica | Config/Env |
-|---|---|---|
-| `periodization_engine` | gestore o email in lista beta | `FEATURE_BETA_TRAINERS` (CSV) |
-| `push_notifications` | atleti e trainer | — |
-| `group_classes` | booleano globale | `FEATURE_GROUP_CLASSES` |
-| `financial_reports` | solo gestore | — |
-
-Gestione via UI: `/backoffice/admin/feature-flags` (solo gestore).
-Gate `view-group-classes` controlla la voce "Corsi collettivi" nella sidebar AdminLTE.

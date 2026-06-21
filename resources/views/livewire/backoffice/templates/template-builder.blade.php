@@ -18,7 +18,7 @@
     <div class="row">
         {{-- Colonna sessioni --}}
         <div class="col-md-9">
-            @forelse ($template->templateSessions as $session)
+            @forelse ($sessions as $session)
                 <div class="card mb-3">
                     <div class="card-header d-flex align-items-center justify-content-between">
                         {{-- Nome sessione editabile inline --}}

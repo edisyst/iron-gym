@@ -32,7 +32,7 @@
                     </select>
                     <select wire:model.live="equipmentFilter" multiple size="1" class="form-control form-control-sm" style="width: 160px; height: auto">
                         @foreach ($allEquipment as $eq)
-                            <option value="{{ $eq->id }}">{{ $eq->name_it }}</option>
+                            <option value="{{ $eq['id'] }}">{{ $eq['name_it'] }}</option>
                         @endforeach
                     </select>
                 </div>

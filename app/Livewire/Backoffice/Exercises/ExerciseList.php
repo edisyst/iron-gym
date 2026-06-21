@@ -88,7 +88,7 @@ class ExerciseList extends Component
             })
             ->orderBy('name_it');
 
-        $allEquipment = Cache::remember('exercises:equipment', 86400, fn () => Equipment::orderBy('name_it')->get());
+        $allEquipment = Cache::remember('exercises:equipment', 86400, fn () => Equipment::orderBy('name_it')->get()->map(fn ($e) => ['id' => $e->id, 'name_it' => $e->name_it])->all());
 
         return view('livewire.backoffice.exercises.exercise-list', [
             'exercises' => $query->paginate(20),

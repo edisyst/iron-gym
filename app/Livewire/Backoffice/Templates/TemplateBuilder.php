@@ -198,20 +198,17 @@ class TemplateBuilder extends Component
 
     public function render(): View
     {
-        // Carica fresco template con tutte le relazioni per il render
-        $template = WorkoutTemplate::with([
-            'templateSessions' => function ($q) {
-                $q->where('week_number', $this->activeWeek)
-                    ->orderBy('order_in_week');
-            },
-            'templateSessions.templateExercises' => function ($q) {
-                $q->orderBy('order_in_session');
-            },
-            'templateSessions.templateExercises.exercise.muscles',
-        ])->findOrFail($this->template->id);
+        $sessions = TemplateSession::where('template_id', $this->template->id)
+            ->where('week_number', $this->activeWeek)
+            ->with([
+                'templateExercises' => fn ($q) => $q->orderBy('order_in_session'),
+                'templateExercises.exercise.muscles',
+            ])
+            ->orderBy('order_in_week')
+            ->get();
 
         return view('livewire.backoffice.templates.template-builder', [
-            'template' => $template,
+            'sessions' => $sessions,
             'exerciseSearchResults' => $this->exerciseSearchResults(),
         ])->layout('layouts.backoffice')
             ->layoutData(['page_title' => 'Builder: '.$this->template->name]);

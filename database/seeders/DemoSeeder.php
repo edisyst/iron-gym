@@ -16,9 +16,9 @@ class DemoSeeder extends Seeder
     {
         // Account staff per ogni ruolo
         $staff = [
-            ['email' => 'admin@admin.admin',                        'name' => 'Mario Rossi',  'role' => 'gestore'],
-            ['email' => 'trainer@trainer.trainer',                  'name' => 'Luca Bianchi', 'role' => 'trainer'],
-            ['email' => 'receptionist@receptionist.receptionist',   'name' => 'Sara Verdi',   'role' => 'receptionist'],
+            ['email' => 'admin@admin.admin',                        'name' => 'Mario Rossi',  'role' => 'gestore',       'password' => 'admin'],
+            ['email' => 'trainer@trainer.trainer',                  'name' => 'Luca Bianchi', 'role' => 'trainer',       'password' => 'trainer'],
+            ['email' => 'receptionist@receptionist.receptionist',   'name' => 'Sara Verdi',   'role' => 'receptionist',  'password' => 'receptionist'],
         ];
 
         $receptionist = null;
@@ -27,7 +27,7 @@ class DemoSeeder extends Seeder
                 ['email' => $s['email']],
                 [
                     'name' => $s['name'],
-                    'password' => Hash::make('password'),
+                    'password' => Hash::make($s['password']),
                     'email_verified_at' => now(),
                 ]
             );

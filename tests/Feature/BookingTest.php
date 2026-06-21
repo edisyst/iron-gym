@@ -32,8 +32,8 @@ beforeEach(function () {
         'is_available' => true,
     ]);
 
-    // Data di test: prossimo lunedì
-    $this->testDate = Carbon::parse('next monday');
+    // Data di test: lunedì della settimana dopo (garantisce >7gg, deadline 24h sempre futura)
+    $this->testDate = Carbon::parse('next monday')->addWeek();
 
     $this->ptService = app(PtBookingService::class);
     $this->classService = app(ClassBookingService::class);

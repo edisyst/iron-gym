@@ -44,7 +44,7 @@ class Progress extends Component
         $athleteId = auth()->id();
         $this->exercises = DB::table('exercise_sets as es')
             ->join('session_exercises as se', 'se.id', '=', 'es.session_exercise_id')
-            ->join('sessions as s', 's.id', '=', 'se.session_id')
+            ->join('training_sessions as s', 's.id', '=', 'se.session_id')
             ->join('microcycle_weeks as mw', 'mw.id', '=', 's.microcycle_week_id')
             ->join('mesocycles as m', 'm.id', '=', 'mw.mesocycle_id')
             ->join('exercises as e', 'e.id', '=', 'se.exercise_id')
@@ -85,7 +85,7 @@ class Progress extends Component
         // Set completati (non warmup) con dati sufficienti per Epley
         $rows = DB::table('exercise_sets as es')
             ->join('session_exercises as se', 'se.id', '=', 'es.session_exercise_id')
-            ->join('sessions as s', 's.id', '=', 'se.session_id')
+            ->join('training_sessions as s', 's.id', '=', 'se.session_id')
             ->join('microcycle_weeks as mw', 'mw.id', '=', 's.microcycle_week_id')
             ->join('mesocycles as m', 'm.id', '=', 'mw.mesocycle_id')
             ->where('m.athlete_id', $athleteId)
@@ -182,7 +182,7 @@ class Progress extends Component
             // Hard sets per muscle_group in questa settimana
             $weekGroupVolume = DB::table('exercise_sets as es')
                 ->join('session_exercises as se', 'se.id', '=', 'es.session_exercise_id')
-                ->join('sessions as s', 's.id', '=', 'se.session_id')
+                ->join('training_sessions as s', 's.id', '=', 'se.session_id')
                 ->join('exercise_muscle as em', 'em.exercise_id', '=', 'se.exercise_id')
                 ->join('muscles as mu', 'mu.id', '=', 'em.muscle_id')
                 ->where('s.microcycle_week_id', $week->id)

@@ -75,7 +75,7 @@ class AthleteAnalytics extends Component
         // Top 5 esercizi più loggati negli ultimi 30 giorni con max e1RM Epley
         $rows = DB::table('exercise_sets as es')
             ->join('session_exercises as se', 'se.id', '=', 'es.session_exercise_id')
-            ->join('sessions as s', 's.id', '=', 'se.session_id')
+            ->join('training_sessions as s', 's.id', '=', 'se.session_id')
             ->join('microcycle_weeks as mw', 'mw.id', '=', 's.microcycle_week_id')
             ->join('mesocycles as m', 'm.id', '=', 'mw.mesocycle_id')
             ->join('exercises as e', 'e.id', '=', 'se.exercise_id')

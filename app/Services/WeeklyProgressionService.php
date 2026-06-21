@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use App\Models\ExerciseSet;
 use App\Models\Mesocycle;
 use App\Models\MicrocycleWeek;
 use App\Models\SessionFeedback;
+use App\Models\SessionExercise;
 use App\Models\TrainingSession;
 use App\ValueObjects\ProgressionResult;
 use Illuminate\Support\Facades\DB;
@@ -197,6 +199,7 @@ class WeeklyProgressionService
                     'planned_sets_count' => $deloadSets,
                     'trainer_note' => $trainerNote,
                 ]);
+                $this->syncExerciseSets($se, $deloadSets);
             }
         }
 
@@ -282,6 +285,33 @@ class WeeklyProgressionService
             }
             $newCount = max(1, $se->planned_sets_count + $totalDelta);
             $se->update(['planned_sets_count' => $newCount]);
+            $this->syncExerciseSets($se, $newCount);
+        }
+    }
+
+    private function syncExerciseSets(SessionExercise $se, int $targetCount): void
+    {
+        $existing = ExerciseSet::where('session_exercise_id', $se->id)
+            ->where('is_warmup', false)
+            ->orderBy('set_index')
+            ->get();
+
+        $currentCount = $existing->count();
+
+        if ($currentCount < $targetCount) {
+            $lastSet = $existing->last();
+            for ($i = $currentCount + 1; $i <= $targetCount; $i++) {
+                ExerciseSet::create([
+                    'session_exercise_id' => $se->id,
+                    'set_index' => $i,
+                    'is_warmup' => false,
+                    'planned_reps' => $lastSet?->planned_reps,
+                    'planned_weight_kg' => $lastSet?->planned_weight_kg,
+                    'planned_rir' => $lastSet?->planned_rir,
+                ]);
+            }
+        } elseif ($currentCount > $targetCount) {
+            $existing->slice($targetCount)->each(fn (ExerciseSet $s) => $s->delete());
         }
     }
 

@@ -96,8 +96,17 @@ reportistica gestore, feature flags.
 ## Stato sviluppo
 
 Tutti gli step 1-10 sono stati implementati. Il sistema è in fase di verifica
-funzionale e test pre-pilota. Prossima attività: test end-to-end del flusso
-training core (assegnazione mesociclo → logging sessione → calcolo volume → progressione).
+funzionale e test pre-pilota.
+
+Bug risolti in fase di verifica:
+- Cache equipment in ExerciseList: Eloquent Collection serializzata su file cache
+  produceva `__PHP_Incomplete_Class` al deserialize. Fix: cache come array plain.
+- CACHE_STORE era `file`: portato a `redis` per supportare `Cache::tags()` usato
+  in ExerciseObserver e per coerenza con QUEUE_CONNECTION=redis.
+- APP_URL era `localhost:8000`: corretto a `iron-gym.test` (Laragon).
+
+Prossima attività: test end-to-end del flusso training core
+(assegnazione mesociclo → logging sessione → calcolo volume → progressione).
 
 ## Documenti di dominio
 

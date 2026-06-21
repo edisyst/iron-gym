@@ -39,7 +39,7 @@ class MesocycleInstantiationService
                 'periodization_model' => $params['periodization_model'],
                 'start_date' => $startDate,
                 'weeks_count' => $params['weeks_count'],
-                'status' => 'draft',
+                'status' => 'active',
             ]);
 
             // 2. Crea le MicrocycleWeek

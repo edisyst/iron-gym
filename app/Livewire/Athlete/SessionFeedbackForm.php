@@ -66,7 +66,7 @@ class SessionFeedbackForm extends Component
         );
 
         $this->dispatch('session-completed');
-        $this->redirect(route('athlete.dashboard'), navigate: true);
+        $this->redirect(route('athlete.dashboard'));
     }
 
     /**
@@ -74,7 +74,7 @@ class SessionFeedbackForm extends Component
      */
     public function skip(): void
     {
-        $this->redirect(route('athlete.dashboard'), navigate: true);
+        $this->redirect(route('athlete.dashboard'));
     }
 
     public function render(): View

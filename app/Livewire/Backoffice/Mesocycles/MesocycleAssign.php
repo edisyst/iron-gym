@@ -141,7 +141,7 @@ class MesocycleAssign extends Component
 
         session()->flash('success', 'Mesociclo assegnato con successo.');
 
-        $this->redirect(route('backoffice.mesocycles.index'), navigate: true);
+        $this->redirect(route('backoffice.mesocycles.index'));
     }
 
     /**

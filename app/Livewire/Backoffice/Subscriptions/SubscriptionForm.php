@@ -75,7 +75,7 @@ class SubscriptionForm extends Component
         ]);
 
         session()->flash('success', 'Abbonamento creato con successo.');
-        $this->redirect(route('backoffice.subscriptions.index'), navigate: true);
+        $this->redirect(route('backoffice.subscriptions.index'));
     }
 
     public function render(): View

@@ -127,7 +127,7 @@ class WorkoutSession extends Component
     {
         $this->session->update(['status' => 'skipped']);
 
-        $this->redirect(route('athlete.dashboard'), navigate: true);
+        $this->redirect(route('athlete.dashboard'));
     }
 
     /**

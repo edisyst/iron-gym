@@ -95,10 +95,27 @@ class DemoSeeder extends Seeder
 
         $members = [];
         foreach ($membersData as $data) {
-            $members[] = Member::firstOrCreate(
+            $member = Member::firstOrCreate(
                 ['email' => $data['email']],
                 array_merge($data, ['is_active' => true])
             );
+
+            // Crea User collegato per accesso app atleta
+            $user = User::firstOrCreate(
+                ['email' => $data['email']],
+                [
+                    'name' => $data['first_name'].' '.$data['last_name'],
+                    'password' => Hash::make('atleta'),
+                    'email_verified_at' => now(),
+                ]
+            );
+            $user->syncRoles(['atleta']);
+
+            if ($member->user_id === null) {
+                $member->update(['user_id' => $user->id]);
+            }
+
+            $members[] = $member;
         }
 
         // 2 abbonamenti attivi

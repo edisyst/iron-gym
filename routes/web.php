@@ -7,8 +7,12 @@ Route::get('/health', HealthCheckController::class);
 
 Route::view('/', 'welcome');
 
-// Reindirizza la dashboard Breeze al backoffice per gli utenti autenticati
+// Reindirizza al portale corretto in base al ruolo
 Route::get('dashboard', function () {
+    if (auth()->user()->hasRole('atleta')) {
+        return redirect()->route('athlete.dashboard');
+    }
+
     return redirect()->route('backoffice.dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 

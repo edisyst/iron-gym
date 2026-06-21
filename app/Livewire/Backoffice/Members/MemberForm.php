@@ -97,7 +97,7 @@ class MemberForm extends Component
             session()->flash('success', 'Tesserato creato con successo.');
         }
 
-        $this->redirect(route('backoffice.members.index'), navigate: true);
+        $this->redirect(route('backoffice.members.index'));
     }
 
     public function render(): View

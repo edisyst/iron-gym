@@ -27,6 +27,12 @@
             <div>
                 <h3 class="card-title mb-0">{{ $mesocycle->name }}</h3>
                 <small class="text-muted">{{ $mesocycle->athlete->name }} — Trainer: {{ $mesocycle->trainer->name }}</small>
+                <div class="mt-1">
+                    <a href="{{ route('backoffice.athletes.profile', ['athleteId' => $mesocycle->athlete_id]) }}"
+                       class="btn btn-xs btn-outline-secondary">
+                        <i class="fas fa-user mr-1"></i> Vedi profilo completo atleta
+                    </a>
+                </div>
             </div>
             <div class="d-flex align-items-center gap-2">
                 <select wire:model.live="selectedWeekNumber" wire:change="loadVolume" class="form-control form-control-sm" style="width:auto">

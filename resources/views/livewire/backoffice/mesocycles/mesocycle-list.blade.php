@@ -58,6 +58,7 @@
                             <th>Data inizio</th>
                             <th>Status</th>
                             <th>Trainer</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -74,10 +75,21 @@
                                     </span>
                                 </td>
                                 <td>{{ $meso->trainer?->name ?? '—' }}</td>
+                                <td>
+                                    <a href="{{ route('backoffice.mesocycles.show', $meso) }}" class="btn btn-xs btn-default">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    @if ($meso->athlete_id)
+                                        <a href="{{ route('backoffice.athletes.profile', ['athleteId' => $meso->athlete_id]) }}"
+                                           class="btn btn-xs btn-outline-info ml-1">
+                                            <i class="fas fa-user"></i> Profilo atleta
+                                        </a>
+                                    @endif
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center text-muted py-4">
+                                <td colspan="8" class="text-center text-muted py-4">
                                     Nessun mesociclo trovato.
                                 </td>
                             </tr>

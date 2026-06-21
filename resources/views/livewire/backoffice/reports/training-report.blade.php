@@ -88,18 +88,39 @@
                     <div class="col-md-5">
                         <h6>Ultimi 5 feedback</h6>
                         @if (!empty($drilldown['feedbacks']))
+                            @php
+                                $badgeClass = fn($v) => match((int) $v) {
+                                    0 => 'secondary',
+                                    1 => 'success',
+                                    2 => 'warning',
+                                    3 => 'danger',
+                                    default => 'secondary',
+                                };
+                            @endphp
                             <table class="table table-xs table-sm">
                                 <thead>
-                                    <tr><th>Data</th><th>Energia</th><th>Motivaz.</th><th>Dolori</th><th>Rating</th></tr>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Pump</th>
+                                        <th>Indolenz.</th>
+                                        <th>Sforzo</th>
+                                        <th>Dolore art.</th>
+                                        <th>Performance</th>
+                                    </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($drilldown['feedbacks'] as $fb)
                                         <tr>
                                             <td>{{ $fb->scheduled_date ? \Carbon\Carbon::parse($fb->scheduled_date)->format('d/m') : '—' }}</td>
-                                            <td>{{ $fb->energy_level ?? '—' }}/3</td>
-                                            <td>{{ $fb->motivation_level ?? '—' }}/3</td>
-                                            <td>{{ $fb->joint_pain_level ?? '—' }}/3</td>
-                                            <td>{{ $fb->overall_rating ?? '—' }}/3</td>
+                                            @foreach (['pump', 'soreness_prev', 'perceived_effort', 'joint_pain', 'performance'] as $field)
+                                                <td>
+                                                    @if ($fb->$field !== null)
+                                                        <span class="badge badge-{{ $badgeClass($fb->$field) }}">{{ $fb->$field }}</span>
+                                                    @else
+                                                        —
+                                                    @endif
+                                                </td>
+                                            @endforeach
                                         </tr>
                                     @endforeach
                                 </tbody>

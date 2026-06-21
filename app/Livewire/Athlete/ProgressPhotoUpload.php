@@ -28,6 +28,8 @@ class ProgressPhotoUpload extends Component
 
     public ?string $notes = null;
 
+    public bool $saved = false;
+
     /** @var Collection<int, ProgressPhoto> */
     public Collection $uploaded;
 
@@ -92,6 +94,7 @@ class ProgressPhotoUpload extends Component
         }
 
         $this->loadUploaded();
+        $this->saved = true;
         $this->dispatch('saved');
 
         // Reset file inputs

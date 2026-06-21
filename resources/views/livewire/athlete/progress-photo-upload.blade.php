@@ -1,7 +1,7 @@
 <div>
     <h2 style="font-size:20px;font-weight:700;margin-bottom:16px;">Foto progressi</h2>
 
-    @if ($this->dispatched('saved') ?? false)
+    @if ($this->saved)
         <div class="athlete-card" style="background:#1a3a1a;color:#22c55e;margin-bottom:12px;">
             Foto salvate correttamente.
         </div>

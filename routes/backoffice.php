@@ -4,6 +4,8 @@ use App\Livewire\Backoffice\Access\AccessLogList;
 use App\Livewire\Backoffice\Admin\FeatureFlagManager;
 use App\Livewire\Backoffice\Admin\FeedbackList;
 use App\Livewire\Backoffice\Athletes\AthleteAnalytics;
+use App\Livewire\Backoffice\Athletes\AthleteProfile;
+use App\Livewire\Backoffice\Athletes\AthleteSessionHistory;
 use App\Livewire\Backoffice\Athletes\BodyMeasurementForm;
 use App\Livewire\Backoffice\Calendar\AvailabilityManager;
 use App\Livewire\Backoffice\Calendar\BookingList;
@@ -66,6 +68,9 @@ Route::prefix('backoffice')
         // Step 5 — tracking corporeo e analytics
         Route::get('/athletes/{athleteId}/measurements', BodyMeasurementForm::class)->name('athletes.measurements');
         Route::get('/athletes/{athleteId}/analytics', AthleteAnalytics::class)->name('athletes.analytics');
+        Route::get('/athletes/{athleteId}/profile', AthleteProfile::class)
+            ->middleware('role:gestore|trainer')
+            ->name('athletes.profile');
 
         // Step 6 — prenotazioni e calendario
         Route::get('/calendar', TrainerCalendar::class)->name('calendar.index');

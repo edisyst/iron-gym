@@ -72,14 +72,14 @@
                     <div class="form-group">
                         <label>Corpo del messaggio</label>
                         <small class="text-muted d-block mb-1">
-                            Variabili disponibili: <code>{{nome}}</code> <code>{{cognome}}</code>
-                            <code>{{scadenza_abbonamento}}</code> <code>{{scadenza_certificato}}</code>
+                            Variabili disponibili: <code>@{{nome}}</code> <code>@{{cognome}}</code>
+                            <code>@{{scadenza_abbonamento}}</code> <code>@{{scadenza_certificato}}</code>
                         </small>
                         <textarea
                             wire:model="body"
                             class="form-control @error('body') is-invalid @enderror"
                             rows="6"
-                            placeholder="Ciao {{nome}}, ..."
+                            placeholder="Ciao @{{nome}}, ..."
                         ></textarea>
                         @error('body')<span class="invalid-feedback">{{ $message }}</span>@enderror
                     </div>

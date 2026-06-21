@@ -110,6 +110,7 @@ class BodyMeasurementForm extends Component
     public function render(): View
     {
         return view('livewire.backoffice.athletes.body-measurement-form')
-            ->with('athlete', User::findOrFail($this->athleteId));
+            ->with('athlete', User::findOrFail($this->athleteId))
+            ->layout('layouts.backoffice', ['page_title' => 'Misurazioni atleta']);
     }
 }

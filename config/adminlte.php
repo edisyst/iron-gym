@@ -361,6 +361,11 @@ return [
             'url' => 'backoffice/mesocycles',
             'icon' => 'fas fa-calendar-alt',
         ],
+        [
+            'text' => 'Report allenamento',
+            'url' => 'backoffice/reports/training',
+            'icon' => 'fas fa-chart-bar',
+        ],
         ['header' => 'CALENDARIO'],
         [
             'text' => 'Calendario',

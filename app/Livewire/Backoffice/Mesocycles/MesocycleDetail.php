@@ -23,9 +23,8 @@ class MesocycleDetail extends Component
     /** @var array<string, array{hard_sets: float, mev: int|null, mav_min: int|null, mav_max: int|null, mrv: int|null, status: string}> */
     public array $volumeData = [];
 
-    public ?ProgressionResult $lastProgressionResult = null;
-
-    public ?DeloadSignal $deloadSignal = null;
+    /** @var array{setsAddedByMuscle: array<string,int>, feedbackTriggers: array<string>, action: string, note: string|null}|null */
+    public ?array $lastProgressionResultData = null;
 
     public function mount(int $mesocycle): void
     {
@@ -60,14 +59,18 @@ class MesocycleDetail extends Component
         $calc = app(WeeklyVolumeCalculator::class);
         $this->volumeData = $calc->calculate($meso->athlete_id, $week->id);
 
-        $evaluator = app(DeloadEvaluator::class);
-        $this->deloadSignal = $evaluator->evaluate($this->mesocycleId);
     }
 
     public function applyProgression(): void
     {
         $service = app(WeeklyProgressionService::class);
-        $this->lastProgressionResult = $service->progressWeek($this->mesocycleId, $this->selectedWeekNumber);
+        $result = $service->progressWeek($this->mesocycleId, $this->selectedWeekNumber);
+        $this->lastProgressionResultData = [
+            'setsAddedByMuscle' => $result->setsAddedByMuscle,
+            'feedbackTriggers' => $result->feedbackTriggers,
+            'action' => $result->action,
+            'note' => $result->note,
+        ];
 
         session()->flash('success', 'Progressione applicata per la settimana '.($this->selectedWeekNumber + 1).'.');
 
@@ -99,8 +102,20 @@ class MesocycleDetail extends Component
     {
         $mesocycle = Mesocycle::with(['weeks', 'athlete', 'trainer'])->findOrFail($this->mesocycleId);
 
+        $deloadSignal = app(DeloadEvaluator::class)->evaluate($this->mesocycleId);
+        $lastProgressionResult = $this->lastProgressionResultData !== null
+            ? new ProgressionResult(
+                setsAddedByMuscle: $this->lastProgressionResultData['setsAddedByMuscle'],
+                feedbackTriggers: $this->lastProgressionResultData['feedbackTriggers'],
+                action: $this->lastProgressionResultData['action'],
+                note: $this->lastProgressionResultData['note'],
+            )
+            : null;
+
         return view('livewire.backoffice.mesocycles.mesocycle-detail', [
             'mesocycle' => $mesocycle,
+            'deloadSignal' => $deloadSignal,
+            'lastProgressionResult' => $lastProgressionResult,
         ])->layout('layouts.backoffice', ['page_title' => 'Mesociclo: '.$mesocycle->name]);
     }
 }

@@ -15,6 +15,7 @@ use App\Observers\TrainerAvailabilityObserver;
 use App\Observers\TrainingSessionObserver;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Pennant\Feature;
 use Spatie\LaravelFlare\Facades\Flare;
@@ -38,6 +39,7 @@ class AppServiceProvider extends ServiceProvider
         $this->defineGates();
         $this->configureFlare();
         $this->registerBladeDirectives();
+        $this->registerNotificationChannels();
     }
 
     private function defineFeatureFlags(): void
@@ -78,5 +80,10 @@ class AppServiceProvider extends ServiceProvider
     private function registerBladeDirectives(): void
     {
         Blade::if('feature', fn (string $flag) => Feature::active($flag));
+    }
+
+    private function registerNotificationChannels(): void
+    {
+        Notification::extend('webpush', fn () => app(\App\Channels\WebPushChannel::class));
     }
 }

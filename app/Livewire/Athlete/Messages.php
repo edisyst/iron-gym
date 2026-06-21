@@ -74,6 +74,7 @@ class Messages extends Component
 
         $unreadCount = Message::where('receiver_id', Auth::id())->unread()->count();
 
-        return view('livewire.athlete.messages', compact('trainer', 'messages', 'unreadCount'));
+        return view('livewire.athlete.messages', compact('trainer', 'messages', 'unreadCount'))
+            ->layout('layouts.athlete');
     }
 }

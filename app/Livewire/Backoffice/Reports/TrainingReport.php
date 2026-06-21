@@ -145,11 +145,12 @@ class TrainingReport extends Component
             ->where('mc.athlete_id', $athleteId)
             ->select(
                 'ts.scheduled_date',
-                'sf.energy_level',
-                'sf.motivation_level',
-                'sf.joint_pain_level',
-                'sf.overall_rating',
-                'sf.notes',
+                'sf.pump',
+                'sf.soreness_prev',
+                'sf.perceived_effort',
+                'sf.joint_pain',
+                'sf.performance',
+                'sf.note',
             )
             ->orderByDesc('ts.scheduled_date')
             ->limit(5)

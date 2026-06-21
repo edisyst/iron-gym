@@ -6,14 +6,16 @@ Software di gestione per palestra di bodybuilding e fitness con focus sulla pers
 
 - **Backend:** PHP 8.3, Laravel 11.x
 - **Frontend backoffice:** Livewire 3 + Alpine.js, tema AdminLTE 3.x
-- **App atleta (futura):** PWA con Alpine.js
+- **App atleta:** PWA con Alpine.js
 - **Database:** MySQL 8.0 (database: `iron_gym`)
 - **Cache / queue:** Redis 7
-- **Storage:** filesystem locale (MinIO/S3 in step successivi)
+- **Storage:** filesystem locale (MinIO/S3 in produzione)
 - **Dev server:** `php artisan serve` (no Nginx in dev)
 - **Asset build:** Vite + Node 20 LTS
 - **Auth:** Laravel Breeze (stack Livewire)
 - **Permissions:** spatie/laravel-permission
+- **Feature flags:** laravel/pennant
+- **Error tracking:** spatie/laravel-flare
 - **Static analysis:** Larastan livello 6
 - **Code style:** Laravel Pint
 - **Test:** Pest
@@ -36,11 +38,11 @@ Software di gestione per palestra di bodybuilding e fitness con focus sulla pers
 
 ## Documentazione di dominio (fonte di verità)
 
-Prima di scrivere codice che tocca il dominio training, leggere SEMPRE i documenti seguenti:
+File in `docs/domain/` — caricare manualmente con `@` solo nei prompt pertinenti:
 
-- @docs/domain/step-0-discovery.md — modello di dominio completo (glossario BB, personas, tassonomia, ERD, schema SQL preliminare, regole di progressione). Database target `iron_gym`, MySQL 8.
-- @docs/domain/exercises-catalog.md — catalogo esercizi seed (83 esercizi, 26 muscoli, 14 equipment, 27 movement patterns) con seed SQL pronto.
-- @docs/domain/glossary.md — glossario di dominio (terminologia BB, tecniche speciali, personas, tassonomia esercizi). Vista derivata dallo step-0 per riferimento rapido.
+- `docs/domain/step-0-discovery.md` — ERD, schema SQL, regole progressione MEV/MAV/MRV, autoregolazione, feedback. Caricare per: Step 4, Step 5, modifiche a mesocicli/sets/progressione.
+- `docs/domain/exercises-catalog.md` — 83 esercizi, 26 muscoli, 14 equipment, 27 movement patterns, seed SQL. Caricare per: esercizi, tassonomia, catalogo, workout builder.
+- `docs/domain/glossary.md` — terminologia BB, tecniche speciali, personas. Caricare quando serve riferimento rapido di dominio.
 
 Le decisioni architetturali prese sono definitive salvo discussione esplicita. In particolare:
 
@@ -66,7 +68,7 @@ Le decisioni architetturali prese sono definitive salvo discussione esplicita. I
 - **Step 7 — CRM, comunicazione, notifiche (✅ completato).**
 - **Step 8 — Reportistica gestore e finanza (✅ completato).**
 - **Step 9 — Hardening, DevOps, deployment (✅ completato).**
-- **Step 10 — Pilota in palestra reale e iterazione (PROSSIMO).**
+- **Step 10 — Pilota in palestra reale e iterazione (✅ completato).**
 
 ## Indicazioni operative per Claude Code
 
@@ -85,7 +87,7 @@ Per il job `deploy-staging`:
 - `STAGING_USER` — utente SSH
 - `STAGING_KEY` — chiave privata SSH (RSA/ED25519, PEM format)
 
-## Comandi utili (dopo lo Step 1)
+## Comandi utili
 
 ```bash
 # Avvio ambiente dev
@@ -107,8 +109,12 @@ php artisan migrate:fresh --seed
 ./vendor/bin/pint
 ./vendor/bin/phpstan analyse
 
-# Reset DB di dev
-php artisan migrate:fresh --seed
+# Smoke test su staging (richiede MySQL reale, non SQLite)
+./vendor/bin/pest tests/Feature/SmokeTest.php --no-coverage
+
+# Go-live: inizializza piani abbonamento reali e account gestore
+# (chiede conferma interattiva — risponde 'no' per dry-run sicuro)
+php artisan pilot:init
 ```
 
 ## Operazioni di manutenzione
@@ -144,7 +150,6 @@ npm run build
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
-php artisan icons:cache   # se si usa Blade Icons
 
 # Restart queue worker dopo deploy
 php artisan queue:restart
@@ -160,3 +165,18 @@ In produzione/staging impostare `BACKUP_DISK=s3` e configurare `config/filesyste
 Il fallimento del backup invia una mail a `BACKUP_NOTIFY_EMAIL`.
 
 Retention: 7 giornalieri → 4 settimanali → 3 mensili.
+
+## Feature flags (laravel/pennant)
+
+I flag sono definiti in `app/Providers/AppServiceProvider::defineFeatureFlags()`.
+La Blade directive `@feature('nome_flag')` è registrata globalmente.
+
+| Flag | Logica | Config/Env |
+|---|---|---|
+| `periodization_engine` | gestore o email in lista beta | `FEATURE_BETA_TRAINERS` (CSV) |
+| `push_notifications` | atleti e trainer | — |
+| `group_classes` | booleano globale | `FEATURE_GROUP_CLASSES` |
+| `financial_reports` | solo gestore | — |
+
+Gestione via UI: `/backoffice/admin/feature-flags` (solo gestore).
+Gate `view-group-classes` controlla la voce "Corsi collettivi" nella sidebar AdminLTE.

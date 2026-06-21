@@ -381,6 +381,7 @@ return [
             'text' => 'Corsi collettivi',
             'url' => 'backoffice/group-classes',
             'icon' => 'fas fa-users',
+            'can' => 'view-group-classes',
         ],
         ['header' => 'COMUNICAZIONE'],
         [

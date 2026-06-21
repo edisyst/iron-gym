@@ -37,11 +37,13 @@
                         </option>
                     @endforeach
                 </select>
+                @feature('periodization_engine')
                 <button wire:click="applyProgression"
                         wire:confirm="Applicare la progressione alla settimana {{ $selectedWeekNumber + 1 }}?"
                         class="btn btn-success btn-sm">
                     <i class="fas fa-arrow-up mr-1"></i> Applica progressione sett. {{ $selectedWeekNumber + 1 }}
                 </button>
+                @endfeature
                 <button wire:click="forceDeload"
                         wire:confirm="Forzare il deload sulla settimana {{ $selectedWeekNumber + 1 }}?"
                         class="btn btn-warning btn-sm">

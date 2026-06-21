@@ -40,4 +40,6 @@ return [
         'private_key' => env('VAPID_PRIVATE_KEY', ''),
     ],
 
+    'feedback_email' => env('FEEDBACK_EMAIL', 'feedback@iron-gym.local'),
+
 ];

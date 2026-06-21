@@ -254,8 +254,11 @@
     @stack('scripts')
     @livewireScripts
 
+    @livewire('shared.in-app-feedback')
+
     {{-- Registrazione service worker e permesso push --}}
     @auth
+    @feature('push_notifications')
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js').then(function (registration) {
@@ -284,6 +287,7 @@
             });
         }
     </script>
+    @endfeature
     @endauth
 </body>
 </html>

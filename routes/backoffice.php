@@ -1,6 +1,8 @@
 <?php
 
 use App\Livewire\Backoffice\Access\AccessLogList;
+use App\Livewire\Backoffice\Admin\FeatureFlagManager;
+use App\Livewire\Backoffice\Admin\FeedbackList;
 use App\Livewire\Backoffice\Athletes\AthleteAnalytics;
 use App\Livewire\Backoffice\Athletes\BodyMeasurementForm;
 use App\Livewire\Backoffice\Calendar\AvailabilityManager;
@@ -87,6 +89,12 @@ Route::prefix('backoffice')
         Route::get('/reports/training', TrainingReport::class)
             ->middleware('role:gestore|trainer')
             ->name('reports.training');
+
+        // Step 10 — admin tools (solo gestore)
+        Route::middleware('role:gestore')->group(function () {
+            Route::get('/admin/feature-flags', FeatureFlagManager::class)->name('admin.feature-flags');
+            Route::get('/admin/feedback', FeedbackList::class)->name('admin.feedback');
+        });
 
         Route::get('/reports/download/{file}', function (string $file) {
             // Sicurezza: solo nome file senza path traversal

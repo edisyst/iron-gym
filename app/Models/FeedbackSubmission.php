@@ -1,0 +1,26 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class FeedbackSubmission extends Model
+{
+    public const UPDATED_AT = null;
+
+    protected $fillable = [
+        'user_id',
+        'page_url',
+        'type',
+        'body',
+        'user_agent',
+        'internal_notes',
+    ];
+
+    /** @return BelongsTo<User, $this> */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+}

@@ -1,4 +1,5 @@
 <div>
+@feature('financial_reports')
     {{-- Selettore date --}}
     <div class="card card-outline card-primary mb-3">
         <div class="card-body py-2">
@@ -219,4 +220,9 @@
         })();
     </script>
     @endpush
+@else
+    <div class="alert alert-warning">
+        <i class="fas fa-lock mr-1"></i> Report finanziari non disponibili.
+    </div>
+@endfeature
 </div>

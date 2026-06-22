@@ -38,23 +38,23 @@ test('flusso training completo: instantiate → log → volume → progressione'
 
     // ── WorkoutTemplate ───────────────────────────────────────────────────
     $template = WorkoutTemplate::create([
-        'name'                => 'Template Test E2E',
-        'description'         => 'Test end-to-end flusso training',
-        'goal'                => 'hypertrophy',
+        'name' => 'Template Test E2E',
+        'description' => 'Test end-to-end flusso training',
+        'goal' => 'hypertrophy',
         'periodization_model' => 'linear',
-        'weeks_count'         => 2,
-        'days_per_week'       => 2,
-        'created_by'          => $trainer->id,
-        'is_active'           => true,
+        'weeks_count' => 2,
+        'days_per_week' => 2,
+        'created_by' => $trainer->id,
+        'is_active' => true,
     ]);
 
     // ── 2 TemplateSession, entrambe settimana 1 ───────────────────────────
     $templateSessions = collect();
     foreach ([['Upper A', 1], ['Lower B', 2]] as [$name, $order]) {
         $ts = TemplateSession::create([
-            'template_id'  => $template->id,
-            'week_number'  => 1,
-            'name'         => $name,
+            'template_id' => $template->id,
+            'week_number' => 1,
+            'name' => $name,
             'order_in_week' => $order,
         ]);
         $templateSessions->push($ts);
@@ -65,13 +65,13 @@ test('flusso training completo: instantiate → log → volume → progressione'
         foreach ($exercises->values() as $idx => $exercise) {
             TemplateSessionExercise::create([
                 'template_session_id' => $ts->id,
-                'exercise_id'         => $exercise->id,
-                'order_in_session'    => $idx + 1,
-                'technique_type'      => 'straight',
-                'planned_sets_count'  => 3,
-                'planned_reps'        => 10,
-                'planned_rir'         => 2,
-                'planned_rest_sec'    => 90,
+                'exercise_id' => $exercise->id,
+                'order_in_session' => $idx + 1,
+                'technique_type' => 'straight',
+                'planned_sets_count' => 3,
+                'planned_reps' => 10,
+                'planned_rir' => 2,
+                'planned_rest_sec' => 90,
             ]);
         }
     }
@@ -81,11 +81,11 @@ test('flusso training completo: instantiate → log → volume → progressione'
     $instantiator = app(MesocycleInstantiationService::class);
 
     $mesocycle = $instantiator->instantiate($template, $athlete->id, $trainer->id, [
-        'name'                => 'Mesociclo Test E2E',
-        'goal'                => 'hypertrophy',
+        'name' => 'Mesociclo Test E2E',
+        'goal' => 'hypertrophy',
         'periodization_model' => 'linear',
-        'start_date'          => today(),
-        'weeks_count'         => 2,
+        'start_date' => today(),
+        'weeks_count' => 2,
     ]);
 
     expect($mesocycle)->toBeInstanceOf(Mesocycle::class);
@@ -125,10 +125,10 @@ test('flusso training completo: instantiate → log → volume → progressione'
     foreach ($firstSession->sessionExercises as $se) {
         foreach ($se->sets as $set) {
             $set->update([
-                'actual_reps'      => 10,
+                'actual_reps' => 10,
                 'actual_weight_kg' => 80.0,
-                'actual_rir'       => 1,
-                'completed_at'     => now(),
+                'actual_rir' => 1,
+                'completed_at' => now(),
             ]);
         }
     }
@@ -137,12 +137,12 @@ test('flusso training completo: instantiate → log → volume → progressione'
 
     // ── STEP 6: SessionFeedback ───────────────────────────────────────────
     $feedback = SessionFeedback::create([
-        'session_id'       => $firstSession->id,
-        'pump'             => 2,
-        'soreness_prev'    => 1,
+        'session_id' => $firstSession->id,
+        'pump' => 2,
+        'soreness_prev' => 1,
         'perceived_effort' => 2,
-        'joint_pain'       => 0,
-        'performance'      => 2,
+        'joint_pain' => 0,
+        'performance' => 2,
     ]);
 
     expect($feedback->exists)->toBeTrue();

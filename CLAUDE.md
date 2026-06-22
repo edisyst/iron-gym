@@ -113,8 +113,9 @@ Bug risolti in fase di verifica:
   in ExerciseObserver e per coerenza con QUEUE_CONNECTION=redis.
 - APP_URL era `localhost:8000`: corretto a `iron-gym.test` (Laragon).
 
-Prossima attività: test end-to-end del flusso training core
-(assegnazione mesociclo → logging sessione → calcolo volume → progressione).
+Test end-to-end del flusso training core verificati (2026-06-22): AthleteHistoryTest 4/4, suite 90/96, PHPStan 0 errori, Pint conforme.
+
+Prossima attività: test pilota con dati reali.
 
 ## Documenti di dominio
 

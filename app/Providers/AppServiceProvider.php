@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Channels\WebPushChannel;
 use App\Models\Exercise;
 use App\Models\PtBooking;
 use App\Models\Subscription;
@@ -84,6 +85,6 @@ class AppServiceProvider extends ServiceProvider
 
     private function registerNotificationChannels(): void
     {
-        Notification::extend('webpush', fn () => app(\App\Channels\WebPushChannel::class));
+        Notification::extend('webpush', fn () => app(WebPushChannel::class));
     }
 }

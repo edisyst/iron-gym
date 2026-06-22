@@ -259,4 +259,14 @@ Tutto il lavoro notevole per versione/step. Ordine cronologico crescente.
 
 ---
 
+## 2026-06-22 — Verifica e fix stile
+
+- Verificato end-to-end: tutti i task A-F già implementati e funzionanti.
+- `tests/Feature/AthleteHistoryTest.php`: 4/4 test verdi.
+- Suite completa: 90/96 test verdi, 6 skipped, 0 failure.
+- PHPStan L6: 0 errori.
+- Fix stile Pint in `AppServiceProvider.php`, `WeeklyProgressionService.php`, `tests/Feature/TrainingFlowTest.php`.
+
+---
+
 *Ogni step ha lasciato test Pest verdi, PHPStan L6 a 0 errori, Pint conforme.*

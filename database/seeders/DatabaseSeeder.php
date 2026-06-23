@@ -19,9 +19,12 @@ class DatabaseSeeder extends Seeder
             ExerciseSeeder::class,
         ]);
 
-        // DemoSeeder solo in ambiente locale
+        // Seeder solo in ambiente locale
         if (app()->isLocal()) {
-            $this->call(DemoSeeder::class);
+            $this->call([
+                DemoSeeder::class,
+                TrainingHistorySeeder::class,
+            ]);
         }
     }
 }

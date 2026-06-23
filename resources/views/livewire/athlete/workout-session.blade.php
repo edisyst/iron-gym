@@ -53,6 +53,45 @@
         </div>
     @endif
 
+    {{-- Modal storico esercizio --}}
+    @if ($exerciseHistoryId !== null)
+        <div style="position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.8);display:flex;align-items:flex-end;">
+            <div style="background:#1E1E1E;border-radius:16px 16px 0 0;padding:20px 16px;width:100%;max-height:85vh;overflow-y:auto;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                    <p style="font-size:15px;font-weight:700;color:#fff;">{{ $exerciseHistoryName }}</p>
+                    <button wire:click="showExerciseHistory({{ $exerciseHistoryId }}, '')"
+                            style="background:none;border:none;color:#666;font-size:22px;line-height:1;cursor:pointer;">&times;</button>
+                </div>
+
+                @forelse ($this->exerciseHistory as $se)
+                    <div style="margin-bottom:16px;">
+                        <p style="font-size:12px;color:#FF6B00;font-weight:600;margin-bottom:6px;">
+                            {{ $se->session->completed_at?->format('d/m/Y') }} &bull; {{ $se->session->name }}
+                        </p>
+                        @foreach ($se->sets->whereNotNull('actual_reps') as $set)
+                            <div style="display:flex;gap:10px;font-size:13px;color:#888;
+                                        padding:3px 0;border-bottom:1px solid #222;">
+                                <span style="color:#555;width:20px;">{{ $set->set_index }}</span>
+                                <span>{{ $set->actual_reps }} reps</span>
+                                @if ($set->actual_weight_kg)
+                                    <span>{{ $set->actual_weight_kg }} kg</span>
+                                @endif
+                                @if ($set->actual_rir !== null)
+                                    <span>RIR {{ $set->actual_rir }}</span>
+                                @endif
+                                @if ($set->estimated_1rm)
+                                    <span style="color:#FF6B00;margin-left:auto;">e1RM {{ $set->estimated_1rm }} kg</span>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                @empty
+                    <p style="color:#666;text-align:center;padding:24px 0;">Nessuna sessione precedente.</p>
+                @endforelse
+            </div>
+        </div>
+    @endif
+
     {{-- Form feedback (a:open-feedback => x-show) --}}
     <div x-data="{ open: {{ $showFeedback ? 'true' : 'false' }} }"
          @open-feedback.window="open = true">

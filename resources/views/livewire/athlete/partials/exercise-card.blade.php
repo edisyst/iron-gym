@@ -4,7 +4,10 @@
 --}}
 <div style="margin-bottom:{{ $loop->last ? '0' : '16px' }};">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-        <p style="font-size:16px;font-weight:600;flex:1;">{{ $exercise->exercise->name_it }}</p>
+        <button wire:click="showExerciseHistory({{ $exercise->exercise_id }}, '{{ addslashes($exercise->exercise->name_it) }}')"
+                style="font-size:16px;font-weight:600;flex:1;background:none;border:none;color:inherit;
+                       padding:0;text-align:left;cursor:pointer;text-decoration:underline dotted;
+                       text-underline-offset:3px;">{{ $exercise->exercise->name_it }}</button>
         @if ($exercise->technique_type !== 'straight')
             <span style="font-size:10px;background:#2A2A2A;color:#FF6B00;padding:2px 8px;border-radius:999px;font-weight:700;">
                 {{ $this->techniqueLabel($exercise->technique_type) }}

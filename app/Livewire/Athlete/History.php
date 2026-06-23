@@ -3,7 +3,9 @@
 namespace App\Livewire\Athlete;
 
 use App\Models\Mesocycle;
+use App\Models\SessionExercise;
 use App\Models\TrainingSession;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -19,10 +21,48 @@ class History extends Component
     /** ID sessione espansa nel pannello dettaglio */
     public ?int $selectedSessionId = null;
 
+    public ?int $exerciseHistoryId = null;
+
+    public string $exerciseHistoryName = '';
+
     public function updatingMesocycleId(): void
     {
         $this->resetPage();
         $this->selectedSessionId = null;
+    }
+
+    public function showExerciseHistory(int $exerciseId, string $name): void
+    {
+        if ($this->exerciseHistoryId === $exerciseId) {
+            $this->exerciseHistoryId = null;
+            $this->exerciseHistoryName = '';
+
+            return;
+        }
+
+        $this->exerciseHistoryId = $exerciseId;
+        $this->exerciseHistoryName = $name;
+    }
+
+    /** @return Collection<int, SessionExercise> */
+    public function getExerciseHistoryProperty(): Collection
+    {
+        if ($this->exerciseHistoryId === null) {
+            return collect();
+        }
+
+        return SessionExercise::where('exercise_id', $this->exerciseHistoryId)
+            ->whereHas('session', fn ($q) => $q
+                ->where('status', 'completed')
+                ->whereHas('week.mesocycle', fn ($q2) => $q2->where('athlete_id', auth()->id())))
+            ->with([
+                'session',
+                'sets' => fn ($q) => $q->orderBy('set_index'),
+            ])
+            ->join('training_sessions', 'training_sessions.id', '=', 'session_exercises.session_id')
+            ->orderByDesc('training_sessions.completed_at')
+            ->select('session_exercises.*')
+            ->get();
     }
 
     /**

@@ -114,7 +114,11 @@
                                         {{-- Esercizi --}}
                                         @foreach ($s->sessionExercises as $exercise)
                                             <div class="mb-3">
-                                                <p class="font-weight-bold mb-1">{{ $exercise->exercise->name_it }}</p>
+                                                <button wire:click="showExerciseHistory({{ $exercise->exercise_id }}, '{{ addslashes($exercise->exercise->name_it) }}')"
+                                                        class="btn btn-link p-0 font-weight-bold mb-1 text-dark"
+                                                        style="text-decoration:underline dotted;text-underline-offset:3px;">
+                                                    {{ $exercise->exercise->name_it }}
+                                                </button>
                                                 <table class="table table-xs table-sm mb-0">
                                                     <thead class="thead-light">
                                                         <tr>
@@ -187,4 +191,53 @@
             </div>
         @endif
     </div>
+
+    {{-- Modal storico esercizio --}}
+    @if ($exerciseHistoryId !== null)
+        <div style="position:fixed;inset:0;z-index:1050;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;">
+            <div class="card mb-0" style="width:640px;max-width:95vw;max-height:80vh;overflow-y:auto;">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h5 class="mb-0">{{ $exerciseHistoryName }}</h5>
+                    <button wire:click="showExerciseHistory({{ $exerciseHistoryId }}, '')"
+                            class="btn btn-sm btn-secondary">&times;</button>
+                </div>
+                <div class="card-body p-0">
+                    @forelse ($this->exerciseHistory as $se)
+                        <div class="p-3 border-bottom">
+                            <p class="text-primary font-weight-bold mb-2 small">
+                                {{ $se->session->completed_at?->format('d/m/Y H:i') }} &mdash; {{ $se->session->name }}
+                            </p>
+                            <table class="table table-xs table-sm mb-0">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th style="width:40px">#</th>
+                                        <th>Reps</th>
+                                        <th>Kg</th>
+                                        <th>RIR</th>
+                                        <th>e1RM</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($se->sets->sortBy('set_index')->whereNotNull('actual_reps') as $set)
+                                        @php
+                                            $e1rm = \App\Services\E1rmCalculator::epley($set->actual_weight_kg, $set->actual_reps);
+                                        @endphp
+                                        <tr>
+                                            <td>{{ $set->set_index }}@if($set->is_warmup) <small class="text-muted">(risc.)</small>@endif</td>
+                                            <td>{{ $set->actual_reps }}</td>
+                                            <td>{{ $set->actual_weight_kg ?? '—' }}</td>
+                                            <td>{{ $set->actual_rir ?? '—' }}</td>
+                                            <td>{{ $e1rm !== null ? $e1rm.' kg' : '—' }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @empty
+                        <p class="text-muted text-center py-4">Nessuna sessione precedente.</p>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+    @endif
 </div>

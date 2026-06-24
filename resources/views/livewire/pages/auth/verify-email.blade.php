@@ -36,23 +36,28 @@ new #[Layout('layouts.guest')] class extends Component
 }; ?>
 
 <div>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn\'t receive the email, we will gladly send you another.') }}
+    <div class="mb-7">
+        <h1 class="text-2xl font-black tracking-tight text-white">Verifica email</h1>
+        <p class="mt-2 text-sm text-white/40 leading-relaxed">
+            Grazie per esserti registrato! Prima di iniziare, verifica il tuo indirizzo email cliccando sul link che ti abbiamo inviato.
+            Se non hai ricevuto l'email, puoi richiederne un'altra.
+        </p>
     </div>
 
     @if (session('status') == 'verification-link-sent')
-        <div class="mb-4 font-medium text-sm text-green-600">
-            {{ __('A new verification link has been sent to the email address you provided during registration.') }}
+        <div class="mb-5 rounded-lg border border-green-500/20 bg-green-500/10 px-4 py-2.5 text-sm text-green-400">
+            Un nuovo link di verifica è stato inviato all'indirizzo email fornito durante la registrazione.
         </div>
     @endif
 
-    <div class="mt-4 flex items-center justify-between">
-        <x-primary-button wire:click="sendVerification">
-            {{ __('Resend Verification Email') }}
+    <div class="space-y-4">
+        <x-primary-button wire:click="sendVerification" class="w-full">
+            Reinvia email di verifica
         </x-primary-button>
 
-        <button wire:click="logout" type="submit" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            {{ __('Log Out') }}
+        <button wire:click="logout" type="button"
+                class="w-full text-sm text-white/35 hover:text-white/60 transition-colors py-2">
+            Esci
         </button>
     </div>
 </div>

@@ -117,13 +117,24 @@ Test end-to-end del flusso training core verificati (2026-06-22): AthleteHistory
 
 Prossima attività: test pilota con dati reali.
 
+## Catalogo esercizi — SQLite di riferimento
+
+`database/database.sqlite` contiene il catalogo completo queryabile senza MySQL:
+- Tabelle: `movement_patterns` (27), `muscles` (26), `equipment` (14),
+  `exercises` (83), `exercise_muscle` (259), `exercise_equipment` (108)
+- Colonna `execution_description` su `exercises` con testo esecuzione per tutti e 83
+- Script di rigenerazione: `.claude/scripts/build_exercises_sqlite.py`
+  (richiede `pip install openpyxl`, sorgenti: `exercises_seed.sql` + `iron_gym_esercizi_descrizioni.xlsx`)
+
+Usare sqlite3 o DBeaver per interrogarlo. Non è usato dai test (quelli usano `:memory:`).
+
 ## Documenti di dominio
 
-Disponibili in docs/domain/ ma NON caricati automaticamente per non saturare
+Disponibili in .claude/docs/domain/ ma NON caricati automaticamente per non saturare
 il contesto. Richiedili esplicitamente quando servono:
-- docs/domain/step-0-discovery.md — ERD, schema SQL, regole di progressione
-- docs/domain/exercises-catalog.md — catalogo 83 esercizi con seed SQL
-- docs/domain/glossary.md — terminologia BB e tassonomia (documento corto, ok includerlo)
+- .claude/docs/domain/step-0-discovery.md — ERD, schema SQL, regole di progressione
+- .claude/docs/domain/exercises-catalog.md — catalogo 83 esercizi (tassonomia, muscoli, note metodologiche; SQL rimosso → dati in database.sqlite)
+- .claude/docs/domain/glossary.md — terminologia BB e tassonomia (documento corto, ok includerlo)
 
 ## Cosa NON fare
 
@@ -152,4 +163,7 @@ php artisan migrate:fresh --seed
 
 # Scheduler (dev)
 php artisan schedule:work
+
+# Rigenera SQLite di riferimento esercizi (AI/dev tool, non prod)
+python .claude/scripts/build_exercises_sqlite.py
 ```

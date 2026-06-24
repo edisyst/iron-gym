@@ -24,6 +24,8 @@ class ExerciseForm extends Component
 
     public string $description = '';
 
+    public string $executionDescription = '';
+
     // Pattern motorio
     public string $patternType = 'compound_pattern';
 
@@ -84,6 +86,7 @@ class ExerciseForm extends Component
             $this->slug = $exercise->slug;
             $this->nameIt = $exercise->name_it;
             $this->description = $exercise->description ?? '';
+            $this->executionDescription = $exercise->execution_description ?? '';
             $this->mechanic = $exercise->mechanic;
             $this->plane = $exercise->plane;
             $this->laterality = $exercise->laterality;
@@ -149,6 +152,7 @@ class ExerciseForm extends Component
             'nameIt' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:128', Rule::unique('exercises', 'slug')->ignore($this->exerciseId)->whereNull('deleted_at')],
             'description' => ['nullable', 'string'],
+            'executionDescription' => ['nullable', 'string'],
             'patternType' => ['required', 'in:compound_pattern,joint_action'],
             'compoundPatternId' => ['required_if:patternType,compound_pattern', 'nullable', 'exists:movement_patterns,id'],
             'jointActionId' => ['required_if:patternType,joint_action', 'nullable', 'exists:movement_patterns,id'],
@@ -212,6 +216,7 @@ class ExerciseForm extends Component
                 'slug' => $this->slug,
                 'name_it' => $this->nameIt,
                 'description' => $this->description ?: null,
+                'execution_description' => $this->executionDescription ?: null,
                 'compound_pattern_id' => $this->patternType === 'compound_pattern' ? $this->compoundPatternId : null,
                 'joint_action_id' => $this->patternType === 'joint_action' ? $this->jointActionId : null,
                 'mechanic' => $this->mechanic,

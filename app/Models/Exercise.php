@@ -27,6 +27,7 @@ class Exercise extends Model
         'laterality',
         'skill_level',
         'measurement_type',
+        'execution_description',
         'video_url',
         'thumbnail_url',
         'created_by',

@@ -79,6 +79,14 @@
                             <p class="mt-1">{{ $exercise->description }}</p>
                         </div>
                     @endif
+
+                    {{-- Descrizione esecuzione --}}
+                    @if ($exercise->execution_description)
+                        <div class="{{ $exercise->description ? 'mt-3' : '' }}">
+                            <strong>Descrizione esecuzione:</strong>
+                            <p class="mt-1">{{ $exercise->execution_description }}</p>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

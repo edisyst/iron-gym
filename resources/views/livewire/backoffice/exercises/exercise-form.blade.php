@@ -39,6 +39,11 @@
                     <label>Descrizione</label>
                     <textarea wire:model="description" class="form-control" rows="3" placeholder="Descrizione tecnica dell'esercizio..."></textarea>
                 </div>
+
+                <div class="form-group">
+                    <label>Descrizione esecuzione</label>
+                    <textarea wire:model="executionDescription" class="form-control" rows="5" placeholder="Istruzioni passo-passo sull'esecuzione corretta dell'esercizio..."></textarea>
+                </div>
             </div>
         </div>
 

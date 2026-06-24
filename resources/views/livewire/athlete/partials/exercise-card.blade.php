@@ -15,6 +15,22 @@
         @endif
     </div>
 
+    @if ($exercise->exercise->execution_description)
+        <div x-data="{ open: false }" style="margin-bottom:10px;">
+            <button type="button" @click="open = !open"
+                    style="background:none;border:none;padding:0;color:#888;font-size:11px;
+                           cursor:pointer;display:flex;align-items:center;gap:4px;">
+                <svg x-bind:style="open ? 'transform:rotate(90deg)' : ''" style="width:10px;height:10px;transition:transform .2s;fill:#888;" viewBox="0 0 20 20"><path d="M7 5l6 5-6 5V5z"/></svg>
+                <span x-text="open ? 'Nascondi esecuzione' : 'Come eseguire'"></span>
+            </button>
+            <p x-show="open" x-cloak
+               style="font-size:12px;color:#999;margin-top:6px;line-height:1.5;padding:8px;
+                      background:#1A1A1A;border-radius:6px;border-left:2px solid #FF6B00;">
+                {{ $exercise->exercise->execution_description }}
+            </p>
+        </div>
+    @endif
+
     @if ($exercise->trainer_note)
         <p style="font-size:12px;color:#666;font-style:italic;margin-bottom:10px;">
             {{ $exercise->trainer_note }}

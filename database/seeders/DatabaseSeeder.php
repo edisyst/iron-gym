@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RoleSeeder::class,
             ExerciseSeeder::class,
+            ExerciseDescriptionSeeder::class,
         ]);
 
         // Seeder solo in ambiente locale

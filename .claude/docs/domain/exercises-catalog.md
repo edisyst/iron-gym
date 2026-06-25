@@ -123,10 +123,10 @@ Classificazione completa: vedi sezione 4 dello step-0-discovery.md. Riassunto: 1
 
 | Muscolo | Ruolo | % |
 |---|---|---|
-| pectoralis_major_sternal | primary | 60 |
-| pectoralis_major_clavicular | primary | 15 |
-| triceps_brachii | secondary | 20 |
-| deltoid_anterior | secondary | 15 |
+| pectoralis_major_sternal | primary | 55 |
+| pectoralis_major_clavicular | primary | 14 |
+| triceps_brachii | secondary | 17 |
+| deltoid_anterior | secondary | 14 |
 
 **Panca piana con manubri** · `dumbbell_bench_press` · *cp:* horizontal_push · compound · sagittal · bilateral · intermediate · reps_weight · equipment: dumbbell, bench
 
@@ -134,10 +134,10 @@ Classificazione completa: vedi sezione 4 dello step-0-discovery.md. Riassunto: 1
 
 | Muscolo | Ruolo | % |
 |---|---|---|
-| pectoralis_major_sternal | primary | 65 |
-| pectoralis_major_clavicular | primary | 15 |
-| triceps_brachii | secondary | 15 |
-| deltoid_anterior | secondary | 15 |
+| pectoralis_major_sternal | primary | 59 |
+| pectoralis_major_clavicular | primary | 14 |
+| triceps_brachii | secondary | 14 |
+| deltoid_anterior | secondary | 13 |
 
 **Panca inclinata con bilanciere** · `incline_barbell_bench_press` · *cp:* horizontal_push · compound · sagittal · bilateral · intermediate · reps_weight · equipment: barbell, bench
 
@@ -145,10 +145,10 @@ Classificazione completa: vedi sezione 4 dello step-0-discovery.md. Riassunto: 1
 
 | Muscolo | Ruolo | % |
 |---|---|---|
-| pectoralis_major_clavicular | primary | 60 |
-| pectoralis_major_sternal | secondary | 20 |
-| deltoid_anterior | secondary | 25 |
-| triceps_brachii | secondary | 15 |
+| pectoralis_major_clavicular | primary | 50 |
+| pectoralis_major_sternal | secondary | 17 |
+| deltoid_anterior | secondary | 21 |
+| triceps_brachii | secondary | 12 |
 
 **Panca inclinata con manubri** · `incline_dumbbell_bench_press` · *cp:* horizontal_push · compound · sagittal · bilateral · intermediate · reps_weight · equipment: dumbbell, bench
 
@@ -156,10 +156,10 @@ Classificazione completa: vedi sezione 4 dello step-0-discovery.md. Riassunto: 1
 
 | Muscolo | Ruolo | % |
 |---|---|---|
-| pectoralis_major_clavicular | primary | 60 |
-| pectoralis_major_sternal | secondary | 20 |
-| deltoid_anterior | secondary | 25 |
-| triceps_brachii | secondary | 15 |
+| pectoralis_major_clavicular | primary | 50 |
+| pectoralis_major_sternal | secondary | 17 |
+| deltoid_anterior | secondary | 21 |
+| triceps_brachii | secondary | 12 |
 
 **Panca declinata con bilanciere** · `decline_barbell_bench_press` · *cp:* horizontal_push · compound · sagittal · bilateral · intermediate · reps_weight · equipment: barbell, bench
 
@@ -167,8 +167,8 @@ Classificazione completa: vedi sezione 4 dello step-0-discovery.md. Riassunto: 1
 
 | Muscolo | Ruolo | % |
 |---|---|---|
-| pectoralis_major_sternal | primary | 75 |
-| triceps_brachii | secondary | 20 |
+| pectoralis_major_sternal | primary | 71 |
+| triceps_brachii | secondary | 19 |
 | deltoid_anterior | secondary | 10 |
 
 **Croci ai cavi** · `cable_chest_fly` · *ja:* shoulder_horizontal_adduction · isolation · transverse · bilateral · intermediate · reps_weight · equipment: cable
@@ -207,10 +207,10 @@ Classificazione completa: vedi sezione 4 dello step-0-discovery.md. Riassunto: 1
 
 | Muscolo | Ruolo | % |
 |---|---|---|
-| pectoralis_major_sternal | primary | 70 |
-| pectoralis_major_clavicular | primary | 15 |
-| triceps_brachii | secondary | 15 |
-| deltoid_anterior | secondary | 10 |
+| pectoralis_major_sternal | primary | 64 |
+| pectoralis_major_clavicular | primary | 14 |
+| triceps_brachii | secondary | 13 |
+| deltoid_anterior | secondary | 9 |
 
 **Spinte inclinate allo Smith** · `smith_incline_press` · *cp:* horizontal_push · compound · sagittal · bilateral · intermediate · reps_weight · equipment: smith_machine, bench
 
@@ -218,10 +218,10 @@ Classificazione completa: vedi sezione 4 dello step-0-discovery.md. Riassunto: 1
 
 | Muscolo | Ruolo | % |
 |---|---|---|
-| pectoralis_major_clavicular | primary | 60 |
-| pectoralis_major_sternal | secondary | 20 |
-| deltoid_anterior | secondary | 25 |
-| triceps_brachii | secondary | 15 |
+| pectoralis_major_clavicular | primary | 50 |
+| pectoralis_major_sternal | secondary | 17 |
+| deltoid_anterior | secondary | 21 |
+| triceps_brachii | secondary | 12 |
 
 **Piegamenti sulle braccia** · `push_up` · *cp:* horizontal_push · compound · sagittal · bilateral · beginner · reps_only · equipment: bodyweight
 
@@ -229,10 +229,10 @@ Classificazione completa: vedi sezione 4 dello step-0-discovery.md. Riassunto: 1
 
 | Muscolo | Ruolo | % |
 |---|---|---|
-| pectoralis_major_sternal | primary | 50 |
-| pectoralis_major_clavicular | primary | 15 |
-| triceps_brachii | secondary | 20 |
-| deltoid_anterior | secondary | 15 |
+| pectoralis_major_sternal | primary | 48 |
+| pectoralis_major_clavicular | primary | 14 |
+| triceps_brachii | secondary | 19 |
+| deltoid_anterior | secondary | 14 |
 | transverse_abdominis | stabilizer | 5 |
 
 ---
@@ -268,10 +268,10 @@ Classificazione completa: vedi sezione 4 dello step-0-discovery.md. Riassunto: 1
 
 | Muscolo | Ruolo | % |
 |---|---|---|
-| latissimus_dorsi | primary | 65 |
-| biceps_brachii | secondary | 15 |
+| latissimus_dorsi | primary | 62 |
+| biceps_brachii | secondary | 14 |
 | trapezius_middle | secondary | 10 |
-| rhomboids | secondary | 10 |
+| rhomboids | secondary | 9 |
 | brachialis | secondary | 5 |
 
 **Trazioni supinate (chin-up)** · `chin_up_supinated` · *cp:* vertical_pull · compound · sagittal · bilateral · intermediate · reps_weight · equipment: pull_up_bar, bodyweight
@@ -313,11 +313,11 @@ Classificazione completa: vedi sezione 4 dello step-0-discovery.md. Riassunto: 1
 
 | Muscolo | Ruolo | % |
 |---|---|---|
-| latissimus_dorsi | primary | 40 |
-| trapezius_middle | primary | 25 |
-| rhomboids | primary | 20 |
-| biceps_brachii | secondary | 15 |
-| erector_spinae | stabilizer | 10 |
+| latissimus_dorsi | primary | 36 |
+| trapezius_middle | primary | 23 |
+| rhomboids | primary | 18 |
+| biceps_brachii | secondary | 14 |
+| erector_spinae | stabilizer | 9 |
 
 **Rematore con manubrio (one-arm)** · `one_arm_dumbbell_row` · *cp:* horizontal_pull · compound · sagittal · unilateral_isolated · intermediate · reps_weight · equipment: dumbbell, bench
 
@@ -389,11 +389,11 @@ Classificazione completa: vedi sezione 4 dello step-0-discovery.md. Riassunto: 1
 
 | Muscolo | Ruolo | % |
 |---|---|---|
-| erector_spinae | primary | 35 |
-| gluteus_maximus | primary | 25 |
-| hamstrings | primary | 20 |
+| erector_spinae | primary | 33 |
+| gluteus_maximus | primary | 24 |
+| hamstrings | primary | 19 |
 | trapezius_middle | secondary | 10 |
-| latissimus_dorsi | secondary | 10 |
+| latissimus_dorsi | secondary | 9 |
 | forearm_flexors | stabilizer | 5 |
 
 ---
@@ -406,11 +406,11 @@ Classificazione completa: vedi sezione 4 dello step-0-discovery.md. Riassunto: 1
 
 | Muscolo | Ruolo | % |
 |---|---|---|
-| deltoid_anterior | primary | 55 |
-| deltoid_lateral | primary | 20 |
-| triceps_brachii | secondary | 20 |
-| trapezius_upper | stabilizer | 10 |
-| erector_spinae | stabilizer | 10 |
+| deltoid_anterior | primary | 48 |
+| deltoid_lateral | primary | 17 |
+| triceps_brachii | secondary | 17 |
+| trapezius_upper | stabilizer | 9 |
+| erector_spinae | stabilizer | 9 |
 
 **Lento avanti con manubri (seduto)** · `seated_dumbbell_press` · *cp:* vertical_push · compound · sagittal · bilateral · intermediate · reps_weight · equipment: dumbbell, bench
 
@@ -418,10 +418,10 @@ Classificazione completa: vedi sezione 4 dello step-0-discovery.md. Riassunto: 1
 
 | Muscolo | Ruolo | % |
 |---|---|---|
-| deltoid_anterior | primary | 50 |
-| deltoid_lateral | primary | 25 |
-| triceps_brachii | secondary | 20 |
-| trapezius_upper | stabilizer | 10 |
+| deltoid_anterior | primary | 48 |
+| deltoid_lateral | primary | 24 |
+| triceps_brachii | secondary | 19 |
+| trapezius_upper | stabilizer | 9 |
 
 **Arnold press** · `arnold_press` · *cp:* vertical_push · compound · multiplanar · bilateral · intermediate · reps_weight · equipment: dumbbell, bench
 
@@ -429,10 +429,10 @@ Classificazione completa: vedi sezione 4 dello step-0-discovery.md. Riassunto: 1
 
 | Muscolo | Ruolo | % |
 |---|---|---|
-| deltoid_anterior | primary | 50 |
-| deltoid_lateral | primary | 30 |
-| triceps_brachii | secondary | 15 |
-| trapezius_upper | stabilizer | 10 |
+| deltoid_anterior | primary | 48 |
+| deltoid_lateral | primary | 29 |
+| triceps_brachii | secondary | 14 |
+| trapezius_upper | stabilizer | 9 |
 
 **Alzate laterali con manubri** · `dumbbell_lateral_raise` · *ja:* shoulder_abduction · isolation · frontal · bilateral · beginner · reps_weight · equipment: dumbbell
 
@@ -677,11 +677,11 @@ Classificazione completa: vedi sezione 4 dello step-0-discovery.md. Riassunto: 1
 
 | Muscolo | Ruolo | % |
 |---|---|---|
-| quadriceps | primary | 50 |
-| gluteus_maximus | primary | 25 |
-| hamstrings | secondary | 15 |
-| erector_spinae | stabilizer | 10 |
-| adductors | secondary | 10 |
+| quadriceps | primary | 45 |
+| gluteus_maximus | primary | 23 |
+| hamstrings | secondary | 14 |
+| erector_spinae | stabilizer | 9 |
+| adductors | secondary | 9 |
 
 **Front squat** · `front_squat` · *cp:* squat · compound · sagittal · bilateral · advanced · reps_weight · equipment: barbell
 

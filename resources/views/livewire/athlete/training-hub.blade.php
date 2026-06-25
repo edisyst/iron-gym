@@ -4,13 +4,13 @@
     <div style="display:flex;gap:0;margin-bottom:20px;background:#1E1E1E;border-radius:10px;padding:4px;">
         <button type="button"
                 @click="mainTab = 'storico'; $wire.set('mainTab', 'storico')"
-                :style="mainTab === 'storico' ? 'background:#FF6B00;color:#fff;' : 'background:transparent;color:#888;'"
+                :style="{ background: mainTab === 'storico' ? '#FF6B00' : 'transparent', color: mainTab === 'storico' ? '#fff' : '#888' }"
                 style="flex:1;border:none;border-radius:8px;padding:9px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.15s;">
             Storico
         </button>
         <button type="button"
                 @click="mainTab = 'progress'; $wire.switchToProgress()"
-                :style="mainTab === 'progress' ? 'background:#FF6B00;color:#fff;' : 'background:transparent;color:#888;'"
+                :style="{ background: mainTab === 'progress' ? '#FF6B00' : 'transparent', color: mainTab === 'progress' ? '#fff' : '#888' }"
                 style="flex:1;border:none;border-radius:8px;padding:9px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.15s;">
             Progressi
         </button>
@@ -160,19 +160,19 @@
         <div style="display:flex;gap:0;margin-bottom:20px;background:#1A1A1A;border-radius:10px;padding:4px;">
             <button type="button"
                     @click="progressTab = 'body'; $wire.set('progressTab','body')"
-                    :style="progressTab==='body' ? 'background:#333;color:#fff;' : 'background:transparent;color:#666;'"
+                    :style="{ background: progressTab === 'body' ? '#333' : 'transparent', color: progressTab === 'body' ? '#fff' : '#666' }"
                     style="flex:1;border:none;border-radius:8px;padding:7px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s;">
                 Corpo
             </button>
             <button type="button"
                     @click="progressTab = 'strength'; $wire.set('progressTab','strength')"
-                    :style="progressTab==='strength' ? 'background:#333;color:#fff;' : 'background:transparent;color:#666;'"
+                    :style="{ background: progressTab === 'strength' ? '#333' : 'transparent', color: progressTab === 'strength' ? '#fff' : '#666' }"
                     style="flex:1;border:none;border-radius:8px;padding:7px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s;">
                 Forza
             </button>
             <button type="button"
                     @click="progressTab = 'volume'; $wire.set('progressTab','volume'); $wire.loadVolumeData()"
-                    :style="progressTab==='volume' ? 'background:#333;color:#fff;' : 'background:transparent;color:#666;'"
+                    :style="{ background: progressTab === 'volume' ? '#333' : 'transparent', color: progressTab === 'volume' ? '#fff' : '#666' }"
                     style="flex:1;border:none;border-radius:8px;padding:7px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s;">
                 Volume
             </button>

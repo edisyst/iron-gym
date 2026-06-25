@@ -19,7 +19,7 @@
             color: #FFFFFF;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             min-height: 100vh;
-            padding-bottom: 72px; /* spazio per la bottom nav */
+            padding-bottom: 80px; /* spazio per la bottom nav */
             padding-top: 48px;   /* spazio per la top bar */
         }
         .app-topbar {
@@ -71,12 +71,13 @@
             bottom: 0;
             left: 0;
             right: 0;
-            height: 64px;
+            height: 72px;
             background-color: #1E1E1E;
             border-top: 1px solid #2A2A2A;
             display: flex;
             align-items: stretch;
             z-index: 1000;
+            padding: 6px 4px 8px;
         }
         .bottom-nav a {
             flex: 1;
@@ -84,19 +85,32 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            color: #888888;
+            color: #666;
             text-decoration: none;
-            font-size: 10px;
-            gap: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            gap: 2px;
             transition: color 0.15s ease;
         }
-        .bottom-nav a.active,
-        .bottom-nav a:hover {
+        .bottom-nav a.active {
             color: #FF6B00;
+            font-weight: 700;
         }
+        .bottom-nav a:hover { color: #FF6B00; }
         .bottom-nav svg {
-            width: 24px;
-            height: 24px;
+            width: 22px;
+            height: 22px;
+        }
+        .nav-pill {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            padding: 5px 14px;
+            transition: background 0.15s ease;
+        }
+        .bottom-nav a.active .nav-pill {
+            background: rgba(255, 107, 0, 0.15);
         }
         /* Card atleta */
         .athlete-card {
@@ -218,48 +232,55 @@
         {{-- Oggi / Dashboard --}}
         <a href="{{ route('athlete.dashboard') }}"
            class="{{ request()->routeIs('athlete.dashboard') ? 'active' : '' }}">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                      d="M3 12l2-2m0 0l7-7 7 7m-14 0v8a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-8"/>
-            </svg>
+            <span class="nav-pill">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M3 12l2-2m0 0l7-7 7 7m-14 0v8a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-8"/>
+                </svg>
+            </span>
             <span>Oggi</span>
         </a>
 
         {{-- Storico + Progressi --}}
         <a href="{{ route('athlete.history') }}"
            class="{{ request()->routeIs('athlete.history') || request()->routeIs('athlete.progress') ? 'active' : '' }}">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2
-                         M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-            </svg>
+            <span class="nav-pill">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2
+                             M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+            </span>
             <span>Storico</span>
         </a>
 
         {{-- Esercizi --}}
         <a href="{{ route('athlete.exercises.index') }}"
            class="{{ request()->routeIs('athlete.exercises*') ? 'active' : '' }}">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                      d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
-            </svg>
+            <span class="nav-pill">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                </svg>
+            </span>
             <span>Esercizi</span>
         </a>
 
         {{-- Prenota --}}
         <a href="{{ route('athlete.bookings') }}"
            class="{{ request()->routeIs('athlete.bookings') ? 'active' : '' }}">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-            </svg>
+            <span class="nav-pill">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+            </span>
             <span>Prenota</span>
         </a>
 
         {{-- Messaggi --}}
         <a href="{{ route('athlete.messages') }}"
            class="{{ request()->routeIs('athlete.messages') ? 'active' : '' }}"
-           style="position: relative;"
            x-data="{ unread: 0 }"
            x-init="
                fetch('/athlete/messages-unread-count')
@@ -268,7 +289,7 @@
                    .catch(() => {})
            "
         >
-            <span style="position: relative; display: inline-flex;">
+            <span class="nav-pill" style="position: relative;">
                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                     <path stroke-linecap="round" stroke-linejoin="round"
                           d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
@@ -278,7 +299,7 @@
                     x-text="unread > 9 ? '9+' : unread"
                     style="
                         position: absolute;
-                        top: -6px; right: -8px;
+                        top: -4px; right: -2px;
                         background: #ef4444;
                         color: #fff;
                         border-radius: 999px;

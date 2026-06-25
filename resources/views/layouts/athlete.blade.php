@@ -300,7 +300,9 @@
     @stack('scripts')
     @livewireScripts
 
-    @livewire('shared.in-app-feedback')
+    @if(config('features.in_app_feedback_enabled'))
+        @livewire('shared.in-app-feedback')
+    @endif
 
     {{-- Registrazione service worker e permesso push --}}
     @auth

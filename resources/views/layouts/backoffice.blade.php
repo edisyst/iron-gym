@@ -38,7 +38,9 @@
 
     {{ $slot }}
 
-    @livewire('shared.in-app-feedback')
+    @if(config('features.in_app_feedback_enabled'))
+        @livewire('shared.in-app-feedback')
+    @endif
 @stop
 
 @section('plugins.Livewire', true)

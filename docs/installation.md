@@ -23,7 +23,14 @@ docker compose up -d
 Avvia MySQL 8 su `127.0.0.1:3306` e Redis 7 su `127.0.0.1:6379`.
 Il database `iron_gym` viene creato automaticamente senza password per root.
 
-## 3. Configura l'ambiente
+## 3. Installa le dipendenze
+
+```bash
+composer install
+npm install
+```
+
+## 4. Configura l'ambiente
 
 ```bash
 cp .env.example .env
@@ -33,13 +40,6 @@ php artisan key:generate
 Il file `.env.example` è già configurato per lo stack Docker locale (`DB_HOST=127.0.0.1`,
 `DB_USERNAME=root`, `DB_PASSWORD=` vuota, `REDIS_HOST=127.0.0.1`). Nessuna modifica
 necessaria per un setup standard.
-
-## 4. Installa le dipendenze
-
-```bash
-composer install
-npm install
-```
 
 ## 5. Migrazione e seed
 

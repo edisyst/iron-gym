@@ -124,7 +124,7 @@ Prossima attività: test pilota con dati reali.
   `exercises` (83), `exercise_muscle` (259), `exercise_equipment` (108)
 - Colonna `execution_description` su `exercises` con testo esecuzione per tutti e 83
 - Script di rigenerazione: `.claude/scripts/build_exercises_sqlite.py`
-  (richiede `pip install openpyxl`, sorgenti: `exercises_seed.sql` + `iron_gym_esercizi_descrizioni.xlsx`)
+  (stdlib Python, nessuna dipendenza extra; sorgente unica: `exercises_seed.sql`)
 
 Usare sqlite3 o DBeaver per interrogarlo. Non è usato dai test (quelli usano `:memory:`).
 
@@ -164,6 +164,6 @@ php artisan migrate:fresh --seed
 # Scheduler (dev)
 php artisan schedule:work
 
-# Rigenera SQLite di riferimento esercizi (AI/dev tool, non prod)
+# Rigenera SQLite di riferimento esercizi (AI/dev tool, non prod; stdlib Python)
 python .claude/scripts/build_exercises_sqlite.py
 ```

@@ -6,6 +6,8 @@
 
 ## Changelog
 
+**v0.4** — Aggiunta colonna `execution_description` (TEXT nullable) a tutti i 83 esercizi. Testi aggiunti in `.claude/docs/domain/exercises-catalog.md` e come blocco UPDATE in `database/seeders/sql/exercises_seed.sql`. Seeder PHP `ExerciseDescriptionSeeder` applica gli stessi testi al DB MySQL. File `iron_gym_esercizi_descrizioni.xlsx` rimosso (ridondante). Script `build_exercises_sqlite.py` aggiornato: legge solo il SQL, nessuna dipendenza esterna.
+
 **v0.3** — Allineamento allo schema `exercises` v0.3 di step-0: la singola colonna `movement_pattern` (ENUM) è sostituita da due FK nullable `compound_pattern_id` e `joint_action_id` verso la lookup `movement_patterns`, con vincolo CHECK XOR (esattamente una delle due valorizzata). Cinque esercizi sono stati riclassificati con joint_action più precise:
 - `cable_chest_fly` e `pec_deck_machine`: da `horizontal_push` (isolation) a `shoulder_horizontal_adduction`
 - `cable_pullover` e `straight_arm_pulldown`: da `vertical_pull` (isolation) a `shoulder_extension`
@@ -1022,10 +1024,10 @@ WHERE em.role = 'primary'
 ORDER BY e.name_it;
 ```
 
-Il file SQLite è generato dallo script `.claude/scripts/build_exercises_sqlite.py` e può essere rigenerato dopo modifiche al catalogo.
+Il file SQLite è generato dallo script `.claude/scripts/build_exercises_sqlite.py` (stdlib Python, nessuna dipendenza extra) leggendo `database/seeders/sql/exercises_seed.sql` come unica sorgente.
 
 ---
 ## Note storiche Seed SQL
 
-Il seed originale usava `INSERT ... SELECT` con JOIN su slug per evitare id hardcodati. Stessa logica applicata al seeder PHP in `database/seeders/`. La versione SQLite è l'unica fonte di verità per il catalogo esercizi.
+Il seed usa `INSERT ... SELECT` con JOIN su slug per evitare id hardcodati. Le `execution_description` sono incluse come blocco `UPDATE` in fondo a `exercises_seed.sql` (unica fonte di verità per tutto il catalogo). Il seeder PHP `ExerciseDescriptionSeeder` applica gli stessi testi al DB MySQL via `DB::table()->update()`.
 

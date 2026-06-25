@@ -218,6 +218,25 @@ Tutto il lavoro notevole per versione/step. Ordine cronologico crescente.
 
 ---
 
+## 2026-06-25 — Allineamento catalogo esercizi e pulizia sorgenti
+
+### execution_description integrata nel seed SQL
+
+- `database/seeders/sql/exercises_seed.sql`: aggiunto blocco `UPDATE` finale con `execution_description` per tutti e 83 gli esercizi. Il file è ora la fonte di verità unica per l'intero catalogo (lookup, esercizi, pivot, testi esecuzione).
+- `iron_gym_esercizi_descrizioni.xlsx` rimosso dal repository (i testi erano già presenti in `ExerciseDescriptionSeeder.php`; spostati ora anche in `exercises_seed.sql`).
+
+### Allineamento docs/domain/exercises-catalog.md
+
+- `docs/domain/exercises-catalog.md` e `.claude/docs/domain/exercises-catalog.md` allineati: stesse percentuali `contribution_pct` e descrizioni esecuzione per tutti e 83 gli esercizi.
+- Aggiunto changelog v0.4 in entrambi i file.
+
+### Aggiornamento build script SQLite
+
+- `.claude/scripts/build_exercises_sqlite.py`: rimossa dipendenza da `openpyxl` e dal file xlsx. Ora legge solo `exercises_seed.sql` (stdlib Python, zero dipendenze extra). Aggiunto parser SQL corretto che rispetta le stringhe quotate (fix per stringhe con `;` interno).
+- `database/database.sqlite` rigenerato: tutti e 83 gli esercizi con `execution_description` popolata.
+
+---
+
 ## 2026-06-22 — Storico atleta e navigazione backoffice
 
 ### Fix bug nomi colonne feedback in TrainingReport

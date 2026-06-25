@@ -1,40 +1,60 @@
 """Build iron-gym exercises SQLite reference database.
 
 Sources:
-  - database/seeders/sql/exercises_seed.sql  (schema + lookup data)
-  - iron_gym_esercizi_descrizioni.xlsx       (execution_description per exercise)
-  - .claude/docs/domain/exercises-catalog.md (name-to-slug mapping)
+  - database/seeders/sql/exercises_seed.sql  (schema + lookup data + execution_description)
 
 Output: database/database.sqlite
 
 Usage: python .claude/scripts/build_exercises_sqlite.py
-Requires: pip install openpyxl
+Requires: no extra dependencies (stdlib only)
 """
 import sqlite3
-import openpyxl
 import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 SQLITE_PATH = ROOT / "database" / "database.sqlite"
-MD_PATH     = ROOT / ".claude" / "docs" / "domain" / "exercises-catalog.md"
 SQL_PATH    = ROOT / "database" / "seeders" / "sql" / "exercises_seed.sql"
-XLSX_PATH   = ROOT / "iron_gym_esercizi_descrizioni.xlsx"
 
-# ── 1. Read sources ───────────────────────────────────────────────────────────
+# ── 1. Read SQL source ────────────────────────────────────────────────────────
 with open(SQL_PATH, encoding="utf-8") as f:
     raw_sql = f.read()
 
-with open(MD_PATH, encoding="utf-8") as f:
-    md_lines = f.readlines()
-
 # ── 2. Parse SQL into statements ──────────────────────────────────────────────
+def split_sql(sql):
+    """Split SQL on semicolons, respecting single-quoted strings."""
+    stmts, current, in_string = [], [], False
+    i = 0
+    while i < len(sql):
+        ch = sql[i]
+        if in_string:
+            current.append(ch)
+            if ch == "'" and i + 1 < len(sql) and sql[i + 1] == "'":
+                current.append(sql[i + 1])
+                i += 2
+                continue
+            elif ch == "'":
+                in_string = False
+        elif ch == "'":
+            in_string = True
+            current.append(ch)
+        elif ch == ";":
+            stmts.append("".join(current).strip())
+            current = []
+        else:
+            current.append(ch)
+        i += 1
+    if current:
+        stmts.append("".join(current).strip())
+    return stmts
+
 def clean_stmt(s):
     kept = [l for l in s.splitlines() if not l.strip().startswith("--")]
     return "\n".join(kept).strip()
 
-statements = [clean_stmt(s) for s in raw_sql.split(";")]
-statements = [s for s in statements if s and s.upper().startswith("INSERT")]
+statements = [clean_stmt(s) for s in split_sql(raw_sql)]
+statements = [s for s in statements if s and
+              (s.upper().startswith("INSERT") or s.upper().startswith("UPDATE"))]
 
 # ── 3. Create SQLite schema ───────────────────────────────────────────────────
 con = sqlite3.connect(str(SQLITE_PATH))
@@ -102,49 +122,15 @@ for stmt in statements:
         errors.append(f"ERROR: {e}\nSQL: {stmt[:120]}")
 
 if errors:
-    print(f"[WARN] {len(errors)} INSERT errors:")
+    print(f"[WARN] {len(errors)} statement errors:")
     for err in errors[:5]:
         print(err)
 else:
-    print("[OK] All INSERT statements executed")
-
-# ── 5. Build name→slug mapping from .md ──────────────────────────────────────
-# Pattern: **Italian name** · `slug` · ...
-name_to_slug = {}
-pat = re.compile(r"^\*\*(.+?)\*\*\s*\xb7\s*`([a-z0-9_]+)`")
-for line in md_lines:
-    m = pat.match(line.strip())
-    if m:
-        name_to_slug[m.group(1).strip()] = m.group(2).strip()
-
-print(f"[OK] Mapped {len(name_to_slug)} exercise names to slugs from .md")
-
-# ── 6. Add descriptions from Excel ───────────────────────────────────────────
-wb = openpyxl.load_workbook(str(XLSX_PATH))
-ws = wb.active
-
-missing, updated = [], 0
-for row in ws.iter_rows(min_row=2, values_only=True):
-    name, description = row[0], row[1]
-    if not name or not description:
-        continue
-    slug = name_to_slug.get(name)
-    if not slug:
-        missing.append(str(name))
-        continue
-    cur.execute(
-        "UPDATE exercises SET execution_description = ? WHERE slug = ?",
-        (str(description), slug),
-    )
-    updated += cur.rowcount or 0
-
-print(f"[OK] Updated {updated} execution_description")
-if missing:
-    print(f"[WARN] Unmatched in Excel ({len(missing)}): {missing}")
+    print("[OK] All statements executed")
 
 con.commit()
 
-# ── 7. Verify ─────────────────────────────────────────────────────────────────
+# ── 5. Verify ─────────────────────────────────────────────────────────────────
 expected = {"movement_patterns": 27, "muscles": 26, "equipment": 14,
             "exercises": 83, "exercise_muscle": 259, "exercise_equipment": 108}
 for table, exp in expected.items():
@@ -152,6 +138,6 @@ for table, exp in expected.items():
     print(f"  {table}: {count} [{'OK' if count == exp else f'MISMATCH expected {exp}'}]")
 
 desc = cur.execute("SELECT COUNT(*) FROM exercises WHERE execution_description IS NOT NULL").fetchone()[0]
-print(f"  exercises with description: {desc}")
+print(f"  exercises with description: {desc} [{'OK' if desc == 83 else 'MISMATCH expected 83'}]")
 con.close()
 print(f"[DONE] {SQLITE_PATH}")

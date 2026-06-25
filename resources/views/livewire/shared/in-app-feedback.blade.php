@@ -35,56 +35,58 @@
             bottom: 140px;
             right: 20px;
             z-index: 9999;
-            background: #fff;
+            background: #1E1E1E;
+            border: 1px solid #2A2A2A;
             border-radius: 12px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+            box-shadow: 0 4px 24px rgba(0,0,0,0.5);
             width: 320px;
             padding: 20px;
+            color: #fff;
         "
     >
-        <h6 style="margin: 0 0 14px; font-weight: 700;">Invia feedback</h6>
+        <h6 style="margin: 0 0 14px; font-weight: 700; color: #fff;">Invia feedback</h6>
 
         @if (session('feedback_sent'))
-            <div class="alert alert-success py-2 mb-0">Grazie, feedback inviato!</div>
+            <div style="background:#22c55e22; border:1px solid #22c55e; color:#22c55e; border-radius:6px; padding:8px 12px; font-size:13px;">Grazie, feedback inviato!</div>
         @else
         <form wire:submit="submit">
             <div style="margin-bottom: 12px;">
-                <label style="display:block; font-size:13px; margin-bottom:4px; font-weight:600;">Tipo</label>
-                <div style="display:flex; gap:10px;">
-                    <label style="font-size:13px; cursor:pointer;">
+                <label style="display:block; font-size:13px; margin-bottom:6px; font-weight:600; color:#aaa;">Tipo</label>
+                <div style="display:flex; gap:12px;">
+                    <label style="font-size:13px; cursor:pointer; color:#ccc; display:flex; align-items:center; gap:4px;">
                         <input type="radio" wire:model="type" value="bug"> Bug
                     </label>
-                    <label style="font-size:13px; cursor:pointer;">
+                    <label style="font-size:13px; cursor:pointer; color:#ccc; display:flex; align-items:center; gap:4px;">
                         <input type="radio" wire:model="type" value="suggestion"> Suggerimento
                     </label>
-                    <label style="font-size:13px; cursor:pointer;">
+                    <label style="font-size:13px; cursor:pointer; color:#ccc; display:flex; align-items:center; gap:4px;">
                         <input type="radio" wire:model="type" value="confused"> Confuso su…
                     </label>
                 </div>
-                @error('type') <div style="color:red; font-size:12px;">{{ $message }}</div> @enderror
+                @error('type') <div style="color:#ef4444; font-size:12px; margin-top:4px;">{{ $message }}</div> @enderror
             </div>
 
             <input type="hidden" wire:model="pageUrl" id="feedback-page-url">
 
-            <div style="margin-bottom: 12px;">
-                <label style="display:block; font-size:13px; margin-bottom:4px; font-weight:600;">Descrizione</label>
+            <div style="margin-bottom: 14px;">
+                <label style="display:block; font-size:13px; margin-bottom:6px; font-weight:600; color:#aaa;">Descrizione</label>
                 <textarea
                     wire:model="body"
                     maxlength="500"
                     rows="4"
-                    style="width:100%; border:1px solid #ddd; border-radius:6px; padding:8px; font-size:13px; resize:vertical;"
+                    style="width:100%; background:#2A2A2A; border:1px solid #333; border-radius:6px; padding:8px 10px; font-size:13px; resize:vertical; color:#fff; outline:none;"
                     placeholder="Descrivi il problema o il suggerimento…"
                 ></textarea>
-                @error('body') <div style="color:red; font-size:12px;">{{ $message }}</div> @enderror
+                @error('body') <div style="color:#ef4444; font-size:12px; margin-top:4px;">{{ $message }}</div> @enderror
             </div>
 
             <div style="display:flex; gap:8px; justify-content:flex-end;">
                 <button type="button" wire:click="$set('open', false)"
-                        style="background:none; border:1px solid #ccc; border-radius:6px; padding:6px 14px; font-size:13px; cursor:pointer;">
+                        style="background:#2A2A2A; border:1px solid #444; border-radius:6px; padding:7px 16px; font-size:13px; cursor:pointer; color:#aaa;">
                     Annulla
                 </button>
                 <button type="submit"
-                        style="background:#FF6B00; color:#fff; border:none; border-radius:6px; padding:6px 14px; font-size:13px; cursor:pointer; font-weight:600;">
+                        style="background:#FF6B00; color:#fff; border:none; border-radius:6px; padding:7px 16px; font-size:13px; cursor:pointer; font-weight:600;">
                     Invia
                 </button>
             </div>

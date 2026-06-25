@@ -117,6 +117,15 @@ class Dashboard extends Component
         };
     }
 
+    public function restoreSession(int $sessionId): void
+    {
+        TrainingSession::whereHas(
+            'week.mesocycle', fn ($q) => $q->where('athlete_id', auth()->id())
+        )->where('status', 'skipped')->findOrFail($sessionId)->update(['status' => 'planned']);
+
+        $this->mount();
+    }
+
     public function render(): View
     {
         return view('livewire.athlete.dashboard')

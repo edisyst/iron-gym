@@ -7,11 +7,19 @@
             </p>
             <h1 style="font-size:22px;font-weight:700;">{{ $session->name }}</h1>
         </div>
-        <button wire:click="skipSession"
-                wire:confirm="Sei sicuro di voler saltare questa sessione?"
-                style="background:transparent;border:none;color:#666;font-size:13px;cursor:pointer;padding:8px;">
-            Salta
-        </button>
+        <div style="display:flex;gap:4px;">
+            <button wire:click="completeSession"
+                    wire:confirm="Terminare la sessione ora? I set non completati verranno ignorati."
+                    style="background:transparent;border:1px solid #444;color:#ccc;font-size:12px;
+                           font-weight:600;padding:6px 12px;border-radius:8px;cursor:pointer;">
+                Termina
+            </button>
+            <button wire:click="skipSession"
+                    wire:confirm="Sei sicuro di voler saltare questa sessione?"
+                    style="background:transparent;border:none;color:#666;font-size:13px;cursor:pointer;padding:8px;">
+                Salta
+            </button>
+        </div>
     </div>
 
     {{-- Lista esercizi --}}

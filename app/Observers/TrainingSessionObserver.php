@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\TrainingSession;
 use App\Services\WeeklyVolumeCalculator;
+use Illuminate\Cache\TaggableStore;
 use Illuminate\Support\Facades\Cache;
 
 class TrainingSessionObserver
@@ -28,6 +29,8 @@ class TrainingSessionObserver
         app(WeeklyVolumeCalculator::class)->forget($week->mesocycle->athlete_id, $weekId);
 
         // Invalida anche i KPI che includono sessioni completate
-        Cache::tags(['kpi'])->flush();
+        if (Cache::getStore() instanceof TaggableStore) {
+            Cache::tags(['kpi'])->flush();
+        }
     }
 }

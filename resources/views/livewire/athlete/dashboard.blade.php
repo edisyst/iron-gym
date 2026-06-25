@@ -90,6 +90,13 @@
                         <svg style="width:20px;height:20px;color:#555;flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
                         </svg>
+                    @elseif ($session->status === 'skipped')
+                        <button wire:click.stop="restoreSession({{ $session->id }})"
+                                wire:confirm="Ripristinare questa sessione come pianificata?"
+                                style="flex-shrink:0;background:#1E1E1E;border:1px solid #444;color:#ccc;
+                                       font-size:12px;font-weight:600;padding:6px 12px;border-radius:8px;cursor:pointer;">
+                            Ripristina
+                        </button>
                     @endif
                 </div>
 

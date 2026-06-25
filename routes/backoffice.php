@@ -50,8 +50,8 @@ Route::prefix('backoffice')
         // Libreria esercizi (Step 2)
         Route::get('/exercises', ExerciseList::class)->name('exercises.index');
         Route::get('/exercises/create', ExerciseForm::class)->name('exercises.create');
-        Route::get('/exercises/{exercise}', ExerciseDetail::class)->name('exercises.show');
-        Route::get('/exercises/{exercise}/edit', ExerciseForm::class)->name('exercises.edit');
+        Route::get('/exercises/{exercise:slug}', ExerciseDetail::class)->name('exercises.show');
+        Route::get('/exercises/{exercise:slug}/edit', ExerciseForm::class)->name('exercises.edit');
 
         // Template schede (Step 2)
         Route::get('/templates', TemplateList::class)->name('templates.index');

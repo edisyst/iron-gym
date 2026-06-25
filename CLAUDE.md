@@ -98,6 +98,7 @@ reportistica gestore, feature flags.
 **Backoffice:**
 - `Backoffice/Athletes/AthleteProfile` — contenitore profilo atleta con tab Alpine.js (storico, analytics, misurazioni, landmarks, messaggi). Route: `backoffice.athletes.profile`.
 - `Backoffice/Athletes/AthleteSessionHistory` — storico sessioni atleta lato backoffice; filtra per `athlete_id`, mostra trainer, set, durata, feedback con badge 0-3, dettaglio inline con e1RM.
+- `Backoffice/Exercises/ExerciseDetail` — scheda tecnica esercizio (già esistente, potenziata): breadcrumb, immagine/placeholder, card Identità, card Attrezzatura, card Muscolare con progress bar AdminLTE (bg-danger/warning/info), card Esecuzione, card Video. Route: `backoffice.exercises.show` (slug binding). Exercise model usa `getRouteKeyName() = 'slug'`.
 
 **Nota architetturale:** le view Livewire che usavano `@extends('adminlte::page')` sono state convertite a wrapper `<div>` (pattern standard Livewire 3). Il layout standalone è gestito con `->layout('layouts.backoffice')` nel `render()`.
 
@@ -114,6 +115,8 @@ Bug risolti in fase di verifica:
 - APP_URL era `localhost:8000`: corretto a `iron-gym.test` (Laragon).
 
 Test end-to-end del flusso training core verificati (2026-06-22): AthleteHistoryTest 4/4, suite 90/96, PHPStan 0 errori, Pint conforme.
+
+ExerciseDetailPage implementata (2026-06-25): ExerciseDetailPageTest 4/4, PHPStan 0 errori, Pint conforme.
 
 Prossima attività: test pilota con dati reali.
 

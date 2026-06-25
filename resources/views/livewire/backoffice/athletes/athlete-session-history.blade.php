@@ -119,6 +119,10 @@
                                                         style="text-decoration:underline dotted;text-underline-offset:3px;">
                                                     {{ $exercise->exercise->name_it }}
                                                 </button>
+                                                <a href="{{ route('backoffice.exercises.show', $exercise->exercise) }}"
+                                                   class="ml-1 text-muted" title="Scheda esercizio" target="_blank">
+                                                    <i class="fas fa-external-link-alt fa-xs"></i>
+                                                </a>
                                                 <table class="table table-xs table-sm mb-0">
                                                     <thead class="thead-light">
                                                         <tr>

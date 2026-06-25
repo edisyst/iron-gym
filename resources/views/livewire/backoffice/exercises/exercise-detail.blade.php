@@ -1,134 +1,262 @@
 <div>
+    {{-- Breadcrumb --}}
+    <ol class="breadcrumb float-sm-right">
+        <li class="breadcrumb-item"><a href="{{ route('backoffice.dashboard') }}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{{ route('backoffice.exercises.index') }}">Esercizi</a></li>
+        <li class="breadcrumb-item active">{{ $exercise->name_it }}</li>
+    </ol>
+    <div class="clearfix mb-3"></div>
+
+    {{-- Azioni header --}}
+    <div class="mb-3 d-flex align-items-center justify-content-between">
+        <h4 class="mb-0">{{ $exercise->name_it }}</h4>
+        <div>
+            <a href="{{ route('backoffice.exercises.index') }}" class="btn btn-default btn-sm">
+                <i class="fas fa-arrow-left"></i> Lista
+            </a>
+            <a href="{{ route('backoffice.exercises.edit', $exercise) }}" class="btn btn-primary btn-sm ml-1">
+                <i class="fas fa-edit"></i> Modifica
+            </a>
+        </div>
+    </div>
+
     <div class="row">
-        {{-- Colonna sinistra: informazioni esercizio --}}
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Informazioni</h3>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-sm-6">
-                            <dl class="row mb-0">
-                                <dt class="col-sm-5">Slug</dt>
-                                <dd class="col-sm-7"><code>{{ $exercise->slug }}</code></dd>
+        {{-- Colonna sinistra --}}
+        <div class="col-lg-8">
 
-                                <dt class="col-sm-5">Meccanica</dt>
-                                <dd class="col-sm-7">
-                                    @if ($exercise->mechanic === 'compound')
-                                        <span class="badge badge-primary">Compound</span>
-                                    @else
-                                        <span class="badge badge-warning">Isolamento</span>
-                                    @endif
-                                </dd>
-
-                                <dt class="col-sm-5">Piano</dt>
-                                <dd class="col-sm-7">{{ ucfirst($exercise->plane) }}</dd>
-
-                                <dt class="col-sm-5">Lateralità</dt>
-                                <dd class="col-sm-7">{{ str_replace('_', ' ', $exercise->laterality) }}</dd>
-                            </dl>
-                        </div>
-                        <div class="col-sm-6">
-                            <dl class="row mb-0">
-                                <dt class="col-sm-5">Livello</dt>
-                                <dd class="col-sm-7">
-                                    @if ($exercise->skill_level === 'beginner')
-                                        <span class="badge badge-success">Principiante</span>
-                                    @elseif ($exercise->skill_level === 'intermediate')
-                                        <span class="badge badge-warning">Intermedio</span>
-                                    @else
-                                        <span class="badge badge-danger">Avanzato</span>
-                                    @endif
-                                </dd>
-
-                                <dt class="col-sm-5">Misurazione</dt>
-                                <dd class="col-sm-7">{{ str_replace('_', ' ', $exercise->measurement_type) }}</dd>
-
-                                <dt class="col-sm-5">Creato da</dt>
-                                <dd class="col-sm-7">{{ $exercise->creator?->name ?? 'Sistema' }}</dd>
-                            </dl>
-                        </div>
-                    </div>
-
-                    <hr>
-
-                    {{-- Pattern motorio --}}
+            {{-- Immagine placeholder --}}
+            <div class="card card-outline card-secondary">
+                <div class="card-body p-0 text-center"
+                     style="min-height: 220px; display:flex; align-items:center; justify-content:center; background:#f4f6f9;">
                     @php
-                        $pattern   = $exercise->compoundPattern ?? $exercise->jointAction;
-                        $isCompound = $exercise->compoundPattern !== null;
+                        $imgUrl = null;
+                        foreach (['png', 'jpg', 'jpeg', 'webp'] as $ext) {
+                            if (file_exists(public_path("images/exercises/{$exercise->slug}.{$ext}"))) {
+                                $imgUrl = asset("images/exercises/{$exercise->slug}.{$ext}");
+                                break;
+                            }
+                        }
                     @endphp
-                    <div class="mb-3">
-                        <strong>Pattern motorio:</strong>
-                        @if ($pattern)
-                            {{ $pattern->name_it }}
-                            @if ($isCompound)
-                                <span class="badge badge-info ml-1">Compound pattern</span>
-                            @else
-                                <span class="badge badge-secondary ml-1">Joint action</span>
-                            @endif
-                        @else
-                            <span class="text-muted">—</span>
-                        @endif
-                    </div>
-
-                    {{-- Descrizione --}}
-                    @if ($exercise->description)
-                        <div>
-                            <strong>Descrizione:</strong>
-                            <p class="mt-1">{{ $exercise->description }}</p>
-                        </div>
-                    @endif
-
-                    {{-- Descrizione esecuzione --}}
-                    @if ($exercise->execution_description)
-                        <div class="{{ $exercise->description ? 'mt-3' : '' }}">
-                            <strong>Descrizione esecuzione:</strong>
-                            <p class="mt-1">{{ $exercise->execution_description }}</p>
+                    @if ($imgUrl)
+                        <img src="{{ $imgUrl }}"
+                             alt="{{ $exercise->name_it }}"
+                             class="img-fluid"
+                             style="max-height: 300px; object-fit: contain;">
+                    @else
+                        <div class="text-muted text-center py-5">
+                            <i class="fas fa-image fa-3x mb-2 d-block" style="opacity:.3"></i>
+                            <small>Immagine non disponibile</small>
                         </div>
                     @endif
                 </div>
             </div>
+
+            {{-- Card: Identità e Classificazione --}}
+            <div class="card card-primary card-outline">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fas fa-tags mr-1"></i> Identità e Classificazione</h3>
+                </div>
+                <div class="card-body">
+                    @php
+                        $pattern    = $exercise->compoundPattern ?? $exercise->jointAction;
+                        $isCompound = $exercise->compoundPattern !== null;
+                    @endphp
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">ID Sistema</dt>
+                        <dd class="col-sm-8"><code>{{ $exercise->slug }}</code></dd>
+
+                        <dt class="col-sm-4">Pattern motorio</dt>
+                        <dd class="col-sm-8">
+                            @if ($pattern)
+                                {{ $pattern->name_it }}
+                                <span class="badge {{ $isCompound ? 'badge-info' : 'badge-secondary' }} ml-1">
+                                    {{ $isCompound ? 'Compound' : 'Isolation' }}
+                                </span>
+                            @else
+                                <span class="text-muted">—</span>
+                            @endif
+                        </dd>
+
+                        <dt class="col-sm-4">Meccanica</dt>
+                        <dd class="col-sm-8">
+                            @if ($exercise->mechanic === 'compound')
+                                <span class="badge badge-primary">Multi-articolare</span>
+                            @else
+                                <span class="badge badge-warning">Mono-articolare</span>
+                            @endif
+                        </dd>
+
+                        <dt class="col-sm-4">Livello</dt>
+                        <dd class="col-sm-8">
+                            @if ($exercise->skill_level === 'beginner')
+                                <span class="badge badge-success">Principiante</span>
+                            @elseif ($exercise->skill_level === 'intermediate')
+                                <span class="badge badge-warning">Intermedio</span>
+                            @else
+                                <span class="badge badge-danger">Avanzato</span>
+                            @endif
+                        </dd>
+
+                        <dt class="col-sm-4">Piano di movimento</dt>
+                        <dd class="col-sm-8">
+                            @php
+                                $planeLabel = match($exercise->plane) {
+                                    'sagittal'    => 'Sagittale',
+                                    'frontal'     => 'Frontale',
+                                    'transverse'  => 'Trasversale',
+                                    'multiplanar' => 'Multipiano',
+                                    default       => ucfirst($exercise->plane),
+                                };
+                            @endphp
+                            {{ $planeLabel }}
+                        </dd>
+
+                        <dt class="col-sm-4">Lateralità</dt>
+                        <dd class="col-sm-8">
+                            @php
+                                $lateralityLabel = match($exercise->laterality) {
+                                    'bilateral'               => 'Bilaterale',
+                                    'unilateral_alternating'  => 'Unilaterale alternato',
+                                    'unilateral_isolated'     => 'Unilaterale isolato',
+                                    default                   => str_replace('_', ' ', $exercise->laterality),
+                                };
+                            @endphp
+                            {{ $lateralityLabel }}
+                        </dd>
+
+                        <dt class="col-sm-4">Tipo misurazione</dt>
+                        <dd class="col-sm-8">
+                            @php
+                                $measurementLabel = match($exercise->measurement_type) {
+                                    'reps_weight' => 'Reps & Weight',
+                                    'reps_only'   => 'Solo ripetizioni',
+                                    'time'        => 'Tempo',
+                                    'distance'    => 'Distanza',
+                                    default       => str_replace('_', ' ', $exercise->measurement_type),
+                                };
+                            @endphp
+                            {{ $measurementLabel }}
+                        </dd>
+
+                        @if ($exercise->creator)
+                            <dt class="col-sm-4">Creato da</dt>
+                            <dd class="col-sm-8">{{ $exercise->creator->name }}</dd>
+                        @endif
+                    </dl>
+                </div>
+            </div>
+
+            {{-- Card: Descrizione esecuzione --}}
+            @if ($exercise->execution_description || $exercise->description)
+                <div class="card card-outline card-info">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-clipboard-list mr-1"></i> Descrizione esecuzione</h3>
+                    </div>
+                    <div class="card-body">
+                        @if ($exercise->execution_description)
+                            <p class="mb-0" style="white-space: pre-line;">{{ $exercise->execution_description }}</p>
+                        @elseif ($exercise->description)
+                            <p class="mb-0">{{ $exercise->description }}</p>
+                        @endif
+                    </div>
+                </div>
+            @endif
+
+            {{-- Card: Video tecnico --}}
+            @if ($exercise->video_url)
+                <div class="card card-outline card-warning">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-play-circle mr-1"></i> Video tecnico</h3>
+                    </div>
+                    <div class="card-body">
+                        <a href="{{ $exercise->video_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-external-link-alt mr-1"></i> Guarda il video
+                        </a>
+                    </div>
+                </div>
+            @endif
+
         </div>
 
-        {{-- Colonna destra: muscoli e attrezzatura --}}
-        <div class="col-md-4">
-            <div class="card">
+        {{-- Colonna destra --}}
+        <div class="col-lg-4">
+
+            {{-- Card: Attrezzatura --}}
+            <div class="card card-outline card-secondary">
                 <div class="card-header">
-                    <h3 class="card-title">Muscoli coinvolti</h3>
+                    <h3 class="card-title"><i class="fas fa-dumbbell mr-1"></i> Attrezzatura</h3>
+                </div>
+                <div class="card-body">
+                    @forelse ($exercise->equipment as $eq)
+                        <span class="badge badge-light border mr-1 mb-1" style="font-size:.85em">{{ $eq->name_it }}</span>
+                    @empty
+                        <span class="text-muted">Nessuna attrezzatura</span>
+                    @endforelse
+                </div>
+            </div>
+
+            {{-- Card: Coinvolgimento Muscolare e Volume --}}
+            <div class="card card-outline card-danger">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fas fa-male mr-1"></i> Coinvolgimento Muscolare</h3>
                 </div>
                 <div class="card-body p-0">
                     <table class="table table-sm mb-0">
-                        <thead>
+                        <thead class="thead-light">
                             <tr>
                                 <th>Muscolo</th>
                                 <th>Ruolo</th>
-                                <th>Contributo</th>
+                                <th style="width:90px">Contributo</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse ($exercise->muscles->sortBy(fn ($m) => match($m->pivot->role) { 'primary' => 0, 'secondary' => 1, default => 2 }) as $muscle)
+                            @php
+                                $roleOrder = ['primary' => 0, 'secondary' => 1, 'stabilizer' => 2];
+                                $sortedMuscles = $exercise->muscles->sortBy([
+                                    fn ($a, $b) => ($roleOrder[$a->pivot->role] ?? 9) <=> ($roleOrder[$b->pivot->role] ?? 9),
+                                    fn ($a, $b) => $b->pivot->contribution_pct <=> $a->pivot->contribution_pct,
+                                ]);
+                            @endphp
+                            @forelse ($sortedMuscles as $muscle)
+                                @php
+                                    $roleLabel = match($muscle->pivot->role) {
+                                        'primary'    => 'Primario',
+                                        'secondary'  => 'Secondario',
+                                        'stabilizer' => 'Stabilizzatore',
+                                        default      => ucfirst($muscle->pivot->role),
+                                    };
+                                    $barClass = match($muscle->pivot->role) {
+                                        'primary'    => 'bg-danger',
+                                        'secondary'  => 'bg-warning',
+                                        'stabilizer' => 'bg-info',
+                                        default      => 'bg-secondary',
+                                    };
+                                @endphp
                                 <tr>
-                                    <td>{{ $muscle->name_it }}</td>
-                                    <td>
-                                        @if ($muscle->pivot->role === 'primary')
-                                            <span class="badge badge-success">Primary</span>
-                                        @elseif ($muscle->pivot->role === 'secondary')
-                                            <span class="badge badge-warning">Secondary</span>
-                                        @else
-                                            <span class="badge badge-secondary">Stabilizer</span>
-                                        @endif
+                                    <td class="align-middle">{{ $muscle->name_it }}</td>
+                                    <td class="align-middle">
+                                        <span class="badge badge-{{ $muscle->pivot->role === 'primary' ? 'danger' : ($muscle->pivot->role === 'secondary' ? 'warning' : 'info') }}">
+                                            {{ $roleLabel }}
+                                        </span>
                                     </td>
-                                    <td>
-                                        {{ $muscle->pivot->contribution_pct }}%
-                                        <div style="width: 100%; background: #e9ecef; height: 8px; border-radius: 4px; margin-top: 3px;">
-                                            <div style="width: {{ $muscle->pivot->contribution_pct }}%; background: #28a745; height: 8px; border-radius: 4px;"></div>
+                                    <td class="align-middle">
+                                        <div class="d-flex align-items-center">
+                                            <small class="mr-1" style="min-width:28px">{{ $muscle->pivot->contribution_pct }}%</small>
+                                            <div class="progress flex-fill" style="height:8px">
+                                                <div class="progress-bar {{ $barClass }}"
+                                                     role="progressbar"
+                                                     style="width: {{ $muscle->pivot->contribution_pct }}%"
+                                                     aria-valuenow="{{ $muscle->pivot->contribution_pct }}"
+                                                     aria-valuemin="0"
+                                                     aria-valuemax="100">
+                                                </div>
+                                            </div>
                                         </div>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="3" class="text-center text-muted">Nessun muscolo</td>
+                                    <td colspan="3" class="text-center text-muted py-3">Nessun muscolo</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -136,27 +264,6 @@
                 </div>
             </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Attrezzatura</h3>
-                </div>
-                <div class="card-body">
-                    @forelse ($exercise->equipment as $eq)
-                        <span class="badge badge-light border mr-1 mb-1">{{ $eq->name_it }}</span>
-                    @empty
-                        <span class="text-muted">—</span>
-                    @endforelse
-                </div>
-            </div>
         </div>
-    </div>
-
-    <div class="mt-2">
-        <a href="{{ route('backoffice.exercises.index') }}" class="btn btn-default btn-sm">
-            <i class="fas fa-arrow-left"></i> Torna alla lista
-        </a>
-        <a href="{{ route('backoffice.exercises.edit', $exercise) }}" class="btn btn-primary btn-sm ml-2">
-            <i class="fas fa-edit"></i> Modifica
-        </a>
     </div>
 </div>

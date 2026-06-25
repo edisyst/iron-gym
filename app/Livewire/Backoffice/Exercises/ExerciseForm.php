@@ -12,9 +12,13 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use Livewire\WithFileUploads;
 
 class ExerciseForm extends Component
 {
+    use WithFileUploads;
+
     public ?Exercise $exercise = null;
 
     // Campi base
@@ -48,6 +52,10 @@ class ExerciseForm extends Component
     public string $videoUrl = '';
 
     public string $thumbnailUrl = '';
+
+    // Upload immagine locale
+    /** @var TemporaryUploadedFile|null */
+    public $imageFile = null;
 
     // Attrezzatura selezionata (array di equipment_id)
     /** @var array<int> */
@@ -163,6 +171,7 @@ class ExerciseForm extends Component
             'measurementType' => ['required', 'in:reps_weight,reps_only,time,time_weight,distance,isometric_hold'],
             'videoUrl' => ['nullable', 'url', 'max:512'],
             'thumbnailUrl' => ['nullable', 'url', 'max:512'],
+            'imageFile' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:4096'],
             'selectedEquipment' => ['array'],
             'selectedEquipment.*' => ['exists:equipment,id'],
             'muscleData' => ['array'],
@@ -234,6 +243,16 @@ class ExerciseForm extends Component
                 $exercise = $this->exercise;
             } else {
                 $exercise = Exercise::create($data);
+            }
+
+            // Salva immagine locale se caricata
+            if ($this->imageFile !== null) {
+                $ext = $this->imageFile->getClientOriginalExtension() ?: 'png';
+                $dir = public_path('images/exercises');
+                if (! is_dir($dir)) {
+                    mkdir($dir, 0775, true);
+                }
+                $this->imageFile->move($dir, $exercise->slug.'.'.$ext);
             }
 
             // Sync attrezzatura

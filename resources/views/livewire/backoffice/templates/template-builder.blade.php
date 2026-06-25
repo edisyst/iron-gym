@@ -80,7 +80,9 @@
                                     <div class="d-flex align-items-center justify-content-between mb-2">
                                         <div class="d-flex align-items-center">
                                             <i class="fas fa-grip-vertical drag-handle text-muted mr-2" style="cursor: grab"></i>
-                                            <strong>{{ $ex->exercise->name_it }}</strong>
+                                            <a href="{{ route('backoffice.exercises.show', $ex->exercise) }}" class="text-dark">
+                                                <strong>{{ $ex->exercise->name_it }}</strong>
+                                            </a>
                                             @if ($primaryMuscle)
                                                 <small class="text-muted ml-2">· {{ $primaryMuscle->name_it }}</small>
                                             @endif

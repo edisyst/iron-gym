@@ -16,6 +16,11 @@ class Exercise extends Model
 
     use SoftDeletes;
 
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
     protected $fillable = [
         'slug',
         'name_it',

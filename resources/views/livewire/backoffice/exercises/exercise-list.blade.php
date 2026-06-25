@@ -68,7 +68,7 @@
                         @endphp
                         <tr>
                             <td>
-                                <strong>{{ $exercise->name_it }}</strong>
+                                <a href="{{ route('backoffice.exercises.show', $exercise) }}" class="text-dark font-weight-bold">{{ $exercise->name_it }}</a>
                                 <br><small class="text-muted">{{ $exercise->slug }}</small>
                             </td>
                             <td>{{ $primaryMuscle?->name_it ?? '—' }}</td>

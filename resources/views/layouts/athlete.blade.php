@@ -223,9 +223,9 @@
             <span>Oggi</span>
         </a>
 
-        {{-- Storico --}}
+        {{-- Storico + Progressi --}}
         <a href="{{ route('athlete.history') }}"
-           class="{{ request()->routeIs('athlete.history') ? 'active' : '' }}">
+           class="{{ request()->routeIs('athlete.history') || request()->routeIs('athlete.progress') ? 'active' : '' }}">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round"
                       d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2
@@ -234,14 +234,14 @@
             <span>Storico</span>
         </a>
 
-        {{-- Progressi --}}
-        <a href="{{ route('athlete.progress') }}"
-           class="{{ request()->routeIs('athlete.progress*') ? 'active' : '' }}">
+        {{-- Esercizi --}}
+        <a href="{{ route('athlete.exercises.index') }}"
+           class="{{ request()->routeIs('athlete.exercises*') ? 'active' : '' }}">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round"
-                      d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                      d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
             </svg>
-            <span>Progressi</span>
+            <span>Esercizi</span>
         </a>
 
         {{-- Prenota --}}
@@ -294,8 +294,8 @@
         </a>
 
         {{-- Profilo --}}
-        <a href="{{ route('profile') }}"
-           class="{{ request()->routeIs('profile') ? 'active' : '' }}">
+        <a href="{{ route('athlete.profile') }}"
+           class="{{ request()->routeIs('athlete.profile') ? 'active' : '' }}">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round"
                       d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>

@@ -47,6 +47,62 @@
             </div>
         </div>
 
+        {{-- Sezione: media --}}
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">Immagine e Video</h3></div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Immagine esercizio</label>
+                            @php
+                                $imgExts = ['png', 'jpg', 'jpeg', 'webp'];
+                                $existingImg = null;
+                                if ($exercise) {
+                                    foreach ($imgExts as $ext) {
+                                        if (file_exists(public_path("images/exercises/{$exercise->slug}.{$ext}"))) {
+                                            $existingImg = asset("images/exercises/{$exercise->slug}.{$ext}");
+                                            break;
+                                        }
+                                    }
+                                }
+                            @endphp
+                            @if ($existingImg)
+                                <div class="mb-2">
+                                    <img src="{{ $existingImg }}" alt="{{ $nameIt }}"
+                                         class="img-thumbnail" style="max-height:120px; object-fit:contain;">
+                                    <small class="d-block text-muted mt-1">Immagine attuale</small>
+                                </div>
+                            @endif
+                            @if ($imageFile)
+                                <div class="mb-2">
+                                    <img src="{{ $imageFile->temporaryUrl() }}" alt="Anteprima"
+                                         class="img-thumbnail" style="max-height:120px; object-fit:contain;">
+                                    <small class="d-block text-muted mt-1">Anteprima caricamento</small>
+                                </div>
+                            @endif
+                            <input type="file" wire:model="imageFile" class="form-control-file @error('imageFile') is-invalid @enderror"
+                                   accept="image/png,image/jpeg,image/webp">
+                            <small class="form-text text-muted">PNG, JPG o WebP, max 4 MB. Il file verrà salvato come <code>{{ $slug ?: 'slug' }}.{ext}</code>.</small>
+                            @error('imageFile') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>URL video (opzionale)</label>
+                            <input type="url" wire:model="videoUrl" class="form-control @error('videoUrl') is-invalid @enderror" placeholder="https://...">
+                            @error('videoUrl') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="form-group">
+                            <label>URL thumbnail (opzionale)</label>
+                            <input type="url" wire:model="thumbnailUrl" class="form-control @error('thumbnailUrl') is-invalid @enderror" placeholder="https://...">
+                            @error('thumbnailUrl') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         {{-- Sezione: pattern motorio --}}
         <div class="card">
             <div class="card-header"><h3 class="card-title">Pattern motorio</h3></div>
@@ -150,22 +206,6 @@
                     </div>
                 </div>
 
-                <div class="row mt-2">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label>URL video (opzionale)</label>
-                            <input type="url" wire:model="videoUrl" class="form-control @error('videoUrl') is-invalid @enderror" placeholder="https://...">
-                            @error('videoUrl') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label>URL thumbnail (opzionale)</label>
-                            <input type="url" wire:model="thumbnailUrl" class="form-control @error('thumbnailUrl') is-invalid @enderror" placeholder="https://...">
-                            @error('thumbnailUrl') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
 

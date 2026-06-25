@@ -16,9 +16,13 @@ Route::get('dashboard', function () {
     return redirect()->route('backoffice.dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::view('profile', 'profile')
-    ->middleware(['auth'])
-    ->name('profile');
+Route::get('profile', function () {
+    if (auth()->user()->hasRole('atleta')) {
+        return redirect()->route('athlete.profile');
+    }
+
+    return view('profile');
+})->middleware(['auth'])->name('profile');
 
 require __DIR__.'/auth.php';
 require __DIR__.'/backoffice.php';

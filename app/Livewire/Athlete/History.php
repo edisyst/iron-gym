@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Athlete;
 
+use App\Models\Exercise;
 use App\Models\Mesocycle;
 use App\Models\SessionExercise;
 use App\Models\TrainingSession;
@@ -25,10 +26,27 @@ class History extends Component
 
     public string $exerciseHistoryName = '';
 
+    public ?int $exerciseDetailId = null;
+
     public function updatingMesocycleId(): void
     {
         $this->resetPage();
         $this->selectedSessionId = null;
+    }
+
+    public function showExerciseDetail(int $exerciseId): void
+    {
+        $this->exerciseDetailId = ($this->exerciseDetailId === $exerciseId) ? null : $exerciseId;
+    }
+
+    public function getExerciseDetailProperty(): ?Exercise
+    {
+        if ($this->exerciseDetailId === null) {
+            return null;
+        }
+
+        return Exercise::with(['muscles', 'equipment', 'compoundPattern', 'jointAction'])
+            ->find($this->exerciseDetailId);
     }
 
     public function showExerciseHistory(int $exerciseId, string $name): void

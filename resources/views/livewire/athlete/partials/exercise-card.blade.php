@@ -13,6 +13,17 @@
                 {{ $this->techniqueLabel($exercise->technique_type) }}
             </span>
         @endif
+        <button wire:click="showExerciseDetail({{ $exercise->exercise_id }})"
+                title="Dettagli esercizio"
+                style="background:#2A2A2A;border:1px solid #3A3A3A;border-radius:8px;padding:4px 10px;
+                       font-size:11px;font-weight:600;color:#aaa;cursor:pointer;white-space:nowrap;
+                       display:flex;align-items:center;gap:4px;line-height:1.4;">
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 16v-4M12 8h.01"/>
+            </svg>
+            Info
+        </button>
     </div>
 
     @if ($exercise->exercise->execution_description)

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Athlete;
 
+use App\Models\Exercise;
 use App\Models\ExerciseSet;
 use App\Models\SessionExercise;
 use App\Models\TrainingSession;
@@ -24,6 +25,8 @@ class WorkoutSession extends Component
     public ?int $exerciseHistoryId = null;
 
     public string $exerciseHistoryName = '';
+
+    public ?int $exerciseDetailId = null;
 
     public function mount(TrainingSession $session): void
     {
@@ -67,6 +70,21 @@ class WorkoutSession extends Component
         if (request()->query('feedback') == '1') {
             $this->showFeedback = true;
         }
+    }
+
+    public function showExerciseDetail(int $exerciseId): void
+    {
+        $this->exerciseDetailId = ($this->exerciseDetailId === $exerciseId) ? null : $exerciseId;
+    }
+
+    public function getExerciseDetailProperty(): ?Exercise
+    {
+        if ($this->exerciseDetailId === null) {
+            return null;
+        }
+
+        return Exercise::with(['muscles', 'equipment', 'compoundPattern', 'jointAction'])
+            ->find($this->exerciseDetailId);
     }
 
     public function showExerciseHistory(int $exerciseId, string $name): void

@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
             $this->call([
                 DemoSeeder::class,
                 TrainingHistorySeeder::class,
+                ActiveMesocycleSeeder::class,
             ]);
         }
     }

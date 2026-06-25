@@ -365,16 +365,15 @@
         });
     }
 
-    function renderVolumeChart() {
+    function renderVolumeChart(labels, rawDatasets) {
         const ctx = document.getElementById('volumeChart');
         if (!ctx) return;
-        const labels   = @json($volumeChartData['labels']);
-        const datasets = (@json($volumeChartData['datasets'])).map((ds, i) => ({
+        if (!labels || !labels.length) return;
+        const datasets = rawDatasets.map((ds, i) => ({
             ...ds,
             backgroundColor: volumeColors[i % volumeColors.length],
             stack: 'volume',
         }));
-        if (!labels.length) return;
         if (volumeChart) volumeChart.destroy();
         volumeChart = new Chart(ctx, {
             type: 'bar',
@@ -405,7 +404,7 @@
 
     Livewire.on('weightDataLoaded', () => setTimeout(renderWeightChart, 50));
     Livewire.on('e1rmDataLoaded',   () => setTimeout(renderE1rmChart, 50));
-    Livewire.on('volumeDataLoaded', () => setTimeout(renderVolumeChart, 50));
+    Livewire.on('volumeDataLoaded', ({ labels, datasets }) => setTimeout(() => renderVolumeChart(labels, datasets), 50));
 
     document.addEventListener('livewire:navigated', () => {
         if (@json($mainTab) === 'progress') renderWeightChart();

@@ -243,27 +243,37 @@ class TrainingHub extends Component
     public function loadVolumeData(): void
     {
         $athleteId = auth()->id();
+        $since = now()->subMonths(6)->toDateString();
 
-        $weeks = MicrocycleWeek::whereHas('sessions', fn ($q) => $q->where('status', 'completed'))
-            ->whereHas('mesocycle', fn ($q) => $q->where('athlete_id', $athleteId))
-            ->where('start_date', '>=', now()->subMonths(6)->toDateString())
-            ->orderBy('start_date')
+        // Raw query coerente con loadExercises/loadE1rmData: nessun soft-delete scope su mesocycles
+        $weeks = DB::table('microcycle_weeks as mw')
+            ->join('mesocycles as m', 'm.id', '=', 'mw.mesocycle_id')
+            ->whereNull('m.deleted_at')
+            ->where('m.athlete_id', $athleteId)
+            ->where('mw.start_date', '>=', $since)
+            ->whereExists(function ($q) {
+                $q->from('training_sessions as s')
+                    ->whereColumn('s.microcycle_week_id', 'mw.id')
+                    ->where('s.status', 'completed');
+            })
+            ->orderBy('mw.start_date')
+            ->select('mw.id', 'mw.week_number', 'mw.start_date')
             ->get();
 
         $groups = [
-            'chest' => 'Petto',
-            'back' => 'Schiena',
+            'chest'     => 'Petto',
+            'back'      => 'Schiena',
             'shoulders' => 'Spalle',
-            'arms' => 'Braccia',
-            'legs' => 'Gambe',
-            'core' => 'Core',
+            'arms'      => 'Braccia',
+            'legs'      => 'Gambe',
+            'core'      => 'Core',
         ];
 
-        $labels = [];
+        $labels    = [];
         $groupData = array_fill_keys(array_keys($groups), []);
 
         foreach ($weeks as $week) {
-            $labels[] = 'W'.$week->week_number.' '.$week->start_date->format('d/m');
+            $labels[] = 'W'.$week->week_number.' '.date('d/m', strtotime($week->start_date));
 
             $weekGroupVolume = DB::table('exercise_sets as es')
                 ->join('session_exercises as se', 'se.id', '=', 'es.session_exercise_id')
@@ -292,7 +302,7 @@ class TrainingHub extends Component
         }
 
         $this->volumeChartData = ['labels' => $labels, 'datasets' => $datasets];
-        $this->dispatch('volumeDataLoaded');
+        $this->dispatch('volumeDataLoaded', labels: $labels, datasets: $datasets);
     }
 
     public function render(): View

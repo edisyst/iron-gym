@@ -111,6 +111,7 @@ class History extends Component
             fn ($q) => $q->where('athlete_id', auth()->id())
         )
             ->with([
+                'feedback',
                 'sessionExercises' => fn ($q) => $q->orderBy('order_in_session'),
                 'sessionExercises.exercise',
                 'sessionExercises.sets' => fn ($q) => $q->orderBy('set_index'),

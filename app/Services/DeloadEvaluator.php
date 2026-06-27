@@ -78,17 +78,17 @@ class DeloadEvaluator
      */
     private function currentWeek(Mesocycle $mesocycle): ?MicrocycleWeek
     {
-        foreach ($mesocycle->weeks->sortByDesc('week_number') as $week) {
-            $hasCompleted = TrainingSession::where('microcycle_week_id', $week->id)
-                ->where('status', 'completed')
-                ->exists();
+        // 1 query invece di N: recupera i week_id con almeno una sessione completed
+        $weekIdsWithCompleted = TrainingSession::whereIn('microcycle_week_id', $mesocycle->weeks->pluck('id'))
+            ->where('status', 'completed')
+            ->distinct()
+            ->pluck('microcycle_week_id');
 
-            if ($hasCompleted) {
-                return $week;
-            }
-        }
-
-        return $mesocycle->weeks->sortBy('week_number')->first();
+        return $mesocycle->weeks
+            ->whereIn('id', $weekIdsWithCompleted)
+            ->sortByDesc('week_number')
+            ->first()
+            ?? $mesocycle->weeks->sortBy('week_number')->first();
     }
 
     private function checkMrvTrigger(int $athleteId, int $weekId): ?string

@@ -47,39 +47,46 @@ Route::prefix('backoffice')
 
         Route::get('/access-logs', AccessLogList::class)->name('access-logs.index');
 
-        // Libreria esercizi (Step 2)
+        // Libreria esercizi — lista e dettaglio: visibili anche al receptionist
         Route::get('/exercises', ExerciseList::class)->name('exercises.index');
-        Route::get('/exercises/create', ExerciseForm::class)->name('exercises.create');
         Route::get('/exercises/{exercise:slug}', ExerciseDetail::class)->name('exercises.show');
-        Route::get('/exercises/{exercise:slug}/edit', ExerciseForm::class)->name('exercises.edit');
 
-        // Template schede (Step 2)
+        // Template schede — lista: visibile anche al receptionist
         Route::get('/templates', TemplateList::class)->name('templates.index');
-        Route::get('/templates/create', TemplateForm::class)->name('templates.create');
-        Route::get('/templates/{template}/builder', TemplateBuilder::class)->name('templates.builder');
 
-        // Mesocicli (Step 3 + Step 4)
+        // Mesocicli — lista: visibile anche al receptionist
         Route::get('/mesocycles', MesocycleList::class)->name('mesocycles.index');
-        Route::get('/mesocycles/assign', MesocycleAssign::class)->name('mesocycles.assign');
-        Route::get('/mesocycles/{mesocycle}', MesocycleDetail::class)->name('mesocycles.show');
-        Route::get('/athletes/{athleteId}/volume-landmarks', VolumeLandmarkManager::class)->name('athletes.volume-landmarks');
 
-        // Step 5 — tracking corporeo e analytics
-        Route::get('/athletes/{athleteId}/measurements', BodyMeasurementForm::class)->name('athletes.measurements');
-        Route::get('/athletes/{athleteId}/analytics', AthleteAnalytics::class)->name('athletes.analytics');
-        Route::get('/athletes/{athleteId}/profile', AthleteProfile::class)
-            ->middleware('role:gestore|trainer')
-            ->name('athletes.profile');
-
-        // Step 6 — prenotazioni e calendario
+        // Step 6 — prenotazioni e calendario (receptionist gestisce queste)
         Route::get('/calendar', TrainerCalendar::class)->name('calendar.index');
         Route::get('/calendar/availability', AvailabilityManager::class)->name('calendar.availability');
         Route::get('/bookings', BookingList::class)->name('bookings.index');
         Route::get('/group-classes', GroupClassManager::class)->name('group-classes.index');
 
-        // Step 7 — messaggistica e comunicazione
-        Route::get('/athletes/{athleteId}/messages', MessageThread::class)->name('athletes.messages');
-        Route::get('/communications/campaign', CommunicationCampaign::class)->name('communications.campaign');
+        // Route riservate a trainer e gestore (mutano dati training o espongono dati medici)
+        Route::middleware('role:gestore|trainer')->group(function () {
+            // Libreria esercizi — creazione e modifica
+            Route::get('/exercises/create', ExerciseForm::class)->name('exercises.create');
+            Route::get('/exercises/{exercise:slug}/edit', ExerciseForm::class)->name('exercises.edit');
+
+            // Template schede — creazione e builder
+            Route::get('/templates/create', TemplateForm::class)->name('templates.create');
+            Route::get('/templates/{template}/builder', TemplateBuilder::class)->name('templates.builder');
+
+            // Mesocicli — assegnazione e dettaglio (con applyProgression/forceDeload)
+            Route::get('/mesocycles/assign', MesocycleAssign::class)->name('mesocycles.assign');
+            Route::get('/mesocycles/{mesocycle}', MesocycleDetail::class)->name('mesocycles.show');
+            Route::get('/athletes/{athleteId}/volume-landmarks', VolumeLandmarkManager::class)->name('athletes.volume-landmarks');
+
+            // Step 5 — tracking corporeo e analytics (dati medico-sportivi)
+            Route::get('/athletes/{athleteId}/measurements', BodyMeasurementForm::class)->name('athletes.measurements');
+            Route::get('/athletes/{athleteId}/analytics', AthleteAnalytics::class)->name('athletes.analytics');
+            Route::get('/athletes/{athleteId}/profile', AthleteProfile::class)->name('athletes.profile');
+
+            // Step 7 — messaggistica e comunicazione con atleti
+            Route::get('/athletes/{athleteId}/messages', MessageThread::class)->name('athletes.messages');
+            Route::get('/communications/campaign', CommunicationCampaign::class)->name('communications.campaign');
+        });
 
         // Step 8 — reportistica gestore
         Route::get('/reports/manager', ManagerDashboard::class)

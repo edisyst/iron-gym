@@ -62,6 +62,8 @@ class MesocycleDetail extends Component
 
     public function applyProgression(): void
     {
+        abort_unless(auth()->user()?->hasAnyRole(['gestore', 'trainer']), 403);
+
         $service = app(WeeklyProgressionService::class);
         $result = $service->progressWeek($this->mesocycleId, $this->selectedWeekNumber);
         $this->lastProgressionResultData = [
@@ -78,6 +80,8 @@ class MesocycleDetail extends Component
 
     public function forceDeload(): void
     {
+        abort_unless(auth()->user()?->hasAnyRole(['gestore', 'trainer']), 403);
+
         $meso = Mesocycle::with('weeks')->findOrFail($this->mesocycleId);
 
         $nextWeek = $meso->weeks->firstWhere('week_number', $this->selectedWeekNumber + 1);

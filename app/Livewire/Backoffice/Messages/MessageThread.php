@@ -33,14 +33,15 @@ class MessageThread extends Component
             'newMessage.max' => 'Il messaggio non può superare i 2000 caratteri.',
         ]);
 
+        $athlete = User::role('atleta')->findOrFail($this->athleteId);
+
         $message = Message::create([
             'sender_id' => Auth::id(),
-            'receiver_id' => $this->athleteId,
+            'receiver_id' => $athlete->id,
             'body' => $this->newMessage,
         ]);
 
-        $athlete = User::find($this->athleteId);
-        $athlete?->notify(new NewMessageNotification($message));
+        $athlete->notify(new NewMessageNotification($message));
 
         $this->newMessage = '';
     }

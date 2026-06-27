@@ -88,6 +88,54 @@ it('il deload è suggerito con joint pain persistente su due settimane', functio
     expect($signal->activeTriggers)->toContain('persistent_joint_pain');
 });
 
+it('deload suggerito per RIR drift su 3 set consecutivi', function () {
+    $quad = Muscle::factory()->create(['slug' => 'quadriceps', 'name_it' => 'Quad', 'muscle_group' => 'legs']);
+    $squat = Exercise::factory()->create(['slug' => 'back_squat_rir_drift', 'name_it' => 'Squat Drift', 'mechanic' => 'compound']);
+    attachMuscleWithPct($squat, $quad, 100);
+
+    // 3 set working con actual_rir = 0, planned_rir = 3 → drift = 3 ≥ 2 per tutti e 3
+    $session = TrainingSession::factory()->create(['microcycle_week_id' => $this->week1->id, 'status' => 'completed']);
+    $se = SessionExercise::factory()->create(['session_id' => $session->id, 'exercise_id' => $squat->id, 'planned_sets_count' => 3]);
+    ExerciseSet::factory()->count(3)->create([
+        'session_exercise_id' => $se->id,
+        'is_warmup' => false,
+        'completed_at' => now(),
+        'planned_rir' => 3,
+        'actual_rir' => 0,
+    ]);
+
+    $signal = $this->evaluator->evaluate($this->mesocycle->id);
+
+    expect($signal->isDeloadNeeded())->toBeTrue();
+    expect($signal->activeTriggers)->toContain('rir_drift');
+});
+
+it('deload suggerito per fine programmata mesociclo', function () {
+    $quad = Muscle::factory()->create(['slug' => 'quadriceps_eom', 'name_it' => 'Quad', 'muscle_group' => 'legs']);
+    $squat = Exercise::factory()->create(['slug' => 'back_squat_eom', 'name_it' => 'Squat EOM', 'mechanic' => 'compound']);
+    attachMuscleWithPct($squat, $quad, 100);
+
+    // Sessione completata sull'ultima settimana (week5, non deload)
+    $session = TrainingSession::factory()->create(['microcycle_week_id' => $this->week5->id, 'status' => 'completed']);
+    $se = SessionExercise::factory()->create(['session_id' => $session->id, 'exercise_id' => $squat->id, 'planned_sets_count' => 3]);
+    ExerciseSet::factory()->count(3)->create([
+        'session_exercise_id' => $se->id,
+        'is_warmup' => false,
+        'completed_at' => now(),
+        'planned_rir' => 2,
+        'actual_rir' => 2,
+    ]);
+
+    // Crea le settimane intermedie mancanti (3 e 4) per avere la settimana 5 come ultima
+    MicrocycleWeek::factory()->create(['mesocycle_id' => $this->mesocycle->id, 'week_number' => 3, 'is_deload' => false]);
+    MicrocycleWeek::factory()->create(['mesocycle_id' => $this->mesocycle->id, 'week_number' => 4, 'is_deload' => false]);
+
+    $signal = $this->evaluator->evaluate($this->mesocycle->id);
+
+    expect($signal->isDeloadNeeded())->toBeTrue();
+    expect($signal->activeTriggers)->toContain('end_of_mesocycle');
+});
+
 it('nessun deload se tutti i segnali sono nella norma', function () {
     $quad = Muscle::factory()->create(['slug' => 'quadriceps', 'name_it' => 'Quad', 'muscle_group' => 'legs']);
     $squat = Exercise::factory()->create(['slug' => 'back_squat_high_bar', 'name_it' => 'Squat', 'mechanic' => 'compound']);

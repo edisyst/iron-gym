@@ -25,12 +25,12 @@ class MesocycleDetail extends Component
     /** @var array{setsAddedByMuscle: array<string,int>, feedbackTriggers: array<string>, action: string, note: string|null}|null */
     public ?array $lastProgressionResultData = null;
 
-    public function mount(int $mesocycle): void
+    public function mount(int $mesocycleId): void
     {
-        $this->mesocycleId = $mesocycle;
+        $this->mesocycleId = $mesocycleId;
         $meso = Mesocycle::with([
             'weeks' => fn ($q) => $q->withCount(['sessions' => fn ($q2) => $q2->where('status', 'completed')]),
-        ])->findOrFail($mesocycle);
+        ])->findOrFail($mesocycleId);
 
         // Seleziona la settimana con più sessioni completed, altrimenti la prima
         $bestWeek = $meso->weeks

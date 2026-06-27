@@ -39,6 +39,11 @@ class SessionFeedbackForm extends Component
      */
     public function save(): void
     {
+        TrainingSession::whereHas(
+            'week.mesocycle',
+            fn ($q) => $q->where('athlete_id', auth()->id())
+        )->findOrFail($this->sessionId);
+
         $this->validate([
             'pump' => 'nullable|integer|between:0,3',
             'sorenessPrev' => 'nullable|integer|between:0,3',

@@ -112,7 +112,8 @@ class TemplateBuilder extends Component
     /** Rimuove una sessione con tutti i suoi esercizi (hard delete con cascade) */
     public function removeSession(int $sessionId): void
     {
-        $session = TemplateSession::findOrFail($sessionId);
+        $session = TemplateSession::where('template_id', $this->template->id)
+            ->findOrFail($sessionId);
         // Hard delete: la FK con cascade elimina gli exercise figli
         $session->delete();
     }
@@ -120,12 +121,16 @@ class TemplateBuilder extends Component
     /** Aggiorna il nome di una sessione */
     public function updateSessionName(int $sessionId, string $name): void
     {
-        TemplateSession::where('id', $sessionId)->update(['name' => trim($name) ?: 'Sessione']);
+        TemplateSession::where('id', $sessionId)
+            ->where('template_id', $this->template->id)
+            ->update(['name' => trim($name) ?: 'Sessione']);
     }
 
     /** Aggiunge un esercizio a una sessione tramite ID (dalla ricerca sidebar) */
     public function addExerciseById(int $sessionId, int $exerciseId): void
     {
+        TemplateSession::where('template_id', $this->template->id)->findOrFail($sessionId);
+
         $maxOrder = TemplateSessionExercise::where('template_session_id', $sessionId)->max('order_in_session') ?? 0;
 
         TemplateSessionExercise::create([
@@ -146,7 +151,10 @@ class TemplateBuilder extends Component
     /** Rimuove un esercizio dal template */
     public function removeExercise(int $exerciseId): void
     {
-        $tse = TemplateSessionExercise::findOrFail($exerciseId);
+        $tse = TemplateSessionExercise::whereHas(
+            'templateSession',
+            fn ($q) => $q->where('template_id', $this->template->id)
+        )->findOrFail($exerciseId);
         $groupKey = $tse->group_key;
 
         $tse->delete();
@@ -172,7 +180,10 @@ class TemplateBuilder extends Component
             return;
         }
 
-        TemplateSessionExercise::where('id', $exerciseId)->update([$field => $value ?: null]);
+        TemplateSessionExercise::whereHas(
+            'templateSession',
+            fn ($q) => $q->where('template_id', $this->template->id)
+        )->where('id', $exerciseId)->update([$field => $value ?: null]);
     }
 
     /** Riordina gli esercizi di una sessione dopo drag&drop SortableJS */
@@ -182,6 +193,8 @@ class TemplateBuilder extends Component
     #[On('exercises-reordered')]
     public function reorderExercises(int $sessionId, array $orderedIds): void
     {
+        TemplateSession::where('template_id', $this->template->id)->findOrFail($sessionId);
+
         foreach ($orderedIds as $index => $id) {
             TemplateSessionExercise::where('id', $id)
                 ->where('template_session_id', $sessionId)
@@ -195,7 +208,10 @@ class TemplateBuilder extends Component
      */
     public function toggleGroup(int $exerciseId, bool $grouped): void
     {
-        $tse = TemplateSessionExercise::findOrFail($exerciseId);
+        $tse = TemplateSessionExercise::whereHas(
+            'templateSession',
+            fn ($q) => $q->where('template_id', $this->template->id)
+        )->findOrFail($exerciseId);
 
         if ($grouped) {
             if ($tse->group_key !== null) {
@@ -237,7 +253,10 @@ class TemplateBuilder extends Component
             return;
         }
 
-        $tse = TemplateSessionExercise::findOrFail($exerciseId);
+        $tse = TemplateSessionExercise::whereHas(
+            'templateSession',
+            fn ($q) => $q->where('template_id', $this->template->id)
+        )->findOrFail($exerciseId);
 
         if ($tse->group_key !== null) {
             TemplateSessionExercise::where('group_key', $tse->group_key)

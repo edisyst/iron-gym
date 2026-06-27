@@ -115,6 +115,7 @@ class WeeklyVolumeCalculator
         if ($hardSets > $mrv) {
             return 'over_mrv';
         }
+        // "approaching_mrv": volume all'85% del MAV massimo o oltre, ma ancora sotto MRV
         if ($hardSets >= $mavMax * 0.85) {
             return 'approaching_mrv';
         }

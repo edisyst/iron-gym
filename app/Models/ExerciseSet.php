@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\E1rmCalculator;
 use Database\Factories\ExerciseSetFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -58,10 +59,6 @@ class ExerciseSet extends Model
      */
     public function getEstimated1rmAttribute(): ?float
     {
-        if ($this->actual_weight_kg === null || $this->actual_reps === null || $this->actual_reps == 0) {
-            return null;
-        }
-
-        return round($this->actual_weight_kg * (1 + $this->actual_reps / 30), 2);
+        return E1rmCalculator::epley($this->actual_weight_kg, $this->actual_reps);
     }
 }

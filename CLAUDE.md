@@ -118,6 +118,8 @@ Test end-to-end del flusso training core verificati (2026-06-22): AthleteHistory
 
 ExerciseDetailPage implementata (2026-06-25): ExerciseDetailPageTest 4/4, PHPStan 0 errori, Pint conforme.
 
+Revisione codice staged completata (2026-06-27): security (IDOR SessionFeedbackForm/TemplateBuilder, middleware backoffice, FK mesocycles, MessageThread), performance (cache lookup statici, deload signal fuori da render, RIR drift subquery SQL, index exercise_sets.completed_at), test DeloadEvaluator 5/5, 6 factory mancanti. Suite: 96/102, PHPStan 0 errori, Pint conforme.
+
 Prossima attività: test pilota con dati reali.
 
 ## Catalogo esercizi — SQLite di riferimento

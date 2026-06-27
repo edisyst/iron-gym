@@ -288,4 +288,40 @@ Tutto il lavoro notevole per versione/step. Ordine cronologico crescente.
 
 ---
 
+## 2026-06-27 — Revisione codice staged (Phase 1 + 2)
+
+Revisione totale code quality e sicurezza, staged e reversibile. Nessuna funzionalità aggiunta.
+
+### Security — HIGH e CRITICAL
+
+- **SessionFeedbackForm IDOR (CRITICAL):** `save()` ora verifica ownership della sessione via `whereHas('week.mesocycle', ...)` prima di validare. Impedisce a un atleta di inviare feedback su sessioni di altri.
+- **TemplateBuilder IDOR (HIGH):** 8 metodi mutanti (`removeSession`, `updateSessionName`, `addExerciseById`, `removeExercise`, `updateExerciseField`, `reorderExercises`, `toggleGroup`, `updateGroupType`) ora verificano che session/exercise appartengano al template corrente prima di agire.
+- **routes/backoffice.php middleware (HIGH):** Route sensibili (`exercises.create/edit`, `templates.builder`, `mesocycles.assign/show`, `athletes.*`, `communications.campaign`) spostate dentro `Route::middleware('role:gestore|trainer')->group()`. Receptionist vede solo lettura.
+- **MesocycleDetail metodi mutanti (HIGH):** `applyProgression()` e `forceDeload()` aggiunto `abort_unless(...hasAnyRole(['gestore','trainer']), 403)` — defense-in-depth oltre il middleware di rotta.
+- **MessageThread IDOR (HIGH):** `sendMessage()` risolve destinatario con `User::role('atleta')->findOrFail()` invece di `User::find()`. Impedisce invio messaggi a non-atleti.
+- **FK mesocycles (HIGH):** Aggiunta migration `2026_06_27_000001` con FK `athlete_id` e `trainer_id` → `users.id` (`onDelete('restrict')`), più index su `trainer_id`. Prima mancavano vincoli di integrità referenziale.
+
+### Performance — MEDIUM
+
+- **ExerciseForm lookup cache:** 4 query per lookup statici (`movement_patterns`, `muscles`, `equipment`) cachate con `Cache::rememberForever()`. Zero query DB per quelle collection su ogni render.
+- **MesocycleDetail render():** `DeloadEvaluator::evaluate()` spostato da `render()` a `refreshDeloadSignal()`, chiamato in `mount()` e dopo ogni azione mutante. Il `render()` ricostruisce `DeloadSignal` dall'array serializzato senza query.
+- **DeloadEvaluator::checkRirDrift():** filtro `rn <= 3` ora eseguito in MySQL via subquery (`ROW_NUMBER() OVER PARTITION BY` wrappato come `DB::raw`). Prima caricava tutti i set in PHP.
+- **Index exercise_sets.completed_at (migration `2026_06_27_000002`):** usato in `ORDER BY` da `checkRirDrift()` e `WeeklyProgressionService`. Evita full-scan su tabella set con dati reali.
+
+### Code quality — MEDIUM/LOW
+
+- **E1rmCalculator riuso:** `ExerciseSet::getEstimated1rmAttribute()` ora delega a `E1rmCalculator::epley()` invece di duplicare la formula Epley inline.
+- **MesocycleDetail mount param:** rinominato `mount(int $mesocycle)` → `mount(int $mesocycleId)` — eliminata ambiguità con il modello.
+- **History.php eager loading:** aggiunto `'feedback'` al `with()` in `getSelectedSessionProperty()` per parità con la versione backoffice.
+- **WeeklyVolumeCalculator:** aggiunto commento esplicativo per lo status `approaching_mrv` (85% MAV max ≤ volume < MRV).
+
+### Test — MEDIUM
+
+- **DeloadEvaluatorTest:** aggiunti 2 test mancanti: `rir_drift` (3 set consecutivi con drift ≥ 2) e `end_of_mesocycle` (sessione completata sull'ultima settimana non-deload). Totale: 5/5.
+- **Factory mancanti:** create `BodyMeasurementFactory`, `AthleteVolumeLandmarkFactory`, `SubscriptionPlanFactory`, `SubscriptionFactory`, `PtBookingFactory`, `ClassBookingFactory`. Aggiunto `HasFactory` (tipizzato) a `BodyMeasurement`, `AthleteVolumeLandmark`, `SubscriptionPlan`.
+
+**Suite finale:** 96/102 pass, 6 skip, PHPStan L6 0 errori, Pint conforme.
+
+---
+
 *Ogni step ha lasciato test Pest verdi, PHPStan L6 a 0 errori, Pint conforme.*

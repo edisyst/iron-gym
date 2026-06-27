@@ -81,9 +81,9 @@ class ProgressDemoSeeder extends Seeder
             ['days_ago' => 28, 'weight' => 83.8],
             ['days_ago' => 21, 'weight' => 83.6],
             ['days_ago' => 14, 'weight' => 83.9],
-            ['days_ago' =>  7, 'weight' => 83.5],
-            ['days_ago' =>  3, 'weight' => 83.7],
-            ['days_ago' =>  1, 'weight' => 83.4],
+            ['days_ago' => 7, 'weight' => 83.5],
+            ['days_ago' => 3, 'weight' => 83.7],
+            ['days_ago' => 1, 'weight' => 83.4],
         ];
 
         foreach ($entries as $entry) {
@@ -264,18 +264,18 @@ class ProgressDemoSeeder extends Seeder
     private function resolveExercises(): array
     {
         $slugs = [
-            'bench'     => 'barbell_bench_press',
-            'incline'   => 'incline_barbell_bench_press',
-            'ohp'       => 'overhead_press_standing',
-            'lateral'   => 'dumbbell_lateral_raise',
-            'deadlift'  => 'conventional_deadlift',
-            'row'       => 'barbell_row',
-            'pullup'    => 'pull_up_pronated',
-            'curl'      => 'barbell_curl',
-            'squat'     => 'back_squat_high_bar',
+            'bench' => 'barbell_bench_press',
+            'incline' => 'incline_barbell_bench_press',
+            'ohp' => 'overhead_press_standing',
+            'lateral' => 'dumbbell_lateral_raise',
+            'deadlift' => 'conventional_deadlift',
+            'row' => 'barbell_row',
+            'pullup' => 'pull_up_pronated',
+            'curl' => 'barbell_curl',
+            'squat' => 'back_squat_high_bar',
             'leg_press' => 'leg_press_45',
-            'leg_curl'  => 'lying_leg_curl',
-            'crunch'    => 'floor_crunch',
+            'leg_curl' => 'lying_leg_curl',
+            'crunch' => 'floor_crunch',
         ];
 
         $result = [];

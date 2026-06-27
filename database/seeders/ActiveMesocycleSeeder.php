@@ -92,17 +92,17 @@ class ActiveMesocycleSeeder extends Seeder
     private function resolveExercises(): array
     {
         $slugs = [
-            'bench'     => 'barbell_bench_press',
-            'incline'   => 'incline_barbell_bench_press',
-            'ohp'       => 'overhead_press_standing',
-            'lateral'   => 'dumbbell_lateral_raise',
-            'deadlift'  => 'conventional_deadlift',
-            'row'       => 'barbell_row',
-            'pullup'    => 'pull_up_pronated',
-            'curl'      => 'barbell_curl',
-            'squat'     => 'back_squat_high_bar',
+            'bench' => 'barbell_bench_press',
+            'incline' => 'incline_barbell_bench_press',
+            'ohp' => 'overhead_press_standing',
+            'lateral' => 'dumbbell_lateral_raise',
+            'deadlift' => 'conventional_deadlift',
+            'row' => 'barbell_row',
+            'pullup' => 'pull_up_pronated',
+            'curl' => 'barbell_curl',
+            'squat' => 'back_squat_high_bar',
             'leg_press' => 'leg_press_45',
-            'leg_curl'  => 'lying_leg_curl',
+            'leg_curl' => 'lying_leg_curl',
         ];
 
         $result = [];
@@ -130,9 +130,9 @@ class ActiveMesocycleSeeder extends Seeder
             date: $date,
             completed: $completed,
             exercisePlan: array_filter([
-                isset($exercises['bench'])   ? ['exercise' => $exercises['bench'],   'sets' => $this->straightSets($weekNum, 80.0, 2.5, 10)] : null,
+                isset($exercises['bench']) ? ['exercise' => $exercises['bench'],   'sets' => $this->straightSets($weekNum, 80.0, 2.5, 10)] : null,
                 isset($exercises['incline']) ? ['exercise' => $exercises['incline'], 'sets' => $this->straightSets($weekNum, 60.0, 2.5, 10)] : null,
-                isset($exercises['ohp'])     ? ['exercise' => $exercises['ohp'],     'sets' => $this->straightSets($weekNum, 50.0, 2.5, 10)] : null,
+                isset($exercises['ohp']) ? ['exercise' => $exercises['ohp'],     'sets' => $this->straightSets($weekNum, 50.0, 2.5, 10)] : null,
                 isset($exercises['lateral']) ? ['exercise' => $exercises['lateral'], 'sets' => $this->straightSets($weekNum, 14.0, 0.0, 15)] : null,
             ])
         );
@@ -153,9 +153,9 @@ class ActiveMesocycleSeeder extends Seeder
             completed: $completed,
             exercisePlan: array_filter([
                 isset($exercises['deadlift']) ? ['exercise' => $exercises['deadlift'], 'sets' => $this->straightSets($weekNum, 120.0, 5.0, 5)] : null,
-                isset($exercises['row'])      ? ['exercise' => $exercises['row'],      'sets' => $this->straightSets($weekNum, 70.0, 2.5, 8)] : null,
-                isset($exercises['pullup'])   ? ['exercise' => $exercises['pullup'],   'sets' => $this->bwSets($weekNum)] : null,
-                isset($exercises['curl'])     ? ['exercise' => $exercises['curl'],     'sets' => $this->straightSets($weekNum, 30.0, 1.25, 10)] : null,
+                isset($exercises['row']) ? ['exercise' => $exercises['row'],      'sets' => $this->straightSets($weekNum, 70.0, 2.5, 8)] : null,
+                isset($exercises['pullup']) ? ['exercise' => $exercises['pullup'],   'sets' => $this->bwSets($weekNum)] : null,
+                isset($exercises['curl']) ? ['exercise' => $exercises['curl'],     'sets' => $this->straightSets($weekNum, 30.0, 1.25, 10)] : null,
             ])
         );
     }
@@ -174,9 +174,9 @@ class ActiveMesocycleSeeder extends Seeder
             date: $date,
             completed: $completed,
             exercisePlan: array_filter([
-                isset($exercises['squat'])     ? ['exercise' => $exercises['squat'],     'sets' => $this->straightSets($weekNum, 100.0, 2.5, 8)] : null,
+                isset($exercises['squat']) ? ['exercise' => $exercises['squat'],     'sets' => $this->straightSets($weekNum, 100.0, 2.5, 8)] : null,
                 isset($exercises['leg_press']) ? ['exercise' => $exercises['leg_press'], 'sets' => $this->straightSets($weekNum, 160.0, 5.0, 12)] : null,
-                isset($exercises['leg_curl'])  ? ['exercise' => $exercises['leg_curl'],  'sets' => $this->straightSets($weekNum, 40.0, 2.5, 10)] : null,
+                isset($exercises['leg_curl']) ? ['exercise' => $exercises['leg_curl'],  'sets' => $this->straightSets($weekNum, 40.0, 2.5, 10)] : null,
             ])
         );
     }

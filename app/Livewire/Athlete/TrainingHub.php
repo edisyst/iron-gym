@@ -4,7 +4,6 @@ namespace App\Livewire\Athlete;
 
 use App\Models\BodyMeasurement;
 use App\Models\Mesocycle;
-use App\Models\MicrocycleWeek;
 use App\Models\SessionExercise;
 use App\Models\TrainingSession;
 use App\Services\E1rmCalculator;
@@ -261,15 +260,15 @@ class TrainingHub extends Component
             ->get();
 
         $groups = [
-            'chest'     => 'Petto',
-            'back'      => 'Schiena',
+            'chest' => 'Petto',
+            'back' => 'Schiena',
             'shoulders' => 'Spalle',
-            'arms'      => 'Braccia',
-            'legs'      => 'Gambe',
-            'core'      => 'Core',
+            'arms' => 'Braccia',
+            'legs' => 'Gambe',
+            'core' => 'Core',
         ];
 
-        $labels    = [];
+        $labels = [];
         $groupData = array_fill_keys(array_keys($groups), []);
 
         foreach ($weeks as $week) {

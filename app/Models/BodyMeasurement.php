@@ -2,11 +2,16 @@
 
 namespace App\Models;
 
+use Database\Factories\BodyMeasurementFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class BodyMeasurement extends Model
 {
+    /** @use HasFactory<BodyMeasurementFactory> */
+    use HasFactory;
+
     protected $fillable = [
         'athlete_id',
         'measured_at',

@@ -2,11 +2,16 @@
 
 namespace App\Models;
 
+use Database\Factories\AthleteVolumeLandmarkFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AthleteVolumeLandmark extends Model
 {
+    /** @use HasFactory<AthleteVolumeLandmarkFactory> */
+    use HasFactory;
+
     protected $fillable = [
         'athlete_id',
         'muscle_id',

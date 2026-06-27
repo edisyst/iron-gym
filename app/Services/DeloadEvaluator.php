@@ -148,8 +148,9 @@ class DeloadEvaluator
 
     private function checkRirDrift(Mesocycle $mesocycle, MicrocycleWeek $currentWeek): ?string
     {
-        // Ultimi 3 set working per esercizio, confronta actual_rir vs planned_rir
-        $driftExercises = DB::table('exercise_sets')
+        // Ultimi 3 set working per esercizio, confronta actual_rir vs planned_rir.
+        // Il filtro rn <= 3 è eseguito in SQL tramite subquery per evitare full-load in PHP.
+        $inner = DB::table('exercise_sets')
             ->join('session_exercises', 'session_exercises.id', '=', 'exercise_sets.session_exercise_id')
             ->join('training_sessions', 'training_sessions.id', '=', 'session_exercises.session_id')
             ->join('microcycle_weeks', 'microcycle_weeks.id', '=', 'training_sessions.microcycle_week_id')
@@ -163,9 +164,12 @@ class DeloadEvaluator
                 'exercise_sets.actual_rir',
                 'exercise_sets.planned_rir',
                 DB::raw('ROW_NUMBER() OVER (PARTITION BY session_exercises.exercise_id ORDER BY exercise_sets.completed_at DESC) as rn')
-            )
+            );
+
+        $driftExercises = DB::table(DB::raw("({$inner->toSql()}) as ranked"))
+            ->mergeBindings($inner)
+            ->where('rn', '<=', 3)
             ->get()
-            ->filter(fn ($row) => $row->rn <= 3)
             ->groupBy('exercise_id');
 
         $drifting = [];

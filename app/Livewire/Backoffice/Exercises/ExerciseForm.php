@@ -7,6 +7,7 @@ use App\Models\Exercise;
 use App\Models\ExerciseMuscle;
 use App\Models\MovementPattern;
 use App\Models\Muscle;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -293,10 +294,10 @@ class ExerciseForm extends Component
     public function render(): View
     {
         return view('livewire.backoffice.exercises.exercise-form', [
-            'compoundPatterns' => MovementPattern::compoundPatterns()->orderBy('display_order')->get(),
-            'jointActions' => MovementPattern::jointActions()->orderBy('display_order')->get(),
-            'allMuscles' => Muscle::orderBy('muscle_group')->orderBy('display_order')->get(),
-            'allEquipment' => Equipment::orderBy('name_it')->get(),
+            'compoundPatterns' => Cache::rememberForever('lookup:compound_patterns', fn () => MovementPattern::compoundPatterns()->orderBy('display_order')->get()),
+            'jointActions' => Cache::rememberForever('lookup:joint_actions', fn () => MovementPattern::jointActions()->orderBy('display_order')->get()),
+            'allMuscles' => Cache::rememberForever('lookup:muscles', fn () => Muscle::orderBy('muscle_group')->orderBy('display_order')->get()),
+            'allEquipment' => Cache::rememberForever('lookup:equipment', fn () => Equipment::orderBy('name_it')->get()),
         ])->layout('layouts.backoffice')
             ->layoutData(['page_title' => $this->exerciseId ? 'Modifica esercizio' : 'Nuovo esercizio']);
     }

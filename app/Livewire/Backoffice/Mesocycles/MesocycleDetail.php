@@ -7,6 +7,7 @@ use App\Models\MicrocycleWeek;
 use App\Services\DeloadEvaluator;
 use App\Services\WeeklyProgressionService;
 use App\Services\WeeklyVolumeCalculator;
+use App\ValueObjects\DeloadSignal;
 use App\ValueObjects\ProgressionResult;
 use Illuminate\View\View;
 use Livewire\Attributes\Title;
@@ -25,6 +26,9 @@ class MesocycleDetail extends Component
     /** @var array{setsAddedByMuscle: array<string,int>, feedbackTriggers: array<string>, action: string, note: string|null}|null */
     public ?array $lastProgressionResultData = null;
 
+    /** @var array{activeTriggers: array<string>, suggestedWeekNumber: int|null, notes: string|null} */
+    public array $deloadSignalData = ['activeTriggers' => [], 'suggestedWeekNumber' => null, 'notes' => null];
+
     public function mount(int $mesocycleId): void
     {
         $this->mesocycleId = $mesocycleId;
@@ -40,6 +44,17 @@ class MesocycleDetail extends Component
         $this->selectedWeekNumber = $bestWeek !== null ? $bestWeek->week_number : 1;
 
         $this->loadVolume();
+        $this->refreshDeloadSignal();
+    }
+
+    private function refreshDeloadSignal(): void
+    {
+        $signal = app(DeloadEvaluator::class)->evaluate($this->mesocycleId);
+        $this->deloadSignalData = [
+            'activeTriggers' => $signal->activeTriggers,
+            'suggestedWeekNumber' => $signal->suggestedWeekNumber,
+            'notes' => $signal->notes,
+        ];
     }
 
     public function loadVolume(): void
@@ -76,6 +91,7 @@ class MesocycleDetail extends Component
         session()->flash('success', 'Progressione applicata per la settimana '.($this->selectedWeekNumber + 1).'.');
 
         $this->loadVolume();
+        $this->refreshDeloadSignal();
     }
 
     public function forceDeload(): void
@@ -105,13 +121,18 @@ class MesocycleDetail extends Component
         session()->flash('success', 'Deload forzato applicato alla settimana '.$nextWeek->week_number.'.');
 
         $this->loadVolume();
+        $this->refreshDeloadSignal();
     }
 
     public function render(): View
     {
         $mesocycle = Mesocycle::with(['weeks', 'athlete', 'trainer'])->findOrFail($this->mesocycleId);
 
-        $deloadSignal = app(DeloadEvaluator::class)->evaluate($this->mesocycleId);
+        $deloadSignal = new DeloadSignal(
+            activeTriggers: $this->deloadSignalData['activeTriggers'],
+            suggestedWeekNumber: $this->deloadSignalData['suggestedWeekNumber'],
+            notes: $this->deloadSignalData['notes'],
+        );
         $lastProgressionResult = $this->lastProgressionResultData !== null
             ? new ProgressionResult(
                 setsAddedByMuscle: $this->lastProgressionResultData['setsAddedByMuscle'],

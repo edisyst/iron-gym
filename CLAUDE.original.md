@@ -1,6 +1,10 @@
 # iron-gym
 
-Gestionale palestra bodybuilding/fitness. Copre: anagrafica tesserati, abbonamenti, accessi, libreria esercizi, schede allenamento (template e mesocicli), logging sessioni atleta, periodizzazione con volume landmarks, tracking corporeo, prenotazioni PT/corsi, messaggistica trainer-atleta, notifiche automatiche, reportistica gestore, feature flags.
+Gestionale per palestra di bodybuilding e fitness. Copre: anagrafica tesserati,
+abbonamenti, accessi, libreria esercizi, schede di allenamento (template e mesocicli),
+logging sessioni atleta, periodizzazione con volume landmarks, tracking corporeo,
+prenotazioni PT e corsi, messaggistica trainer-atleta, notifiche automatiche,
+reportistica gestore, feature flags.
 
 ## Stack tecnico
 
@@ -21,7 +25,7 @@ Gestionale palestra bodybuilding/fitness. Copre: anagrafica tesserati, abbonamen
 
 - Lingua: italiano nel codice (commenti, messaggi), termini tecnici in inglese.
 - Modelli singolari PascalCase, tabelle plurali snake_case.
-- Form Request per validazione, mai inline nei controller.
+- Form Request per la validazione, mai inline nei controller.
 - Livewire per CRUD e form complessi, Blade puro per pagine statiche.
 - Migration sempre con down() implementato.
 - Naming Livewire: app/Livewire/Backoffice/<Area>/<Nome> e app/Livewire/Athlete/<Nome>.
@@ -37,11 +41,11 @@ Gestionale palestra bodybuilding/fitness. Copre: anagrafica tesserati, abbonamen
 **Training core:**
 - MovementPattern: lookup pattern motori (compound_pattern / joint_action)
 - Muscle, Equipment: lookup tassonomia esercizi
-- Exercise: catalogo esercizi, relazioni N-M su Muscle (pivot ExerciseMuscle con role e contribution_pct) e Equipment
-- WorkoutTemplate: template scheda riutilizzabile (gym-wide)
-- TemplateSession, TemplateSessionExercise: struttura template
-- Mesocycle: istanza concreta assegnata ad atleta, generata da WorkoutTemplate
-- MicrocycleWeek: settimana mesociclo (is_deload, start_date, end_date)
+- Exercise: catalogo esercizi con relazioni N-M su Muscle (pivot ExerciseMuscle con role e contribution_pct) e Equipment
+- WorkoutTemplate: template di scheda riutilizzabile (gym-wide)
+- TemplateSession, TemplateSessionExercise: struttura del template
+- Mesocycle: istanza concreta assegnata a un atleta, generata da WorkoutTemplate
+- MicrocycleWeek: settimana del mesociclo (is_deload, start_date, end_date)
 - TrainingSession: sessione giornaliera (planned/in_progress/completed/skipped)
 - SessionExerciseGroup: raggruppamento superset/giant_set
 - SessionExercise: esercizio in sessione con technique_type
@@ -53,7 +57,7 @@ Gestionale palestra bodybuilding/fitness. Copre: anagrafica tesserati, abbonamen
 - TrainerAvailability: disponibilità settimanale trainer
 - PtBooking: prenotazione sessione PT
 - GroupClass: corso collettivo
-- ClassBooking: iscrizione corso con waitlist
+- ClassBooking: iscrizione a corso con waitlist
 
 **Comunicazione:**
 - Message: messaggistica interna trainer-atleta
@@ -70,11 +74,11 @@ Gestionale palestra bodybuilding/fitness. Copre: anagrafica tesserati, abbonamen
 
 ## Servizi disponibili
 
-- MesocycleInstantiationService: crea gerarchia completa da template
+- MesocycleInstantiationService: crea la gerarchia completa da template
 - WeeklyVolumeCalculator: calcola hard set settimanali pesati per contribution_pct
 - WeeklyProgressionService: applica progressione MEV→MRV con lettura feedback
-- DeloadEvaluator: valuta quattro trigger di deload
-- KpiService: metriche aggregate per dashboard gestore
+- DeloadEvaluator: valuta i quattro trigger di deload
+- KpiService: metriche aggregate per la dashboard gestore
 - PtBookingService: prenotazioni PT con verifica disponibilità
 - ClassBookingService: iscrizioni corsi con gestione waitlist
 - E1rmCalculator: formula Epley per stima 1RM
@@ -82,11 +86,11 @@ Gestionale palestra bodybuilding/fitness. Copre: anagrafica tesserati, abbonamen
 ## Decisioni architetturali fisse
 
 - Single-tenant: niente gym_id.
-- movement_patterns è tabella lookup con category (compound_pattern / joint_action).
+- movement_patterns è tabella di lookup con category (compound_pattern / joint_action).
 - CHECK XOR su exercises: esattamente una tra compound_pattern_id e joint_action_id valorizzata.
 - Mesociclo snapshottato all'istanziamento: modifiche al template non si propagano.
 - Set unilaterali: un ExerciseSet per coppia di lati, niente granularità DX/SX nell'MVP.
-- Feedback post-sessione scala 0-3.
+- Feedback post-sessione su scala 0-3.
 - Ruoli spatie: atleta, trainer, gestore, receptionist.
 
 ## Componenti Livewire aggiunti (post step 10)
@@ -96,24 +100,27 @@ Gestionale palestra bodybuilding/fitness. Copre: anagrafica tesserati, abbonamen
 - `Backoffice/Athletes/AthleteSessionHistory` — storico sessioni atleta lato backoffice; filtra per `athlete_id`, mostra trainer, set, durata, feedback con badge 0-3, dettaglio inline con e1RM.
 - `Backoffice/Exercises/ExerciseDetail` — scheda tecnica esercizio (già esistente, potenziata): breadcrumb, immagine/placeholder, card Identità, card Attrezzatura, card Muscolare con progress bar AdminLTE (bg-danger/warning/info), card Esecuzione, card Video. Route: `backoffice.exercises.show` (slug binding). Exercise model usa `getRouteKeyName() = 'slug'`.
 
-**Nota architetturale:** view Livewire che usavano `@extends('adminlte::page')` convertite a wrapper `<div>` (pattern standard Livewire 3). Layout standalone gestito con `->layout('layouts.backoffice')` nel `render()`.
+**Nota architetturale:** le view Livewire che usavano `@extends('adminlte::page')` sono state convertite a wrapper `<div>` (pattern standard Livewire 3). Il layout standalone è gestito con `->layout('layouts.backoffice')` nel `render()`.
 
 ## Stato sviluppo
 
-Step 1-10 tutti implementati. Sistema in verifica funzionale e test pre-pilota.
+Tutti gli step 1-10 sono stati implementati. Il sistema è in fase di verifica
+funzionale e test pre-pilota.
 
-Bug risolti in verifica:
-- Cache equipment in ExerciseList: Eloquent Collection serializzata su file cache produceva `__PHP_Incomplete_Class` al deserialize. Fix: cache come array plain.
-- CACHE_STORE era `file`: portato a `redis` per supportare `Cache::tags()` usato in ExerciseObserver e per coerenza con QUEUE_CONNECTION=redis.
+Bug risolti in fase di verifica:
+- Cache equipment in ExerciseList: Eloquent Collection serializzata su file cache
+  produceva `__PHP_Incomplete_Class` al deserialize. Fix: cache come array plain.
+- CACHE_STORE era `file`: portato a `redis` per supportare `Cache::tags()` usato
+  in ExerciseObserver e per coerenza con QUEUE_CONNECTION=redis.
 - APP_URL era `localhost:8000`: corretto a `iron-gym.test` (Laragon).
 
-Test E2E flusso training core verificati (2026-06-22): AthleteHistoryTest 4/4, suite 90/96, PHPStan 0 errori, Pint conforme.
+Test end-to-end del flusso training core verificati (2026-06-22): AthleteHistoryTest 4/4, suite 90/96, PHPStan 0 errori, Pint conforme.
 
 ExerciseDetailPage implementata (2026-06-25): ExerciseDetailPageTest 4/4, PHPStan 0 errori, Pint conforme.
 
 Revisione codice staged completata (2026-06-27): security (IDOR SessionFeedbackForm/TemplateBuilder, middleware backoffice, FK mesocycles, MessageThread), performance (cache lookup statici, deload signal fuori da render, RIR drift subquery SQL, index exercise_sets.completed_at), test DeloadEvaluator 5/5, 6 factory mancanti. Suite: 96/102, PHPStan 0 errori, Pint conforme.
 
-Setup pilota avviato (2026-06-28): PilotSeeder eseguito (4 piani reali, account gestore@iron-gym.test), feature flags impostati (financial_reports ON, altri OFF), PilotTemplateSeeder aggiunto.
+Setup pilota avviato (2026-06-28): PilotSeeder eseguito (4 piani reali, account gestore@iron-gym.test), feature flags impostati (financial_reports ON, gli altri OFF), PilotTemplateSeeder aggiunto.
 
 Flusso assegnazione verificato (2026-06-28): mesociclo PPL assegnato ad Atleta Test (ID=9, 4 settimane, 12 sessioni, 200 set). Dashboard atleta mostra Push/Pull/Legs pianificate. Receptionist bloccato con 403 su /assign. Bug fix: route `{mesocycle}` → `{mesocycleId}` (mismatch con mount() causava 500 su ogni dettaglio mesociclo).
 
@@ -121,7 +128,7 @@ Registrazione atleta pilota completata (2026-06-28): Marco Rossi registrato (Mem
 
 Verifica E2E pilota completata (2026-06-28): Marco Rossi login → dashboard atleta mostra PPL Settimana 1 di 4 con Push/Pull/Legs pianificate → sessione Push aperta con esercizi e set editabili. Flusso registrazione-abbonamento-mesociclo-sessione verificato end-to-end. Bug fix: `email_verified_at` non in `#[Fillable]` di User — ora impostata via assegnazione diretta dopo `User::create()`.
 
-Prossima attività: raccogliere feedback dai primi atleti pilota dopo prima sessione.
+Prossima attività: raccogliere feedback dai primi atleti pilota dopo la prima sessione.
 
 ## Setup pilota — dati e procedure
 
@@ -142,9 +149,9 @@ php artisan db:seed --class=PilotTemplateSeeder  # template PPL ipertrofia 4 set
 | Flag | Stato pilota | Quando attivare |
 |---|---|---|
 | `financial_reports` | ON | attivo da subito per gestore |
-| `periodization_engine` | OFF | dopo 2 settimane test manuale |
+| `periodization_engine` | OFF | dopo 2 settimane di test manuale |
 | `push_notifications` | OFF | dopo verifica service worker su dispositivo reale |
-| `group_classes` | OFF | solo se palestra usa corsi collettivi |
+| `group_classes` | OFF | solo se la palestra usa corsi collettivi |
 
 Per modificare flags: backoffice → Admin → Feature Flags (solo gestore).
 
@@ -155,10 +162,10 @@ Sequenza completa — tutto via backoffice UI:
 **1. Crea tesserato + account** — Tesserati → Nuovo tesserato
    - Campi obbligatori: Cognome, Nome, Email, Scadenza cert. medico
    - Spunta **"Crea account accesso app"** → inserisci password (min. 8 caratteri)
-   - Sistema crea User con ruolo `atleta` e collega `user_id` in automatico
+   - Il sistema crea User con ruolo `atleta` e collega `user_id` in automatico
 
 **2. Crea abbonamento** — Abbonamenti → Nuovo abbonamento
-   - Seleziona tesserato + piano + data inizio → scadenza calcolata in automatico
+   - Seleziona tesserato + piano + data inizio → la scadenza si calcola in automatico
 
 **3. Assegna mesociclo PPL** — Mesocicli → Assegna mesociclo
    - Seleziona atleta + template + data inizio → Avanti → Conferma
@@ -175,17 +182,20 @@ Sequenza completa — tutto via backoffice UI:
 
 ## Catalogo esercizi — SQLite di riferimento
 
-`database/database.sqlite` contiene catalogo completo queryabile senza MySQL:
-- Tabelle: `movement_patterns` (27), `muscles` (26), `equipment` (14), `exercises` (83), `exercise_muscle` (259), `exercise_equipment` (108)
+`database/database.sqlite` contiene il catalogo completo queryabile senza MySQL:
+- Tabelle: `movement_patterns` (27), `muscles` (26), `equipment` (14),
+  `exercises` (83), `exercise_muscle` (259), `exercise_equipment` (108)
 - Colonna `execution_description` su `exercises` con testo esecuzione per tutti e 83
-- Script rigenerazione: `.claude/scripts/build_exercises_sqlite.py` (stdlib Python, nessuna dipendenza extra; sorgente unica: `exercises_seed.sql`)
+- Script di rigenerazione: `.claude/scripts/build_exercises_sqlite.py`
+  (stdlib Python, nessuna dipendenza extra; sorgente unica: `exercises_seed.sql`)
 
-Usare sqlite3 o DBeaver per interrogarlo. Non usato dai test (quelli usano `:memory:`).
+Usare sqlite3 o DBeaver per interrogarlo. Non è usato dai test (quelli usano `:memory:`).
 
 ## Documenti di dominio
 
-Disponibili in .claude/docs/domain/ ma NON caricati automaticamente per non saturare contesto. Richiedili esplicitamente quando servono:
-- .claude/docs/domain/step-0-discovery.md — ERD, schema SQL, regole progressione
+Disponibili in .claude/docs/domain/ ma NON caricati automaticamente per non saturare
+il contesto. Richiedili esplicitamente quando servono:
+- .claude/docs/domain/step-0-discovery.md — ERD, schema SQL, regole di progressione
 - .claude/docs/domain/exercises-catalog.md — catalogo 83 esercizi (tassonomia, muscoli, note metodologiche; SQL rimosso → dati in database.sqlite)
 - .claude/docs/domain/glossary.md — terminologia BB e tassonomia (documento corto, ok includerlo)
 

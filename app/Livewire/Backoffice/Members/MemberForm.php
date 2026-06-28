@@ -3,6 +3,8 @@
 namespace App\Livewire\Backoffice\Members;
 
 use App\Models\Member;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 use Livewire\Component;
 
@@ -33,6 +35,10 @@ class MemberForm extends Component
     public string $notes = '';
 
     public bool $is_active = true;
+
+    public bool $create_account = false;
+
+    public string $account_password = '';
 
     public function mount(?Member $member = null): void
     {
@@ -75,6 +81,10 @@ class MemberForm extends Component
             'medical_cert_expiry' => 'nullable|date',
             'notes' => 'nullable|string',
             'is_active' => 'boolean',
+            'create_account' => 'boolean',
+            'account_password' => $this->create_account && ! $this->memberId
+                ? 'required|string|min:8'
+                : 'nullable',
         ];
     }
 
@@ -93,7 +103,21 @@ class MemberForm extends Component
             Member::findOrFail($this->memberId)->update($data);
             session()->flash('success', 'Tesserato aggiornato con successo.');
         } else {
-            Member::create($data);
+            unset($data['create_account'], $data['account_password']);
+            $memberData = $data;
+            $member = Member::create($memberData);
+
+            if ($this->create_account) {
+                $user = User::create([
+                    'name' => $member->first_name.' '.$member->last_name,
+                    'email' => $member->email,
+                    'password' => Hash::make($this->account_password),
+                    'email_verified_at' => now(),
+                ]);
+                $user->assignRole('atleta');
+                $member->update(['user_id' => $user->id]);
+            }
+
             session()->flash('success', 'Tesserato creato con successo.');
         }
 

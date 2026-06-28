@@ -88,6 +88,26 @@
                     <input type="checkbox" wire:model="is_active" class="form-check-input" id="is_active">
                     <label class="form-check-label" for="is_active">Tesserato attivo</label>
                 </div>
+
+                @if(! $memberId)
+                <hr>
+                <div class="form-check mb-2">
+                    <input type="checkbox" wire:model.live="create_account" class="form-check-input" id="create_account">
+                    <label class="form-check-label" for="create_account"><strong>Crea account accesso app</strong></label>
+                </div>
+                @if($create_account)
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Password <span class="text-danger">*</span></label>
+                            <input type="password" wire:model="account_password" class="form-control @error('account_password') is-invalid @enderror" autocomplete="new-password">
+                            @error('account_password') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                            <small class="form-text text-muted">Min. 8 caratteri — l'atleta può cambiarla dal profilo.</small>
+                        </div>
+                    </div>
+                </div>
+                @endif
+                @endif
             </div>
             <div class="card-footer">
                 <button type="submit" class="btn btn-primary" wire:loading.attr="disabled">

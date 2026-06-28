@@ -121,6 +121,8 @@ Registrazione atleta pilota completata (2026-06-28): Marco Rossi registrato (Mem
 
 Verifica E2E pilota completata (2026-06-28): Marco Rossi login → dashboard atleta mostra PPL Settimana 1 di 4 con Push/Pull/Legs pianificate → sessione Push aperta con esercizi e set editabili. Flusso registrazione-abbonamento-mesociclo-sessione verificato end-to-end. Bug fix: `email_verified_at` non in `#[Fillable]` di User — ora impostata via assegnazione diretta dopo `User::create()`.
 
+Audit sicurezza v2 completato (2026-06-28): 15 fix applicati — ownership check trainer→atleta su 5 componenti backoffice (AthleteProfile, AthleteAnalytics, BodyMeasurementForm, VolumeLandmarkManager, MesocycleDetail), TrainingReport drilldown filtrato per trainer, MemberForm update bloccato per receptionist, BookingList.confirm() con trainer_id filter, MesocycleAssign verifica ruolo atleta, SessionFeedbackForm ownership in mount(), path traversal fix in ProgressPhotoController, bug overcounting sessions_count in AthleteAnalytics risolto, paginazione messaggi (limit 100). PHPStan 0 errori, Pint OK, suite 96/102. Report: docs/review/audit-codice.md.
+
 Prossima attività: raccogliere feedback dai primi atleti pilota dopo prima sessione.
 
 ## Setup pilota — dati e procedure

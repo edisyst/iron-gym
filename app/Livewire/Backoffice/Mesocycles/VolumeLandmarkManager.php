@@ -114,11 +114,11 @@ class VolumeLandmarkManager extends Component
     {
         $athlete = User::findOrFail($this->athleteId);
 
-        $muscleNames = Muscle::whereIn('slug', array_keys($this->landmarks))
-            ->pluck('name_it', 'slug');
+        $muscleData = Muscle::whereIn('slug', array_keys($this->landmarks))
+            ->get(['slug', 'name_it', 'muscle_group']);
 
-        $muscleGroups = Muscle::whereIn('slug', array_keys($this->landmarks))
-            ->pluck('muscle_group', 'slug');
+        $muscleNames = $muscleData->pluck('name_it', 'slug');
+        $muscleGroups = $muscleData->pluck('muscle_group', 'slug');
 
         $grouped = collect($this->landmarks)
             ->map(fn ($lm, $slug) => array_merge($lm, ['name_it' => $muscleNames[$slug] ?? $slug, 'group' => $muscleGroups[$slug] ?? 'altro']))

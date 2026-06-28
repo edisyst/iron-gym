@@ -5,6 +5,7 @@ namespace App\Livewire\Athlete;
 use App\Models\ProgressPhoto;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -75,8 +76,18 @@ class ProgressPhotoUpload extends Component
                 continue;
             }
 
+            // Elimina file precedente se esiste per questa posa/data
+            $oldPath = ProgressPhoto::where('athlete_id', $athleteId)
+                ->where('taken_at', $this->takenAt)
+                ->where('pose', $pose)
+                ->value('file_path');
+
+            if ($oldPath) {
+                Storage::disk('local')->delete($oldPath);
+            }
+
             // Salva nel disco local (storage/app/)
-            $filename = $pose.'_'.time().'.'.$file->getClientOriginalExtension();
+            $filename = $pose.'_'.Str::uuid().'.'.$file->getClientOriginalExtension();
             $filePath = $file->storeAs($basePath, $filename, 'local');
 
             // Crea o sovrascrive la foto per questa data e posa

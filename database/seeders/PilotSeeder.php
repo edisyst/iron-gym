@@ -42,8 +42,13 @@ class PilotSeeder extends Seeder
             [
                 'name' => 'Gestore',
                 'password' => Hash::make($password),
+                'email_verified_at' => now(),
             ]
         );
+
+        if ($manager->email_verified_at === null) {
+            $manager->update(['email_verified_at' => now()]);
+        }
 
         $manager->assignRole('gestore');
 

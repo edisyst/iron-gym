@@ -21,7 +21,7 @@ class MesocycleInstantiationService
      * Crea in cascade: MicrocycleWeek, TrainingSession, SessionExercise (con gruppi), ExerciseSet.
      * Tutta l'operazione è avvolta in una transaction: rollback automatico su eccezione.
      *
-     * @param  array{name: string, goal: string, periodization_model: string, start_date: string|Carbon, weeks_count: int}  $params
+     * @param  array{name: string, goal: string, periodization_model: string, start_date: string|Carbon, weeks_count: int, deload_last_week?: bool}  $params
      */
     public function instantiate(WorkoutTemplate $template, int $athleteId, int $trainerId, array $params): Mesocycle
     {
@@ -51,7 +51,7 @@ class MesocycleInstantiationService
                 $week = MicrocycleWeek::create([
                     'mesocycle_id' => $mesocycle->id,
                     'week_number' => $weekNum,
-                    'is_deload' => ($weekNum === (int) $params['weeks_count']),
+                    'is_deload' => ($weekNum === (int) $params['weeks_count']) && ($params['deload_last_week'] ?? true),
                     'start_date' => $weekStart,
                     'end_date' => $weekEnd,
                 ]);

@@ -161,7 +161,9 @@ class TemplateBuilder extends Component
 
         // Se era in un gruppo con solo un elemento rimasto, rimuovi il group_key dall'altro
         if ($groupKey !== null) {
-            $remaining = TemplateSessionExercise::where('group_key', $groupKey)->get();
+            $remaining = TemplateSessionExercise::where('group_key', $groupKey)
+                ->whereHas('templateSession', fn ($q) => $q->where('template_id', $this->template->id))
+                ->get();
             if ($remaining->count() === 1) {
                 $remaining->first()->update(['group_key' => null, 'group_type' => null]);
             }
@@ -237,7 +239,9 @@ class TemplateBuilder extends Component
 
             // Se nel gruppo rimane un solo esercizio, togli anche a lui il group_key
             if ($groupKey !== null) {
-                $remaining = TemplateSessionExercise::where('group_key', $groupKey)->get();
+                $remaining = TemplateSessionExercise::where('group_key', $groupKey)
+                    ->whereHas('templateSession', fn ($q) => $q->where('template_id', $this->template->id))
+                    ->get();
                 if ($remaining->count() === 1) {
                     $remaining->first()->update(['group_key' => null, 'group_type' => null]);
                 }

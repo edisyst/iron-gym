@@ -37,10 +37,14 @@ class WeeklyProgressionService
         [$action, $feedbackTriggers] = $this->analyzeFeedback($mesocycle->athlete_id, $currentWeek, $mesocycle);
 
         if ($nextWeek->is_deload) {
-            return $this->applyDeload($mesocycle, $currentWeek, $nextWeek, $currentVolume);
+            $result = $this->applyDeload($mesocycle, $currentWeek, $nextWeek, $currentVolume);
+        } else {
+            $result = $this->applyProgression($mesocycle, $nextWeek, $currentVolume, $action, $feedbackTriggers);
         }
 
-        return $this->applyProgression($mesocycle, $nextWeek, $currentVolume, $action, $feedbackTriggers);
+        $this->volumeCalc->forget($mesocycle->athlete_id, $nextWeek->id);
+
+        return $result;
     }
 
     /**
@@ -160,13 +164,14 @@ class WeeklyProgressionService
         MicrocycleWeek $nextWeek,
         array $currentVolume
     ): ProgressionResult {
-        // Per ogni esercizio della settimana deload, imposta planned_sets_count al 50% della corrente
+        // Per ogni esercizio usa il planned_sets_count dell'ultima sessione della settimana corrente
         $currentSessionExercises = DB::table('session_exercises')
             ->join('training_sessions', 'training_sessions.id', '=', 'session_exercises.session_id')
             ->where('training_sessions.microcycle_week_id', $currentWeek->id)
-            ->select('session_exercises.exercise_id', DB::raw('AVG(session_exercises.planned_sets_count) as avg_sets'), DB::raw('MAX(session_exercises.planned_sets_count) as max_sets'))
-            ->groupBy('session_exercises.exercise_id')
+            ->select('session_exercises.exercise_id', 'session_exercises.planned_sets_count')
+            ->orderByDesc('training_sessions.scheduled_date')
             ->get()
+            ->unique('exercise_id')
             ->keyBy('exercise_id');
 
         $nextSessions = TrainingSession::where('microcycle_week_id', $nextWeek->id)
@@ -176,7 +181,7 @@ class WeeklyProgressionService
         foreach ($nextSessions as $session) {
             foreach ($session->sessionExercises as $se) {
                 $ref = $currentSessionExercises[$se->exercise_id] ?? null;
-                $currentSets = $ref ? (int) $ref->max_sets : $se->planned_sets_count;
+                $currentSets = $ref ? (int) $ref->planned_sets_count : $se->planned_sets_count;
                 $deloadSets = max(1, (int) floor($currentSets / 2));
 
                 // Nota con indicazione del peso target (~90%)

@@ -66,10 +66,31 @@
                             $pattern  = $exercise->compoundPattern ?? $exercise->jointAction;
                             $isCompound = $exercise->compoundPattern !== null;
                         @endphp
+                        @php
+                            $thumbUrl = null;
+                            foreach (['png', 'jpg', 'jpeg', 'webp'] as $ext) {
+                                if (file_exists(public_path("images/exercises/{$exercise->slug}.{$ext}"))) {
+                                    $thumbUrl = asset("images/exercises/{$exercise->slug}.{$ext}");
+                                    break;
+                                }
+                            }
+                        @endphp
                         <tr>
                             <td>
-                                <a href="{{ route('backoffice.exercises.show', $exercise) }}" class="text-dark font-weight-bold">{{ $exercise->name_it }}</a>
-                                <br><small class="text-muted">{{ $exercise->slug }}</small>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div style="width:48px; height:48px; flex-shrink:0; background:#f4f6f9; border-radius:4px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                                        @if ($thumbUrl)
+                                            <img src="{{ $thumbUrl }}" alt="{{ $exercise->name_it }}"
+                                                 style="width:48px; height:48px; object-fit:cover;">
+                                        @else
+                                            <i class="fas fa-image text-muted" style="opacity:.4; font-size:.9rem;"></i>
+                                        @endif
+                                    </div>
+                                    <div>
+                                        <a href="{{ route('backoffice.exercises.show', $exercise) }}" class="text-dark font-weight-bold">{{ $exercise->name_it }}</a>
+                                        <br><small class="text-muted">{{ $exercise->slug }}</small>
+                                    </div>
+                                </div>
                             </td>
                             <td>{{ $primaryMuscle?->name_it ?? '—' }}</td>
                             <td>

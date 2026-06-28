@@ -3,10 +3,10 @@
 namespace App\Livewire\Backoffice\Athletes;
 
 use App\Models\BodyMeasurement;
+use App\Models\Mesocycle;
 use App\Models\MicrocycleWeek;
 use App\Models\ProgressPhoto;
 use App\Models\User;
-use App\Services\E1rmCalculator;
 use App\Services\WeeklyVolumeCalculator;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -43,6 +43,16 @@ class AthleteAnalytics extends Component
     public function mount(int $athleteId): void
     {
         User::findOrFail($athleteId);
+
+        if (! auth()->user()?->hasRole('gestore')) {
+            abort_unless(
+                Mesocycle::where('athlete_id', $athleteId)
+                    ->where('trainer_id', auth()->id())
+                    ->exists(),
+                403
+            );
+        }
+
         $this->athleteId = $athleteId;
         $this->photoDates = collect();
 
@@ -72,7 +82,7 @@ class AthleteAnalytics extends Component
 
     private function loadE1rmTable(): void
     {
-        // Top 5 esercizi più loggati negli ultimi 30 giorni con max e1RM Epley
+        // Top 5 esercizi per sessioni negli ultimi 30 giorni con max e1RM Epley (Epley in SQL)
         $rows = DB::table('exercise_sets as es')
             ->join('session_exercises as se', 'se.id', '=', 'es.session_exercise_id')
             ->join('training_sessions as s', 's.id', '=', 'se.session_id')
@@ -88,33 +98,21 @@ class AthleteAnalytics extends Component
             ->where('es.actual_reps', '>', 0)
             ->where('es.completed_at', '>=', now()->subDays(30))
             ->select(
+                'se.exercise_id',
                 'e.name_it',
-                'es.actual_weight_kg',
-                'es.actual_reps',
+                DB::raw('MAX(es.actual_weight_kg * (1 + es.actual_reps / 30.0)) as max_e1rm'),
                 DB::raw('COUNT(DISTINCT s.id) as sessions_count')
             )
-            ->groupBy('se.exercise_id', 'e.name_it', 'es.actual_weight_kg', 'es.actual_reps')
+            ->groupBy('se.exercise_id', 'e.name_it')
             ->orderByDesc('sessions_count')
-            ->limit(50) // aggreghiamo poi per esercizio in PHP
+            ->limit(5)
             ->get();
 
-        // Aggrega: per esercizio, calcola max e1RM e conta sessioni distinte
-        $byExercise = [];
-        foreach ($rows as $row) {
-            $e1rm = E1rmCalculator::epley((float) $row->actual_weight_kg, (int) $row->actual_reps);
-            $name = $row->name_it;
-            if (! isset($byExercise[$name])) {
-                $byExercise[$name] = ['exercise_name' => $name, 'max_e1rm' => null, 'sessions_count' => 0];
-            }
-            if ($e1rm !== null && ($byExercise[$name]['max_e1rm'] === null || $e1rm > $byExercise[$name]['max_e1rm'])) {
-                $byExercise[$name]['max_e1rm'] = $e1rm;
-            }
-            $byExercise[$name]['sessions_count'] += (int) $row->sessions_count;
-        }
-
-        // Ordina per sessioni e prende top 5
-        usort($byExercise, fn ($a, $b) => $b['sessions_count'] <=> $a['sessions_count']);
-        $this->e1rmRows = array_slice($byExercise, 0, 5);
+        $this->e1rmRows = $rows->map(fn ($row) => [
+            'exercise_name' => $row->name_it,
+            'max_e1rm' => $row->max_e1rm !== null ? round((float) $row->max_e1rm, 1) : null,
+            'sessions_count' => (int) $row->sessions_count,
+        ])->all();
     }
 
     private function loadVolumeData(): void

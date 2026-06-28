@@ -43,14 +43,14 @@ class Messages extends Component
             'newMessage.required' => 'Il messaggio non può essere vuoto.',
         ]);
 
+        $trainer = User::role(['trainer', 'gestore'])->findOrFail($this->trainerId);
+
         $message = Message::create([
             'sender_id' => Auth::id(),
             'receiver_id' => $this->trainerId,
             'body' => $this->newMessage,
         ]);
-
-        $trainer = User::find($this->trainerId);
-        $trainer?->notify(new NewMessageNotification($message));
+        $trainer->notify(new NewMessageNotification($message));
 
         $this->newMessage = '';
     }
@@ -69,7 +69,12 @@ class Messages extends Component
     {
         $trainer = $this->trainerId !== null ? User::find($this->trainerId) : null;
         $messages = $this->trainerId !== null
-            ? Message::conversation(Auth::id(), $this->trainerId)->get()
+            ? Message::conversation(Auth::id(), $this->trainerId)
+                ->latest()
+                ->take(100)
+                ->get()
+                ->reverse()
+                ->values()
             : collect();
 
         $unreadCount = Message::where('receiver_id', Auth::id())->unread()->count();

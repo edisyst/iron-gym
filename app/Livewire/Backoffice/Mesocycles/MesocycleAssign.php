@@ -99,6 +99,12 @@ class MesocycleAssign extends Component
             'templateId.exists' => 'Template non valido.',
         ]);
 
+        if (! User::role('atleta')->where('id', $this->athleteId)->exists()) {
+            $this->addError('athleteId', 'L\'utente selezionato non è un atleta.');
+
+            return;
+        }
+
         $this->step = 2;
     }
 

@@ -3,6 +3,7 @@
 namespace App\Livewire\Backoffice\Athletes;
 
 use App\Models\BodyMeasurement;
+use App\Models\Mesocycle;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
@@ -43,8 +44,17 @@ class BodyMeasurementForm extends Component
 
     public function mount(int $athleteId): void
     {
-        // Verifica che l'atleta esista
         User::findOrFail($athleteId);
+
+        if (! auth()->user()?->hasRole('gestore')) {
+            abort_unless(
+                Mesocycle::where('athlete_id', $athleteId)
+                    ->where('trainer_id', auth()->id())
+                    ->exists(),
+                403
+            );
+        }
+
         $this->athleteId = $athleteId;
         $this->measuredAt = now()->toDateString();
         $this->recentMeasurements = collect();

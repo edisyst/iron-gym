@@ -57,7 +57,12 @@ class MessageThread extends Component
 
     public function render(): View
     {
-        $messages = Message::conversation(Auth::id(), $this->athleteId)->get();
+        $messages = Message::conversation(Auth::id(), $this->athleteId)
+            ->latest()
+            ->take(100)
+            ->get()
+            ->reverse()
+            ->values();
         $athlete = User::find($this->athleteId);
 
         return view('livewire.backoffice.messages.message-thread', compact('messages', 'athlete'))

@@ -31,6 +31,13 @@ class SessionFeedbackForm extends Component
 
     public function mount(TrainingSession $session): void
     {
+        $owns = TrainingSession::whereHas(
+            'week.mesocycle',
+            fn ($q) => $q->where('athlete_id', auth()->id())
+        )->where('id', $session->id)->exists();
+
+        abort_unless($owns, 403);
+
         $this->sessionId = $session->id;
     }
 

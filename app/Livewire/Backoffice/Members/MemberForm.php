@@ -100,6 +100,7 @@ class MemberForm extends Component
         }
 
         if ($this->memberId) {
+            abort_unless(auth()->user()?->hasAnyRole(['gestore', 'trainer']), 403);
             Member::findOrFail($this->memberId)->update($data);
             session()->flash('success', 'Tesserato aggiornato con successo.');
         } else {

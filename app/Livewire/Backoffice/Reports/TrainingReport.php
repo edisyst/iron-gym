@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Backoffice\Reports;
 
+use App\Models\Mesocycle;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -26,6 +27,17 @@ class TrainingReport extends Component
 
     public function openDrilldown(int $athleteId): void
     {
+        $user = auth()->user();
+
+        if (! $user->hasRole('gestore')) {
+            abort_unless(
+                Mesocycle::where('athlete_id', $athleteId)
+                    ->where('trainer_id', $user->id)
+                    ->exists(),
+                403
+            );
+        }
+
         $this->drilldownAthleteId = $athleteId;
     }
 

@@ -3,6 +3,7 @@
 namespace App\Livewire\Backoffice\Mesocycles;
 
 use App\Models\AthleteVolumeLandmark;
+use App\Models\Mesocycle;
 use App\Models\Muscle;
 use App\Models\User;
 use Illuminate\View\View;
@@ -20,6 +21,16 @@ class VolumeLandmarkManager extends Component
     public function mount(int $athleteId): void
     {
         $this->athleteId = $athleteId;
+
+        if (! auth()->user()?->hasRole('gestore')) {
+            abort_unless(
+                Mesocycle::where('athlete_id', $athleteId)
+                    ->where('trainer_id', auth()->id())
+                    ->exists(),
+                403
+            );
+        }
+
         $this->loadLandmarks();
     }
 

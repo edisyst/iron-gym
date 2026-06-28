@@ -59,9 +59,15 @@ class BookingList extends Component
      */
     public function confirm(int $bookingId): void
     {
-        PtBooking::where('id', $bookingId)
-            ->where('status', 'pending')
-            ->update(['status' => 'confirmed']);
+        $user = Auth::user();
+
+        $query = PtBooking::where('id', $bookingId)->where('status', 'pending');
+
+        if (! $user->hasRole('gestore')) {
+            $query->where('trainer_id', $user->id);
+        }
+
+        $query->update(['status' => 'confirmed']);
 
         session()->flash('success', 'Prenotazione confermata.');
     }

@@ -15,6 +15,15 @@ class AthleteProfile extends Component
 
     public function mount(int $athleteId): void
     {
+        if (! auth()->user()?->hasRole('gestore')) {
+            abort_unless(
+                Mesocycle::where('athlete_id', $athleteId)
+                    ->where('trainer_id', auth()->id())
+                    ->exists(),
+                403
+            );
+        }
+
         $this->athleteId = $athleteId;
     }
 

@@ -36,6 +36,11 @@ class MesocycleDetail extends Component
             'weeks' => fn ($q) => $q->withCount(['sessions' => fn ($q2) => $q2->where('status', 'completed')]),
         ])->findOrFail($mesocycleId);
 
+        abort_unless(
+            $meso->trainer_id === auth()->id() || auth()->user()?->hasRole('gestore'),
+            403
+        );
+
         // Seleziona la settimana con più sessioni completed, altrimenti la prima
         $bestWeek = $meso->weeks
             ->sortByDesc('sessions_count')

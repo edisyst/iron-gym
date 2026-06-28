@@ -71,9 +71,9 @@ return [
     |
     */
 
-    'logo' => '<b>Iron</b> Gym',
-    'logo_img' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
-    'logo_img_class' => 'brand-image img-circle elevation-3',
+    'logo' => '<b>IRON</b>&nbsp;GYM',
+    'logo_img' => 'images/iron-gym-logo.svg',
+    'logo_img_class' => 'brand-image',
     'logo_img_xl' => null,
     'logo_img_xl_class' => 'brand-image-xs',
     'logo_img_alt' => 'Iron Gym',
@@ -121,8 +121,8 @@ return [
         'enabled' => true,
         'mode' => 'fullscreen',
         'img' => [
-            'path' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
-            'alt' => 'AdminLTE Preloader Image',
+            'path' => 'images/iron-gym-logo.svg',
+            'alt' => 'Iron Gym',
             'effect' => 'animation__shake',
             'width' => 60,
             'height' => 60,
@@ -198,7 +198,7 @@ return [
     |
     */
 
-    'classes_body' => '',
+    'classes_body' => 'iron-gym-brand',
     'classes_brand' => '',
     'classes_brand_text' => '',
     'classes_content_wrapper' => '',

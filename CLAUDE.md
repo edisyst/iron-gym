@@ -126,6 +126,8 @@ Flusso assegnazione verificato (2026-06-28): mesociclo PPL assegnato ad Atleta T
 
 Registrazione atleta pilota completata (2026-06-28): Marco Rossi registrato (Member ID=7, User ID=11, Mensile, PPL attivo). MemberForm potenziato con sezione "Crea account accesso app" — crea User+ruolo atleta+user_id in un unico submit. Procedura registrazione ora 100% via UI backoffice.
 
+Verifica E2E pilota completata (2026-06-28): Marco Rossi login → dashboard atleta mostra PPL Settimana 1 di 4 con Push/Pull/Legs pianificate → sessione Push aperta con esercizi e set editabili. Flusso registrazione-abbonamento-mesociclo-sessione verificato end-to-end. Bug fix: `email_verified_at` non in `#[Fillable]` di User — ora impostata via assegnazione diretta dopo `User::create()`.
+
 Prossima attività: raccogliere feedback dai primi atleti pilota dopo la prima sessione.
 
 ## Setup pilota — dati e procedure

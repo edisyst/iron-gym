@@ -163,6 +163,7 @@ Sequenza completa — tutto via backoffice UI:
 
 **2. Crea abbonamento** — Abbonamenti → Nuovo abbonamento
    - Seleziona tesserato + piano + data inizio → scadenza calcolata in automatico
+   - Nota: colonne DB sono `started_at` / `expires_at` (non start_date/end_date)
 
 **3. Assegna mesociclo PPL** — Mesocicli → Assegna mesociclo
    - Seleziona atleta + template + data inizio → Avanti → Conferma

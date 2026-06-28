@@ -124,7 +124,9 @@ Setup pilota avviato (2026-06-28): PilotSeeder eseguito (4 piani reali, account 
 
 Flusso assegnazione verificato (2026-06-28): mesociclo PPL assegnato ad Atleta Test (ID=9, 4 settimane, 12 sessioni, 200 set). Dashboard atleta mostra Push/Pull/Legs pianificate. Receptionist bloccato con 403 su /assign. Bug fix: route `{mesocycle}` → `{mesocycleId}` (mismatch con mount() causava 500 su ogni dettaglio mesociclo).
 
-Prossima attività: registrare atleti pilota reali e assegnare template PPL.
+Registrazione atleta pilota completata (2026-06-28): Marco Rossi registrato (Member ID=7, User ID=11, Mensile, PPL attivo). MemberForm potenziato con sezione "Crea account accesso app" — crea User+ruolo atleta+user_id in un unico submit. Procedura registrazione ora 100% via UI backoffice.
+
+Prossima attività: raccogliere feedback dai primi atleti pilota dopo la prima sessione.
 
 ## Setup pilota — dati e procedure
 
@@ -153,54 +155,18 @@ Per modificare flags: backoffice → Admin → Feature Flags (solo gestore).
 
 ### Procedura registrazione atleta pilota
 
-La UI backoffice non crea account user automaticamente. Sequenza completa:
+Sequenza completa — tutto via backoffice UI:
 
-**1. Crea tesserato** — backoffice → Tesserati → Nuovo tesserato
+**1. Crea tesserato + account** — Tesserati → Nuovo tesserato
    - Campi obbligatori: Cognome, Nome, Email, Scadenza cert. medico
+   - Spunta **"Crea account accesso app"** → inserisci password (min. 8 caratteri)
+   - Il sistema crea User con ruolo `atleta` e collega `user_id` in automatico
 
-**2. Crea account user e collega** — via tinker (sostituisci dati):
-```bash
-php artisan tinker --execute="
-use App\Models\User;
-use App\Models\Member;
-use Illuminate\Support\Facades\Hash;
+**2. Crea abbonamento** — Abbonamenti → Nuovo abbonamento
+   - Seleziona tesserato + piano + data inizio → la scadenza si calcola in automatico
 
-\$member = Member::where('email', 'EMAIL_ATLETA')->firstOrFail();
-\$user = User::firstOrCreate(
-    ['email' => 'EMAIL_ATLETA'],
-    ['name' => 'NOME COGNOME', 'password' => Hash::make('changeme2025'), 'email_verified_at' => now()]
-);
-\$member->update(['user_id' => \$user->id]);
-\$user->assignRole('atleta');
-echo 'OK: User '.\$user->id.' → Member '.\$member->id;
-"
-```
-
-**3. Crea abbonamento** — via tinker:
-```bash
-php artisan tinker --execute="
-use App\Models\Subscription;
-use App\Models\SubscriptionPlan;
-use App\Models\Member;
-
-\$member = Member::where('email', 'EMAIL_ATLETA')->firstOrFail();
-\$plan = SubscriptionPlan::where('name', 'NOME_PIANO')->firstOrFail();
-Subscription::create([
-    'member_id' => \$member->id,
-    'plan_id'   => \$plan->id,
-    'started_at'  => today()->toDateString(),
-    'expires_at'  => today()->addDays(\$plan->duration_days)->toDateString(),
-    'price_paid_cents' => \$plan->price_cents,
-    'is_active' => true,
-]);
-echo 'OK';
-"
-```
-
-**4. Assegna mesociclo PPL** — backoffice → Mesocicli → Assegna mesociclo
+**3. Assegna mesociclo PPL** — Mesocicli → Assegna mesociclo
    - Seleziona atleta + template + data inizio → Avanti → Conferma
-
-Password default atleta pilota: `changeme2025` (da comunicare all'atleta).
 
 ### Template PPL — struttura
 

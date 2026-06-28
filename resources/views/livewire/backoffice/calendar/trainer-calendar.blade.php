@@ -56,15 +56,15 @@
                         <div class="col-6">
                             <div class="form-group">
                                 <label>Ora inizio</label>
-                                <input type="time" wire:model="bookingStart" class="form-control">
-                                @error('bookingStart') <span class="text-danger small">{{ $message }}</span> @enderror
+                                <input type="time" wire:model="bookingStart" class="form-control @error('bookingStart') is-invalid @enderror">
+                                @error('bookingStart') <span class="invalid-feedback">{{ $message }}</span> @enderror
                             </div>
                         </div>
                         <div class="col-6">
                             <div class="form-group">
                                 <label>Ora fine</label>
-                                <input type="time" wire:model="bookingEnd" class="form-control">
-                                @error('bookingEnd') <span class="text-danger small">{{ $message }}</span> @enderror
+                                <input type="time" wire:model="bookingEnd" class="form-control @error('bookingEnd') is-invalid @enderror">
+                                @error('bookingEnd') <span class="invalid-feedback">{{ $message }}</span> @enderror
                             </div>
                         </div>
                     </div>
@@ -73,13 +73,13 @@
                         <input type="text" wire:model.live="bookingMemberSearch"
                                placeholder="Nome o cognome..."
                                class="form-control mb-1">
-                        <select wire:model="bookingMemberId" class="form-control" size="5">
+                        <select wire:model="bookingMemberId" class="form-control @error('bookingMemberId') is-invalid @enderror" size="5">
                             <option value="0">-- seleziona --</option>
                             @foreach($members as $member)
                                 <option value="{{ $member->id }}">{{ $member->full_name }}</option>
                             @endforeach
                         </select>
-                        @error('bookingMemberId') <span class="text-danger small">{{ $message }}</span> @enderror
+                        @error('bookingMemberId') <span class="invalid-feedback">{{ $message }}</span> @enderror
                     </div>
                 </div>
                 <div class="modal-footer">

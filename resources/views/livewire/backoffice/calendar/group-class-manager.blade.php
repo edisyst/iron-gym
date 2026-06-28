@@ -32,43 +32,43 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Trainer <span class="text-danger">*</span></label>
-                                    <select wire:model="formTrainerId" class="form-control form-control-sm">
+                                    <select wire:model="formTrainerId" class="form-control form-control-sm @error('formTrainerId') is-invalid @enderror">
                                         @foreach($trainers as $trainer)
                                             <option value="{{ $trainer->id }}">{{ $trainer->name }}</option>
                                         @endforeach
                                     </select>
-                                    @error('formTrainerId') <span class="text-danger small">{{ $message }}</span> @enderror
+                                    @error('formTrainerId') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Nome corso <span class="text-danger">*</span></label>
-                                    <input type="text" wire:model="formName" class="form-control form-control-sm"
+                                    <input type="text" wire:model="formName" class="form-control form-control-sm @error('formName') is-invalid @enderror"
                                            placeholder="Es. Spinning, CrossFit...">
-                                    @error('formName') <span class="text-danger small">{{ $message }}</span> @enderror
+                                    @error('formName') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Data e ora <span class="text-danger">*</span></label>
-                                    <input type="datetime-local" wire:model="formScheduledAt" class="form-control form-control-sm">
-                                    @error('formScheduledAt') <span class="text-danger small">{{ $message }}</span> @enderror
+                                    <input type="datetime-local" wire:model="formScheduledAt" class="form-control form-control-sm @error('formScheduledAt') is-invalid @enderror">
+                                    @error('formScheduledAt') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label>Durata (min)</label>
                                     <input type="number" wire:model="formDurationMinutes" min="15" max="480"
-                                           class="form-control form-control-sm">
-                                    @error('formDurationMinutes') <span class="text-danger small">{{ $message }}</span> @enderror
+                                           class="form-control form-control-sm @error('formDurationMinutes') is-invalid @enderror">
+                                    @error('formDurationMinutes') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label>Posti max</label>
                                     <input type="number" wire:model="formMaxParticipants" min="1" max="100"
-                                           class="form-control form-control-sm">
-                                    @error('formMaxParticipants') <span class="text-danger small">{{ $message }}</span> @enderror
+                                           class="form-control form-control-sm @error('formMaxParticipants') is-invalid @enderror">
+                                    @error('formMaxParticipants') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                 </div>
                             </div>
                             <div class="col-md-12">

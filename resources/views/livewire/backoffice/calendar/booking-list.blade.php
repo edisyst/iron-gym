@@ -137,10 +137,10 @@
                     <div class="form-group">
                         <label>Motivo dell'annullamento <span class="text-danger">*</span></label>
                         <textarea wire:model="cancelReason"
-                                  class="form-control"
+                                  class="form-control @error('cancelReason') is-invalid @enderror"
                                   rows="3"
                                   placeholder="Inserisci il motivo..."></textarea>
-                        @error('cancelReason') <span class="text-danger small">{{ $message }}</span> @enderror
+                        @error('cancelReason') <span class="invalid-feedback">{{ $message }}</span> @enderror
                     </div>
                 </div>
                 <div class="modal-footer">

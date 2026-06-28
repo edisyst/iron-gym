@@ -123,6 +123,8 @@ Verifica E2E pilota completata (2026-06-28): Marco Rossi login → dashboard atl
 
 Audit sicurezza v2 completato (2026-06-28): 15 fix applicati — ownership check trainer→atleta su 5 componenti backoffice (AthleteProfile, AthleteAnalytics, BodyMeasurementForm, VolumeLandmarkManager, MesocycleDetail), TrainingReport drilldown filtrato per trainer, MemberForm update bloccato per receptionist, BookingList.confirm() con trainer_id filter, MesocycleAssign verifica ruolo atleta, SessionFeedbackForm ownership in mount(), path traversal fix in ProgressPhotoController, bug overcounting sessions_count in AthleteAnalytics risolto, paginazione messaggi (limit 100). PHPStan 0 errori, Pint OK, suite 96/102. Report: docs/review/audit-codice.md.
 
+Fix residui LOW completati (2026-06-28): WeeklyProgressionService.applyDeload() usa ultima sessione per scheduled_date invece di MAX (baseline deload corretta); progressWeek() invalida cache WeeklyVolumeCalculator dopo progressione; MesocycleInstantiationService aggiunge parametro deload_last_week (default true); ProgressPhotoUpload usa Str::uuid() + elimina vecchio file prima di sovrascrivere; TemplateBuilder.removeExercise()/toggleGroup() filtrano per template_id su query group_key; VolumeLandmarkManager.render() singola query Muscle; PilotSeeder imposta email_verified_at. PHPStan 0 errori, Pint OK, suite 96/102. Audit completo — zero finding aperti.
+
 Prossima attività: raccogliere feedback dai primi atleti pilota dopo prima sessione.
 
 ## Setup pilota — dati e procedure

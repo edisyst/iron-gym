@@ -1,4 +1,4 @@
-<div>
+﻿<div>
     <div class="card">
         <div class="card-header">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
@@ -81,11 +81,11 @@
                                 @endif
                             </td>
                             <td class="text-nowrap">
-                                <a href="{{ route('backoffice.templates.builder', $template) }}" class="btn btn-xs btn-primary">
+                                <a href="{{ route('backoffice.templates.builder', $template) }}" class="btn btn-sm btn-primary">
                                     <i class="fas fa-tools"></i> Apri builder
                                 </a>
                                 <button type="button"
-                                        class="btn btn-xs btn-outline-secondary ml-1"
+                                        class="btn btn-sm btn-outline-secondary ml-1"
                                         wire:click="duplicate({{ $template->id }})"
                                         wire:loading.attr="disabled"
                                         wire:confirm="Duplicare '{{ $template->name }}'? Verrai reindirizzato al builder della copia.">

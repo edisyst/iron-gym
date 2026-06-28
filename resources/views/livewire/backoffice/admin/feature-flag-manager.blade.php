@@ -1,4 +1,4 @@
-<div>
+﻿<div>
     @if (session('success'))
         <div class="alert alert-success alert-dismissible">
             <button type="button" class="close" data-dismiss="alert">&times;</button>
@@ -58,12 +58,12 @@
                             <td class="text-center align-middle">
                                 @if ($active)
                                     <button wire:click="requestToggle('{{ $flag }}', false)"
-                                            class="btn btn-danger btn-xs">
+                                            class="btn btn-danger btn-sm">
                                         Disattiva globalmente
                                     </button>
                                 @else
                                     <button wire:click="requestToggle('{{ $flag }}', true)"
-                                            class="btn btn-success btn-xs">
+                                            class="btn btn-success btn-sm">
                                         Attiva globalmente
                                     </button>
                                 @endif

@@ -1,4 +1,4 @@
-{{-- Gestione disponibilità trainer: slot ricorrenti e override puntuali --}}
+﻿{{-- Gestione disponibilità trainer: slot ricorrenti e override puntuali --}}
 <div>
     {{-- ============================================================ --}}
     {{-- Slot ricorrenti settimanali --}}
@@ -65,7 +65,7 @@
                         <td class="text-right">
                             <button wire:click="deleteSlot({{ $slot->id }})"
                                     wire:confirm="Eliminare questo slot?"
-                                    class="btn btn-xs btn-danger">
+                                    class="btn btn-sm btn-danger">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </td>
@@ -165,7 +165,7 @@
                         <td class="text-right">
                             <button wire:click="deleteOverride({{ $override->id }})"
                                     wire:confirm="Eliminare questa eccezione?"
-                                    class="btn btn-xs btn-danger">
+                                    class="btn btn-sm btn-danger">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </td>

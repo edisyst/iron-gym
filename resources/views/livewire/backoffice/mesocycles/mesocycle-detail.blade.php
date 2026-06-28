@@ -1,4 +1,4 @@
-<div>
+﻿<div>
     @if (session('success'))
         <div class="alert alert-success alert-dismissible">
             <button type="button" class="close" data-dismiss="alert">&times;</button>
@@ -29,7 +29,7 @@
                 <small class="text-muted">{{ $mesocycle->athlete->name }} — Trainer: {{ $mesocycle->trainer->name }}</small>
                 <div class="mt-1">
                     <a href="{{ route('backoffice.athletes.profile', ['athleteId' => $mesocycle->athlete_id]) }}"
-                       class="btn btn-xs btn-outline-secondary">
+                       class="btn btn-sm btn-outline-secondary">
                         <i class="fas fa-user mr-1"></i> Vedi profilo completo atleta
                     </a>
                 </div>

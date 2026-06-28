@@ -1,4 +1,4 @@
-{{-- Lista prenotazioni PT con filtri e azioni --}}
+﻿{{-- Lista prenotazioni PT con filtri e azioni --}}
 <div>
     {{-- Filtri --}}
     <div class="card card-outline card-primary">
@@ -92,13 +92,13 @@
                             <td class="text-right">
                                 @if($booking->status === 'pending')
                                     <button wire:click="confirm({{ $booking->id }})"
-                                            class="btn btn-xs btn-success mr-1" title="Conferma" aria-label="Conferma prenotazione">
+                                            class="btn btn-sm btn-success mr-1" title="Conferma" aria-label="Conferma prenotazione">
                                         <i class="fas fa-check" aria-hidden="true"></i>
                                     </button>
                                 @endif
                                 @if(in_array($booking->status, ['pending', 'confirmed']))
                                     <button wire:click="openCancelModal({{ $booking->id }})"
-                                            class="btn btn-xs btn-danger" title="Annulla" aria-label="Annulla prenotazione">
+                                            class="btn btn-sm btn-danger" title="Annulla" aria-label="Annulla prenotazione">
                                         <i class="fas fa-times" aria-hidden="true"></i>
                                     </button>
                                 @endif

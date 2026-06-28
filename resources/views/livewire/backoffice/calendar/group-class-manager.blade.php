@@ -1,4 +1,4 @@
-{{-- Gestione corsi collettivi: CRUD e pannello iscritti --}}
+﻿{{-- Gestione corsi collettivi: CRUD e pannello iscritti --}}
 <div>
     <div class="row">
         {{-- Colonna lista corsi --}}
@@ -123,16 +123,16 @@
                                 </td>
                                 <td class="text-right table-actions">
                                     <button wire:click="openDetail({{ $class->id }})"
-                                            class="btn btn-xs btn-info mr-1" title="Dettaglio iscritti" aria-label="Iscritti {{ $class->name }}">
+                                            class="btn btn-sm btn-info mr-1" title="Dettaglio iscritti" aria-label="Iscritti {{ $class->name }}">
                                         <i class="fas fa-users" aria-hidden="true"></i>
                                     </button>
                                     <button wire:click="openForm({{ $class->id }})"
-                                            class="btn btn-xs btn-primary mr-1" title="Modifica" aria-label="Modifica {{ $class->name }}">
+                                            class="btn btn-sm btn-primary mr-1" title="Modifica" aria-label="Modifica {{ $class->name }}">
                                         <i class="fas fa-edit" aria-hidden="true"></i>
                                     </button>
                                     <button wire:click="deleteClass({{ $class->id }})"
                                             wire:confirm="Eliminare/cancellare questo corso?"
-                                            class="btn btn-xs btn-danger" title="Elimina" aria-label="Elimina {{ $class->name }}">
+                                            class="btn btn-sm btn-danger" title="Elimina" aria-label="Elimina {{ $class->name }}">
                                         <i class="fas fa-trash" aria-hidden="true"></i>
                                     </button>
                                 </td>
@@ -189,7 +189,7 @@
                                 <span class="small">{{ $booking->member?->full_name }}</span>
                                 <button wire:click="removeParticipant({{ $booking->id }})"
                                         wire:confirm="Rimuovere questo partecipante?"
-                                        class="btn btn-xs btn-outline-danger" aria-label="Rimuovi {{ $booking->member?->full_name }}">
+                                        class="btn btn-sm btn-outline-danger" aria-label="Rimuovi {{ $booking->member?->full_name }}">
                                     <i class="fas fa-user-minus" aria-hidden="true"></i>
                                 </button>
                             </li>
@@ -211,7 +211,7 @@
                                 </span>
                                 <button wire:click="removeParticipant({{ $waitlisted->id }})"
                                         wire:confirm="Rimuovere dalla lista d'attesa?"
-                                        class="btn btn-xs btn-outline-danger" aria-label="Rimuovi {{ $waitlisted->member?->full_name }} dalla lista d'attesa">
+                                        class="btn btn-sm btn-outline-danger" aria-label="Rimuovi {{ $waitlisted->member?->full_name }} dalla lista d'attesa">
                                     <i class="fas fa-times" aria-hidden="true"></i>
                                 </button>
                             </li>

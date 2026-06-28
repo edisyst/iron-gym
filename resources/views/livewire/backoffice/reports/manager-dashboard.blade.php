@@ -1,4 +1,4 @@
-<div>
+﻿<div>
 @feature('financial_reports')
     {{-- Selettore date --}}
     <div class="card card-outline card-primary mb-3">
@@ -146,7 +146,7 @@
                             <td>{{ \Carbon\Carbon::parse($m->expires_at)->format('d/m/Y') }}</td>
                             <td>{{ $m->last_access ? \Carbon\Carbon::parse($m->last_access)->format('d/m/Y') : 'mai' }}</td>
                             <td>
-                                <a href="{{ route('backoffice.athletes.messages', $m->member_id) }}" class="btn btn-xs btn-outline-primary">
+                                <a href="{{ route('backoffice.athletes.messages', $m->member_id) }}" class="btn btn-sm btn-outline-primary">
                                     Contatta
                                 </a>
                             </td>

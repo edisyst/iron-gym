@@ -1,4 +1,4 @@
-<div
+﻿<div
     x-data="{ open: false }"
     class="d-inline-block"
     wire:poll.10s
@@ -27,7 +27,7 @@
                 @if ($unreadCount > 0)
                     <button
                         wire:click="markAllAsRead"
-                        class="btn btn-xs btn-link p-0 text-muted"
+                        class="btn btn-sm btn-link p-0 text-muted"
                     >Segna tutte come lette</button>
                 @endif
             </div>

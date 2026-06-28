@@ -1,4 +1,4 @@
-<div>
+﻿<div>
     <div class="card">
         <div class="card-header">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
@@ -124,7 +124,7 @@
                                 @endif
                             </td>
                             <td>
-                                <a href="{{ route('backoffice.exercises.show', $exercise) }}" class="btn btn-xs btn-default" aria-label="Dettaglio {{ $exercise->name_it }}">
+                                <a href="{{ route('backoffice.exercises.show', $exercise) }}" class="btn btn-sm btn-default" aria-label="Dettaglio {{ $exercise->name_it }}">
                                     Dettaglio
                                 </a>
                             </td>

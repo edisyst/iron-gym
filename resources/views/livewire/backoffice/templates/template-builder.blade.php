@@ -1,4 +1,4 @@
-<div>
+﻿<div>
     {{-- Tab settimane + copia settimana --}}
     <div class="d-flex align-items-center justify-content-between flex-wrap mb-3">
         <ul class="nav nav-tabs mb-0">
@@ -55,7 +55,7 @@
                                value="{{ $session->name }}"
                                wire:change="updateSessionName({{ $session->id }}, $event.target.value)">
                         <button type="button"
-                                class="btn btn-xs btn-outline-danger"
+                                class="btn btn-sm btn-outline-danger"
                                 wire:click="removeSession({{ $session->id }})"
                                 wire:confirm="Eliminare la sessione '{{ $session->name }}' con tutti i suoi esercizi?">
                             <i class="fas fa-trash"></i>
@@ -87,7 +87,7 @@
                                                 <small class="text-muted ml-2">· {{ $primaryMuscle->name_it }}</small>
                                             @endif
                                         </div>
-                                        <button type="button" class="btn btn-xs btn-outline-danger"
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
                                                 wire:click="removeExercise({{ $ex->id }})"
                                                 wire:confirm="Rimuovere '{{ $ex->exercise->name_it }}'?">
                                             <i class="fas fa-times"></i>
@@ -140,7 +140,7 @@
                                     {{-- Note trainer + raggruppamento --}}
                                     <div x-data="{ showNote: {{ $ex->note ? 'true' : 'false' }}, grouped: {{ $ex->group_key ? 'true' : 'false' }} }" class="mt-2">
                                         <div class="d-flex align-items-center gap-2">
-                                            <button type="button" class="btn btn-xs btn-outline-secondary"
+                                            <button type="button" class="btn btn-sm btn-outline-secondary"
                                                     @click="showNote = !showNote">
                                                 <i class="fas fa-sticky-note"></i> Note
                                             </button>
@@ -205,7 +205,7 @@
                                                     <small class="text-muted">· {{ $rPrimary->name_it }}</small>
                                                 @endif
                                             </span>
-                                            <button type="button" class="btn btn-xs btn-success"
+                                            <button type="button" class="btn btn-sm btn-success"
                                                     wire:click="addExerciseById({{ $session->id }}, {{ $result->id }})">
                                                 <i class="fas fa-plus"></i>
                                             </button>

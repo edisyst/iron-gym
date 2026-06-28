@@ -1,4 +1,4 @@
-<div>
+﻿<div>
     {{-- Filtri --}}
     <div class="card card-outline card-primary mb-3">
         <div class="card-body py-2">
@@ -53,7 +53,7 @@
                                 </span>
                             </td>
                             <td>
-                                <button class="btn btn-xs btn-outline-info" wire:click="openDrilldown({{ $row->athlete_id }})">
+                                <button class="btn btn-sm btn-outline-info" wire:click="openDrilldown({{ $row->athlete_id }})">
                                     Dettaglio
                                 </button>
                             </td>
@@ -72,7 +72,7 @@
             <div class="card-header">
                 <h3 class="card-title">Dettaglio — {{ $drilldown['athlete_name'] }}</h3>
                 <div class="card-tools">
-                    <button class="btn btn-xs btn-secondary" wire:click="closeDrilldown">Chiudi</button>
+                    <button class="btn btn-sm btn-secondary" wire:click="closeDrilldown">Chiudi</button>
                 </div>
             </div>
             <div class="card-body">

@@ -1,4 +1,4 @@
-<div>
+﻿<div>
     {{-- Filtro mesociclo --}}
     <div class="card card-outline card-secondary mb-3">
         <div class="card-body py-2">
@@ -44,7 +44,7 @@
                                 @endif
                             </td>
                             <td>
-                                <button class="btn btn-xs btn-outline-primary"
+                                <button class="btn btn-sm btn-outline-primary"
                                         wire:click="showDetail({{ $session->id }})">
                                     Dettaglio
                                 </button>
@@ -66,7 +66,7 @@
                                                     <span class="text-muted ml-2">{{ $this->duration($s) }}</span>
                                                 @endif
                                             </div>
-                                            <button class="btn btn-xs btn-secondary" wire:click="showDetail({{ $session->id }})">
+                                            <button class="btn btn-sm btn-secondary" wire:click="showDetail({{ $session->id }})">
                                                 Chiudi
                                             </button>
                                         </div>

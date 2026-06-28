@@ -120,7 +120,44 @@ ExerciseDetailPage implementata (2026-06-25): ExerciseDetailPageTest 4/4, PHPSta
 
 Revisione codice staged completata (2026-06-27): security (IDOR SessionFeedbackForm/TemplateBuilder, middleware backoffice, FK mesocycles, MessageThread), performance (cache lookup statici, deload signal fuori da render, RIR drift subquery SQL, index exercise_sets.completed_at), test DeloadEvaluator 5/5, 6 factory mancanti. Suite: 96/102, PHPStan 0 errori, Pint conforme.
 
-Prossima attività: test pilota con dati reali.
+Setup pilota avviato (2026-06-28): PilotSeeder eseguito (4 piani reali, account gestore@iron-gym.test), feature flags impostati (financial_reports ON, gli altri OFF), PilotTemplateSeeder aggiunto.
+
+Prossima attività: assegnare template PPL agli atleti pilota tramite backoffice.
+
+## Setup pilota — dati e procedure
+
+### Seeder pilota (idempotenti)
+
+```bash
+php artisan db:seed --class=PilotSeeder          # piani abbonamento + account gestore
+php artisan db:seed --class=PilotTemplateSeeder  # template PPL ipertrofia 4 sett.
+```
+
+### Account pilota locale
+
+- Gestore: `gestore@iron-gym.test` / `changeme` (da `.env` PILOT_MANAGER_EMAIL/PASSWORD)
+- Trainer demo: `trainer@trainer.trainer`
+
+### Feature flags pilota (impostati via Pennant DB store)
+
+| Flag | Stato pilota | Quando attivare |
+|---|---|---|
+| `financial_reports` | ON | attivo da subito per gestore |
+| `periodization_engine` | OFF | dopo 2 settimane di test manuale |
+| `push_notifications` | OFF | dopo verifica service worker su dispositivo reale |
+| `group_classes` | OFF | solo se la palestra usa corsi collettivi |
+
+Per modificare flags: backoffice → Admin → Feature Flags (solo gestore).
+
+### Template PPL — struttura
+
+`database/seeders/PilotTemplateSeeder.php` — "PPL Ipertrofia — Intermediato (4 sett.)"
+
+- 3 sessioni/sett: Push (petto/spalle/tricipiti), Pull (schiena/bicipiti), Legs (gambe/glutei/polpacci)
+- W1: 3 serie compound + 3 iso | W2: 4+3 | W3: 4+4 | W4 deload: 2+2 @RIR+1
+- 12 TemplateSession, 200 ExerciseSet per mesociclo istanziato
+
+**Flusso assegnazione:** backoffice → Mesocicli → Assegna → scegli template + atleta + data inizio.
 
 ## Catalogo esercizi — SQLite di riferimento
 

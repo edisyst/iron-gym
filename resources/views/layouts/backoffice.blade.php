@@ -3,7 +3,11 @@
 @section('title', config('adminlte.title', 'Iron Gym'))
 
 @section('css')
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/backoffice.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/iron-gym-brand.css') }}">
 @stop
 
 @section('content_header')

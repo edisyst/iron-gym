@@ -12,7 +12,7 @@
 | H1 — 3 sistemi CSS | HIGH | Fase 2 ✅ — brand layer unifica backoffice | `2ba073d`, `3a5366b`, `fecf203` |
 | H2 — Modali non ARIA | HIGH | ✅ Risolto Fase 1 | `d459406` |
 | H3 — Bottoni icon-only | HIGH | ✅ Risolto Fase 1 | `745d2bb` |
-| H4 — Athlete non responsive | HIGH | Rimandato (richiede refactor layout athlete) | — |
+| H4 — Athlete non responsive | HIGH | ✅ Risolto (CSS file + sidebar desktop + breakpoints 768/1024/1280px) | `4c45751` |
 | M1 — btn-xs non standard | MED | ✅ Risolto Fase 1 | `76555d9` |
 | M2 — Doppio pattern errori | MED | ✅ Risolto Fase 1 | `2dd49ff` |
 | M3 — Loading state misto | MED | Bassa priorità, rinviato | — |
@@ -441,7 +441,7 @@ resources/views/livewire/backoffice/exercises/exercise-list.blade.php    — btn
 
 | Finding | Note |
 |---|---|
-| H4 — Athlete layout non responsive su tablet | Richiede refactor `athlete.blade.php` + estrazione CSS dedicato |
+| ~~H4~~ — Athlete responsive | ✅ Chiuso `4c45751` — `public/css/athlete.css`, sidebar desktop, breakpoints 768/1024/1280px |
 | M3 — Loading state 3 pattern diversi | Impatto basso, standardizzabile iterazione futura |
 | M4 — Badge athlete classi custom | Non critico finché area athlete mantiene dark theme separato |
 | L1-L5 — Finding LOW | Opzionali, nessun impatto funzionale |

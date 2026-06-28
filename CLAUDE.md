@@ -127,6 +127,8 @@ Fix residui LOW completati (2026-06-28): WeeklyProgressionService.applyDeload() 
 
 Revisione grafica backoffice completata (2026-06-28): audit UI + Fase 1 coerenza + Fase 2 brand identity. 9 commit. Dettagli: docs/review/audit-grafica.md. Suite 106/106, PHPStan 0, Pint OK.
 
+Fix responsive athlete completato (2026-06-28): H4 chiuso — CSS estratto in public/css/athlete.css, sidebar nav desktop (≥1024px), breakpoints tablet (768px)/desktop (1024px)/large (1280px). Suite 106/106, PHPStan 0, Pint OK. Tutti finding HIGH/MED dell'audit grafici chiusi.
+
 Prossima attività: raccogliere feedback dai primi atleti pilota dopo prima sessione.
 
 ## Setup pilota — dati e procedure

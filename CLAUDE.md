@@ -151,6 +151,57 @@ php artisan db:seed --class=PilotTemplateSeeder  # template PPL ipertrofia 4 set
 
 Per modificare flags: backoffice → Admin → Feature Flags (solo gestore).
 
+### Procedura registrazione atleta pilota
+
+La UI backoffice non crea account user automaticamente. Sequenza completa:
+
+**1. Crea tesserato** — backoffice → Tesserati → Nuovo tesserato
+   - Campi obbligatori: Cognome, Nome, Email, Scadenza cert. medico
+
+**2. Crea account user e collega** — via tinker (sostituisci dati):
+```bash
+php artisan tinker --execute="
+use App\Models\User;
+use App\Models\Member;
+use Illuminate\Support\Facades\Hash;
+
+\$member = Member::where('email', 'EMAIL_ATLETA')->firstOrFail();
+\$user = User::firstOrCreate(
+    ['email' => 'EMAIL_ATLETA'],
+    ['name' => 'NOME COGNOME', 'password' => Hash::make('changeme2025'), 'email_verified_at' => now()]
+);
+\$member->update(['user_id' => \$user->id]);
+\$user->assignRole('atleta');
+echo 'OK: User '.\$user->id.' → Member '.\$member->id;
+"
+```
+
+**3. Crea abbonamento** — via tinker:
+```bash
+php artisan tinker --execute="
+use App\Models\Subscription;
+use App\Models\SubscriptionPlan;
+use App\Models\Member;
+
+\$member = Member::where('email', 'EMAIL_ATLETA')->firstOrFail();
+\$plan = SubscriptionPlan::where('name', 'NOME_PIANO')->firstOrFail();
+Subscription::create([
+    'member_id' => \$member->id,
+    'plan_id'   => \$plan->id,
+    'started_at'  => today()->toDateString(),
+    'expires_at'  => today()->addDays(\$plan->duration_days)->toDateString(),
+    'price_paid_cents' => \$plan->price_cents,
+    'is_active' => true,
+]);
+echo 'OK';
+"
+```
+
+**4. Assegna mesociclo PPL** — backoffice → Mesocicli → Assegna mesociclo
+   - Seleziona atleta + template + data inizio → Avanti → Conferma
+
+Password default atleta pilota: `changeme2025` (da comunicare all'atleta).
+
 ### Template PPL — struttura
 
 `database/seeders/PilotTemplateSeeder.php` — "PPL Ipertrofia — Intermediato (4 sett.)"

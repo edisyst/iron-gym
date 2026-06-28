@@ -12,207 +12,90 @@
     <title>{{ config('app.name', 'Iron Gym') }}</title>
     @livewireStyles
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            background-color: #121212;
-            color: #FFFFFF;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            min-height: 100vh;
-            padding-bottom: 80px; /* spazio per la bottom nav */
-            padding-top: 48px;   /* spazio per la top bar */
-        }
-        .app-topbar {
-            position: fixed;
-            top: 0; left: 0; right: 0;
-            height: 48px;
-            background-color: #1E1E1E;
-            border-bottom: 1px solid #2A2A2A;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 16px;
-            z-index: 1000;
-        }
-        .app-topbar .app-brand {
-            font-size: 16px;
-            font-weight: 700;
-            color: #FF6B00;
-            letter-spacing: 0.02em;
-        }
-        .app-topbar .user-name {
-            font-size: 13px;
-            color: #aaa;
-            text-decoration: none;
-        }
-        .app-topbar .user-name:hover { color: #FF6B00; }
-        .app-topbar .logout-btn {
-            background: none;
-            border: none;
-            color: #666;
-            cursor: pointer;
-            padding: 6px 8px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 12px;
-            text-decoration: none;
-            transition: color 0.15s;
-        }
-        .app-topbar .logout-btn:hover { color: #ef4444; }
-        .app-main {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 16px 16px 0;
-        }
-        /* Bottom navigation bar */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 72px;
-            background-color: #1E1E1E;
-            border-top: 1px solid #2A2A2A;
-            display: flex;
-            align-items: stretch;
-            z-index: 1000;
-            padding: 6px 4px 8px;
-        }
-        .bottom-nav a {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: #666;
-            text-decoration: none;
-            font-size: 11px;
-            font-weight: 500;
-            gap: 2px;
-            transition: color 0.15s ease;
-        }
-        .bottom-nav a.active {
-            color: #FF6B00;
-            font-weight: 700;
-        }
-        .bottom-nav a:hover { color: #FF6B00; }
-        .bottom-nav svg {
-            width: 22px;
-            height: 22px;
-        }
-        .nav-pill {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 12px;
-            padding: 5px 14px;
-            transition: background 0.15s ease;
-        }
-        .bottom-nav a.active .nav-pill {
-            background: rgba(255, 107, 0, 0.15);
-        }
-        /* Card atleta */
-        .athlete-card {
-            background-color: #1E1E1E;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 16px;
-        }
-        .athlete-badge {
-            display: inline-block;
-            padding: 2px 10px;
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .badge-accent { background-color: #FF6B00; color: #fff; }
-        .badge-gray   { background-color: #333; color: #aaa; }
-        .badge-green  { background-color: #22c55e; color: #fff; }
-        .badge-red    { background-color: #ef4444; color: #fff; }
-        /* Pulsanti */
-        .btn-accent {
-            background-color: #FF6B00;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            padding: 12px 20px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            transition: background-color 0.15s ease;
-        }
-        .btn-accent:hover { background-color: #e05e00; }
-        .btn-ghost {
-            background: transparent;
-            color: #888;
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 10px 16px;
-            font-size: 14px;
-            cursor: pointer;
-        }
-        /* Input allenamento */
-        .workout-input {
-            background-color: #2A2A2A;
-            border: 1px solid #333;
-            border-radius: 6px;
-            color: #fff;
-            padding: 8px 10px;
-            font-size: 15px;
-            width: 72px;
-            text-align: center;
-        }
-        .workout-input:focus {
-            outline: none;
-            border-color: #FF6B00;
-        }
-        /* Status sessione */
-        .status-planned   { color: #888; }
-        .status-in_progress { color: #FF6B00; }
-        .status-completed { color: #22c55e; }
-        .status-skipped   { color: #ef4444; }
-        /* Separatore sezione */
-        .section-title {
-            color: #888;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            margin-bottom: 8px;
-        }
-        /* Radio metriche feedback */
-        .metric-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-        .metric-label { flex: 1; color: #ccc; font-size: 14px; }
-        .metric-options { display: flex; gap: 8px; }
-        .metric-options label {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            border: 1px solid #333;
-            cursor: pointer;
-            font-size: 14px;
-            color: #aaa;
-        }
-        .metric-options input[type="radio"] { display: none; }
-        .metric-options input[type="radio"]:checked + span {
-            background-color: #FF6B00;
-            color: #fff;
-            border-radius: 8px;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ asset('css/athlete.css') }}">
 </head>
 <body>
+    {{-- Sidebar navigation (desktop ≥ 1024px) --}}
+    <aside class="app-sidenav" aria-label="Navigazione principale">
+        <div class="sidenav-brand">Iron Gym</div>
+        <div class="sidenav-user">{{ auth()->user()->name ?? '' }}</div>
+        <nav>
+            <a href="{{ route('athlete.dashboard') }}"
+               class="{{ request()->routeIs('athlete.dashboard') ? 'active' : '' }}"
+               aria-current="{{ request()->routeIs('athlete.dashboard') ? 'page' : 'false' }}">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M3 12l2-2m0 0l7-7 7 7m-14 0v8a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-8"/>
+                </svg>
+                Oggi
+            </a>
+            <a href="{{ route('athlete.history') }}"
+               class="{{ request()->routeIs('athlete.history') || request()->routeIs('athlete.progress') ? 'active' : '' }}"
+               aria-current="{{ request()->routeIs('athlete.history') || request()->routeIs('athlete.progress') ? 'page' : 'false' }}">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2
+                             M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+                Storico
+            </a>
+            <a href="{{ route('athlete.exercises.index') }}"
+               class="{{ request()->routeIs('athlete.exercises*') ? 'active' : '' }}"
+               aria-current="{{ request()->routeIs('athlete.exercises*') ? 'page' : 'false' }}">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                </svg>
+                Esercizi
+            </a>
+            <a href="{{ route('athlete.bookings') }}"
+               class="{{ request()->routeIs('athlete.bookings') ? 'active' : '' }}"
+               aria-current="{{ request()->routeIs('athlete.bookings') ? 'page' : 'false' }}">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                Prenota
+            </a>
+            <a href="{{ route('athlete.messages') }}"
+               class="{{ request()->routeIs('athlete.messages') ? 'active' : '' }}"
+               aria-current="{{ request()->routeIs('athlete.messages') ? 'page' : 'false' }}"
+               x-data="{ unread: 0 }"
+               x-init="
+                   fetch('/athlete/messages-unread-count')
+                       .then(r => r.ok ? r.json() : {count:0})
+                       .then(d => unread = d.count ?? 0)
+                       .catch(() => {})
+               ">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                </svg>
+                Messaggi
+                <span x-show="unread > 0" x-text="unread > 9 ? '9+' : unread"
+                      class="nav-unread-badge" style="position:static; margin-left:auto;"
+                      aria-live="polite"></span>
+            </a>
+        </nav>
+        <div class="sidenav-footer">
+            <a href="{{ route('logout') }}"
+               onclick="event.preventDefault(); document.getElementById('logout-form-side').submit();">
+                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                </svg>
+                Esci
+            </a>
+            <form id="logout-form-side" action="{{ route('logout') }}" method="POST" style="display:none">@csrf</form>
+        </div>
+    </aside>
+
     <header class="app-topbar">
         <span class="app-brand">Iron Gym</span>
         <a href="{{ route('athlete.profile') }}" class="user-name">{{ auth()->user()->name }}</a>
         <a href="{{ route('logout') }}" class="logout-btn"
-           onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+           onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+           aria-label="Esci dall'applicazione">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round"
                       d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
             </svg>
@@ -223,17 +106,18 @@
         </form>
     </header>
 
-    <main class="app-main">
+    <main class="app-main" id="athlete-main-content">
         {{ $slot }}
     </main>
 
-    {{-- Bottom navigation --}}
-    <nav class="bottom-nav">
-        {{-- Oggi / Dashboard --}}
+    {{-- Bottom navigation (mobile / tablet) --}}
+    <nav class="bottom-nav" aria-label="Navigazione principale">
         <a href="{{ route('athlete.dashboard') }}"
-           class="{{ request()->routeIs('athlete.dashboard') ? 'active' : '' }}">
+           class="{{ request()->routeIs('athlete.dashboard') ? 'active' : '' }}"
+           aria-current="{{ request()->routeIs('athlete.dashboard') ? 'page' : 'false' }}"
+           aria-label="Oggi">
             <span class="nav-pill">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round"
                           d="M3 12l2-2m0 0l7-7 7 7m-14 0v8a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-8"/>
                 </svg>
@@ -241,11 +125,12 @@
             <span>Oggi</span>
         </a>
 
-        {{-- Storico + Progressi --}}
         <a href="{{ route('athlete.history') }}"
-           class="{{ request()->routeIs('athlete.history') || request()->routeIs('athlete.progress') ? 'active' : '' }}">
+           class="{{ request()->routeIs('athlete.history') || request()->routeIs('athlete.progress') ? 'active' : '' }}"
+           aria-current="{{ request()->routeIs('athlete.history') || request()->routeIs('athlete.progress') ? 'page' : 'false' }}"
+           aria-label="Storico sessioni">
             <span class="nav-pill">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round"
                           d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2
                              M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
@@ -254,23 +139,24 @@
             <span>Storico</span>
         </a>
 
-        {{-- Esercizi --}}
         <a href="{{ route('athlete.exercises.index') }}"
-           class="{{ request()->routeIs('athlete.exercises*') ? 'active' : '' }}">
+           class="{{ request()->routeIs('athlete.exercises*') ? 'active' : '' }}"
+           aria-current="{{ request()->routeIs('athlete.exercises*') ? 'page' : 'false' }}"
+           aria-label="Catalogo esercizi">
             <span class="nav-pill">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
                 </svg>
             </span>
             <span>Esercizi</span>
         </a>
 
-        {{-- Prenota --}}
         <a href="{{ route('athlete.bookings') }}"
-           class="{{ request()->routeIs('athlete.bookings') ? 'active' : '' }}">
+           class="{{ request()->routeIs('athlete.bookings') ? 'active' : '' }}"
+           aria-current="{{ request()->routeIs('athlete.bookings') ? 'page' : 'false' }}"
+           aria-label="Prenota sessione PT o corso">
             <span class="nav-pill">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round"
                           d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                 </svg>
@@ -278,44 +164,31 @@
             <span>Prenota</span>
         </a>
 
-        {{-- Messaggi --}}
         <a href="{{ route('athlete.messages') }}"
            class="{{ request()->routeIs('athlete.messages') ? 'active' : '' }}"
+           aria-current="{{ request()->routeIs('athlete.messages') ? 'page' : 'false' }}"
+           aria-label="Messaggi dal trainer"
            x-data="{ unread: 0 }"
            x-init="
                fetch('/athlete/messages-unread-count')
                    .then(r => r.ok ? r.json() : {count:0})
                    .then(d => unread = d.count ?? 0)
                    .catch(() => {})
-           "
-        >
-            <span class="nav-pill" style="position: relative;">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+           ">
+            <span class="nav-pill">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round"
                           d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                 </svg>
                 <span
                     x-show="unread > 0"
                     x-text="unread > 9 ? '9+' : unread"
-                    style="
-                        position: absolute;
-                        top: -4px; right: -2px;
-                        background: #ef4444;
-                        color: #fff;
-                        border-radius: 999px;
-                        font-size: 9px;
-                        min-width: 16px;
-                        height: 16px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        padding: 0 3px;
-                    "
+                    class="nav-unread-badge"
+                    aria-live="polite"
                 ></span>
             </span>
             <span>Messaggi</span>
         </a>
-
     </nav>
 
     @stack('scripts')

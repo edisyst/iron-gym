@@ -2,6 +2,10 @@
 
 @section('title', config('adminlte.title', 'Iron Gym'))
 
+@section('css')
+    <link rel="stylesheet" href="{{ asset('css/backoffice.css') }}">
+@stop
+
 @section('content_header')
     <div class="d-flex justify-content-between align-items-center">
         <h1>{{ $page_title ?? 'Dashboard' }}</h1>
@@ -10,6 +14,8 @@
 @stop
 
 @section('content')
+    <a href="#main-content" class="skip-link">Salta al contenuto</a>
+    <div id="main-content">
     @if (session('success'))
         <div
             x-data="{ show: true }"
@@ -41,6 +47,7 @@
     @if(config('features.in_app_feedback_enabled'))
         @livewire('shared.in-app-feedback')
     @endif
+    </div>
 @stop
 
 @section('plugins.Livewire', true)

@@ -124,7 +124,7 @@
                                 @endif
                             </td>
                             <td>
-                                <a href="{{ route('backoffice.exercises.show', $exercise) }}" class="btn btn-xs btn-default">
+                                <a href="{{ route('backoffice.exercises.show', $exercise) }}" class="btn btn-xs btn-default" aria-label="Dettaglio {{ $exercise->name_it }}">
                                     Dettaglio
                                 </a>
                             </td>

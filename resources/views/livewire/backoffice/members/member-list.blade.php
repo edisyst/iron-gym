@@ -70,8 +70,8 @@
                                 @endif
                             </td>
                             <td>
-                                <a href="{{ route('backoffice.members.edit', $member) }}" class="btn btn-xs btn-default">
-                                    <i class="fas fa-edit"></i>
+                                <a href="{{ route('backoffice.members.edit', $member) }}" class="btn btn-xs btn-default" aria-label="Modifica {{ $member->full_name }}">
+                                    <i class="fas fa-edit" aria-hidden="true"></i>
                                 </a>
                                 @if ($member->user_id)
                                     <a href="{{ route('backoffice.athletes.profile', ['athleteId' => $member->user_id]) }}"

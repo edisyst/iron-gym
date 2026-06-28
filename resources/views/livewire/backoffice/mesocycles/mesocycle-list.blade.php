@@ -76,8 +76,8 @@
                                 </td>
                                 <td>{{ $meso->trainer?->name ?? '—' }}</td>
                                 <td>
-                                    <a href="{{ route('backoffice.mesocycles.show', $meso) }}" class="btn btn-xs btn-default">
-                                        <i class="fas fa-eye"></i>
+                                    <a href="{{ route('backoffice.mesocycles.show', $meso) }}" class="btn btn-xs btn-default" aria-label="Visualizza {{ $meso->name }}">
+                                        <i class="fas fa-eye" aria-hidden="true"></i>
                                     </a>
                                     @if ($meso->athlete_id)
                                         <a href="{{ route('backoffice.athletes.profile', ['athleteId' => $meso->athlete_id]) }}"

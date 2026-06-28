@@ -15,16 +15,16 @@
                 @endif
 
                 {{-- Navigazione settimana --}}
-                <button wire:click="previousWeek" class="btn btn-sm btn-secondary">
-                    <i class="fas fa-chevron-left"></i>
+                <button wire:click="previousWeek" class="btn btn-sm btn-secondary" aria-label="Settimana precedente">
+                    <i class="fas fa-chevron-left" aria-hidden="true"></i>
                 </button>
                 <span class="mx-2 font-weight-bold">
                     {{ \Carbon\Carbon::parse($weekStart)->format('d/m/Y') }}
                     &ndash;
                     {{ \Carbon\Carbon::parse($weekEnd)->format('d/m/Y') }}
                 </span>
-                <button wire:click="nextWeek" class="btn btn-sm btn-secondary">
-                    <i class="fas fa-chevron-right"></i>
+                <button wire:click="nextWeek" class="btn btn-sm btn-secondary" aria-label="Settimana successiva">
+                    <i class="fas fa-chevron-right" aria-hidden="true"></i>
                 </button>
             </div>
         </div>

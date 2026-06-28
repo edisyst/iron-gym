@@ -112,8 +112,9 @@ class MemberForm extends Component
                     'name' => $member->first_name.' '.$member->last_name,
                     'email' => $member->email,
                     'password' => Hash::make($this->account_password),
-                    'email_verified_at' => now(),
                 ]);
+                $user->email_verified_at = now();
+                $user->save();
                 $user->assignRole('atleta');
                 $member->update(['user_id' => $user->id]);
             }

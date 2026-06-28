@@ -57,19 +57,17 @@
 
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <div class="d-flex gap-2">
+            <div class="d-flex flex-wrap gap-2">
                 <input
                     type="date"
                     wire:model.live="dateFilter"
-                    class="form-control form-control-sm"
-                    style="width: 180px"
+                    class="form-control form-control-sm filter-w-sm"
                 >
                 <input
                     type="text"
                     wire:model.live.debounce.300ms="search"
                     placeholder="Cerca tesserato..."
-                    class="form-control form-control-sm"
-                    style="width: 250px"
+                    class="form-control form-control-sm filter-w-lg"
                 >
             </div>
             <button class="btn btn-primary btn-sm" wire:click="openModal">

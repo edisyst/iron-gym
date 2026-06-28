@@ -7,7 +7,7 @@
             <div class="card-tools d-flex align-items-center gap-2">
                 {{-- Selezione trainer (solo gestore vedrà altri trainer; trainer vede solo se stesso) --}}
                 @if(count($trainers) > 1)
-                    <select wire:model.live="selectedTrainerId" class="form-control form-control-sm mr-2" style="width:200px">
+                    <select wire:model.live="selectedTrainerId" class="form-control form-control-sm mr-2 filter-w-md">
                         @foreach($trainers as $trainer)
                             <option value="{{ $trainer->id }}">{{ $trainer->name }}</option>
                         @endforeach

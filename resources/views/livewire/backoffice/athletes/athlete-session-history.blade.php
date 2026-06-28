@@ -2,7 +2,7 @@
     {{-- Filtro mesociclo --}}
     <div class="card card-outline card-secondary mb-3">
         <div class="card-body py-2">
-            <select wire:model.live="mesocycleId" class="form-control form-control-sm" style="width:300px">
+            <select wire:model.live="mesocycleId" class="form-control form-control-sm filter-w-lg">
                 <option value="">Tutti i mesocicli</option>
                 @foreach ($mesocycles as $meso)
                     <option value="{{ $meso->id }}">{{ $meso->name }}</option>

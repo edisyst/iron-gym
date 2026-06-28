@@ -1,16 +1,15 @@
 ﻿<div>
     <div class="card">
         <div class="card-header">
-            <div class="d-flex justify-content-between align-items-center">
-                <div class="d-flex gap-2">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div class="d-flex flex-wrap gap-2">
                     <input
                         type="text"
                         wire:model.live.debounce.300ms="search"
                         placeholder="Cerca per nome o email..."
-                        class="form-control form-control-sm"
-                        style="width: 300px"
+                        class="form-control form-control-sm filter-w-lg"
                     >
-                    <select wire:model.live="filter" class="form-control form-control-sm" style="width: 200px">
+                    <select wire:model.live="filter" class="form-control form-control-sm filter-w-md">
                         <option value="all">Tutti</option>
                         <option value="active">Solo attivi</option>
                         <option value="cert_issues">Certificato scaduto</option>

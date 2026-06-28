@@ -7,10 +7,9 @@
                         type="text"
                         wire:model.live.debounce.300ms="search"
                         placeholder="Cerca template..."
-                        class="form-control form-control-sm"
-                        style="width: 220px"
+                        class="form-control form-control-sm filter-w-md"
                     >
-                    <select wire:model.live="goal" class="form-control form-control-sm" style="width: 160px">
+                    <select wire:model.live="goal" class="form-control form-control-sm filter-w-xs">
                         <option value="">Tutti gli obiettivi</option>
                         <option value="hypertrophy">Ipertrofia</option>
                         <option value="strength">Forza</option>
@@ -19,7 +18,7 @@
                         <option value="peaking">Peaking</option>
                         <option value="general">Generale</option>
                     </select>
-                    <select wire:model.live="active" class="form-control form-control-sm" style="width: 140px">
+                    <select wire:model.live="active" class="form-control form-control-sm filter-w-xs">
                         <option value="">Tutti</option>
                         <option value="1">Attivi</option>
                         <option value="0">Archiviati</option>

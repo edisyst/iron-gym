@@ -8,7 +8,7 @@
                     <h3 class="card-title">Corsi collettivi</h3>
                     <div class="card-tools d-flex align-items-center gap-2">
                         {{-- Filtro status --}}
-                        <select wire:model.live="filterStatus" class="form-control form-control-sm mr-2" style="width:140px">
+                        <select wire:model.live="filterStatus" class="form-control form-control-sm mr-2 filter-w-xs">
                             <option value="">Tutti</option>
                             <option value="scheduled">Programmati</option>
                             <option value="completed">Completati</option>
@@ -17,7 +17,7 @@
                         {{-- Ricerca --}}
                         <input type="text" wire:model.live.debounce.300ms="search"
                                placeholder="Cerca corso..."
-                               class="form-control form-control-sm mr-2" style="width:180px">
+                               class="form-control form-control-sm mr-2 filter-w-sm">
                         <button wire:click="openForm()" class="btn btn-sm btn-warning">
                             <i class="fas fa-plus mr-1"></i> Nuovo corso
                         </button>

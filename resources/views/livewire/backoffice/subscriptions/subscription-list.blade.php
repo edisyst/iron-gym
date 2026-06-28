@@ -1,7 +1,7 @@
 <div>
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <select wire:model.live="filter" class="form-control form-control-sm" style="width: 200px">
+            <select wire:model.live="filter" class="form-control form-control-sm filter-w-md">
                 <option value="all">Tutti</option>
                 <option value="active">Attivi</option>
                 <option value="expiring">In scadenza (30gg)</option>

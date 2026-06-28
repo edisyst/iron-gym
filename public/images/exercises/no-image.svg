@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200">
+  <rect width="300" height="200" fill="#f4f6f9"/>
+  <rect x="1" y="1" width="298" height="198" fill="none" stroke="#dee2e6" stroke-width="1"/>
+  <line x1="80" y1="60" x2="80" y2="140" stroke="#adb5bd" stroke-width="1.5"/>
+  <line x1="80" y1="60" x2="220" y2="60" stroke="#adb5bd" stroke-width="1.5"/>
+  <line x1="220" y1="60" x2="220" y2="140" stroke="#adb5bd" stroke-width="1.5"/>
+  <line x1="80" y1="140" x2="220" y2="140" stroke="#adb5bd" stroke-width="1.5"/>
+  <circle cx="110" cy="85" r="10" fill="#adb5bd"/>
+  <polyline points="80,120 120,90 155,115 185,85 220,125" fill="none" stroke="#adb5bd" stroke-width="2"/>
+  <text x="150" y="168" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#adb5bd" text-anchor="middle" letter-spacing="2">NO IMAGE</text>
+</svg>

@@ -83,7 +83,9 @@
                                             <img src="{{ $thumbUrl }}" alt="{{ $exercise->name_it }}"
                                                  style="width:48px; height:48px; object-fit:cover;">
                                         @else
-                                            <i class="fas fa-image text-muted" style="opacity:.4; font-size:.9rem;"></i>
+                                            <img src="{{ asset('images/exercises/no-image.svg') }}"
+                                                 alt="No image"
+                                                 style="width:48px; height:48px; object-fit:cover; opacity:.6;">
                                         @endif
                                     </div>
                                     <div>

@@ -43,10 +43,10 @@
                              class="img-fluid"
                              style="max-height: 300px; object-fit: contain;">
                     @else
-                        <div class="text-muted text-center py-5">
-                            <i class="fas fa-image fa-3x mb-2 d-block" style="opacity:.3"></i>
-                            <small>Immagine non disponibile</small>
-                        </div>
+                        <img src="{{ asset('images/exercises/no-image.svg') }}"
+                             alt="No image"
+                             class="img-fluid"
+                             style="max-height: 300px; object-fit: contain; opacity:.6;">
                     @endif
                 </div>
             </div>

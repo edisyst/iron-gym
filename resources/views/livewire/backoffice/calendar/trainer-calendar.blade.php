@@ -38,13 +38,13 @@
 
     {{-- Modale creazione prenotazione PT --}}
     @if($showBookingModal)
-    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5)">
+    <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="modal-prenotazione-title" style="background:rgba(0,0,0,.5)">
         <div class="modal-dialog modal-md">
             <div class="modal-content">
                 <div class="modal-header bg-primary">
-                    <h5 class="modal-title text-white">Nuova prenotazione PT</h5>
-                    <button wire:click="$set('showBookingModal', false)" class="close text-white">
-                        <span>&times;</span>
+                    <h5 class="modal-title text-white" id="modal-prenotazione-title">Nuova prenotazione PT</h5>
+                    <button wire:click="$set('showBookingModal', false)" class="close text-white" aria-label="Chiudi">
+                        <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
@@ -96,15 +96,15 @@
 
     {{-- Modale dettaglio booking --}}
     @if($showDetailModal && $detailBooking)
-    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5)">
+    <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="modal-dettaglio-title" style="background:rgba(0,0,0,.5)">
         <div class="modal-dialog modal-md">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">
+                    <h5 class="modal-title" id="modal-dettaglio-title">
                         @if($detailType === 'pt') Prenotazione PT @else Corso collettivo @endif
                     </h5>
-                    <button wire:click="$set('showDetailModal', false)" class="close">
-                        <span>&times;</span>
+                    <button wire:click="$set('showDetailModal', false)" class="close" aria-label="Chiudi">
+                        <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">

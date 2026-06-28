@@ -1,12 +1,12 @@
 <div>
     {{-- Modale registra accesso --}}
     @if ($showModal)
-        <div class="modal fade show d-block" tabindex="-1" role="dialog">
-            <div class="modal-dialog" role="document">
+        <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="modal-accesso-title">
+            <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Registra accesso</h5>
-                        <button type="button" class="close" wire:click="closeModal"><span>&times;</span></button>
+                        <h5 class="modal-title" id="modal-accesso-title">Registra accesso</h5>
+                        <button type="button" class="close" wire:click="closeModal" aria-label="Chiudi"><span aria-hidden="true">&times;</span></button>
                     </div>
                     <div class="modal-body">
                         @if ($checkinError)

@@ -8,11 +8,11 @@
 
     {{-- Modale conferma --}}
     @if ($confirmActive)
-        <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5)">
+        <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="modal-flag-title" style="background:rgba(0,0,0,.5)">
             <div class="modal-dialog modal-sm modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Conferma</h5>
+                        <h5 class="modal-title" id="modal-flag-title">Conferma</h5>
                     </div>
                     <div class="modal-body">
                         <p>

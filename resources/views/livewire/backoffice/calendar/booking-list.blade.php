@@ -124,13 +124,13 @@
 
     {{-- Modale conferma annullamento --}}
     @if($showCancelModal)
-    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5)">
+    <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="modal-annulla-title" style="background:rgba(0,0,0,.5)">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header bg-danger">
-                    <h5 class="modal-title text-white">Annulla prenotazione</h5>
-                    <button wire:click="$set('showCancelModal', false)" class="close text-white">
-                        <span>&times;</span>
+                    <h5 class="modal-title text-white" id="modal-annulla-title">Annulla prenotazione</h5>
+                    <button wire:click="$set('showCancelModal', false)" class="close text-white" aria-label="Chiudi">
+                        <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">

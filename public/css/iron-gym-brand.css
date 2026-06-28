@@ -1,0 +1,183 @@
+/*
+ * Iron Gym — Brand Identity Layer
+ *
+ * Layer isolato e disattivabile: tutte le regole sono scoped sotto
+ * body.iron-gym-brand. Per disattivare: rimuovere la classe dal body
+ * oppure rimuovere il <link> nel layout.
+ *
+ * Stack: AdminLTE 3.x + Bootstrap 4 (non modificati)
+ * Font: Oswald (titoli/sidebar) + Inter (corpo)
+ * Palette:
+ *   --ig-primary:      #E85D04   arancio brand
+ *   --ig-primary-dk:   #C94E03   hover/active
+ *   --ig-primary-xdk:  #A84202   pressed
+ *   --ig-sidebar-bg:   #1A1A2E   sidebar navy scuro
+ *   --ig-sidebar-hd:   #13132A   sidebar header
+ */
+
+/* ---- CSS custom properties ------------------------------------------------ */
+body.iron-gym-brand {
+    --ig-primary:     #E85D04;
+    --ig-primary-dk:  #C94E03;
+    --ig-primary-xdk: #A84202;
+    --ig-sidebar-bg:  #1A1A2E;
+    --ig-sidebar-hd:  #13132A;
+    --ig-glow:        rgba(232, 93, 4, .35);
+}
+
+/* ---- Tipografia ----------------------------------------------------------- */
+body.iron-gym-brand {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+body.iron-gym-brand h1,
+body.iron-gym-brand h2,
+body.iron-gym-brand h3,
+body.iron-gym-brand h4,
+body.iron-gym-brand h5,
+body.iron-gym-brand .card-title,
+body.iron-gym-brand .content-header h1 {
+    font-family: 'Oswald', sans-serif;
+    letter-spacing: .03em;
+    font-weight: 600;
+}
+
+body.iron-gym-brand .brand-text {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    font-size: 1.15rem;
+}
+
+/* ---- Sidebar -------------------------------------------------------------- */
+body.iron-gym-brand .main-sidebar,
+body.iron-gym-brand .main-sidebar .sidebar {
+    background-color: var(--ig-sidebar-bg);
+}
+
+body.iron-gym-brand .brand-link {
+    background-color: var(--ig-sidebar-hd) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, .08) !important;
+}
+
+/* Link attivo */
+body.iron-gym-brand .sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link.active,
+body.iron-gym-brand .sidebar-dark-primary .nav-sidebar > .nav-item.menu-open > .nav-link {
+    background-color: var(--ig-primary);
+    color: #fff;
+}
+
+/* Hover link di primo livello */
+body.iron-gym-brand .sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link:hover {
+    background-color: rgba(232, 93, 4, .18);
+    color: #fff;
+}
+
+/* Link attivo sotto-menu (treeview) */
+body.iron-gym-brand .sidebar-dark-primary .nav-treeview > .nav-item > .nav-link.active,
+body.iron-gym-brand .sidebar-dark-primary .nav-treeview > .nav-item > .nav-link:hover {
+    color: var(--ig-primary);
+    background-color: rgba(232, 93, 4, .12);
+}
+
+/* Search box sidebar */
+body.iron-gym-brand .sidebar .form-control:focus {
+    border-color: var(--ig-primary);
+    box-shadow: 0 0 0 .15rem var(--ig-glow);
+}
+
+/* ---- Navbar top ----------------------------------------------------------- */
+body.iron-gym-brand .main-header.navbar {
+    border-bottom: 2px solid var(--ig-primary);
+}
+
+/* ---- Bottoni -------------------------------------------------------------- */
+body.iron-gym-brand .btn-primary {
+    background-color: var(--ig-primary);
+    border-color: var(--ig-primary);
+    color: #fff;
+}
+body.iron-gym-brand .btn-primary:hover {
+    background-color: var(--ig-primary-dk);
+    border-color: var(--ig-primary-dk);
+    color: #fff;
+}
+body.iron-gym-brand .btn-primary:focus,
+body.iron-gym-brand .btn-primary.focus {
+    box-shadow: 0 0 0 .2rem var(--ig-glow);
+}
+body.iron-gym-brand .btn-primary:not(:disabled):not(.disabled):active,
+body.iron-gym-brand .btn-primary:not(:disabled):not(.disabled).active {
+    background-color: var(--ig-primary-xdk);
+    border-color: var(--ig-primary-xdk);
+}
+body.iron-gym-brand .btn-outline-primary {
+    color: var(--ig-primary);
+    border-color: var(--ig-primary);
+}
+body.iron-gym-brand .btn-outline-primary:hover {
+    background-color: var(--ig-primary);
+    border-color: var(--ig-primary);
+    color: #fff;
+}
+body.iron-gym-brand .btn-flat.btn-primary {
+    background-color: var(--ig-primary);
+    color: #fff;
+}
+
+/* ---- Sfondi e testi ------------------------------------------------------- */
+body.iron-gym-brand .bg-primary {
+    background-color: var(--ig-primary) !important;
+}
+body.iron-gym-brand .text-primary {
+    color: var(--ig-primary) !important;
+}
+body.iron-gym-brand .border-primary {
+    border-color: var(--ig-primary) !important;
+}
+body.iron-gym-brand .badge-primary {
+    background-color: var(--ig-primary);
+    color: #fff;
+}
+
+/* ---- Card primary --------------------------------------------------------- */
+body.iron-gym-brand .card-outline.card-primary {
+    border-top-color: var(--ig-primary);
+}
+body.iron-gym-brand .card.bg-primary,
+body.iron-gym-brand .card-primary > .card-header {
+    background-color: var(--ig-primary) !important;
+    color: #fff;
+}
+
+/* ---- Form controls -------------------------------------------------------- */
+body.iron-gym-brand .form-control:focus {
+    border-color: var(--ig-primary);
+    box-shadow: 0 0 0 .2rem var(--ig-glow);
+}
+
+/* ---- Paginazione ---------------------------------------------------------- */
+body.iron-gym-brand .page-link {
+    color: var(--ig-primary);
+}
+body.iron-gym-brand .page-item.active .page-link {
+    background-color: var(--ig-primary);
+    border-color: var(--ig-primary);
+    color: #fff;
+}
+
+/* ---- Progress bar (volume landmarks) ------------------------------------- */
+body.iron-gym-brand .progress-bar.bg-primary {
+    background-color: var(--ig-primary) !important;
+}
+
+/* ---- Auth card (login) ---------------------------------------------------- */
+body.iron-gym-brand .card-outline.card-primary {
+    border-top: 3px solid var(--ig-primary);
+}
+
+/* ---- Preloader ------------------------------------------------------------ */
+body.iron-gym-brand .preloader {
+    background-color: var(--ig-sidebar-bg);
+}

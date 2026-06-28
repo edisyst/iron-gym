@@ -75,7 +75,7 @@ Route::prefix('backoffice')
 
             // Mesocicli — assegnazione e dettaglio (con applyProgression/forceDeload)
             Route::get('/mesocycles/assign', MesocycleAssign::class)->name('mesocycles.assign');
-            Route::get('/mesocycles/{mesocycle}', MesocycleDetail::class)->name('mesocycles.show');
+            Route::get('/mesocycles/{mesocycleId}', MesocycleDetail::class)->name('mesocycles.show');
             Route::get('/athletes/{athleteId}/volume-landmarks', VolumeLandmarkManager::class)->name('athletes.volume-landmarks');
 
             // Step 5 — tracking corporeo e analytics (dati medico-sportivi)

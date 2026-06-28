@@ -5,7 +5,7 @@ Gestionale palestra bodybuilding/fitness. Copre: anagrafica tesserati, abbonamen
 ## Stack tecnico
 
 - **Backend:** PHP 8.3, Laravel 11.x
-- **Frontend backoffice:** Livewire 3 + Alpine.js, tema AdminLTE 3.x
+- **Frontend backoffice:** Livewire 3 + Alpine.js, tema AdminLTE 3.x + brand layer Iron Gym
 - **App atleta:** stesse tecnologie, layout dedicato su prefisso /athlete
 - **Database:** MySQL 8.0 (database: `iron_gym`)
 - **Cache / code:** Redis 7
@@ -125,6 +125,8 @@ Audit sicurezza v2 completato (2026-06-28): 15 fix applicati — ownership check
 
 Fix residui LOW completati (2026-06-28): WeeklyProgressionService.applyDeload() usa ultima sessione per scheduled_date invece di MAX (baseline deload corretta); progressWeek() invalida cache WeeklyVolumeCalculator dopo progressione; MesocycleInstantiationService aggiunge parametro deload_last_week (default true); ProgressPhotoUpload usa Str::uuid() + elimina vecchio file prima di sovrascrivere; TemplateBuilder.removeExercise()/toggleGroup() filtrano per template_id su query group_key; VolumeLandmarkManager.render() singola query Muscle; PilotSeeder imposta email_verified_at. PHPStan 0 errori, Pint OK, suite 96/102. Audit completo — zero finding aperti.
 
+Revisione grafica backoffice completata (2026-06-28): audit UI + Fase 1 coerenza + Fase 2 brand identity. 9 commit. Dettagli: docs/review/audit-grafica.md. Suite 106/106, PHPStan 0, Pint OK.
+
 Prossima attività: raccogliere feedback dai primi atleti pilota dopo prima sessione.
 
 ## Setup pilota — dati e procedure
@@ -193,6 +195,34 @@ Disponibili in .claude/docs/domain/ ma NON caricati automaticamente per non satu
 - .claude/docs/domain/step-0-discovery.md — ERD, schema SQL, regole progressione
 - .claude/docs/domain/exercises-catalog.md — catalogo 83 esercizi (tassonomia, muscoli, note metodologiche; SQL rimosso → dati in database.sqlite)
 - .claude/docs/domain/glossary.md — terminologia BB e tassonomia (documento corto, ok includerlo)
+
+## Brand identity backoffice
+
+Layer CSS isolato e disattivabile sopra AdminLTE 3.x — nessun fork del tema.
+
+**Palette:**
+- Accent: `#E85D04` (arancio brand, shared con area atleta)
+- Sidebar: `#1A1A2E` (navy scuro)
+- Sidebar header: `#13132A`
+
+**Font (Google Fonts):**
+- Titoli / sidebar brand-text: `Oswald` 400/600/700
+- Corpo testo: `Inter` 400/500/600
+
+**File:**
+- `public/css/iron-gym-brand.css` — override scoped su `body.iron-gym-brand` (CSS custom properties + override Bootstrap/AdminLTE)
+- `public/css/backoffice.css` — utilities: `filter-w-xs/sm/md/lg`, `table-actions`, `.skip-link`
+- `public/images/iron-gym-logo.svg` — dumbbell icon 32×32 arancio
+
+**Attivazione:** `config/adminlte.php` → `'classes_body' => 'iron-gym-brand'`
+**Disattivazione:** cambiare in `''` — rimuove tutto il layer in 1 riga.
+
+**Convenzioni UI (post-audit 2026-06-28):**
+- Bottoni azione tabella: `btn-sm` (non `btn-xs`)
+- Errori form: `is-invalid` + `invalid-feedback` (non `text-danger small`)
+- Width filtri: classi `filter-w-*` (non inline `style="width:Npx"`)
+- Modali custom: `role="dialog"` + `aria-modal="true"` + `aria-labelledby`
+- Bottoni icon-only: `aria-label` obbligatorio
 
 ## Cosa NON fare
 

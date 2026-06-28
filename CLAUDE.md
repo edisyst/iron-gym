@@ -122,7 +122,9 @@ Revisione codice staged completata (2026-06-27): security (IDOR SessionFeedbackF
 
 Setup pilota avviato (2026-06-28): PilotSeeder eseguito (4 piani reali, account gestore@iron-gym.test), feature flags impostati (financial_reports ON, gli altri OFF), PilotTemplateSeeder aggiunto.
 
-Prossima attività: assegnare template PPL agli atleti pilota tramite backoffice.
+Flusso assegnazione verificato (2026-06-28): mesociclo PPL assegnato ad Atleta Test (ID=9, 4 settimane, 12 sessioni, 200 set). Dashboard atleta mostra Push/Pull/Legs pianificate. Receptionist bloccato con 403 su /assign. Bug fix: route `{mesocycle}` → `{mesocycleId}` (mismatch con mount() causava 500 su ogni dettaglio mesociclo).
+
+Prossima attività: registrare atleti pilota reali e assegnare template PPL.
 
 ## Setup pilota — dati e procedure
 

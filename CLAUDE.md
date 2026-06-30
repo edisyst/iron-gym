@@ -73,11 +73,21 @@ Gestionale palestra bodybuilding/fitness. Copre: anagrafica tesserati, abbonamen
 - MesocycleInstantiationService: crea gerarchia completa da template
 - WeeklyVolumeCalculator: calcola hard set settimanali pesati per contribution_pct
 - WeeklyProgressionService: applica progressione MEV→MRV con lettura feedback
-- DeloadEvaluator: valuta quattro trigger di deload
-- KpiService: metriche aggregate per dashboard gestore
+- DeloadEvaluator: valuta i quattro trigger di deload
+- KpiService: metriche aggregate per la dashboard gestore; cache Redis tag `kpi` TTL 1h
 - PtBookingService: prenotazioni PT con verifica disponibilità
 - ClassBookingService: iscrizioni corsi con gestione waitlist
 - E1rmCalculator: formula Epley per stima 1RM
+
+## Observers
+
+Registrati in `AppServiceProvider`. Tutti in `app/Observers/`.
+
+- ExerciseObserver (Exercise): flush cache tag `exercises` su create/update/delete
+- PtBookingObserver (PtBooking): notifica atleta+trainer su conferma/cancellazione
+- SubscriptionObserver (Subscription): invalida cache KPI tag `kpi` su create/update
+- TrainerAvailabilityObserver (TrainerAvailability): ricalcola slot disponibili su saved/deleted
+- TrainingSessionObserver (TrainingSession): aggiorna status, started_at, completed_at su update
 
 ## Decisioni architetturali fisse
 
@@ -89,14 +99,20 @@ Gestionale palestra bodybuilding/fitness. Copre: anagrafica tesserati, abbonamen
 - Feedback post-sessione scala 0-3.
 - Ruoli spatie: atleta, trainer, gestore, receptionist.
 
-## Componenti Livewire aggiunti (post step 10)
+## Mappa componenti e route
 
-**Backoffice:**
-- `Backoffice/Athletes/AthleteProfile` — contenitore profilo atleta con tab Alpine.js (storico, analytics, misurazioni, landmarks, messaggi). Route: `backoffice.athletes.profile`.
-- `Backoffice/Athletes/AthleteSessionHistory` — storico sessioni atleta lato backoffice; filtra per `athlete_id`, mostra trainer, set, durata, feedback con badge 0-3, dettaglio inline con e1RM.
-- `Backoffice/Exercises/ExerciseDetail` — scheda tecnica esercizio (già esistente, potenziata): breadcrumb, immagine/placeholder, card Identità, card Attrezzatura, card Muscolare con progress bar AdminLTE (bg-danger/warning/info), card Esecuzione, card Video. Route: `backoffice.exercises.show` (slug binding). Exercise model usa `getRouteKeyName() = 'slug'`.
+La mappa completa di tutti i componenti Livewire (~50), le route backoffice e atleta,
+gli observers, i seeder e gli artisan commands è in:
 
-**Nota architetturale:** view Livewire che usavano `@extends('adminlte::page')` convertite a wrapper `<div>` (pattern standard Livewire 3). Layout standalone gestito con `->layout('layouts.backoffice')` nel `render()`.
+**`docs/architecture/component-map.md`**
+
+Leggila prima di aggiungere nuovi componenti o route per evitare conflitti e
+seguire i pattern esistenti.
+
+**Nota architetturale:** le view Livewire usano wrapper `<div>` (non `@extends`).
+Il layout è gestito con `->layout('layouts.backoffice')` nel `render()`. Questo
+pattern è necessario per embeddare componenti via `@livewire` (es. in `AthleteProfile`).
+Exercise model usa `getRouteKeyName() = 'slug'` (route binding su slug).
 
 ## Stato sviluppo
 
@@ -242,6 +258,7 @@ docker compose up -d
 php artisan serve
 npm run dev
 php artisan queue:work redis --queue=default
+php artisan schedule:work
 
 # DB
 php artisan migrate:fresh --seed
@@ -251,8 +268,11 @@ php artisan migrate:fresh --seed
 ./vendor/bin/phpstan analyse --memory-limit=512M
 ./vendor/bin/pint --test
 
-# Scheduler (dev)
-php artisan schedule:work
+# Go-live: inizializza piani abbonamento reali e account gestore
+php artisan pilot:init
+
+# Genera icone PWA da resources/images/icon.png
+php artisan pwa:generate-icons
 
 # Rigenera SQLite di riferimento esercizi (AI/dev tool, non prod; stdlib Python)
 python .claude/scripts/build_exercises_sqlite.py

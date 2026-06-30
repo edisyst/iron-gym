@@ -14,29 +14,32 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Crea un mesociclo attivo PPL per l'atleta demo, con sessioni della settimana corrente
- * nello stato "planned" e settimane passate completate.
- * Idempotente: elimina e ricrea il mesociclo attivo demo a ogni esecuzione.
+ * Crea un mesociclo PPL attivo per ogni atleta, con settimane passate completate
+ * e sessioni della settimana corrente in stato planned.
+ * Idempotente: elimina e ricrea il mesociclo demo a ogni esecuzione.
  */
 class ActiveMesocycleSeeder extends Seeder
 {
     private const MESO_NAME = '[DEMO] PPL Ipertrofia';
 
+    private const WEIGHT_MULTIPLIERS = [1.0, 0.85, 1.1, 0.75, 0.95, 1.05];
+
     public function run(): void
     {
-        $athlete = User::where('email', 'atleta@atleta.atleta')->first();
-        $trainer = User::where('email', 'trainer@trainer.trainer')->first();
+        $athletes = User::role('atleta')->orderBy('id')->get();
+        $trainers = User::role('trainer')->orderBy('id')->get();
 
-        if (! $athlete || ! $trainer) {
-            $this->command->error('Atleta o trainer demo non trovati. Esegui prima DemoSeeder.');
+        if ($athletes->isEmpty()) {
+            $this->command->error('Nessun atleta trovato. Esegui prima DemoSeeder.');
 
             return;
         }
 
-        Mesocycle::where('athlete_id', $athlete->id)
-            ->where('name', self::MESO_NAME)
-            ->get()
-            ->each(fn ($m) => $m->delete());
+        if ($trainers->isEmpty()) {
+            $this->command->error('Nessun trainer trovato. Esegui prima DemoSeeder.');
+
+            return;
+        }
 
         $exercises = $this->resolveExercises();
 
@@ -46,46 +49,52 @@ class ActiveMesocycleSeeder extends Seeder
             return;
         }
 
-        DB::transaction(function () use ($athlete, $trainer, $exercises): void {
-            // Settimana 1 inizia 2 settimane fa (lunedi), cosi' la settimana corrente e' la 2
-            $week1Start = Carbon::now()->startOfWeek()->subWeeks(1);
+        foreach ($athletes as $i => $athlete) {
+            Mesocycle::where('athlete_id', $athlete->id)
+                ->where('name', self::MESO_NAME)
+                ->get()
+                ->each(fn ($m) => $m->delete());
 
-            $mesocycle = Mesocycle::create([
-                'athlete_id' => $athlete->id,
-                'trainer_id' => $trainer->id,
-                'template_id' => null,
-                'name' => self::MESO_NAME,
-                'goal' => 'hypertrophy',
-                'periodization_model' => 'linear',
-                'start_date' => $week1Start->toDateString(),
-                'weeks_count' => 4,
-                'status' => 'active',
-            ]);
+            $trainer = $trainers[$i % $trainers->count()];
+            $mult = self::WEIGHT_MULTIPLIERS[$i % count(self::WEIGHT_MULTIPLIERS)];
 
-            for ($weekNum = 1; $weekNum <= 4; $weekNum++) {
-                $weekStart = $week1Start->copy()->addWeeks($weekNum - 1);
-                $weekEnd = $weekStart->copy()->addDays(6);
+            DB::transaction(function () use ($athlete, $trainer, $exercises, $mult): void {
+                $week1Start = Carbon::now()->startOfWeek()->subWeeks(1);
 
-                $week = MicrocycleWeek::create([
-                    'mesocycle_id' => $mesocycle->id,
-                    'week_number' => $weekNum,
-                    'is_deload' => ($weekNum === 4),
-                    'start_date' => $weekStart->toDateString(),
-                    'end_date' => $weekEnd->toDateString(),
+                $mesocycle = Mesocycle::create([
+                    'athlete_id' => $athlete->id,
+                    'trainer_id' => $trainer->id,
+                    'template_id' => null,
+                    'name' => self::MESO_NAME,
+                    'goal' => 'hypertrophy',
+                    'periodization_model' => 'linear',
+                    'start_date' => $week1Start->toDateString(),
+                    'weeks_count' => 4,
+                    'status' => 'active',
                 ]);
 
-                $isPastWeek = $weekEnd->isPast();
+                for ($weekNum = 1; $weekNum <= 4; $weekNum++) {
+                    $weekStart = $week1Start->copy()->addWeeks($weekNum - 1);
+                    $weekEnd = $weekStart->copy()->addDays(6);
 
-                // Push — lunedi
-                $this->seedPushSession($week, $weekNum, $weekStart->copy()->addDays(0), $isPastWeek, $exercises);
-                // Pull — mercoledi
-                $this->seedPullSession($week, $weekNum, $weekStart->copy()->addDays(2), $isPastWeek, $exercises);
-                // Legs — venerdi
-                $this->seedLegsSession($week, $weekNum, $weekStart->copy()->addDays(4), $isPastWeek, $exercises);
-            }
-        });
+                    $week = MicrocycleWeek::create([
+                        'mesocycle_id' => $mesocycle->id,
+                        'week_number' => $weekNum,
+                        'is_deload' => ($weekNum === 4),
+                        'start_date' => $weekStart->toDateString(),
+                        'end_date' => $weekEnd->toDateString(),
+                    ]);
 
-        $this->command->info('ActiveMesocycleSeeder: mesociclo PPL attivo creato per atleta@atleta.atleta');
+                    $isPastWeek = $weekEnd->isPast();
+
+                    $this->seedPushSession($week, $weekNum, $weekStart->copy()->addDays(0), $isPastWeek, $exercises, $mult);
+                    $this->seedPullSession($week, $weekNum, $weekStart->copy()->addDays(2), $isPastWeek, $exercises, $mult);
+                    $this->seedLegsSession($week, $weekNum, $weekStart->copy()->addDays(4), $isPastWeek, $exercises, $mult);
+                }
+            });
+
+            $this->command->info("ActiveMesocycleSeeder: mesociclo PPL attivo creato per {$athlete->email} (trainer: {$trainer->name})");
+        }
     }
 
     /** @return array<string, Exercise> */
@@ -121,7 +130,8 @@ class ActiveMesocycleSeeder extends Seeder
         int $weekNum,
         Carbon $date,
         bool $completed,
-        array $exercises
+        array $exercises,
+        float $mult
     ): void {
         $this->seedSession(
             week: $week,
@@ -129,12 +139,12 @@ class ActiveMesocycleSeeder extends Seeder
             order: 1,
             date: $date,
             completed: $completed,
-            exercisePlan: array_filter([
-                isset($exercises['bench']) ? ['exercise' => $exercises['bench'],   'sets' => $this->straightSets($weekNum, 80.0, 2.5, 10)] : null,
-                isset($exercises['incline']) ? ['exercise' => $exercises['incline'], 'sets' => $this->straightSets($weekNum, 60.0, 2.5, 10)] : null,
-                isset($exercises['ohp']) ? ['exercise' => $exercises['ohp'],     'sets' => $this->straightSets($weekNum, 50.0, 2.5, 10)] : null,
-                isset($exercises['lateral']) ? ['exercise' => $exercises['lateral'], 'sets' => $this->straightSets($weekNum, 14.0, 0.0, 15)] : null,
-            ])
+            exercisePlan: array_values(array_filter([
+                isset($exercises['bench']) ? ['exercise' => $exercises['bench'],   'sets' => $this->straightSets($weekNum, 80.0, 2.5, 10, $mult)] : null,
+                isset($exercises['incline']) ? ['exercise' => $exercises['incline'], 'sets' => $this->straightSets($weekNum, 60.0, 2.5, 10, $mult)] : null,
+                isset($exercises['ohp']) ? ['exercise' => $exercises['ohp'],     'sets' => $this->straightSets($weekNum, 50.0, 2.5, 10, $mult)] : null,
+                isset($exercises['lateral']) ? ['exercise' => $exercises['lateral'], 'sets' => $this->straightSets($weekNum, 14.0, 0.0, 15, $mult)] : null,
+            ]))
         );
     }
 
@@ -143,7 +153,8 @@ class ActiveMesocycleSeeder extends Seeder
         int $weekNum,
         Carbon $date,
         bool $completed,
-        array $exercises
+        array $exercises,
+        float $mult
     ): void {
         $this->seedSession(
             week: $week,
@@ -151,12 +162,12 @@ class ActiveMesocycleSeeder extends Seeder
             order: 2,
             date: $date,
             completed: $completed,
-            exercisePlan: array_filter([
-                isset($exercises['deadlift']) ? ['exercise' => $exercises['deadlift'], 'sets' => $this->straightSets($weekNum, 120.0, 5.0, 5)] : null,
-                isset($exercises['row']) ? ['exercise' => $exercises['row'],      'sets' => $this->straightSets($weekNum, 70.0, 2.5, 8)] : null,
+            exercisePlan: array_values(array_filter([
+                isset($exercises['deadlift']) ? ['exercise' => $exercises['deadlift'], 'sets' => $this->straightSets($weekNum, 120.0, 5.0, 5, $mult)] : null,
+                isset($exercises['row']) ? ['exercise' => $exercises['row'],      'sets' => $this->straightSets($weekNum, 70.0, 2.5, 8, $mult)] : null,
                 isset($exercises['pullup']) ? ['exercise' => $exercises['pullup'],   'sets' => $this->bwSets($weekNum)] : null,
-                isset($exercises['curl']) ? ['exercise' => $exercises['curl'],     'sets' => $this->straightSets($weekNum, 30.0, 1.25, 10)] : null,
-            ])
+                isset($exercises['curl']) ? ['exercise' => $exercises['curl'],     'sets' => $this->straightSets($weekNum, 30.0, 1.25, 10, $mult)] : null,
+            ]))
         );
     }
 
@@ -165,7 +176,8 @@ class ActiveMesocycleSeeder extends Seeder
         int $weekNum,
         Carbon $date,
         bool $completed,
-        array $exercises
+        array $exercises,
+        float $mult
     ): void {
         $this->seedSession(
             week: $week,
@@ -173,11 +185,11 @@ class ActiveMesocycleSeeder extends Seeder
             order: 3,
             date: $date,
             completed: $completed,
-            exercisePlan: array_filter([
-                isset($exercises['squat']) ? ['exercise' => $exercises['squat'],     'sets' => $this->straightSets($weekNum, 100.0, 2.5, 8)] : null,
-                isset($exercises['leg_press']) ? ['exercise' => $exercises['leg_press'], 'sets' => $this->straightSets($weekNum, 160.0, 5.0, 12)] : null,
-                isset($exercises['leg_curl']) ? ['exercise' => $exercises['leg_curl'],  'sets' => $this->straightSets($weekNum, 40.0, 2.5, 10)] : null,
-            ])
+            exercisePlan: array_values(array_filter([
+                isset($exercises['squat']) ? ['exercise' => $exercises['squat'],     'sets' => $this->straightSets($weekNum, 100.0, 2.5, 8, $mult)] : null,
+                isset($exercises['leg_press']) ? ['exercise' => $exercises['leg_press'], 'sets' => $this->straightSets($weekNum, 160.0, 5.0, 12, $mult)] : null,
+                isset($exercises['leg_curl']) ? ['exercise' => $exercises['leg_curl'],  'sets' => $this->straightSets($weekNum, 40.0, 2.5, 10, $mult)] : null,
+            ]))
         );
     }
 
@@ -192,8 +204,6 @@ class ActiveMesocycleSeeder extends Seeder
         bool $completed,
         array $exercisePlan
     ): void {
-        $exercisePlan = array_values($exercisePlan);
-
         if ($completed) {
             $completedAt = $date->copy()->setHour(19)->setMinute(0);
             $startedAt = $completedAt->copy()->subMinutes(70);
@@ -285,9 +295,9 @@ class ActiveMesocycleSeeder extends Seeder
     }
 
     /** @return list<array<string, mixed>> */
-    private function straightSets(int $week, float $baseWeight, float $step, int $reps): array
+    private function straightSets(int $week, float $baseWeight, float $step, int $reps, float $mult = 1.0): array
     {
-        $w = round($baseWeight + ($week - 1) * $step, 2);
+        $w = round(($baseWeight + ($week - 1) * $step) * $mult, 2);
         $warmup = round($w * 0.6, 1);
 
         return [

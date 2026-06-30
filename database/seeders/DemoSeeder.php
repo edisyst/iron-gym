@@ -18,6 +18,7 @@ class DemoSeeder extends Seeder
         $staff = [
             ['email' => 'admin@admin.admin',                        'name' => 'Mario Rossi',  'role' => 'gestore',       'password' => 'admin'],
             ['email' => 'trainer@trainer.trainer',                  'name' => 'Luca Bianchi', 'role' => 'trainer',       'password' => 'trainer'],
+            ['email' => 'trainer2@trainer.trainer',                 'name' => 'Elena Russo',  'role' => 'trainer',       'password' => 'trainer'],
             ['email' => 'receptionist@receptionist.receptionist',   'name' => 'Sara Verdi',   'role' => 'receptionist',  'password' => 'receptionist'],
         ];
 
@@ -147,6 +148,38 @@ class DemoSeeder extends Seeder
                 'started_at' => now()->subDays(40)->toDateString(),
                 'expires_at' => now()->subDays(10)->toDateString(),
                 'status' => 'expired',
+                'created_by' => $receptionist?->id,
+            ]
+        );
+
+        // Abbonamenti per i tesserati rimanenti
+        Subscription::firstOrCreate(
+            ['member_id' => $members[3]->id, 'plan_id' => $trimestrale->id],
+            [
+                'started_at' => now()->subDays(5)->toDateString(),
+                'expires_at' => now()->addDays(85)->toDateString(),
+                'accesses_remaining' => null,
+                'status' => 'active',
+                'created_by' => $receptionist?->id,
+            ]
+        );
+        Subscription::firstOrCreate(
+            ['member_id' => $members[4]->id, 'plan_id' => $mensile->id],
+            [
+                'started_at' => now()->subDays(15)->toDateString(),
+                'expires_at' => now()->addDays(15)->toDateString(),
+                'accesses_remaining' => null,
+                'status' => 'active',
+                'created_by' => $receptionist?->id,
+            ]
+        );
+        Subscription::firstOrCreate(
+            ['member_id' => $members[5]->id, 'plan_id' => $mensile->id],
+            [
+                'started_at' => now()->subDays(3)->toDateString(),
+                'expires_at' => now()->addDays(27)->toDateString(),
+                'accesses_remaining' => null,
+                'status' => 'active',
                 'created_by' => $receptionist?->id,
             ]
         );

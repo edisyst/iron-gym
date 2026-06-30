@@ -14,30 +14,32 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Popola storico allenamenti di test per l'atleta demo.
+ * Popola storico allenamenti completati per tutti gli atleti.
  * Idempotente: elimina e ricrea i dati a ogni esecuzione.
- * Uso: php artisan db:seed --class=TrainingHistorySeeder
  */
 class TrainingHistorySeeder extends Seeder
 {
     private const MESO_NAME = '[TEST] Storico';
 
+    // Moltiplicatori peso per simulare livelli di forza diversi
+    private const WEIGHT_MULTIPLIERS = [1.0, 0.85, 1.1, 0.75, 0.95, 1.05];
+
     public function run(): void
     {
-        $athlete = User::where('email', 'atleta@atleta.atleta')->first();
-        $trainer = User::where('email', 'trainer@trainer.trainer')->first();
+        $athletes = User::role('atleta')->orderBy('id')->get();
+        $trainers = User::role('trainer')->orderBy('id')->get();
 
-        if (! $athlete || ! $trainer) {
-            $this->command->error('Atleta o trainer demo non trovati. Esegui prima DemoSeeder.');
+        if ($athletes->isEmpty()) {
+            $this->command->error('Nessun atleta trovato. Esegui prima DemoSeeder.');
 
             return;
         }
 
-        // Elimina dati precedenti per idempotenza
-        Mesocycle::where('athlete_id', $athlete->id)
-            ->where('name', self::MESO_NAME)
-            ->get()
-            ->each(fn ($m) => $m->delete());
+        if ($trainers->isEmpty()) {
+            $this->command->error('Nessun trainer trovato. Esegui prima DemoSeeder.');
+
+            return;
+        }
 
         $exercises = $this->resolveExercises();
 
@@ -47,50 +49,58 @@ class TrainingHistorySeeder extends Seeder
             return;
         }
 
-        DB::transaction(function () use ($athlete, $trainer, $exercises): void {
-            $startDate = Carbon::now()->subWeeks(6)->startOfWeek();
+        foreach ($athletes as $i => $athlete) {
+            Mesocycle::where('athlete_id', $athlete->id)
+                ->where('name', self::MESO_NAME)
+                ->get()
+                ->each(fn ($m) => $m->delete());
 
-            $mesocycle = Mesocycle::create([
-                'athlete_id' => $athlete->id,
-                'trainer_id' => $trainer->id,
-                'template_id' => null,
-                'name' => self::MESO_NAME,
-                'goal' => 'hypertrophy',
-                'periodization_model' => 'linear',
-                'start_date' => $startDate,
-                'weeks_count' => 4,
-                'status' => 'completed',
-            ]);
+            $trainer = $trainers[$i % $trainers->count()];
+            $mult = self::WEIGHT_MULTIPLIERS[$i % count(self::WEIGHT_MULTIPLIERS)];
 
-            for ($weekNum = 1; $weekNum <= 4; $weekNum++) {
-                $weekStart = $startDate->copy()->addDays(($weekNum - 1) * 7);
-                $week = MicrocycleWeek::create([
-                    'mesocycle_id' => $mesocycle->id,
-                    'week_number' => $weekNum,
-                    'is_deload' => ($weekNum === 4),
-                    'start_date' => $weekStart,
-                    'end_date' => $weekStart->copy()->addDays(6),
+            DB::transaction(function () use ($athlete, $trainer, $exercises, $mult): void {
+                $startDate = Carbon::now()->subWeeks(6)->startOfWeek();
+
+                $mesocycle = Mesocycle::create([
+                    'athlete_id' => $athlete->id,
+                    'trainer_id' => $trainer->id,
+                    'template_id' => null,
+                    'name' => self::MESO_NAME,
+                    'goal' => 'hypertrophy',
+                    'periodization_model' => 'linear',
+                    'start_date' => $startDate,
+                    'weeks_count' => 4,
+                    'status' => 'completed',
                 ]);
 
-                // Push — lunedi
-                $pushAt = $weekStart->copy()->setHour(18)->setMinute(0);
-                $this->seedSession($week, 'Push A', 1, $pushAt, [
-                    ['exercise' => $exercises['bench'],    'sets' => $this->pushSets($weekNum, 80.0, 2.5)],
-                    ['exercise' => $exercises['ohp'],      'sets' => $this->pushSets($weekNum, 50.0, 2.5)],
-                    ['exercise' => $exercises['incline'],  'sets' => $this->pushSets($weekNum, 60.0, 2.5)],
-                ]);
+                for ($weekNum = 1; $weekNum <= 4; $weekNum++) {
+                    $weekStart = $startDate->copy()->addDays(($weekNum - 1) * 7);
+                    $week = MicrocycleWeek::create([
+                        'mesocycle_id' => $mesocycle->id,
+                        'week_number' => $weekNum,
+                        'is_deload' => ($weekNum === 4),
+                        'start_date' => $weekStart,
+                        'end_date' => $weekStart->copy()->addDays(6),
+                    ]);
 
-                // Pull — mercoledi
-                $pullAt = $weekStart->copy()->addDays(2)->setHour(18)->setMinute(0);
-                $this->seedSession($week, 'Pull B', 2, $pullAt, [
-                    ['exercise' => $exercises['deadlift'], 'sets' => $this->pullSets($weekNum, 120.0, 5.0)],
-                    ['exercise' => $exercises['pullup'],   'sets' => $this->bwSets($weekNum)],
-                    ['exercise' => $exercises['curl'],     'sets' => $this->pushSets($weekNum, 30.0, 1.25)],
-                ]);
-            }
-        });
+                    $pushAt = $weekStart->copy()->setHour(18)->setMinute(0);
+                    $this->seedSession($week, 'Push A', 1, $pushAt, [
+                        ['exercise' => $exercises['bench'],   'sets' => $this->pushSets($weekNum, 80.0, 2.5, $mult)],
+                        ['exercise' => $exercises['ohp'],     'sets' => $this->pushSets($weekNum, 50.0, 2.5, $mult)],
+                        ['exercise' => $exercises['incline'], 'sets' => $this->pushSets($weekNum, 60.0, 2.5, $mult)],
+                    ]);
 
-        $this->command->info('TrainingHistorySeeder completato: 4 settimane × 2 sessioni per atleta@atleta.atleta');
+                    $pullAt = $weekStart->copy()->addDays(2)->setHour(18)->setMinute(0);
+                    $this->seedSession($week, 'Pull B', 2, $pullAt, [
+                        ['exercise' => $exercises['deadlift'], 'sets' => $this->pullSets($weekNum, 120.0, 5.0, $mult)],
+                        ['exercise' => $exercises['pullup'],   'sets' => $this->bwSets($weekNum)],
+                        ['exercise' => $exercises['curl'],     'sets' => $this->pushSets($weekNum, 30.0, 1.25, $mult)],
+                    ]);
+                }
+            });
+
+            $this->command->info("TrainingHistorySeeder: storico creato per {$athlete->email} (trainer: {$trainer->name})");
+        }
     }
 
     /** @return array<string, Exercise> */
@@ -171,14 +181,10 @@ class TrainingHistorySeeder extends Seeder
         }
     }
 
-    /**
-     * 1 warmup + 3 working set. Peso cresce +$step per settimana.
-     *
-     * @return list<array<string, mixed>>
-     */
-    private function pushSets(int $week, float $baseWeight, float $step): array
+    /** @return list<array<string, mixed>> */
+    private function pushSets(int $week, float $baseWeight, float $step, float $mult = 1.0): array
     {
-        $w = round($baseWeight + ($week - 1) * $step, 2);
+        $w = round(($baseWeight + ($week - 1) * $step) * $mult, 2);
         $warmupWeight = round($w * 0.6, 1);
 
         return [
@@ -189,27 +195,21 @@ class TrainingHistorySeeder extends Seeder
         ];
     }
 
-    /**
-     * @return list<array<string, mixed>>
-     */
-    private function pullSets(int $week, float $baseWeight, float $step): array
+    /** @return list<array<string, mixed>> */
+    private function pullSets(int $week, float $baseWeight, float $step, float $mult = 1.0): array
     {
-        $w = round($baseWeight + ($week - 1) * $step, 2);
+        $w = round(($baseWeight + ($week - 1) * $step) * $mult, 2);
         $warmupWeight = round($w * 0.5, 1);
 
         return [
-            ['warmup' => true,  'reps' => 5,  'weight' => $warmupWeight, 'rir' => null],
-            ['warmup' => false, 'reps' => 5,  'weight' => $w,            'rir' => 3],
-            ['warmup' => false, 'reps' => 5,  'weight' => $w,            'rir' => 2],
-            ['warmup' => false, 'reps' => 4,  'weight' => $w,            'rir' => 1],
+            ['warmup' => true,  'reps' => 5, 'weight' => $warmupWeight, 'rir' => null],
+            ['warmup' => false, 'reps' => 5, 'weight' => $w,            'rir' => 3],
+            ['warmup' => false, 'reps' => 5, 'weight' => $w,            'rir' => 2],
+            ['warmup' => false, 'reps' => 4, 'weight' => $w,            'rir' => 1],
         ];
     }
 
-    /**
-     * Trazioni a corpo libero — rep cresce +1 per settimana.
-     *
-     * @return list<array<string, mixed>>
-     */
+    /** @return list<array<string, mixed>> */
     private function bwSets(int $week): array
     {
         $reps = 6 + ($week - 1);

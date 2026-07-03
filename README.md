@@ -21,13 +21,15 @@ Software di gestione per palestra di bodybuilding e fitness con focus sulla pers
 
 **Gestionale:** anagrafica tesserati con certificati medici e scadenze, piani abbonamento (durata, prezzo, ingressi inclusi), abbonamenti attivi con rinnovo, registro accessi in struttura.
 
-**Training:** catalogo esercizi (83 esercizi, 26 muscoli, 14 equipment, 27 movement pattern) con tassonomia completa e ruoli muscolari. Template di scheda riutilizzabili (gym-wide). Mesocicli assegnati agli atleti, generati da template con snapshot al momento dell'istanziamento. Logging sessioni con set pianificati e set effettivi separati, supporto superset e giant set, tecniche speciali. Quick-log one-tap, previous performance inline, rest timer globale Alpine, generatore warm-up automatico. Periodizzazione con volume landmarks per atleta-muscolo (MEV/MAV/MRV), progressione automatica settimana per settimana, trigger di deload. Feedback post-sessione su scala 0-3 con autoregolazione del carico.
+**Training:** catalogo esercizi (83 esercizi, 26 muscoli, 14 equipment, 27 movement pattern) con tassonomia completa e ruoli muscolari. Template di scheda riutilizzabili (gym-wide). Mesocicli assegnati agli atleti, generati da template con snapshot al momento dell'istanziamento. Logging sessioni con set pianificati e set effettivi separati, supporto superset e giant set, tecniche speciali. Quick-log one-tap, previous performance inline, rest timer globale Alpine, generatore warm-up automatico. Periodizzazione con volume landmarks per atleta-muscolo (MEV/MAV/MRV), progressione automatica settimana per settimana, trigger di deload. Feedback post-sessione su scala 0-3 con autoregolazione del carico. Sostituzione esercizio guidata in-sessione con matching per pattern motore e overlap muscolare (max 5 candidati). Check readiness pre-sessione (sonno/stress/dolori/articolazioni 0-3) con proposta modulazione carichi -5%/-10% arrotondata a 2.5 kg.
 
 **Personal records:** rilevamento automatico PR e1RM (formula Epley) al completamento di ogni set — online e offline. Toast auto-dismiss in sessione. Lista storica PR per esercizio.
 
 **Plate calculator:** calcolo dischi per lato del bilanciere su inventario reale; algoritmo greedy decrescente con combinazione per difetto. Gestione inventario nel backoffice.
 
 **Volume visuale:** body map SVG fronte/retro (25 muscoli colorati per intensità). Barre orizzontali volume settimanale vs landmark MEV/MAV/MRV per atleta. Selettore settimana mesociclo.
+
+**Riepilogo sessione:** card post-sessione con durata, tonnellaggio, set completati/prescritti, PR ottenuti, top 3 muscoli allenati. Export PNG via Web Share API con fallback download diretto. Accessibile anche dallo storico allenamenti.
 
 **PWA offline-first:** service worker stale-while-revalidate per asset, network-first con cache fallback per pagine sessione. Coda operazioni IndexedDB con flush automatico al ripristino connettività, idempotenza server-side via `sync_operations.client_uuid`.
 
@@ -102,7 +104,7 @@ php artisan pilot:init
 
 - **app/Livewire/Backoffice/** — Componenti backoffice (Exercises, Templates, Mesocycles, Members, Bookings, Reports...)
 - **app/Livewire/Athlete/** — Componenti app atleta
-- **app/Services/** — Servizi dominio (MesocycleInstantiationService, WeeklyProgressionService, KpiService, PlateLoadoutCalculator, PersonalRecordDetector...)
+- **app/Services/** — Servizi dominio (MesocycleInstantiationService, WeeklyProgressionService, KpiService, PlateLoadoutCalculator, PersonalRecordDetector, ExerciseSubstitutionFinder, ReadinessEvaluator, SessionRecapBuilder...)
 - **resources/views/livewire/** — Template Blade dei componenti
 - **database/migrations/** — Una per tabella, `down()` sempre implementato
 - **database/seeders/sql/** — `exercises_seed.sql` (83 esercizi)
@@ -124,7 +126,7 @@ Gestione via backoffice: `/backoffice/admin/feature-flags` (solo gestore).
 
 | Persona | Area | Accesso |
 |---|---|---|
-| Atleta | /athlete | Vede schede, esegue workout, registra feedback, consulta grafici, plate calculator, body map volume, record personali |
+| Atleta | /athlete | Vede schede, esegue workout (quick-log, warm-up, rest timer), check readiness, sostituzione esercizi, registra feedback, consulta riepilogo sessione, body map volume, record personali, plate calculator |
 | Trainer | Backoffice | Crea template, assegna mesocicli, monitora, autoregola |
 | Gestore | Backoffice | KPI, dati finanziari, staff, listini. Privilegi trainer. |
 | Receptionist | Backoffice | Check-in, anagrafica, certificati, abbonamenti. Training in lettura |

@@ -1,6 +1,6 @@
 # Test per tipologia utente — iron-gym
 
-Suite: **106 test** in 29 file. Organizzati per ruolo/contesto di esecuzione.
+Suite: **177 test** (171 pass + 6 skip) in 45+ file. Organizzati per ruolo/contesto di esecuzione.
 
 ---
 
@@ -13,6 +13,59 @@ Suite: **106 test** in 29 file. Organizzati per ruolo/contesto di esecuzione.
 | `WorkoutSessionTest` | il completamento del primo set porta la sessione in in_progress |
 | `WorkoutSessionTest` | il completamento di tutti i set working abilita il completamento sessione |
 | `WorkoutSessionTest` | il feedback post-sessione viene salvato correttamente |
+| `WorkoutSessionTest` | quickLog copia planned→actual rispettando measurement_type |
+| `WorkoutSessionTest` | quickLog non resetta completed_at se già valorizzato |
+| `WorkoutSessionTest` | generateWarmup crea set al 50/70/85% arrotondati a 2.5 kg |
+| `WorkoutSessionTest` | generateWarmup è idempotente |
+| `WorkoutSessionTest` | deleteWarmupSet rimuove set warmup |
+| `WorkoutSessionTest` | deleteWarmupSet rifiuta set working con 404 |
+| `WorkoutSessionTest` | loadPreviousPerformance popola previousPerformance |
+| `WorkoutSessionSubstitutionTest` | openSubstitutionModal blocca se ci sono set working completati |
+| `WorkoutSessionSubstitutionTest` | openSubstitutionModal chiama ExerciseSubstitutionFinder |
+| `WorkoutSessionSubstitutionTest` | confirmSubstitution aggiorna exercise_id e setta substituted_from_exercise_id |
+| `WorkoutSessionSubstitutionTest` | confirmSubstitution mantiene set e prescrizione invariati |
+| `WorkoutSessionSubstitutionTest` | confirmSubstitution blocca su set già completati |
+| `ReadinessEvaluatorTest` | score 0-12 calcolato come somma dei 4 campi 0-3 |
+| `ReadinessEvaluatorTest` | score ≥9 → outcome none |
+| `ReadinessEvaluatorTest` | score 5-8 → outcome reduce_5pct |
+| `ReadinessEvaluatorTest` | score <5 → outcome reduce_10pct |
+| `ReadinessEvaluatorTest` | applyReduction arrotonda a 2.5 kg |
+| `ReadinessEvaluatorTest` | applyReduction con riduzione 0 → valore invariato |
+| `ReadinessEvaluatorTest` | WorkoutSession.submitReadiness salva SessionReadinessCheck |
+| `ReadinessEvaluatorTest` | WorkoutSession.submitReadiness propone modulazione se outcome != none |
+| `ReadinessEvaluatorTest` | WorkoutSession.skipReadiness avvia sessione senza check |
+| `ReadinessEvaluatorTest` | WorkoutSession.acceptModulation aggiorna planned_weight_kg |
+| `ReadinessEvaluatorTest` | WorkoutSession.acceptModulation elimina set extra (fascia low) |
+| `ReadinessEvaluatorTest` | WorkoutSession.rejectModulation avvia sessione senza modificare i carichi |
+| `ReadinessEvaluatorTest` | check pre-esistente non viene sovrascritto |
+| `ReadinessEvaluatorTest` | trainer vede score e modulazione in AthleteSessionHistory |
+| `ReadinessEvaluatorTest` | soglie configurabili da config/readiness.php |
+| `ReadinessEvaluatorTest` | arrotondamento 2.5 kg su 100 kg -5% = 95 kg |
+| `ReadinessEvaluatorTest` | arrotondamento 2.5 kg su 100 kg -10% = 90 kg |
+| `SessionRecapBuilderTest` | calcola tonnellaggio escludendo i set warmup |
+| `SessionRecapBuilderTest` | esclude set non completati dal tonnellaggio |
+| `SessionRecapBuilderTest` | conta set completati e prescritti escludendo warmup |
+| `SessionRecapBuilderTest` | restituisce zero PR se nessun record nella sessione |
+| `SessionRecapBuilderTest` | restituisce i PR ottenuti nel range della sessione |
+| `SessionRecapBuilderTest` | ordina i top muscoli per score pesato su contribution_pct |
+| `SyncBatchTest` | quick_log sincronizzato aggiorna il set corretto |
+| `SyncBatchTest` | operazione duplicata (stesso client_uuid) viene ignorata |
+| `SyncBatchTest` | conflitto last-write-wins: server più recente → skipped_conflict |
+| `SyncBatchTest` | operazione su set di un altro atleta → 403 |
+| `WeeklyVolumeComponentTest` | pagina volume risponde 200 per atleta con mesociclo |
+| `WeeklyVolumeComponentTest` | intensityMap include muscoli allenati nella settimana |
+| `WeeklyVolumeComponentTest` | intensityMap è 0 per muscoli non allenati |
+| `WeeklyVolumeComponentTest` | selettore settimana cambia i dati mostrati |
+| `WeeklyVolumeComponentTest` | volume bars includono hard set pesati per contribution_pct |
+| `WeeklyVolumeComponentTest` | marker MEV/MAV/MRV calcolati per atleta-muscolo |
+| `WeeklyVolumeComponentTest` | atleta senza landmarks usa valori di default |
+| `WeeklyVolumeComponentTest` | atleta senza mesociclo → pagina senza errori |
+| `PersonalRecordDetectorTest` | e1RM corretto → salva PersonalRecord |
+| `PersonalRecordDetectorTest` | e1RM inferiore al record esistente → nessun nuovo record |
+| `PersonalRecordDetectorTest` | reps > max_reps_epley → nessun record |
+| `PersonalRecordDetectorTest` | sessioni < min_sessions_before_pr → nessun record |
+| `PersonalRecordDetectorTest` | primo record salvato indipendentemente dalle sessioni precedenti |
+| `PersonalRecordDetectorTest` | stesso valore dell'existing record → nessun duplicato |
 | `BodyMeasurementTest` | una misurazione corporea viene salvata correttamente |
 | `BodyMeasurementTest` | l'atleta non può vedere le misurazioni di un altro atleta |
 | `QueryCountTest` | WorkoutSession carica sessione completa in <= 5 query |
@@ -170,6 +223,19 @@ Suite: **106 test** in 29 file. Organizzati per ruolo/contesto di esecuzione.
 | `KpiServiceTest` | la churn rate è 100% se nessun abbonamento scaduto è stato rinnovato |
 | `CommunicationTemplateTest` | il template sostituisce correttamente le variabili con i dati del membro |
 | `CommunicationTemplateTest` | una variabile non riconosciuta viene lasciata intatta |
+| `PlateLoadoutCalculatorTest` | combinazione esatta → delta_kg = 0 |
+| `PlateLoadoutCalculatorTest` | combinazione per difetto se non esatta |
+| `PlateLoadoutCalculatorTest` | dischi inattivi esclusi dal calcolo |
+| `PlateLoadoutCalculatorTest` | peso bilanciere sottratto prima del calcolo dischi |
+| `ExerciseSubstitutionFinderTest` | trova candidati con stesso joint_action_id |
+| `ExerciseSubstitutionFinderTest` | trova candidati con stesso compound_pattern_id |
+| `ExerciseSubstitutionFinderTest` | esclude candidati con measurement_type diverso |
+| `ExerciseSubstitutionFinderTest` | esclude esercizi soft-deleted |
+| `ExerciseSubstitutionFinderTest` | overlap calcolato come somma min(pct_orig, pct_cand) |
+| `ExerciseSubstitutionFinderTest` | tie-break: stesso mechanic preferito |
+| `ExerciseSubstitutionFinderTest` | tie-break: skill_level più vicino preferito |
+| `ExerciseSubstitutionFinderTest` | max 5 candidati restituiti |
+| `ExerciseSubstitutionFinderTest` | nessun candidato se esercizio non ha pattern |
 
 ---
 
@@ -177,14 +243,14 @@ Suite: **106 test** in 29 file. Organizzati per ruolo/contesto di esecuzione.
 
 | Ruolo / contesto | Test |
 |---|---:|
-| Atleta | 14 |
+| Atleta | 66 |
 | Trainer | 14 |
 | Gestore | 11 |
 | Receptionist | 1 |
 | Guest | 13 |
 | Autenticato (ruolo generico) | 12 |
 | Email non verificata | 3 |
-| Unit / Service | 46 |
-| **Totale** | **114** |
+| Unit / Service | 57 |
+| **Totale** | **177** |
 
-> Nota: alcuni test compaiono in più ruoli (es. TrainingFlowTest usa sia trainer che atleta, MesocycleInstantiation idem) — il totale della tabella supera i 106 effettivi per questo motivo.
+> Nota: alcuni test compaiono in più ruoli (es. TrainingFlowTest usa sia trainer che atleta, MesocycleInstantiation idem, ReadinessEvaluatorTest copre sia logica unit che integrazione WorkoutSession) — il totale della tabella può superare i 177 effettivi per questo motivo.

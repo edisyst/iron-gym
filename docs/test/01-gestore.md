@@ -149,9 +149,29 @@ URL: `/backoffice/athletes/{id}/analytics`
 - [ ] Volume landmarks visibili (se configurati)
 - [ ] Misurazioni corporee visibili (se presenti)
 
+URL: `/backoffice/athletes/{id}/sessions`
+
+- [ ] Storico sessioni atleta visibile
+- [ ] Score readiness visibile per sessioni con check (R07)
+- [ ] Modulazione applicata indicata (es. "-5% accepted") (R07)
+- [ ] Badge "sost. da [originale]" per esercizi sostituiti (R06)
+
 ---
 
-## 11. Prenotazioni PT
+## 11. Plate inventory (R02)
+
+URL: `/backoffice/plate-inventory`
+
+- [ ] Pagina si carica senza errori
+- [ ] Lista dischi con peso, quantità paia, colore, stato attivo/inattivo
+- [ ] **Aggiungi disco**: inserisci peso_kg, quantità, colore → salva
+- [ ] Modifica disco esistente → aggiornato
+- [ ] Toggle attivo/inattivo → disco escluso/incluso dal plate calculator
+- [ ] Elimina disco → rimosso dalla lista
+
+---
+
+## 13. Prenotazioni PT
 
 URL: `/backoffice/pt-bookings`
 
@@ -160,7 +180,7 @@ URL: `/backoffice/pt-bookings`
 
 ---
 
-## 12. Corsi
+## 14. Corsi
 
 URL: `/backoffice/group-classes`
 
@@ -169,7 +189,7 @@ URL: `/backoffice/group-classes`
 
 ---
 
-## 13. Messaggi
+## 15. Messaggi
 
 URL: `/backoffice/athletes/{id}/messages`
 

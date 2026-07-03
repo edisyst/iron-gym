@@ -58,6 +58,9 @@ URL: `/backoffice/mesocycles`
 - [ ] Lista atleti accessibile
 - [ ] Pagina analytics atleta (`/backoffice/athletes/{id}/analytics`) si carica
 - [ ] Volume landmarks dell'atleta visibili/modificabili
+- [ ] Storico sessioni atleta: score readiness visibile per sessioni con check (R07)
+- [ ] Storico sessioni atleta: badge "sost. da [originale]" per esercizi sostituiti (R06)
+- [ ] Trainer ottiene 403 su atleta non assegnato
 
 ---
 

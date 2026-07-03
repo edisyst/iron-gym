@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProgressPhotoController;
 use App\Http\Controllers\PushSubscriptionController;
+use App\Http\Controllers\SyncBatchController;
 use App\Livewire\Athlete\BodyMeasurementForm;
 use App\Livewire\Athlete\Booking;
 use App\Livewire\Athlete\Dashboard;
@@ -42,4 +43,7 @@ Route::prefix('athlete')
             return response()->json(['count' => Message::where('receiver_id', auth()->id())->whereNull('read_at')->count()]);
         })->name('messages.unread-count');
         Route::post('/push-subscribe', [PushSubscriptionController::class, 'store'])->name('push-subscribe');
+
+        // Release 03 — sync offline queue
+        Route::post('/session/sync', [SyncBatchController::class, 'handle'])->name('session.sync');
     });

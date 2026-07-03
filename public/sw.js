@@ -1,4 +1,9 @@
-const CACHE_NAME = 'iron-gym-v1';
+const CACHE_NAME = 'iron-gym-v2';
+
+// Asset statici da precachare (app shell sessione)
+const PRECACHE_URLS = [
+    '/css/athlete.css',
+];
 
 const STATIC_EXTENSIONS = ['.css', '.js', '.woff', '.woff2', '.ttf', '.otf', '.png', '.jpg', '.webp', '.svg', '.ico'];
 
@@ -6,13 +11,16 @@ function isStaticAsset(url) {
     return STATIC_EXTENSIONS.some((ext) => url.pathname.endsWith(ext));
 }
 
-function isLivewireRequest(url) {
-    return url.pathname.startsWith('/livewire') || url.searchParams.has('_token');
+function isSessionPage(url) {
+    return url.pathname.startsWith('/athlete/session/');
 }
 
 // ---- Lifecycle ----
 
 self.addEventListener('install', function (event) {
+    event.waitUntil(
+        caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_URLS))
+    );
     self.skipWaiting();
 });
 
@@ -24,22 +32,24 @@ self.addEventListener('activate', function (event) {
     );
 });
 
-// ---- Fetch: cache-first per statici, network-first per Livewire ----
+// ---- Fetch ----
 
 self.addEventListener('fetch', function (event) {
     const url = new URL(event.request.url);
 
+    // Solo GET same-origin
     if (event.request.method !== 'GET' || url.origin !== self.location.origin) {
         return;
     }
 
-    if (isLivewireRequest(url)) {
+    // Pagina sessione: network-first con fallback cache (app shell offline)
+    if (isSessionPage(url)) {
         event.respondWith(
             fetch(event.request)
                 .then(function (response) {
                     if (response.ok) {
                         const clone = response.clone();
-                        caches.open(CACHE_NAME).then(function (cache) { cache.put(event.request, clone); });
+                        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
                     }
                     return response;
                 })
@@ -48,19 +58,23 @@ self.addEventListener('fetch', function (event) {
         return;
     }
 
+    // Asset statici: stale-while-revalidate
     if (isStaticAsset(url)) {
         event.respondWith(
             caches.open(CACHE_NAME).then(function (cache) {
                 return cache.match(event.request).then(function (cached) {
-                    if (cached) return cached;
-                    return fetch(event.request).then(function (response) {
+                    const networkFetch = fetch(event.request).then(function (response) {
                         if (response.ok) { cache.put(event.request, response.clone()); }
                         return response;
-                    });
+                    }).catch(() => cached);
+                    return cached || networkFetch;
                 });
             })
         );
+        return;
     }
+
+    // Tutto il resto (Livewire, pagine dinamiche): network-only, nessuna cache
 });
 
 // ---- Push notifications ----

@@ -68,6 +68,7 @@ Gestionale palestra bodybuilding/fitness. Copre: anagrafica tesserati, abbonamen
 **Sistema:**
 - FeedbackSubmission: feedback in-app utenti
 - Feature (Pennant): feature flags per roll-out graduale
+- SyncOperation: tabella idempotenza sync offline (client_uuid UNIQUE, operation, processed_at)
 
 ## Servizi disponibili
 
@@ -167,6 +168,31 @@ Fix responsive athlete completato (2026-06-28): H4 chiuso — CSS estratto in pu
 Release 01 UX sessione completata (2026-07-03): quick-log one-tap, previous performance inline, rest timer globale, warm-up generator. 15 nuovi test verde. PHPStan 0 errori, Pint OK. Suite 121/129 (8 fallimenti pre-esistenti: Vite manifest mancante + Volt auth pages, non legati a questa release).
 
 Release 02 Plate Calculator completata (2026-07-03): PlateInventory model+migration+seeder, PlateLoadoutCalculator service (greedy decrescente), PlateInventoryManager backoffice (CRUD inline gestore), modale atleta con stack grafico dischi e selettore peso barra. 4 test Unit PlateLoadoutCalculatorTest.
+
+Release 03 Offline-first sync completata (2026-07-03): IndexedDB queue client-side (Alpine store `syncQueue`, vanilla IDB), intercettori offline su quickLog/completeSet/generateWarmup/deleteWarmup in exercise-card, badge ⏳ su set pending, flush FIFO con backoff esponenziale al ripristino connettività. Endpoint `POST /athlete/session/sync` (SyncBatchController + SyncBatchRequest), idempotenza via `sync_operations` table (client_uuid UNIQUE), last-write-wins su completed_at vs client_timestamp. SW aggiornato a v2: stale-while-revalidate statici, network-first con cache fallback per pagine sessione (app shell offline). Meta CSRF aggiunta a layout athlete. 4 test SyncBatchTest verde. Suite 125/135 (10 fallimenti pre-esistenti: Vite manifest + Volt auth), PHPStan 0 errori, Pint conforme.
+
+## Architettura offline
+
+**Strategia:** degraded mode — online usa Livewire standard, offline intercetta le azioni in Alpine e le accoda in IndexedDB.
+
+**Alpine store `syncQueue`** (in workout-session.blade.php):
+- `enqueue(operation, payload)`: salva in IDB con `crypto.randomUUID()` come `client_uuid`
+- `flush(wire)`: POST batch a `/athlete/session/sync`, poi `wire.$refresh()`
+- `isPending(setId)`: controlla se il set ha ops in coda
+- Retry con backoff esponenziale: 2s → 4s → 8s ... max 30s
+- `window._igWire`: ref globale al `$wire` Livewire, impostato in `x-init` del root div
+
+**Endpoint sync:** `POST /athlete/session/sync` (guard `web`, middleware `auth + role:atleta`)
+- Accetta `operations[]` con `client_uuid`, `operation`, `client_timestamp` (ms epoch), `payload`
+- Operazioni: `quick_log`, `complete_set`, `generate_warmup`, `delete_warmup`
+- Idempotenza: `sync_operations.client_uuid UNIQUE` — replay ignorato con `status: skipped`
+- Conflitto: `completed_at` server (ms) > `client_timestamp` → `status: skipped_conflict` (last-write-wins server)
+- Ownership: `whereHas('sessionExercise.session.week.mesocycle', athlete_id)` su ogni set
+
+**Service worker v2:**
+- Statici: stale-while-revalidate (ritorna cache, aggiorna in background)
+- `/athlete/session/*`: network-first con fallback cache (pagina navigabile offline per tutta la sessione)
+- Livewire e pagine dinamiche: network-only, nessuna cache
 
 Prossima attività: raccogliere feedback dai primi atleti pilota dopo prima sessione.
 

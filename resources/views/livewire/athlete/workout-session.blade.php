@@ -1,7 +1,140 @@
-<div>
-    {{-- Timer globale Alpine store --}}
+<div x-data x-init="window._igWire = $wire; navigator.onLine && $store.syncQueue.flush($wire)">
+    {{-- Timer globale + sync queue Alpine stores --}}
     <script>
+    // ---- IndexedDB helpers ----
+    const _igDb = (() => {
+        let _p = null;
+        return () => {
+            if (_p) return _p;
+            _p = new Promise((resolve, reject) => {
+                const req = indexedDB.open('iron-gym-sync', 1);
+                req.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains('queue')) {
+                        db.createObjectStore('queue', { keyPath: 'client_uuid' });
+                    }
+                };
+                req.onsuccess = (e) => resolve(e.target.result);
+                req.onerror = (e) => reject(e.target.error);
+            });
+            return _p;
+        };
+    })();
+
+    function _igPut(record) {
+        return _igDb().then(db => new Promise((res, rej) => {
+            const tx = db.transaction('queue', 'readwrite');
+            tx.objectStore('queue').put(record);
+            tx.oncomplete = res;
+            tx.onerror = e => rej(e.target.error);
+        }));
+    }
+
+    function _igGetAll() {
+        return _igDb().then(db => new Promise((res, rej) => {
+            const tx = db.transaction('queue', 'readonly');
+            const req = tx.objectStore('queue').getAll();
+            req.onsuccess = e => res(e.target.result);
+            req.onerror = e => rej(e.target.error);
+        }));
+    }
+
+    function _igDelete(clientUuid) {
+        return _igDb().then(db => new Promise((res, rej) => {
+            const tx = db.transaction('queue', 'readwrite');
+            tx.objectStore('queue').delete(clientUuid);
+            tx.oncomplete = res;
+            tx.onerror = e => rej(e.target.error);
+        }));
+    }
+
     document.addEventListener('alpine:init', () => {
+
+        // ---- syncQueue store ----
+        Alpine.store('syncQueue', {
+            pendingSetIds: {},
+            isOnline: navigator.onLine,
+            _flushing: false,
+            _retryDelay: 2000,
+
+            async enqueue(operation, payload) {
+                const op = {
+                    client_uuid: crypto.randomUUID(),
+                    operation,
+                    client_timestamp: Date.now(),
+                    payload,
+                    status: 'pending',
+                };
+                await _igPut(op);
+                if (payload.set_id) {
+                    this.pendingSetIds = { ...this.pendingSetIds, [payload.set_id]: true };
+                }
+            },
+
+            isPending(setId) {
+                return !!this.pendingSetIds[setId];
+            },
+
+            async flush(wire) {
+                if (this._flushing || !navigator.onLine) return;
+                this._flushing = true;
+
+                try {
+                    const all = await _igGetAll();
+                    const pending = all.filter(op => op.status === 'pending');
+                    if (pending.length === 0) { this._flushing = false; return; }
+
+                    const csrf = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+                    const resp = await fetch('{{ route('athlete.session.sync') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrf,
+                        },
+                        body: JSON.stringify({ operations: pending }),
+                    });
+
+                    if (!resp.ok) {
+                        this._scheduleRetry(wire);
+                        return;
+                    }
+
+                    const data = await resp.json();
+                    for (const result of data.results) {
+                        await _igDelete(result.client_uuid);
+                        const op = pending.find(o => o.client_uuid === result.client_uuid);
+                        if (op?.payload?.set_id) {
+                            const updated = { ...this.pendingSetIds };
+                            delete updated[op.payload.set_id];
+                            this.pendingSetIds = updated;
+                        }
+                    }
+
+                    this._retryDelay = 2000;
+                    if (wire) { wire.$refresh(); }
+                } catch (_) {
+                    this._scheduleRetry(wire);
+                } finally {
+                    this._flushing = false;
+                }
+            },
+
+            _scheduleRetry(wire) {
+                setTimeout(() => this.flush(wire), this._retryDelay);
+                this._retryDelay = Math.min(this._retryDelay * 2, 30000);
+            },
+        });
+
+        // Il $wire è disponibile solo dopo mount; usiamo un ref globale impostato da x-init
+        window.addEventListener('online', () => {
+            Alpine.store('syncQueue').isOnline = true;
+            if (window._igWire) { Alpine.store('syncQueue').flush(window._igWire); }
+        });
+        window.addEventListener('offline', () => {
+            Alpine.store('syncQueue').isOnline = false;
+        });
+
+        // ---- restTimer store ----
         Alpine.store('restTimer', {
             running: false,
             seconds: 0,

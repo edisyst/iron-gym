@@ -69,16 +69,23 @@
 
     {{-- Bottone genera riscaldamento --}}
     @if ($canGenerateWarmup)
-        <div style="margin-bottom:10px;">
-            <button wire:click="generateWarmup({{ $exercise->id }})"
-                    wire:loading.attr="disabled"
+        <div x-data="{ warmupQueued: false }" style="margin-bottom:10px;">
+            <button @click="
+                if (!navigator.onLine) {
+                    warmupQueued = true;
+                    $store.syncQueue.enqueue('generate_warmup', { session_exercise_id: {{ $exercise->id }} });
+                } else {
+                    $wire.generateWarmup({{ $exercise->id }});
+                }
+            "
+                    :disabled="warmupQueued"
                     style="background:transparent;border:1px dashed #444;border-radius:8px;
                            padding:6px 14px;font-size:12px;color:#888;cursor:pointer;
                            display:flex;align-items:center;gap:6px;">
                 <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
                 </svg>
-                Genera riscaldamento
+                <span x-text="warmupQueued ? 'In attesa di sync...' : 'Genera riscaldamento'"></span>
             </button>
         </div>
     @endif
@@ -98,7 +105,7 @@
 
     {{-- Set di riscaldamento --}}
     @foreach ($warmupSets as $set)
-        <div x-data="{ done: {{ $set->completed_at ? 'true' : 'false' }} }"
+        <div x-data="{ done: {{ $set->completed_at ? 'true' : 'false' }}, pending: $store.syncQueue.isPending({{ $set->id }}) }"
              style="display:grid;grid-template-columns:24px 1fr 62px 62px 52px {{ $usesBell ? '96px' : '72px' }};gap:4px;align-items:center;
                     padding:7px 2px;border-bottom:1px solid #222;"
              :style="done ? 'opacity:.5' : ''">
@@ -108,6 +115,9 @@
             <span style="font-size:12px;color:#666;">
                 @if ($set->planned_reps) {{ $set->planned_reps }}r @endif
                 @if ($set->planned_weight_kg) {{ $set->planned_weight_kg }}kg @endif
+                <template x-if="pending">
+                    <span style="font-size:10px;color:#F59E0B;margin-left:4px;" title="In attesa di sync">⏳</span>
+                </template>
             </span>
 
             <input type="number" min="0"
@@ -124,7 +134,16 @@
 
             <div style="display:flex;align-items:center;gap:4px;">
                 <template x-if="!done">
-                    <button @click="done = true; $wire.quickLog({{ $set->id }}).then(() => { if ({{ $restSecJs }}) { $store.restTimer._totalSec = {{ $restSecJs }}; $store.restTimer.start({{ $restSecJs }}); } })"
+                    <button @click="
+                        done = true;
+                        if (!navigator.onLine) {
+                            pending = true;
+                            $store.syncQueue.enqueue('quick_log', { set_id: {{ $set->id }} });
+                            if ({{ $restSecJs }}) { $store.restTimer.start({{ $restSecJs }}); }
+                        } else {
+                            $wire.quickLog({{ $set->id }}).then(() => { if ({{ $restSecJs }}) { $store.restTimer.start({{ $restSecJs }}); } });
+                        }
+                    "
                             style="flex:1;background:#2A2A2A;border:1px solid #3A3A3A;border-radius:6px;
                                    height:30px;font-size:11px;font-weight:600;color:#aaa;cursor:pointer;">
                         Fatto
@@ -135,7 +154,14 @@
                         <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                     </svg>
                 </template>
-                <button wire:click="deleteWarmupSet({{ $set->id }})"
+                <button @click="
+                    if (!navigator.onLine) {
+                        $el.closest('[x-data]').style.display = 'none';
+                        $store.syncQueue.enqueue('delete_warmup', { set_id: {{ $set->id }} });
+                    } else {
+                        $wire.deleteWarmupSet({{ $set->id }});
+                    }
+                "
                         aria-label="Rimuovi set riscaldamento"
                         style="background:none;border:none;color:#555;font-size:16px;cursor:pointer;
                                padding:0 2px;line-height:1;flex-shrink:0;">&times;</button>
@@ -150,7 +176,7 @@
             $prevPerf = $this->previousPerformance[$exercise->exercise_id][$set->set_index] ?? null;
         @endphp
 
-        <div x-data="{ done: {{ $set->completed_at ? 'true' : 'false' }} }"
+        <div x-data="{ done: {{ $set->completed_at ? 'true' : 'false' }}, pending: $store.syncQueue.isPending({{ $set->id }}) }"
              style="display:grid;grid-template-columns:24px 1fr 62px 62px 52px {{ ($usesBell) ? '96px' : '72px' }};gap:4px;align-items:center;
                     padding:7px 2px;border-bottom:1px solid #2A2A2A;"
              :style="done ? 'opacity:.6' : ''">
@@ -162,6 +188,9 @@
                 @if ($set->planned_weight_kg) {{ $set->planned_weight_kg }}kg @endif
                 @if ($set->planned_rir !== null) RIR{{ $set->planned_rir }} @endif
                 @if ($set->planned_duration_sec) {{ $set->planned_duration_sec }}s @endif
+                <template x-if="pending">
+                    <span style="font-size:10px;color:#F59E0B;margin-left:4px;" title="In attesa di sync">⏳</span>
+                </template>
             </span>
 
             {{-- Input reps --}}
@@ -218,7 +247,16 @@
                     </button>
                 @endif
                 <template x-if="!done">
-                    <button @click="done = true; $wire.quickLog({{ $set->id }}).then(() => { if ({{ $restSecJs }}) { $store.restTimer._totalSec = {{ $restSecJs }}; $store.restTimer.start({{ $restSecJs }}); } })"
+                    <button @click="
+                        done = true;
+                        if (!navigator.onLine) {
+                            pending = true;
+                            $store.syncQueue.enqueue('quick_log', { set_id: {{ $set->id }} });
+                            if ({{ $restSecJs }}) { $store.restTimer.start({{ $restSecJs }}); }
+                        } else {
+                            $wire.quickLog({{ $set->id }}).then(() => { if ({{ $restSecJs }}) { $store.restTimer.start({{ $restSecJs }}); } });
+                        }
+                    "
                             style="flex:1;background:#FF6B00;border:none;border-radius:6px;
                                    height:32px;font-size:12px;font-weight:700;color:#fff;cursor:pointer;">
                         Fatto
@@ -229,7 +267,22 @@
                         <svg style="width:20px;height:20px;color:#22c55e;flex-shrink:0;" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                         </svg>
-                        <button wire:click="completeSet({{ $set->id }})"
+                        <button @click="
+                            if (!navigator.onLine) {
+                                pending = true;
+                                const d = $wire.__instance?.snapshot?.memo?.data ?? {};
+                                const sd = (d.setData ?? {})[{{ $set->id }}] ?? {};
+                                $store.syncQueue.enqueue('complete_set', {
+                                    set_id: {{ $set->id }},
+                                    reps: sd.reps !== '' ? parseInt(sd.reps) : null,
+                                    weight: sd.weight !== '' ? parseFloat(sd.weight) : null,
+                                    rir: sd.rir !== '' ? parseInt(sd.rir) : null,
+                                    duration: sd.duration !== '' ? parseInt(sd.duration) : null,
+                                });
+                            } else {
+                                $wire.completeSet({{ $set->id }});
+                            }
+                        "
                                 style="background:none;border:none;color:#555;font-size:11px;
                                        cursor:pointer;padding:0;text-decoration:underline;">
                             Salva

@@ -403,6 +403,12 @@ return [
             'url' => 'backoffice/communications/campaign',
             'icon' => 'fas fa-bullhorn',
         ],
+        ['header' => 'ADMIN'],
+        [
+            'text' => 'Inventario Dischi',
+            'url' => 'backoffice/admin/plate-inventory',
+            'icon' => 'fas fa-dumbbell',
+        ],
     ],
 
     /*

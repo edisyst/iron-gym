@@ -83,8 +83,9 @@
         </div>
     @endif
 
-    {{-- Header colonne --}}
-    <div style="display:grid;grid-template-columns:24px 1fr 62px 62px 52px 72px;gap:4px;align-items:center;
+    {{-- Header colonne — la larghezza azioni si adatta se l'esercizio usa bilanciere --}}
+    @php $usesBell = $this->exerciseUsesBarbell($exercise->id); @endphp
+    <div style="display:grid;grid-template-columns:24px 1fr 62px 62px 52px {{ $usesBell ? '96px' : '72px' }};gap:4px;align-items:center;
                 font-size:10px;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
                 padding:0 2px;margin-bottom:4px;">
         <span>#</span>
@@ -98,7 +99,7 @@
     {{-- Set di riscaldamento --}}
     @foreach ($warmupSets as $set)
         <div x-data="{ done: {{ $set->completed_at ? 'true' : 'false' }} }"
-             style="display:grid;grid-template-columns:24px 1fr 62px 62px 52px 72px;gap:4px;align-items:center;
+             style="display:grid;grid-template-columns:24px 1fr 62px 62px 52px {{ $usesBell ? '96px' : '72px' }};gap:4px;align-items:center;
                     padding:7px 2px;border-bottom:1px solid #222;"
              :style="done ? 'opacity:.5' : ''">
 
@@ -143,13 +144,14 @@
     @endforeach
 
     {{-- Working set --}}
+    @php $usesBell = $this->exerciseUsesBarbell($exercise->id); @endphp
     @foreach ($workingSets as $set)
         @php
             $prevPerf = $this->previousPerformance[$exercise->exercise_id][$set->set_index] ?? null;
         @endphp
 
         <div x-data="{ done: {{ $set->completed_at ? 'true' : 'false' }} }"
-             style="display:grid;grid-template-columns:24px 1fr 62px 62px 52px 72px;gap:4px;align-items:center;
+             style="display:grid;grid-template-columns:24px 1fr 62px 62px 52px {{ ($usesBell) ? '96px' : '72px' }};gap:4px;align-items:center;
                     padding:7px 2px;border-bottom:1px solid #2A2A2A;"
              :style="done ? 'opacity:.6' : ''">
 
@@ -199,6 +201,22 @@
 
             {{-- Azione --}}
             <div style="display:flex;align-items:center;gap:4px;">
+                {{-- Bottone plate calculator: visibile solo per esercizi con bilanciere e con peso pianificato --}}
+                @if ($set->planned_weight_kg && $usesBell)
+                    <button wire:click="openPlateModal({{ $set->id }})"
+                            aria-label="Calcola dischi"
+                            style="background:#2A2A2A;border:1px solid #3A3A3A;border-radius:6px;
+                                   width:28px;height:28px;display:flex;align-items:center;justify-content:center;
+                                   cursor:pointer;flex-shrink:0;padding:0;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FF6B00" stroke-width="2">
+                            <rect x="2" y="10" width="4" height="4" rx="1"/>
+                            <rect x="18" y="10" width="4" height="4" rx="1"/>
+                            <rect x="6" y="8" width="3" height="8" rx="1"/>
+                            <rect x="15" y="8" width="3" height="8" rx="1"/>
+                            <line x1="9" y1="12" x2="15" y2="12"/>
+                        </svg>
+                    </button>
+                @endif
                 <template x-if="!done">
                     <button @click="done = true; $wire.quickLog({{ $set->id }}).then(() => { if ({{ $restSecJs }}) { $store.restTimer._totalSec = {{ $restSecJs }}; $store.restTimer.start({{ $restSecJs }}); } })"
                             style="flex:1;background:#FF6B00;border:none;border-radius:6px;

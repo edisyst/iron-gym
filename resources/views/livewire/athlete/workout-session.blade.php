@@ -311,6 +311,132 @@
         </div>
     @endif
 
+    {{-- Modale plate calculator --}}
+    <div x-data="{ open: false }"
+         x-on:open-plate-modal.window="open = true"
+         x-show="open"
+         x-cloak
+         style="position:fixed;inset:0;z-index:1000;display:flex;align-items:flex-end;justify-content:center;
+                background:rgba(0,0,0,.7);"
+         @click.self="open = false; $wire.closePlateModal()">
+
+        <div style="background:#1A1A1A;border-radius:16px 16px 0 0;width:100%;max-width:480px;
+                    padding:20px;padding-bottom:max(20px, env(safe-area-inset-bottom));"
+             @click.stop>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                <h3 style="margin:0;font-size:16px;font-weight:700;color:#fff;">Carica bilanciere</h3>
+                <button @click="open = false; $wire.closePlateModal()"
+                        aria-label="Chiudi"
+                        style="background:none;border:none;color:#666;font-size:20px;cursor:pointer;line-height:1;">&times;</button>
+            </div>
+
+            @if ($plateLoadout)
+                {{-- Selettore peso barra --}}
+                <div style="margin-bottom:16px;">
+                    <label style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px;">
+                        Peso barra
+                    </label>
+                    <div style="display:flex;gap:8px;">
+                        @foreach (config('barbell.weights', [20, 15, 10]) as $bw)
+                            <button wire:click="updatePlateBar({{ $bw }})"
+                                    style="flex:1;padding:6px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;
+                                           border: {{ $plateBarWeight == $bw ? '2px solid #FF6B00' : '1px solid #333' }};
+                                           background: {{ $plateBarWeight == $bw ? '#2A1A0A' : '#2A2A2A' }};
+                                           color: {{ $plateBarWeight == $bw ? '#FF6B00' : '#aaa' }};">
+                                {{ $bw }} kg
+                            </button>
+                        @endforeach
+                    </div>
+                </div>
+
+                {{-- Risultato caricamento --}}
+                <div style="background:#111;border-radius:10px;padding:12px 14px;margin-bottom:16px;">
+                    <div style="font-size:13px;color:#888;margin-bottom:4px;">
+                        Obiettivo: <strong style="color:#fff;">{{ $plateLoadout['target_kg'] }} kg</strong>
+                    </div>
+                    <div style="font-size:13px;color:#888;">
+                        Caricato: <strong style="color:{{ $plateLoadout['delta_kg'] > 0 ? '#facc15' : '#22c55e' }};">
+                            {{ $plateLoadout['loaded_kg'] }} kg
+                        </strong>
+                        @if ($plateLoadout['delta_kg'] > 0)
+                            <span style="color:#888;font-size:11px;"> (mancano {{ $plateLoadout['delta_kg'] }} kg)</span>
+                        @endif
+                    </div>
+                </div>
+
+                {{-- Visualizzazione grafica dischi per lato --}}
+                @if ($plateLoadout['plates'])
+                    <div style="margin-bottom:16px;">
+                        <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">
+                            Per lato
+                        </div>
+
+                        {{-- Stack orizzontale dischi --}}
+                        <div style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;">
+                            @php
+                                $colorMap = [
+                                    'rosso'   => '#ef4444',
+                                    'blu'     => '#3b82f6',
+                                    'giallo'  => '#eab308',
+                                    'verde'   => '#22c55e',
+                                    'bianco'  => '#e5e7eb',
+                                    'nero'    => '#374151',
+                                    'cromato' => '#9ca3af',
+                                ];
+                            @endphp
+                            @foreach ($plateLoadout['plates'] as $plate)
+                                @php
+                                    $hexColor = $colorMap[$plate['color'] ?? ''] ?? '#6b7280';
+                                    $heightPx = match(true) {
+                                        $plate['weight_kg'] >= 20 => 56,
+                                        $plate['weight_kg'] >= 10 => 46,
+                                        $plate['weight_kg'] >= 5  => 38,
+                                        default                   => 30,
+                                    };
+                                    $widthPx = match(true) {
+                                        $plate['weight_kg'] >= 20 => 20,
+                                        $plate['weight_kg'] >= 10 => 17,
+                                        default                   => 13,
+                                    };
+                                @endphp
+                                @for ($i = 0; $i < $plate['count']; $i++)
+                                    <div style="width:{{ $widthPx }}px;height:{{ $heightPx }}px;
+                                                background:{{ $hexColor }};border-radius:3px;
+                                                display:flex;align-items:center;justify-content:center;
+                                                writing-mode:vertical-rl;text-orientation:mixed;
+                                                font-size:9px;font-weight:700;color:#000;opacity:.9;"
+                                         title="{{ $plate['weight_kg'] }} kg">
+                                        {{ $plate['weight_kg'] }}
+                                    </div>
+                                @endfor
+                            @endforeach
+                            {{-- Barra centrale --}}
+                            <div style="width:40px;height:10px;background:#6b7280;border-radius:2px;"></div>
+                        </div>
+
+                        {{-- Lista testuale per lato --}}
+                        <div style="margin-top:10px;font-size:12px;color:#888;">
+                            @foreach ($plateLoadout['plates'] as $plate)
+                                <span style="margin-right:10px;">
+                                    {{ $plate['count'] }} &times; {{ $plate['weight_kg'] }} kg
+                                </span>
+                            @endforeach
+                        </div>
+                    </div>
+                @else
+                    <p style="color:#666;font-size:13px;text-align:center;padding:16px 0;">
+                        Solo barra — nessun disco da aggiungere.
+                    </p>
+                @endif
+            @else
+                <p style="color:#666;font-size:13px;text-align:center;padding:20px 0;">
+                    Calcolo in corso...
+                </p>
+            @endif
+        </div>
+    </div>
+
     {{-- Form feedback --}}
     <div x-data="{ open: {{ $showFeedback ? 'true' : 'false' }} }"
          @open-feedback.window="open = true">

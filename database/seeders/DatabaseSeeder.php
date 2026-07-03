@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             ExerciseSeeder::class,
             ExerciseDescriptionSeeder::class,
+            PlateInventorySeeder::class,
         ]);
 
         // Seeder solo in ambiente locale

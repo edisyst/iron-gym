@@ -6,6 +6,7 @@ use App\Models\Exercise;
 use App\Models\ExerciseSet;
 use App\Models\SessionExercise;
 use App\Models\TrainingSession;
+use App\Services\PlateLoadoutCalculator;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
 use Livewire\Attributes\Title;
@@ -34,15 +35,29 @@ class WorkoutSession extends Component
 
     public ?int $exerciseDetailId = null;
 
+    public ?int $plateModalSetId = null;
+
+    public float $plateBarWeight = 20.0;
+
+    /**
+     * Risultato del calcolo dischi per lato
+     *
+     * @var array{plates: array<array{weight_kg: float, count: int, color: string|null}>, loaded_kg: float, delta_kg: float, bar_kg: float, target_kg: float}|null
+     */
+    public ?array $plateLoadout = null;
+
     public function mount(TrainingSession $session): void
     {
         $session->load([
             'sessionExercises' => fn ($q) => $q->orderBy('order_in_session'),
             'sessionExercises.exercise',
+            'sessionExercises.exercise.equipment',
             'sessionExercises.sets' => fn ($q) => $q->orderBy('set_index'),
             'sessionExercises.group',
             'week.mesocycle',
         ]);
+
+        $this->plateBarWeight = (float) config('barbell.default_weight_kg', 20);
 
         if ($session->week->mesocycle->athlete_id !== auth()->id()) {
             abort(403, 'Non autorizzato.');
@@ -362,6 +377,73 @@ class WorkoutSession extends Component
         $this->session->load([
             'sessionExercises.sets' => fn ($q) => $q->orderBy('set_index'),
         ]);
+    }
+
+    /**
+     * Apre la modale plate calculator per il set specificato.
+     * Verifica ownership tramite session_id prima di procedere.
+     */
+    public function openPlateModal(int $setId): void
+    {
+        $set = ExerciseSet::whereHas('sessionExercise', fn ($q) => $q->where('session_id', $this->session->id))
+            ->findOrFail($setId);
+
+        $this->plateModalSetId = $setId;
+        $this->recalculatePlates((float) $set->planned_weight_kg);
+        $this->dispatch('open-plate-modal');
+    }
+
+    /**
+     * Aggiorna il peso barra selezionato e ricalcola i dischi.
+     */
+    public function updatePlateBar(float $barWeight): void
+    {
+        $this->plateBarWeight = $barWeight;
+
+        if ($this->plateModalSetId === null) {
+            return;
+        }
+
+        $set = ExerciseSet::find($this->plateModalSetId);
+
+        if ($set) {
+            $this->recalculatePlates((float) $set->planned_weight_kg);
+        }
+    }
+
+    /**
+     * Calcola i dischi per lato e salva il risultato in $plateLoadout.
+     */
+    protected function recalculatePlates(float $targetKg): void
+    {
+        $calculator = app(PlateLoadoutCalculator::class);
+        $this->plateLoadout = $calculator->calculate($targetKg, $this->plateBarWeight);
+    }
+
+    /**
+     * Chiude la modale e azzera lo stato del plate calculator.
+     */
+    public function closePlateModal(): void
+    {
+        $this->plateModalSetId = null;
+        $this->plateLoadout = null;
+    }
+
+    /**
+     * Restituisce true se l'esercizio del SessionExercise dato usa bilanciere o smith machine.
+     * Utilizza la collection gia' caricata in eager loading — nessuna query aggiuntiva.
+     */
+    public function exerciseUsesBarbell(int $sessionExerciseId): bool
+    {
+        $se = $this->session->sessionExercises->firstWhere('id', $sessionExerciseId);
+
+        if (! $se) {
+            return false;
+        }
+
+        return $se->exercise->equipment->contains(
+            fn ($eq) => in_array($eq->slug, ['barbell', 'smith_machine'])
+        );
     }
 
     public function render(): View

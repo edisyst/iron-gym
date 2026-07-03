@@ -3,6 +3,7 @@
 use App\Livewire\Backoffice\Access\AccessLogList;
 use App\Livewire\Backoffice\Admin\FeatureFlagManager;
 use App\Livewire\Backoffice\Admin\FeedbackList;
+use App\Livewire\Backoffice\Admin\PlateInventoryManager;
 use App\Livewire\Backoffice\Athletes\AthleteAnalytics;
 use App\Livewire\Backoffice\Athletes\AthleteProfile;
 use App\Livewire\Backoffice\Athletes\BodyMeasurementForm;
@@ -105,6 +106,7 @@ Route::prefix('backoffice')
         Route::middleware('role:gestore')->group(function () {
             Route::get('/admin/feature-flags', FeatureFlagManager::class)->name('admin.feature-flags');
             Route::get('/admin/feedback', FeedbackList::class)->name('admin.feedback');
+            Route::get('/admin/plate-inventory', PlateInventoryManager::class)->name('admin.plate-inventory');
         });
 
         Route::get('/reports/download/{file}', function (string $file) {

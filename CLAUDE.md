@@ -63,6 +63,7 @@ Gestionale palestra bodybuilding/fitness. Copre: anagrafica tesserati, abbonamen
 **Tracking e analytics:**
 - BodyMeasurement: misurazioni corporee periodiche
 - ProgressPhoto: foto progressi per pose
+- PlateInventory: inventario dischi per lato (weight_kg, quantity_pairs, color, is_active)
 
 **Sistema:**
 - FeedbackSubmission: feedback in-app utenti
@@ -70,6 +71,7 @@ Gestionale palestra bodybuilding/fitness. Copre: anagrafica tesserati, abbonamen
 
 ## Servizi disponibili
 
+- PlateLoadoutCalculator: calcola dischi per lato del bilanciere; greedy decrescente su PlateInventory attivi; delta_kg=0 se combinazione esatta, altrimenti combinazione per difetto
 - MesocycleInstantiationService: crea gerarchia completa da template
 - WeeklyVolumeCalculator: calcola hard set settimanali pesati per contribution_pct
 - WeeklyProgressionService: applica progressione MEV→MRV con lettura feedback
@@ -163,6 +165,8 @@ Revisione grafica backoffice completata (2026-06-28): audit UI + Fase 1 coerenza
 Fix responsive athlete completato (2026-06-28): H4 chiuso — CSS estratto in public/css/athlete.css, sidebar nav desktop (≥1024px), breakpoints tablet (768px)/desktop (1024px)/large (1280px). Suite 106/106, PHPStan 0, Pint OK. Tutti finding HIGH/MED dell'audit grafici chiusi.
 
 Release 01 UX sessione completata (2026-07-03): quick-log one-tap, previous performance inline, rest timer globale, warm-up generator. 15 nuovi test verde. PHPStan 0 errori, Pint OK. Suite 121/129 (8 fallimenti pre-esistenti: Vite manifest mancante + Volt auth pages, non legati a questa release).
+
+Release 02 Plate Calculator completata (2026-07-03): PlateInventory model+migration+seeder, PlateLoadoutCalculator service (greedy decrescente), PlateInventoryManager backoffice (CRUD inline gestore), modale atleta con stack grafico dischi e selettore peso barra. 4 test Unit PlateLoadoutCalculatorTest.
 
 Prossima attività: raccogliere feedback dai primi atleti pilota dopo prima sessione.
 

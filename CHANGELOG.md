@@ -324,4 +324,40 @@ Revisione totale code quality e sicurezza, staged e reversibile. Nessuna funzion
 
 ---
 
+## Release 01 — UX sessione: quick-log, previous performance, rest timer, warm-up generator (2026-07-03)
+
+**Obiettivo:** ridurre l'attrito nel logging in sessione PWA atleta.
+
+### Feature
+
+**B — Quick-log one-tap**
+- Bottone "Fatto" su ogni set non completato: copia `planned_*` in `actual_*` rispettando `measurement_type` (`reps_weight`, `reps_only`, `isometric_hold`, `time`, `time_weight`).
+- Feedback visivo immediato via Alpine (`done = true` ottimistico) senza attendere il round-trip Livewire.
+- `completeSet()` e `quickLog()` non resettano `completed_at` se già valorizzato — i campi restano modificabili dopo il quick-log con bottone "Salva".
+
+**C — Previous performance inline**
+- `loadPreviousPerformance()` in `mount()`: singola query aggregata per tutti gli esercizi della sessione, niente N+1.
+- Riga "prec: X kg × Y @ RIR Z" sotto ogni working set; invisibile se nessuno storico. Warm-up esclusi.
+- Dati in `$previousPerformance[exercise_id][set_index]` (proprietà pubblica Livewire).
+
+**D — Rest timer globale**
+- `Alpine.store('restTimer')` definito in `workout-session.blade.php`: `start(sec)`, `skip()`, `fmt(s)`.
+- Barra fissa in basso con countdown e progress bar; sopravvive allo scroll e al cambio esercizio.
+- Allo scadere: `navigator.vibrate([300,150,300])` + `Notification API` se permesso concesso.
+- Cluster set usa `intra_cluster_rest_sec`; se `planned_rest_sec` è NULL il timer non parte.
+- Architettura precedente (Alpine duplicato per-set) rimossa.
+
+**E — Warm-up generator**
+- `generateWarmup($seId)`: solo per `measurement_type = reps_weight` con `planned_weight_kg` valorizzato.
+- Set generati: 50% × 8, 70% × 5, 85% × 3 arrotondati a 2.5 kg; sotto 40 kg target solo 50% × 8.
+- Idempotente: non aggiunge se warm-up già presenti. Working set shiftati per far spazio.
+- `deleteWarmupSet($setId)`: elimina singolo warm-up; rifiuta working set con 404.
+
+### Test
+15 nuovi test in `tests/Feature/WorkoutSessionUxTest.php` (quick-log per `measurement_type`, idempotenza warm-up, soglia 40 kg, arrotondamento 2.5 kg, previous performance con/senza storico, esclusione warm-up).
+
+**Suite finale:** 121/129 pass (8 fallimenti pre-esistenti: Vite manifest + Volt auth pages). PHPStan L6 0 errori, Pint conforme.
+
+---
+
 *Ogni step ha lasciato test Pest verdi, PHPStan L6 a 0 errori, Pint conforme.*

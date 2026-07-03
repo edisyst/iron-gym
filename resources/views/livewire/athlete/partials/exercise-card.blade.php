@@ -1,8 +1,27 @@
 {{--
   Partial per una card esercizio dentro la sessione workout.
-  Variabili: $exercise (SessionExercise con sets e exercise caricati)
+  Variabili: $exercise (SessionExercise con sets, exercise caricati)
 --}}
+@php
+    $measurementType = $exercise->exercise->measurement_type;
+    $restSec = $exercise->technique_type === 'cluster'
+        ? ($exercise->intra_cluster_rest_sec ?? $exercise->planned_rest_sec)
+        : $exercise->planned_rest_sec;
+    $restSecJs = $restSec !== null ? (int) $restSec : 'null';
+
+    $workingSets = $exercise->sets->where('is_warmup', false)->sortBy('set_index');
+    $warmupSets  = $exercise->sets->where('is_warmup', true)->sortBy('set_index');
+
+    $firstWorkingWeight = $workingSets->first()?->planned_weight_kg;
+    $hasWarmupSets      = $warmupSets->isNotEmpty();
+    $canGenerateWarmup  = $measurementType === 'reps_weight'
+        && $firstWorkingWeight !== null
+        && ! $hasWarmupSets;
+@endphp
+
 <div style="margin-bottom:{{ $loop->last ? '0' : '16px' }};">
+
+    {{-- Header esercizio --}}
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
         <button wire:click="showExerciseHistory({{ $exercise->exercise_id }}, '{{ addslashes($exercise->exercise->name_it) }}')"
                 style="font-size:16px;font-weight:600;flex:1;background:none;border:none;color:inherit;
@@ -14,7 +33,7 @@
             </span>
         @endif
         <button wire:click="showExerciseDetail({{ $exercise->exercise_id }})"
-                title="Dettagli esercizio"
+                aria-label="Dettagli esercizio"
                 style="background:#2A2A2A;border:1px solid #3A3A3A;border-radius:8px;padding:4px 10px;
                        font-size:11px;font-weight:600;color:#aaa;cursor:pointer;white-space:nowrap;
                        display:flex;align-items:center;gap:4px;line-height:1.4;">
@@ -48,117 +67,168 @@
         </p>
     @endif
 
-    {{-- Header colonne set --}}
-    <div style="display:grid;grid-template-columns:28px 1fr 70px 70px 60px 36px;gap:6px;align-items:center;
+    {{-- Bottone genera riscaldamento --}}
+    @if ($canGenerateWarmup)
+        <div style="margin-bottom:10px;">
+            <button wire:click="generateWarmup({{ $exercise->id }})"
+                    wire:loading.attr="disabled"
+                    style="background:transparent;border:1px dashed #444;border-radius:8px;
+                           padding:6px 14px;font-size:12px;color:#888;cursor:pointer;
+                           display:flex;align-items:center;gap:6px;">
+                <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                </svg>
+                Genera riscaldamento
+            </button>
+        </div>
+    @endif
+
+    {{-- Header colonne --}}
+    <div style="display:grid;grid-template-columns:24px 1fr 62px 62px 52px 72px;gap:4px;align-items:center;
                 font-size:10px;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
-                padding:0 2px;margin-bottom:6px;">
+                padding:0 2px;margin-bottom:4px;">
         <span>#</span>
-        <span>Obiettivo</span>
+        <span>Piano</span>
         <span style="text-align:center;">Reps</span>
         <span style="text-align:center;">Kg</span>
         <span style="text-align:center;">RIR</span>
         <span></span>
     </div>
 
-    @foreach ($exercise->sets->sortBy('set_index') as $set)
-        <div x-data="setTimer_{{ $set->id }}()"
-             style="display:grid;grid-template-columns:28px 1fr 70px 70px 60px 36px;gap:6px;align-items:center;
-                    padding:8px 2px;border-bottom:1px solid #2A2A2A;
-                    {{ $set->completed_at ? 'opacity:.55;' : '' }}">
+    {{-- Set di riscaldamento --}}
+    @foreach ($warmupSets as $set)
+        <div x-data="{ done: {{ $set->completed_at ? 'true' : 'false' }} }"
+             style="display:grid;grid-template-columns:24px 1fr 62px 62px 52px 72px;gap:4px;align-items:center;
+                    padding:7px 2px;border-bottom:1px solid #222;"
+             :style="done ? 'opacity:.5' : ''">
 
-            {{-- Numero set --}}
-            <span style="font-size:13px;color:#666;">{{ $set->set_index }}</span>
+            <span style="font-size:11px;color:#555;font-weight:700;">W</span>
 
-            {{-- Prescrizione --}}
-            <span style="font-size:13px;color:#888;">
-                @if ($set->planned_reps){{ $set->planned_reps }}r @endif
-                @if ($set->planned_weight_kg){{ $set->planned_weight_kg }}kg @endif
-                @if ($set->planned_rir !== null)RIR{{ $set->planned_rir }} @endif
+            <span style="font-size:12px;color:#666;">
+                @if ($set->planned_reps) {{ $set->planned_reps }}r @endif
+                @if ($set->planned_weight_kg) {{ $set->planned_weight_kg }}kg @endif
             </span>
 
-            {{-- Input reps --}}
             <input type="number" min="0"
                    wire:model="setData.{{ $set->id }}.reps"
                    class="workout-input"
-                   placeholder="{{ $set->planned_reps ?? '—' }}"
-                   @if ($set->completed_at) readonly @endif>
+                   placeholder="{{ $set->planned_reps ?? '—' }}">
 
-            {{-- Input peso --}}
             <input type="number" min="0" step="0.5"
                    wire:model="setData.{{ $set->id }}.weight"
                    class="workout-input"
-                   placeholder="kg"
-                   @if ($set->completed_at) readonly @endif>
+                   placeholder="{{ $set->planned_weight_kg ?? '—' }}">
 
-            {{-- Input RIR --}}
-            <input type="number" min="0" max="10"
-                   wire:model="setData.{{ $set->id }}.rir"
-                   class="workout-input"
-                   placeholder="{{ $set->planned_rir ?? '—' }}"
-                   @if ($set->completed_at) readonly @endif>
+            <span></span>
 
-            {{-- Bottone completamento / icona check --}}
-            @if ($set->completed_at)
-                <div style="display:flex;align-items:center;justify-content:center;">
-                    <svg style="width:22px;height:22px;color:#22c55e;" fill="currentColor" viewBox="0 0 20 20">
+            <div style="display:flex;align-items:center;gap:4px;">
+                <template x-if="!done">
+                    <button @click="done = true; $wire.quickLog({{ $set->id }}).then(() => { if ({{ $restSecJs }}) { $store.restTimer._totalSec = {{ $restSecJs }}; $store.restTimer.start({{ $restSecJs }}); } })"
+                            style="flex:1;background:#2A2A2A;border:1px solid #3A3A3A;border-radius:6px;
+                                   height:30px;font-size:11px;font-weight:600;color:#aaa;cursor:pointer;">
+                        Fatto
+                    </button>
+                </template>
+                <template x-if="done">
+                    <svg style="width:18px;height:18px;color:#22c55e;flex-shrink:0;" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                     </svg>
-                </div>
-            @else
-                <button
-                    @click="
-                        $wire.completeSet({{ $set->id }}).then(() => {
-                            start({{ $exercise->planned_rest_sec ?? 90 }});
-                        });
-                    "
-                    style="background:#FF6B00;border:none;border-radius:6px;width:32px;height:32px;
-                           display:flex;align-items:center;justify-content:center;cursor:pointer;">
-                    <svg style="width:16px;height:16px;color:#fff;" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                    </svg>
-                </button>
-            @endif
-        </div>
-
-        {{-- Countdown riposo (Alpine, client-side) --}}
-        <div x-data="setTimer_{{ $set->id }}()"
-             x-show="running"
-             style="display:none;padding:8px 2px;background:#1A1A1A;border-radius:6px;margin-bottom:4px;
-                    text-align:center;font-size:14px;color:#FF6B00;">
-            Riposo: <span x-text="formatTime(seconds)"></span>
+                </template>
+                <button wire:click="deleteWarmupSet({{ $set->id }})"
+                        aria-label="Rimuovi set riscaldamento"
+                        style="background:none;border:none;color:#555;font-size:16px;cursor:pointer;
+                               padding:0 2px;line-height:1;flex-shrink:0;">&times;</button>
+            </div>
         </div>
     @endforeach
-</div>
 
-{{-- Definizione Alpine component per il timer del set --}}
-@foreach ($exercise->sets as $set)
-@if (!$set->completed_at)
-<script>
-function setTimer_{{ $set->id }}() {
-    return {
-        running: false,
-        seconds: 0,
-        intervalId: null,
-        start(restSec) {
-            this.seconds = restSec;
-            this.running = true;
-            if (this.intervalId) clearInterval(this.intervalId);
-            this.intervalId = setInterval(() => {
-                if (this.seconds <= 0) {
-                    clearInterval(this.intervalId);
-                    this.running = false;
-                } else {
-                    this.seconds--;
-                }
-            }, 1000);
-        },
-        formatTime(s) {
-            const m = Math.floor(s / 60);
-            const sec = s % 60;
-            return m + ':' + String(sec).padStart(2, '0');
-        }
-    };
-}
-</script>
-@endif
-@endforeach
+    {{-- Working set --}}
+    @foreach ($workingSets as $set)
+        @php
+            $prevPerf = $this->previousPerformance[$exercise->exercise_id][$set->set_index] ?? null;
+        @endphp
+
+        <div x-data="{ done: {{ $set->completed_at ? 'true' : 'false' }} }"
+             style="display:grid;grid-template-columns:24px 1fr 62px 62px 52px 72px;gap:4px;align-items:center;
+                    padding:7px 2px;border-bottom:1px solid #2A2A2A;"
+             :style="done ? 'opacity:.6' : ''">
+
+            <span style="font-size:13px;color:#666;">{{ $set->set_index }}</span>
+
+            <span style="font-size:12px;color:#888;">
+                @if ($set->planned_reps) {{ $set->planned_reps }}r @endif
+                @if ($set->planned_weight_kg) {{ $set->planned_weight_kg }}kg @endif
+                @if ($set->planned_rir !== null) RIR{{ $set->planned_rir }} @endif
+                @if ($set->planned_duration_sec) {{ $set->planned_duration_sec }}s @endif
+            </span>
+
+            {{-- Input reps --}}
+            @if (in_array($measurementType, ['reps_weight', 'reps_only', 'time_weight']))
+                <input type="number" min="0"
+                       wire:model="setData.{{ $set->id }}.reps"
+                       class="workout-input"
+                       placeholder="{{ $set->planned_reps ?? '—' }}">
+            @else
+                <span></span>
+            @endif
+
+            {{-- Input peso --}}
+            @if (in_array($measurementType, ['reps_weight', 'time_weight']))
+                <input type="number" min="0" step="0.5"
+                       wire:model="setData.{{ $set->id }}.weight"
+                       class="workout-input"
+                       placeholder="kg">
+            @elseif (in_array($measurementType, ['time', 'isometric_hold']))
+                <input type="number" min="0"
+                       wire:model="setData.{{ $set->id }}.duration"
+                       class="workout-input"
+                       placeholder="{{ $set->planned_duration_sec ?? 's' }}">
+            @else
+                <span></span>
+            @endif
+
+            {{-- Input RIR --}}
+            @if (in_array($measurementType, ['reps_weight', 'reps_only', 'time_weight']))
+                <input type="number" min="0" max="10"
+                       wire:model="setData.{{ $set->id }}.rir"
+                       class="workout-input"
+                       placeholder="{{ $set->planned_rir ?? '—' }}">
+            @else
+                <span></span>
+            @endif
+
+            {{-- Azione --}}
+            <div style="display:flex;align-items:center;gap:4px;">
+                <template x-if="!done">
+                    <button @click="done = true; $wire.quickLog({{ $set->id }}).then(() => { if ({{ $restSecJs }}) { $store.restTimer._totalSec = {{ $restSecJs }}; $store.restTimer.start({{ $restSecJs }}); } })"
+                            style="flex:1;background:#FF6B00;border:none;border-radius:6px;
+                                   height:32px;font-size:12px;font-weight:700;color:#fff;cursor:pointer;">
+                        Fatto
+                    </button>
+                </template>
+                <template x-if="done">
+                    <div style="display:flex;align-items:center;gap:4px;flex:1;">
+                        <svg style="width:20px;height:20px;color:#22c55e;flex-shrink:0;" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        <button wire:click="completeSet({{ $set->id }})"
+                                style="background:none;border:none;color:#555;font-size:11px;
+                                       cursor:pointer;padding:0;text-decoration:underline;">
+                            Salva
+                        </button>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        {{-- Riga performance precedente --}}
+        @if ($prevPerf && ($prevPerf['reps'] !== null || $prevPerf['weight'] !== null))
+            <div style="padding:3px 28px 5px;font-size:11px;color:#444;">
+                prec:
+                @if ($prevPerf['weight'] !== null) {{ $prevPerf['weight'] }} kg &times; @endif
+                @if ($prevPerf['reps'] !== null) {{ $prevPerf['reps'] }} @endif
+                @if ($prevPerf['rir'] !== null) &bull; RIR {{ $prevPerf['rir'] }} @endif
+            </div>
+        @endif
+    @endforeach
+</div>

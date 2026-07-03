@@ -1,4 +1,46 @@
 <div>
+    {{-- Timer globale Alpine store --}}
+    <script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.store('restTimer', {
+            running: false,
+            seconds: 0,
+            _intervalId: null,
+            start(sec) {
+                if (!sec || sec <= 0) return;
+                clearInterval(this._intervalId);
+                this.seconds = sec;
+                this.running = true;
+                this._intervalId = setInterval(() => {
+                    if (this.seconds <= 0) {
+                        clearInterval(this._intervalId);
+                        this.running = false;
+                        this._onDone();
+                    } else {
+                        this.seconds--;
+                    }
+                }, 1000);
+            },
+            skip() {
+                clearInterval(this._intervalId);
+                this.running = false;
+                this.seconds = 0;
+            },
+            _onDone() {
+                if (navigator.vibrate) navigator.vibrate([300, 150, 300]);
+                if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+                    new Notification('Recupero completato!', { body: 'Torna in pista.' });
+                }
+            },
+            fmt(s) {
+                const m = Math.floor(s / 60);
+                const sec = s % 60;
+                return m + ':' + String(sec).padStart(2, '0');
+            }
+        });
+    });
+    </script>
+
     {{-- Header sessione --}}
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
         <div>
@@ -24,13 +66,11 @@
 
     {{-- Lista esercizi --}}
     @php
-        // Raggruppa gli esercizi: group_id null = standalone, altrimenti per gruppo
         $grouped = $session->sessionExercises->groupBy(fn ($e) => $e->group_id ?? 'solo_' . $e->id);
     @endphp
 
     @foreach ($grouped as $groupKey => $exercises)
         @if ($exercises->first()->group_id !== null && $exercises->first()->group !== null)
-            {{-- CARD GRUPPO (superset / giant set) --}}
             <div class="athlete-card" style="border-left: 3px solid #FF6B00;">
                 <p style="font-size:11px;font-weight:700;text-transform:uppercase;color:#FF6B00;letter-spacing:.06em;margin-bottom:12px;">
                     {{ $exercises->first()->group->group_type === 'superset' ? 'Superset' : 'Giant set' }}
@@ -42,7 +82,6 @@
                 @endforeach
             </div>
         @else
-            {{-- CARD ESERCIZIO STANDALONE --}}
             @php $exercise = $exercises->first(); @endphp
             <div class="athlete-card">
                 @include('livewire.athlete.partials.exercise-card', ['exercise' => $exercise])
@@ -52,14 +91,41 @@
 
     {{-- Bottone completa sessione --}}
     @if ($this->canCompleteSession())
-        <div style="margin-top:8px;margin-bottom:24px;">
+        <div style="margin-top:8px;margin-bottom:80px;">
             <button wire:click="completeSession" class="btn-accent"
                     wire:loading.attr="disabled">
                 <span wire:loading.remove>Completa sessione</span>
                 <span wire:loading>Salvataggio...</span>
             </button>
         </div>
+    @else
+        <div style="margin-bottom:80px;"></div>
     @endif
+
+    {{-- Barra recupero fissa in basso --}}
+    <div x-data x-show="$store.restTimer.running" x-transition
+         x-cloak
+         style="position:fixed;bottom:0;left:0;right:0;z-index:500;
+                background:#111;border-top:2px solid #FF6B00;
+                padding:10px 16px;display:flex;align-items:center;justify-content:space-between;">
+        <div>
+            <div style="font-size:10px;color:#666;text-transform:uppercase;font-weight:700;
+                        letter-spacing:.06em;margin-bottom:2px;">Recupero</div>
+            <div style="font-size:26px;font-weight:700;color:#FF6B00;line-height:1;"
+                 x-text="$store.restTimer.fmt($store.restTimer.seconds)"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+            <div style="width:180px;height:4px;background:#2A2A2A;border-radius:4px;overflow:hidden;">
+                <div style="height:100%;background:#FF6B00;border-radius:4px;transition:width .9s linear;"
+                     x-bind:style="'width:' + ($store.restTimer.seconds / ($store.restTimer._totalSec || 1) * 100) + '%'"></div>
+            </div>
+            <button @click="$store.restTimer.skip()"
+                    style="background:#2A2A2A;border:1px solid #444;border-radius:6px;
+                           padding:5px 12px;color:#aaa;font-size:12px;cursor:pointer;">
+                Salta recupero
+            </button>
+        </div>
+    </div>
 
     {{-- Drawer dettaglio esercizio --}}
     @if ($exerciseDetailId !== null && $this->exerciseDetail !== null)
@@ -68,7 +134,6 @@
             <div style="background:#1E1E1E;border-radius:16px 16px 0 0;padding:20px 16px 32px;width:100%;
                         max-height:88vh;overflow-y:auto;">
 
-                {{-- Handle + header --}}
                 <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
                     <div style="flex:1;">
                         <h2 style="font-size:18px;font-weight:700;color:#fff;margin:0 0 6px;">{{ $ex->name_it }}</h2>
@@ -91,7 +156,6 @@
                             style="background:none;border:none;color:#666;font-size:26px;line-height:1;cursor:pointer;padding:0 0 0 12px;">&times;</button>
                 </div>
 
-                {{-- Video --}}
                 @if ($ex->video_url)
                     <a href="{{ $ex->video_url }}" target="_blank" rel="noopener noreferrer"
                        style="display:flex;align-items:center;gap:10px;background:#2A2A2A;border-radius:10px;
@@ -104,7 +168,6 @@
                     </a>
                 @endif
 
-                {{-- Classificazione --}}
                 @php
                     $pattern    = $ex->compoundPattern ?? $ex->jointAction;
                     $isCompound = $ex->compoundPattern !== null;
@@ -145,7 +208,6 @@
                     </div>
                 </div>
 
-                {{-- Attrezzatura --}}
                 @if ($ex->equipment->count())
                     <div style="background:#262626;border-radius:10px;padding:14px;margin-bottom:14px;">
                         <p style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-bottom:10px;">Attrezzatura</p>
@@ -157,7 +219,6 @@
                     </div>
                 @endif
 
-                {{-- Muscoli coinvolti --}}
                 @if ($ex->muscles->count())
                     @php
                         $roleOrder = ['primary' => 0, 'secondary' => 1, 'stabilizer' => 2];
@@ -201,7 +262,6 @@
                     </div>
                 @endif
 
-                {{-- Esecuzione --}}
                 @if ($ex->execution_description || $ex->description)
                     <div style="background:#262626;border-radius:10px;padding:14px;">
                         <p style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-bottom:8px;">Come eseguirlo</p>
@@ -251,7 +311,7 @@
         </div>
     @endif
 
-    {{-- Form feedback (a:open-feedback => x-show) --}}
+    {{-- Form feedback --}}
     <div x-data="{ open: {{ $showFeedback ? 'true' : 'false' }} }"
          @open-feedback.window="open = true">
         <div x-show="open" x-transition style="position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.7);display:flex;align-items:flex-end;">

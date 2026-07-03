@@ -19,7 +19,13 @@ class WorkoutSession extends Component
     /** @var array<int, array{reps: string, weight: string, rir: string, duration: string}> */
     public array $setData = [];
 
-    /** Mostra il form feedback dopo il completamento sessione */
+    /**
+     * Performance precedente per esercizio: [exercise_id][set_index] => [reps, weight, rir]
+     *
+     * @var array<int, array<int, array{reps: ?int, weight: ?float, rir: ?int}>>
+     */
+    public array $previousPerformance = [];
+
     public bool $showFeedback = false;
 
     public ?int $exerciseHistoryId = null;
@@ -30,7 +36,6 @@ class WorkoutSession extends Component
 
     public function mount(TrainingSession $session): void
     {
-        // Eager-load tutto il necessario per evitare N+1
         $session->load([
             'sessionExercises' => fn ($q) => $q->orderBy('order_in_session'),
             'sessionExercises.exercise',
@@ -39,14 +44,12 @@ class WorkoutSession extends Component
             'week.mesocycle',
         ]);
 
-        // Verifica che la sessione appartenga all'atleta autenticato
         if ($session->week->mesocycle->athlete_id !== auth()->id()) {
             abort(403, 'Non autorizzato.');
         }
 
         $this->session = $session;
 
-        // Se la sessione è ancora planned, portala in in_progress
         if ($this->session->status === 'planned') {
             $this->session->update([
                 'status' => 'in_progress',
@@ -54,7 +57,6 @@ class WorkoutSession extends Component
             ]);
         }
 
-        // Inizializza $setData per ogni set caricato
         foreach ($this->session->sessionExercises as $exercise) {
             foreach ($exercise->sets as $set) {
                 $this->setData[$set->id] = [
@@ -66,10 +68,51 @@ class WorkoutSession extends Component
             }
         }
 
-        // Se arriva con ?feedback=1 nella query, mostra subito il form feedback
+        $this->loadPreviousPerformance();
+
         if (request()->query('feedback') == '1') {
             $this->showFeedback = true;
         }
+    }
+
+    /**
+     * Carica, in un'unica query aggregata, l'ultima esecuzione completata
+     * per ciascun esercizio presente nella sessione.
+     */
+    protected function loadPreviousPerformance(): void
+    {
+        $exerciseIds = $this->session->sessionExercises->pluck('exercise_id')->unique()->values();
+
+        if ($exerciseIds->isEmpty()) {
+            return;
+        }
+
+        $lastSes = SessionExercise::whereIn('exercise_id', $exerciseIds)
+            ->join('training_sessions as ts', 'ts.id', '=', 'session_exercises.session_id')
+            ->join('microcycle_weeks as mw', 'mw.id', '=', 'ts.microcycle_week_id')
+            ->join('mesocycles as mc', 'mc.id', '=', 'mw.mesocycle_id')
+            ->where('ts.status', 'completed')
+            ->where('ts.id', '!=', $this->session->id)
+            ->where('mc.athlete_id', auth()->id())
+            ->orderByDesc('ts.completed_at')
+            ->select('session_exercises.*')
+            ->with(['sets' => fn ($q) => $q->where('is_warmup', false)->orderBy('set_index')])
+            ->get()
+            ->groupBy('exercise_id')
+            ->map(fn ($group) => $group->first());
+
+        $result = [];
+        foreach ($lastSes as $exerciseId => $se) {
+            foreach ($se->sets as $prevSet) {
+                $result[$exerciseId][$prevSet->set_index] = [
+                    'reps' => $prevSet->actual_reps,
+                    'weight' => $prevSet->actual_weight_kg !== null ? (float) $prevSet->actual_weight_kg : null,
+                    'rir' => $prevSet->actual_rir,
+                ];
+            }
+        }
+
+        $this->previousPerformance = $result;
     }
 
     public function showExerciseDetail(int $exerciseId): void
@@ -122,35 +165,151 @@ class WorkoutSession extends Component
     }
 
     /**
-     * Completa un singolo set registrando i dati actual
+     * Quick-log: copia planned_* in actual_* rispettando il measurement_type.
+     * Non resetta completed_at se già valorizzato.
+     */
+    public function quickLog(int $setId): void
+    {
+        $set = ExerciseSet::whereHas('sessionExercise', fn ($q) => $q->where('session_id', $this->session->id))
+            ->findOrFail($setId);
+
+        $measurementType = $set->sessionExercise->exercise->measurement_type;
+
+        $updates = [];
+
+        match ($measurementType) {
+            'reps_weight', 'time_weight' => $updates = [
+                'actual_reps' => $set->planned_reps,
+                'actual_weight_kg' => $set->planned_weight_kg,
+                'actual_rir' => $set->planned_rir,
+            ],
+            'reps_only' => $updates = [
+                'actual_reps' => $set->planned_reps,
+                'actual_rir' => $set->planned_rir,
+            ],
+            'time', 'isometric_hold' => $updates = [
+                'actual_duration_sec' => $set->planned_duration_sec,
+            ],
+            default => $updates = [],
+        };
+
+        if ($set->completed_at === null) {
+            $updates['completed_at'] = now();
+        }
+
+        $set->update($updates);
+
+        $this->setData[$setId] = [
+            'reps' => $set->actual_reps !== null ? (string) $set->actual_reps : ($this->setData[$setId]['reps'] ?? ''),
+            'weight' => $set->actual_weight_kg !== null ? (string) $set->actual_weight_kg : ($this->setData[$setId]['weight'] ?? ''),
+            'rir' => $set->actual_rir !== null ? (string) $set->actual_rir : ($this->setData[$setId]['rir'] ?? ''),
+            'duration' => $set->actual_duration_sec !== null ? (string) $set->actual_duration_sec : ($this->setData[$setId]['duration'] ?? ''),
+        ];
+
+        $this->reloadSets();
+        $this->dispatch('set-completed', setId: $setId);
+    }
+
+    /**
+     * Salva i valori actual digitati manualmente.
+     * Non resetta completed_at se il set era già completato (es. dopo quick-log).
      */
     public function completeSet(int $setId): void
     {
-        // Verifica che il set appartenga a questa sessione
         $set = ExerciseSet::whereHas('sessionExercise', fn ($q) => $q->where('session_id', $this->session->id))
             ->findOrFail($setId);
 
         $data = $this->setData[$setId] ?? [];
 
-        $set->update([
+        $updates = [
             'actual_reps' => $data['reps'] !== '' ? (int) $data['reps'] : null,
             'actual_weight_kg' => $data['weight'] !== '' ? (float) $data['weight'] : null,
             'actual_rir' => $data['rir'] !== '' ? (int) $data['rir'] : null,
             'actual_duration_sec' => $data['duration'] !== '' ? (int) $data['duration'] : null,
-            'completed_at' => now(),
-        ]);
+        ];
 
-        // Ricarica i set aggiornati
-        $this->session->load([
-            'sessionExercises.sets' => fn ($q) => $q->orderBy('set_index'),
-        ]);
+        if ($set->completed_at === null) {
+            $updates['completed_at'] = now();
+        }
 
+        $set->update($updates);
+
+        $this->reloadSets();
         $this->dispatch('set-completed', setId: $setId);
     }
 
     /**
-     * Ritorna true se tutti i working set sono stati completati
+     * Genera set di riscaldamento prima dei working set.
+     * Idempotente: se esistono già warm-up per questo session_exercise non fa nulla.
      */
+    public function generateWarmup(int $sessionExerciseId): void
+    {
+        SessionExercise::where('session_id', $this->session->id)->findOrFail($sessionExerciseId);
+
+        $existingWarmup = ExerciseSet::where('session_exercise_id', $sessionExerciseId)
+            ->where('is_warmup', true)
+            ->exists();
+
+        if ($existingWarmup) {
+            return;
+        }
+
+        $firstWorkingSet = ExerciseSet::where('session_exercise_id', $sessionExerciseId)
+            ->where('is_warmup', false)
+            ->orderBy('set_index')
+            ->first();
+
+        if (! $firstWorkingSet || $firstWorkingSet->planned_weight_kg === null) {
+            return;
+        }
+
+        $target = (float) $firstWorkingSet->planned_weight_kg;
+
+        $warmupDef = $target >= 40
+            ? [[0.50, 8], [0.70, 5], [0.85, 3]]
+            : [[0.50, 8]];
+
+        $warmupCount = count($warmupDef);
+
+        // Shifta i working set per fare spazio ai warm-up
+        ExerciseSet::where('session_exercise_id', $sessionExerciseId)
+            ->where('is_warmup', false)
+            ->orderByDesc('set_index')
+            ->get()
+            ->each(fn ($s) => $s->update(['set_index' => $s->set_index + $warmupCount]));
+
+        foreach ($warmupDef as $i => [$pct, $reps]) {
+            $weight = round($target * $pct / 2.5) * 2.5;
+            $newSet = ExerciseSet::create([
+                'session_exercise_id' => $sessionExerciseId,
+                'set_index' => $i + 1,
+                'is_warmup' => true,
+                'planned_reps' => $reps,
+                'planned_weight_kg' => $weight,
+                'planned_rir' => null,
+                'planned_duration_sec' => null,
+            ]);
+            $this->setData[$newSet->id] = ['reps' => '', 'weight' => '', 'rir' => '', 'duration' => ''];
+        }
+
+        $this->reloadSets();
+    }
+
+    /**
+     * Elimina un singolo set di riscaldamento.
+     */
+    public function deleteWarmupSet(int $setId): void
+    {
+        $set = ExerciseSet::whereHas('sessionExercise', fn ($q) => $q->where('session_id', $this->session->id))
+            ->where('is_warmup', true)
+            ->findOrFail($setId);
+
+        $set->delete();
+        unset($this->setData[$setId]);
+
+        $this->reloadSets();
+    }
+
     public function canCompleteSession(): bool
     {
         foreach ($this->session->sessionExercises as $exercise) {
@@ -164,9 +323,6 @@ class WorkoutSession extends Component
         return true;
     }
 
-    /**
-     * Completa la sessione e apre il form feedback
-     */
     public function completeSession(): void
     {
         $this->session->update([
@@ -178,9 +334,6 @@ class WorkoutSession extends Component
         $this->dispatch('open-feedback');
     }
 
-    /**
-     * Salta la sessione e torna alla dashboard
-     */
     public function skipSession(): void
     {
         $this->session->update(['status' => 'skipped']);
@@ -188,9 +341,6 @@ class WorkoutSession extends Component
         $this->redirect(route('athlete.dashboard'));
     }
 
-    /**
-     * Label italiana per la technique_type
-     */
     public function techniqueLabel(string $type): string
     {
         return match ($type) {
@@ -205,6 +355,13 @@ class WorkoutSession extends Component
             'amrap' => 'AMRAP',
             default => $type,
         };
+    }
+
+    protected function reloadSets(): void
+    {
+        $this->session->load([
+            'sessionExercises.sets' => fn ($q) => $q->orderBy('set_index'),
+        ]);
     }
 
     public function render(): View

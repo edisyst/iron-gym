@@ -114,6 +114,23 @@ Il layout è gestito con `->layout('layouts.backoffice')` nel `render()`. Questo
 pattern è necessario per embeddare componenti via `@livewire` (es. in `AthleteProfile`).
 Exercise model usa `getRouteKeyName() = 'slug'` (route binding su slug).
 
+## WorkoutSession — interazioni chiave (Release 01)
+
+**Componente:** `app/Livewire/Athlete/WorkoutSession.php`  
+**View:** `resources/views/livewire/athlete/workout-session.blade.php` + partial `partials/exercise-card.blade.php`
+
+| Metodo | Descrizione |
+|---|---|
+| `quickLog($setId)` | Copia planned→actual rispettando `measurement_type`; non resetta `completed_at` se già valorizzato |
+| `completeSet($setId)` | Salva valori digitati manualmente; non resetta `completed_at` se già valorizzato |
+| `generateWarmup($seId)` | Crea set is_warmup=1: 50/70/85% arrotondati a 2.5kg; sotto 40kg solo 50%; idempotente |
+| `deleteWarmupSet($setId)` | Rimuove singolo set warmup; rifiuta working set con 404 |
+| `loadPreviousPerformance()` | Singola query aggregata, riempie `$previousPerformance[exercise_id][set_index]` |
+
+**Alpine store `restTimer`** (definito in workout-session.blade.php): `start(sec)`, `skip()`, `fmt(s)`. Avvia vibrazione + Notification API allo scadere. Barra fissa bottom. Per cluster usa `intra_cluster_rest_sec`.
+
+**`$previousPerformance`**: proprietà pubblica array, serializzata Livewire, usata dal partial per mostrare "prec: Xkg × Y @ RIR Z" sotto ogni working set.
+
 ## Stato sviluppo
 
 Step 1-10 tutti implementati. Sistema in verifica funzionale e test pre-pilota.
@@ -144,6 +161,8 @@ Fix residui LOW completati (2026-06-28): WeeklyProgressionService.applyDeload() 
 Revisione grafica backoffice completata (2026-06-28): audit UI + Fase 1 coerenza + Fase 2 brand identity. 9 commit. Dettagli: docs/review/audit-grafica.md. Suite 106/106, PHPStan 0, Pint OK.
 
 Fix responsive athlete completato (2026-06-28): H4 chiuso — CSS estratto in public/css/athlete.css, sidebar nav desktop (≥1024px), breakpoints tablet (768px)/desktop (1024px)/large (1280px). Suite 106/106, PHPStan 0, Pint OK. Tutti finding HIGH/MED dell'audit grafici chiusi.
+
+Release 01 UX sessione completata (2026-07-03): quick-log one-tap, previous performance inline, rest timer globale, warm-up generator. 15 nuovi test verde. PHPStan 0 errori, Pint OK. Suite 121/129 (8 fallimenti pre-esistenti: Vite manifest mancante + Volt auth pages, non legati a questa release).
 
 Prossima attività: raccogliere feedback dai primi atleti pilota dopo prima sessione.
 

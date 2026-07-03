@@ -433,3 +433,37 @@ Revisione totale code quality e sicurezza, staged e reversibile. Nessuna funzion
 ---
 
 *Ogni step ha lasciato test Pest verdi, PHPStan L6 a 0 errori, Pint conforme.*
+
+---
+
+## Release 05 — PR detection in tempo reale e lista record (2026-07-03)
+
+**Obiettivo:** rilevare automaticamente i personal record e1RM al completamento di ogni set, con feedback immediato in sessione e pagina storico PR.
+
+### Modello dati (Fase B)
+- Migration `personal_records`: `athlete_id` FK, `exercise_id` FK, `exercise_set_id` FK, `record_type ENUM('e1rm','max_weight','max_reps_at_weight')`, `value DECIMAL(7,2)`, `achieved_at TIMESTAMP`. Indice su `(athlete_id, exercise_id, record_type)`. Questa release implementa solo `e1rm`; l'enum lascia spazio ai tipi futuri senza migration.
+- Model `PersonalRecord` con relazioni `athlete`, `exercise`, `exerciseSet`.
+
+### Servizio (Fase C)
+- `PersonalRecordDetector::check(ExerciseSet, athleteId): ?PersonalRecord` — sincrono, pronto per migrazione a evento+listener.
+- Soglie configurabili in `config/pr.php`: `max_reps_epley` (default 12, Epley degrada oltre) e `min_sessions_before_pr` (default 3, evita la pioggia di PR iniziali).
+- Filtra: set warmup, measurement type non `reps_weight`, reps oltre soglia, e1RM che non supera il record corrente.
+- Agganciato in **due percorsi** per copertura completa:
+  - `WorkoutSession::quickLog()` e `completeSet()` — path online Livewire
+  - `SyncBatchController::applyQuickLog()` e `applyCompleteSet()` — path offline IndexedDB sync
+
+### UI (Fase D)
+- Toast Alpine auto-dismiss 4s nel layout atleta; ascolta evento Livewire `pr-achieved` con `exerciseName` e `e1rm`. Visibile sopra il bottom nav.
+- Componente `Athlete\PersonalRecords` (`/athlete/records`): lista e1RM per esercizio con link a slug, valore e data, paginazione server-side Livewire.
+- Voce "Record" aggiunta in sidebar desktop e bottom nav mobile.
+
+### Test (Fase E)
+6 test in `PersonalRecordDetectorTest.php`:
+- Registra PR dopo la soglia minima di sessioni.
+- Non registra se e1RM non supera il record precedente.
+- Ignora set warmup.
+- Ignora reps oltre soglia config.
+- Ignora measurement type non `reps_weight`.
+- Non registra prima della soglia minima di sessioni.
+
+**Suite finale:** 143/149 pass (6 skip pre-esistenti: Vite manifest + Volt auth — invariati). PHPStan L6 0 errori, Pint conforme.

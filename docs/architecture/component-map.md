@@ -67,6 +67,9 @@ Prefisso `/athlete`, middleware `auth + role:atleta`.
 | `athlete.messages` | `/athlete/messages` | `Athlete\Messages` |
 | `athlete.messages.unread-count` | `/athlete/messages-unread-count` | closure JSON |
 | `athlete.push-subscribe` | POST `/athlete/push-subscribe` | `PushSubscriptionController@store` |
+| `athlete.volume` | `/athlete/volume` | `Athlete\WeeklyVolume` |
+| `athlete.records` | `/athlete/records` | `Athlete\PersonalRecords` |
+| `athlete.session.sync` | POST `/athlete/session/sync` | `SyncBatchController@handle` |
 
 ---
 
@@ -134,6 +137,8 @@ Tutti in `app/Livewire/Athlete/`. Layout: `layouts.athlete` (dark, mobile-first,
 | `Booking` | Lista slot disponibili, form prenotazione PT, iscrizione corsi |
 | `Profile` | Profilo atleta: dati personali, cambio password, preferenze |
 | `Messages` | Chat atleta↔trainer con badge messaggi non letti |
+| `WeeklyVolume` | Body map SVG fronte/retro, barre volume vs landmark MEV/MAV/MRV, selettore settimana |
+| `PersonalRecords` | Elenco PR e1RM paginato per esercizio, ordinati per data decrescente |
 
 ## Componenti Livewire — shared
 
@@ -172,6 +177,8 @@ Tutti in `app/Services/`.
 | `PtBookingService` | Prenotazioni PT con verifica disponibilità slot trainer. |
 | `ClassBookingService` | Iscrizioni corsi collettivi con gestione waitlist. |
 | `E1rmCalculator` | Formula Epley: `w * (1 + r/30)`. |
+| `PlateLoadoutCalculator` | Algoritmo greedy decrescente su `PlateInventory` attivi; `delta_kg=0` se combinazione esatta, altrimenti combinazione per difetto. |
+| `PersonalRecordDetector` | `check(ExerciseSet, athleteId)` — rileva PR e1RM dopo soglie configurabili (`config/pr.php`). Sincrono, pronto per migrazione a evento+listener. |
 
 ---
 
@@ -194,6 +201,8 @@ Tutti in `app/Services/`.
 | `ExerciseSeeder` | sempre | Carica `database/seeders/sql/exercises_seed.sql` via `DB::unprepared()` (83 esercizi, 26 muscoli, 14 equipment, 27 pattern) |
 | `DemoSeeder` | solo `local` | Utenti di test, dati fittizi per sviluppo locale |
 | `PilotSeeder` | via `pilot:init` | Piani abbonamento reali + account gestore da env |
+| `PlateInventorySeeder` | `db:seed` | Dischi reali: 20/15/10/5/2.5/1.25 kg per lato |
+| `PilotTemplateSeeder` | manuale | Template PPL Ipertrofia Intermediato (4 sett.) con 3 sessioni/sett. e progressione automatica |
 
 ---
 
@@ -205,6 +214,7 @@ Usati solo per operazioni non-Livewire.
 |---|---|---|
 | `ProgressPhotoController` | `GET /athlete/photos/{progressPhoto}` | Serve foto con URL firmati dal disco locale |
 | `PushSubscriptionController` | `POST /athlete/push-subscribe` | Salva endpoint VAPID per Web Push |
+| `SyncBatchController` | `POST /athlete/session/sync` | Riceve batch operazioni offline (quick_log, complete_set, generate_warmup, delete_warmup); idempotenza via `sync_operations.client_uuid` |
 
 ---
 

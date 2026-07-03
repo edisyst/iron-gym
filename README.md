@@ -21,7 +21,15 @@ Software di gestione per palestra di bodybuilding e fitness con focus sulla pers
 
 **Gestionale:** anagrafica tesserati con certificati medici e scadenze, piani abbonamento (durata, prezzo, ingressi inclusi), abbonamenti attivi con rinnovo, registro accessi in struttura.
 
-**Training:** catalogo esercizi (83 esercizi, 26 muscoli, 14 equipment, 27 movement pattern) con tassonomia completa e ruoli muscolari. Template di scheda riutilizzabili (gym-wide). Mesocicli assegnati agli atleti, generati da template con snapshot al momento dell'istanziamento. Logging sessioni con set pianificati e set effettivi separati, supporto superset e giant set, tecniche speciali. Periodizzazione con volume landmarks per atleta-muscolo (MEV/MAV/MRV), progressione automatica settimana per settimana, trigger di deload. Feedback post-sessione su scala 0-3 con autoregolazione del carico.
+**Training:** catalogo esercizi (83 esercizi, 26 muscoli, 14 equipment, 27 movement pattern) con tassonomia completa e ruoli muscolari. Template di scheda riutilizzabili (gym-wide). Mesocicli assegnati agli atleti, generati da template con snapshot al momento dell'istanziamento. Logging sessioni con set pianificati e set effettivi separati, supporto superset e giant set, tecniche speciali. Quick-log one-tap, previous performance inline, rest timer globale Alpine, generatore warm-up automatico. Periodizzazione con volume landmarks per atleta-muscolo (MEV/MAV/MRV), progressione automatica settimana per settimana, trigger di deload. Feedback post-sessione su scala 0-3 con autoregolazione del carico.
+
+**Personal records:** rilevamento automatico PR e1RM (formula Epley) al completamento di ogni set — online e offline. Toast auto-dismiss in sessione. Lista storica PR per esercizio.
+
+**Plate calculator:** calcolo dischi per lato del bilanciere su inventario reale; algoritmo greedy decrescente con combinazione per difetto. Gestione inventario nel backoffice.
+
+**Volume visuale:** body map SVG fronte/retro (25 muscoli colorati per intensità). Barre orizzontali volume settimanale vs landmark MEV/MAV/MRV per atleta. Selettore settimana mesociclo.
+
+**PWA offline-first:** service worker stale-while-revalidate per asset, network-first con cache fallback per pagine sessione. Coda operazioni IndexedDB con flush automatico al ripristino connettività, idempotenza server-side via `sync_operations.client_uuid`.
 
 **Tracking corporeo:** misurazioni periodiche (peso, circonferenze, plicometria), foto progressi per pose standard, grafici andamento.
 
@@ -94,7 +102,7 @@ php artisan pilot:init
 
 - **app/Livewire/Backoffice/** — Componenti backoffice (Exercises, Templates, Mesocycles, Members, Bookings, Reports...)
 - **app/Livewire/Athlete/** — Componenti app atleta
-- **app/Services/** — Servizi dominio (MesocycleInstantiationService, WeeklyProgressionService, KpiService...)
+- **app/Services/** — Servizi dominio (MesocycleInstantiationService, WeeklyProgressionService, KpiService, PlateLoadoutCalculator, PersonalRecordDetector...)
 - **resources/views/livewire/** — Template Blade dei componenti
 - **database/migrations/** — Una per tabella, `down()` sempre implementato
 - **database/seeders/sql/** — `exercises_seed.sql` (83 esercizi)
@@ -116,7 +124,7 @@ Gestione via backoffice: `/backoffice/admin/feature-flags` (solo gestore).
 
 | Persona | Area | Accesso |
 |---|---|---|
-| Atleta | /athlete | Vede schede, esegue workout, registra feedback, consulta grafici |
+| Atleta | /athlete | Vede schede, esegue workout, registra feedback, consulta grafici, plate calculator, body map volume, record personali |
 | Trainer | Backoffice | Crea template, assegna mesocicli, monitora, autoregola |
 | Gestore | Backoffice | KPI, dati finanziari, staff, listini. Privilegi trainer. |
 | Receptionist | Backoffice | Check-in, anagrafica, certificati, abbonamenti. Training in lettura |
@@ -137,6 +145,10 @@ FEEDBACK_EMAIL=feedback@iron-gym.local
 
 # Flare error tracking
 FLARE_KEY=
+
+# PR detection
+PR_MAX_REPS_EPLEY=12
+PR_MIN_SESSIONS=3
 
 # Go-live
 PILOT_MANAGER_EMAIL=gestore@palestra.it

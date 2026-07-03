@@ -5,10 +5,12 @@ namespace App\Livewire\Athlete;
 use App\Models\Exercise;
 use App\Models\ExerciseSet;
 use App\Models\SessionExercise;
+use App\Models\SessionReadinessCheck;
 use App\Models\TrainingSession;
 use App\Services\ExerciseSubstitutionFinder;
 use App\Services\PersonalRecordDetector;
 use App\Services\PlateLoadoutCalculator;
+use App\Services\ReadinessEvaluator;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
 use Livewire\Attributes\Title;
@@ -47,6 +49,20 @@ class WorkoutSession extends Component
 
     public ?int $exerciseDetailId = null;
 
+    public bool $showReadinessModal = false;
+
+    public bool $showModulationProposal = false;
+
+    /**
+     * Proposta di modulazione carichi da mostrare all'atleta prima di avviare la sessione.
+     * Struttura: score, outcome, suggestion, includesJointAlert, reduction_pct,
+     *             sets[]{set_id, exercise_name, set_index, original_weight, proposed_weight},
+     *             sets_to_remove[]{set_id, exercise_name, set_index}
+     *
+     * @var array<string, mixed>
+     */
+    public array $modulationProposal = [];
+
     public ?int $plateModalSetId = null;
 
     public float $plateBarWeight = 20.0;
@@ -78,10 +94,12 @@ class WorkoutSession extends Component
         $this->session = $session;
 
         if ($this->session->status === 'planned') {
-            $this->session->update([
-                'status' => 'in_progress',
-                'started_at' => now(),
-            ]);
+            $hasCheck = SessionReadinessCheck::where('training_session_id', $session->id)->exists();
+            if ($hasCheck) {
+                $this->startSession();
+            } else {
+                $this->showReadinessModal = true;
+            }
         }
 
         foreach ($this->session->sessionExercises as $exercise) {
@@ -384,6 +402,158 @@ class WorkoutSession extends Component
         $this->session->update(['status' => 'skipped']);
 
         $this->redirect(route('athlete.dashboard'));
+    }
+
+    /**
+     * Salta il check di readiness e avvia la sessione senza modulazione.
+     */
+    public function skipReadiness(): void
+    {
+        $this->showReadinessModal = false;
+        $this->startSession();
+    }
+
+    /**
+     * Salva il check di readiness, calcola la proposta e — se necessaria — la mostra.
+     *
+     * @param  int  $sleep  sleep_quality  0-3
+     * @param  int  $stress  stress_level   0-3
+     * @param  int  $soreness  soreness_level 0-3
+     * @param  int  $joint  joint_status   0-3
+     */
+    public function submitReadiness(int $sleep, int $stress, int $soreness, int $joint, string $note = ''): void
+    {
+        foreach ([$sleep, $stress, $soreness, $joint] as $val) {
+            if ($val < 0 || $val > 3) {
+                return;
+            }
+        }
+
+        $check = SessionReadinessCheck::create([
+            'training_session_id' => $this->session->id,
+            'sleep_quality' => $sleep,
+            'stress_level' => $stress,
+            'soreness_level' => $soreness,
+            'joint_status' => $joint,
+            'note' => $note !== '' ? $note : null,
+        ]);
+
+        $proposal = app(ReadinessEvaluator::class)->evaluate($check);
+
+        $noteText = "Readiness pre-sessione: score {$proposal->score}/12.";
+        if ($proposal->requiresModulation()) {
+            $noteText .= " {$proposal->suggestion}";
+        }
+
+        $this->session->update(['trainer_notes' => $noteText]);
+        $this->showReadinessModal = false;
+
+        if (! $proposal->requiresModulation()) {
+            $this->startSession();
+
+            return;
+        }
+
+        $reductionPct = $proposal->outcome === 'reduce_5pct'
+            ? (int) config('readiness.reduction_pct.medium', 5)
+            : (int) config('readiness.reduction_pct.low', 10);
+
+        $evaluator = app(ReadinessEvaluator::class);
+        $sets = [];
+
+        foreach ($this->session->sessionExercises as $se) {
+            foreach ($se->sets->where('is_warmup', false)->whereNull('completed_at') as $set) {
+                if ($set->planned_weight_kg !== null) {
+                    $sets[] = [
+                        'set_id' => $set->id,
+                        'exercise_name' => $se->exercise->name_it,
+                        'set_index' => $set->set_index,
+                        'original_weight' => (float) $set->planned_weight_kg,
+                        'proposed_weight' => $evaluator->applyReduction((float) $set->planned_weight_kg, $reductionPct),
+                    ];
+                }
+            }
+        }
+
+        $setsToRemove = [];
+
+        if ($proposal->outcome === 'reduce_10pct') {
+            $minSets = (int) config('readiness.min_sets_for_removal', 3);
+
+            foreach ($this->session->sessionExercises as $se) {
+                $incomplete = $se->sets
+                    ->where('is_warmup', false)
+                    ->filter(fn ($s) => $s->completed_at === null)
+                    ->sortByDesc('set_index');
+
+                if ($incomplete->count() >= $minSets) {
+                    $last = $incomplete->first();
+                    $setsToRemove[] = [
+                        'set_id' => $last->id,
+                        'exercise_name' => $se->exercise->name_it,
+                        'set_index' => $last->set_index,
+                    ];
+                }
+            }
+        }
+
+        $this->modulationProposal = [
+            'score' => $proposal->score,
+            'outcome' => $proposal->outcome,
+            'suggestion' => $proposal->suggestion,
+            'includesJointAlert' => $proposal->includesJointAlert,
+            'reduction_pct' => $reductionPct,
+            'sets' => $sets,
+            'sets_to_remove' => $setsToRemove,
+        ];
+
+        $this->showModulationProposal = true;
+    }
+
+    /**
+     * Applica la modulazione proposta: aggiorna planned_weight_kg e rimuove i set extra.
+     */
+    public function acceptModulation(): void
+    {
+        foreach ($this->modulationProposal['sets'] ?? [] as $item) {
+            ExerciseSet::whereHas('sessionExercise', fn ($q) => $q->where('session_id', $this->session->id))
+                ->where('id', $item['set_id'])
+                ->update(['planned_weight_kg' => $item['proposed_weight']]);
+        }
+
+        foreach ($this->modulationProposal['sets_to_remove'] ?? [] as $item) {
+            $set = ExerciseSet::whereHas('sessionExercise', fn ($q) => $q->where('session_id', $this->session->id))
+                ->where('id', $item['set_id'])
+                ->first();
+
+            if ($set) {
+                $set->delete();
+                unset($this->setData[$set->id]);
+            }
+        }
+
+        $this->reloadSets();
+        $this->showModulationProposal = false;
+        $this->modulationProposal = [];
+        $this->startSession();
+    }
+
+    /**
+     * Rifiuta la modulazione: avvia la sessione senza modificare i carichi.
+     */
+    public function rejectModulation(): void
+    {
+        $this->showModulationProposal = false;
+        $this->modulationProposal = [];
+        $this->startSession();
+    }
+
+    private function startSession(): void
+    {
+        $this->session->update([
+            'status' => 'in_progress',
+            'started_at' => now(),
+        ]);
     }
 
     public function techniqueLabel(string $type): string

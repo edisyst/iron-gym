@@ -71,6 +71,54 @@
                                             </button>
                                         </div>
 
+                                        {{-- Readiness pre-sessione --}}
+                                        @if ($s->readinessCheck)
+                                            @php
+                                                $rc = $s->readinessCheck;
+                                                $rcScore = $rc->score;
+                                                $rcBadge = match(true) {
+                                                    $rcScore >= 9 => 'success',
+                                                    $rcScore >= 5 => 'warning',
+                                                    default       => 'danger',
+                                                };
+                                                $rcLabel = match(true) {
+                                                    $rcScore >= 9 => 'ottimale',
+                                                    $rcScore >= 5 => 'moderata',
+                                                    default       => 'bassa',
+                                                };
+                                                $rcFields = [
+                                                    'sleep_quality'  => 'Sonno',
+                                                    'stress_level'   => 'Stress',
+                                                    'soreness_level' => 'Indolenzimento',
+                                                    'joint_status'   => 'Articolazioni',
+                                                ];
+                                            @endphp
+                                            <div class="mb-3">
+                                                <small class="text-muted text-uppercase font-weight-bold d-block mb-1">
+                                                    <i class="fas fa-heartbeat mr-1"></i>Readiness pre-sessione
+                                                </small>
+                                                <span class="badge badge-{{ $rcBadge }} mr-2">
+                                                    score {{ $rcScore }}/12 &mdash; {{ $rcLabel }}
+                                                </span>
+                                                @foreach ($rcFields as $field => $label)
+                                                    <span class="mr-3">
+                                                        <small class="text-muted">{{ $label }}:</small>
+                                                        <strong>{{ $rc->$field }}</strong>
+                                                    </span>
+                                                @endforeach
+                                                @if ($rc->note)
+                                                    <p class="text-muted small mt-1 mb-0">
+                                                        <i class="fas fa-sticky-note mr-1"></i>{{ $rc->note }}
+                                                    </p>
+                                                @endif
+                                                @if ($s->trainer_notes)
+                                                    <p class="text-muted small mt-1 mb-0">
+                                                        <i class="fas fa-info-circle mr-1"></i>{{ $s->trainer_notes }}
+                                                    </p>
+                                                @endif
+                                            </div>
+                                        @endif
+
                                         {{-- Feedback --}}
                                         @if ($s->feedback)
                                             @php

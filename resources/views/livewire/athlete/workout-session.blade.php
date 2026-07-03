@@ -631,6 +631,208 @@
         </div>
     </div>
 
+    {{-- Modale readiness pre-sessione --}}
+    @if ($showReadinessModal)
+    <div x-data="{
+            sleep: 2, stress: 2, soreness: 2, joint: 2, note: '',
+            labels: {
+                sleep:    ['Pessimo', 'Scarso', 'Buono', 'Ottimo'],
+                stress:   ['Minimo', 'Basso', 'Moderato', 'Elevato'],
+                soreness: ['Nessuno', 'Lieve', 'Moderato', 'Forte'],
+                joint:    ['Dolore', 'Fastidio', 'Ok', 'Perfetto'],
+            },
+            colorFor(val) {
+                return ['#ef4444','#f59e0b','#3b82f6','#22c55e'][val] ?? '#3b82f6';
+            }
+         }"
+         style="position:fixed;inset:0;z-index:1100;background:rgba(0,0,0,.85);
+                display:flex;align-items:flex-end;justify-content:center;">
+
+        <div style="background:#1A1A1A;border-radius:16px 16px 0 0;width:100%;max-width:480px;
+                    padding:24px 20px;padding-bottom:max(24px, env(safe-area-inset-bottom));
+                    max-height:95vh;overflow-y:auto;"
+             @click.stop>
+
+            <h3 style="margin:0 0 4px;font-size:18px;font-weight:700;color:#fff;">Come stai oggi?</h3>
+            <p style="font-size:12px;color:#666;margin:0 0 20px;">Check rapido pre-allenamento — aiuta il sistema a modulare i carichi.</p>
+
+            {{-- Qualità del sonno --}}
+            <div style="margin-bottom:16px;">
+                <p style="font-size:12px;font-weight:600;color:#aaa;margin:0 0 8px;text-transform:uppercase;letter-spacing:.05em;">
+                    Sonno
+                </p>
+                <div style="display:flex;gap:8px;">
+                    @foreach ([0,1,2,3] as $v)
+                    <button @click="sleep = {{ $v }}"
+                            x-bind:style="sleep === {{ $v }} ? 'background:' + colorFor({{ $v }}) + ';color:#000;border-color:transparent;' : ''"
+                            style="flex:1;padding:10px 4px;border-radius:10px;border:1px solid #333;
+                                   background:#262626;color:#ccc;font-size:11px;font-weight:700;cursor:pointer;
+                                   transition:background .15s;">
+                        <span x-text="labels.sleep[{{ $v }}]"></span>
+                    </button>
+                    @endforeach
+                </div>
+            </div>
+
+            {{-- Stress --}}
+            <div style="margin-bottom:16px;">
+                <p style="font-size:12px;font-weight:600;color:#aaa;margin:0 0 8px;text-transform:uppercase;letter-spacing:.05em;">
+                    Stress
+                </p>
+                <div style="display:flex;gap:8px;">
+                    @foreach ([0,1,2,3] as $v)
+                    <button @click="stress = {{ $v }}"
+                            x-bind:style="stress === {{ $v }} ? 'background:' + colorFor({{ $v }}) + ';color:#000;border-color:transparent;' : ''"
+                            style="flex:1;padding:10px 4px;border-radius:10px;border:1px solid #333;
+                                   background:#262626;color:#ccc;font-size:11px;font-weight:700;cursor:pointer;
+                                   transition:background .15s;">
+                        <span x-text="labels.stress[{{ $v }}]"></span>
+                    </button>
+                    @endforeach
+                </div>
+            </div>
+
+            {{-- Indolenzimento muscolare --}}
+            <div style="margin-bottom:16px;">
+                <p style="font-size:12px;font-weight:600;color:#aaa;margin:0 0 8px;text-transform:uppercase;letter-spacing:.05em;">
+                    Indolenzimento muscolare
+                </p>
+                <div style="display:flex;gap:8px;">
+                    @foreach ([0,1,2,3] as $v)
+                    <button @click="soreness = {{ $v }}"
+                            x-bind:style="soreness === {{ $v }} ? 'background:' + colorFor({{ $v }}) + ';color:#000;border-color:transparent;' : ''"
+                            style="flex:1;padding:10px 4px;border-radius:10px;border:1px solid #333;
+                                   background:#262626;color:#ccc;font-size:11px;font-weight:700;cursor:pointer;
+                                   transition:background .15s;">
+                        <span x-text="labels.soreness[{{ $v }}]"></span>
+                    </button>
+                    @endforeach
+                </div>
+            </div>
+
+            {{-- Stato articolazioni --}}
+            <div style="margin-bottom:16px;">
+                <p style="font-size:12px;font-weight:600;color:#aaa;margin:0 0 8px;text-transform:uppercase;letter-spacing:.05em;">
+                    Articolazioni
+                </p>
+                <div style="display:flex;gap:8px;">
+                    @foreach ([0,1,2,3] as $v)
+                    <button @click="joint = {{ $v }}"
+                            x-bind:style="joint === {{ $v }} ? 'background:' + colorFor({{ $v }}) + ';color:#000;border-color:transparent;' : ''"
+                            style="flex:1;padding:10px 4px;border-radius:10px;border:1px solid #333;
+                                   background:#262626;color:#ccc;font-size:11px;font-weight:700;cursor:pointer;
+                                   transition:background .15s;">
+                        <span x-text="labels.joint[{{ $v }}]"></span>
+                    </button>
+                    @endforeach
+                </div>
+            </div>
+
+            {{-- Note opzionale --}}
+            <div style="margin-bottom:20px;">
+                <textarea x-model="note" placeholder="Note (opzionale)..."
+                          style="width:100%;background:#262626;border:1px solid #333;border-radius:10px;
+                                 color:#ccc;font-size:13px;padding:10px 12px;resize:none;outline:none;box-sizing:border-box;"
+                          rows="2"></textarea>
+            </div>
+
+            <div style="display:flex;gap:10px;">
+                <button @click="$wire.submitReadiness(sleep, stress, soreness, joint, note)"
+                        wire:loading.attr="disabled"
+                        class="btn-accent"
+                        style="flex:1;">
+                    Inizia allenamento
+                </button>
+                <button @click="$wire.skipReadiness()"
+                        style="background:transparent;border:1px solid #333;color:#666;
+                               padding:12px 16px;border-radius:10px;font-size:13px;cursor:pointer;white-space:nowrap;">
+                    Salta il check
+                </button>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- Modale proposta modulazione carichi --}}
+    @if ($showModulationProposal && count($modulationProposal) > 0)
+    <div style="position:fixed;inset:0;z-index:1100;background:rgba(0,0,0,.85);
+                display:flex;align-items:flex-end;justify-content:center;">
+
+        <div style="background:#1A1A1A;border-radius:16px 16px 0 0;width:100%;max-width:480px;
+                    padding:24px 20px;padding-bottom:max(24px, env(safe-area-inset-bottom));
+                    max-height:95vh;overflow-y:auto;"
+             @click.stop>
+
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+                <div style="background:#FF6B00;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#fff" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <h3 style="margin:0;font-size:18px;font-weight:700;color:#fff;">Modulazione carichi</h3>
+            </div>
+
+            <p style="font-size:13px;color:#aaa;margin:0 0 6px;">
+                Score: <strong style="color:#FF6B00;">{{ $modulationProposal['score'] }}/12</strong>
+            </p>
+            <p style="font-size:13px;color:#ccc;margin:0 0 16px;">{{ $modulationProposal['suggestion'] }}</p>
+
+            @if ($modulationProposal['includesJointAlert'])
+            <div style="background:#7f1d1d;border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:#fca5a5;">
+                Dolore articolare rilevato — segnala al trainer prima di procedere.
+            </div>
+            @endif
+
+            @if (count($modulationProposal['sets']) > 0)
+            <div style="background:#1E1E1E;border-radius:10px;padding:14px;margin-bottom:14px;">
+                <p style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.05em;margin:0 0 10px;">
+                    Carichi proposti (-{{ $modulationProposal['reduction_pct'] }}%)
+                </p>
+                @foreach ($modulationProposal['sets'] as $item)
+                <div style="display:flex;justify-content:space-between;align-items:center;
+                            padding:6px 0;border-bottom:1px solid #2A2A2A;font-size:13px;">
+                    <span style="color:#aaa;">
+                        {{ $item['exercise_name'] }} · set {{ $item['set_index'] }}
+                    </span>
+                    <span>
+                        <span style="color:#666;text-decoration:line-through;">{{ $item['original_weight'] }} kg</span>
+                        <span style="color:#FF6B00;margin-left:8px;font-weight:700;">{{ $item['proposed_weight'] }} kg</span>
+                    </span>
+                </div>
+                @endforeach
+            </div>
+            @endif
+
+            @if (count($modulationProposal['sets_to_remove']) > 0)
+            <div style="background:#1E1E1E;border-radius:10px;padding:14px;margin-bottom:14px;">
+                <p style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.05em;margin:0 0 10px;">
+                    Set rimossi (riduzione volume)
+                </p>
+                @foreach ($modulationProposal['sets_to_remove'] as $item)
+                <div style="font-size:13px;color:#aaa;padding:4px 0;">
+                    {{ $item['exercise_name'] }} · set {{ $item['set_index'] }}
+                </div>
+                @endforeach
+            </div>
+            @endif
+
+            <div style="display:flex;gap:10px;">
+                <button wire:click="acceptModulation"
+                        wire:loading.attr="disabled"
+                        class="btn-accent"
+                        style="flex:1;">
+                    Applica modifiche
+                </button>
+                <button wire:click="rejectModulation"
+                        style="background:transparent;border:1px solid #333;color:#aaa;
+                               padding:12px 16px;border-radius:10px;font-size:13px;cursor:pointer;white-space:nowrap;">
+                    Allena al piano
+                </button>
+            </div>
+        </div>
+    </div>
+    @endif
+
     {{-- Form feedback --}}
     <div x-data="{ open: {{ $showFeedback ? 'true' : 'false' }} }"
          @open-feedback.window="open = true">

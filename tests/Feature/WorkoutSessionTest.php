@@ -8,6 +8,7 @@ use App\Models\Mesocycle;
 use App\Models\MicrocycleWeek;
 use App\Models\SessionExercise;
 use App\Models\SessionFeedback;
+use App\Models\SessionReadinessCheck;
 use App\Models\TrainingSession;
 use App\Models\User;
 use Carbon\Carbon;
@@ -79,6 +80,15 @@ beforeEach(function () {
 
 it('il completamento del primo set porta la sessione in in_progress', function () {
     $this->actingAs($this->athlete);
+
+    // Crea il readiness check: con il check esistente il mount transiziona direttamente a in_progress
+    SessionReadinessCheck::create([
+        'training_session_id' => $this->session->id,
+        'sleep_quality' => 2,
+        'stress_level' => 2,
+        'soreness_level' => 2,
+        'joint_status' => 2,
+    ]);
 
     $set = ExerciseSet::where('session_exercise_id', $this->sessionExercise->id)
         ->where('set_index', 1)

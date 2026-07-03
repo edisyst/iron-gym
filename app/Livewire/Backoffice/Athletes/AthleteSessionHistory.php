@@ -90,6 +90,7 @@ class AthleteSessionHistory extends Component
         )
             ->with([
                 'feedback',
+                'readinessCheck',
                 'sessionExercises' => fn ($q) => $q->orderBy('order_in_session'),
                 'sessionExercises.exercise',
                 'sessionExercises.substitutedFrom',

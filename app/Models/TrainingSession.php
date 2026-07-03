@@ -78,4 +78,13 @@ class TrainingSession extends Model
     {
         return $this->hasOne(SessionFeedback::class, 'session_id');
     }
+
+    /**
+     * Check di readiness compilato prima dell'avvio della sessione
+     *     */
+    /** @return HasOne<SessionReadinessCheck, $this> */
+    public function readinessCheck(): HasOne
+    {
+        return $this->hasOne(SessionReadinessCheck::class, 'training_session_id');
+    }
 }

@@ -65,6 +65,7 @@ Gestionale palestra bodybuilding/fitness. Copre: anagrafica tesserati, abbonamen
 - ProgressPhoto: foto progressi per pose
 - PlateInventory: inventario dischi per lato (weight_kg, quantity_pairs, color, is_active)
 - PersonalRecord: PR per atleta+esercizio; record_type ENUM(e1rm, max_weight, max_reps_at_weight); questa release implementa solo e1rm
+- SessionReadinessCheck: check pre-sessione (training_session_id UNIQUE); campi sleep_quality, stress_level, soreness_level, joint_status (TINYINT 0-3, 0=pessimo 3=ottimo); accessor score (0-12)
 
 **Sistema:**
 - FeedbackSubmission: feedback in-app utenti
@@ -84,6 +85,7 @@ Gestionale palestra bodybuilding/fitness. Copre: anagrafica tesserati, abbonamen
 - E1rmCalculator: formula Epley per stima 1RM
 - PersonalRecordDetector: check(ExerciseSet, athleteId) → PersonalRecord|null; sincrono, pronto per migrazione a evento+listener; soglie in config/pr.php (max_reps_epley, min_sessions_before_pr)
 - ExerciseSubstitutionFinder: find(Exercise) → Collection max 5 candidati; matching per stesso joint_action_id o compound_pattern_id + stesso measurement_type + non soft-deleted; overlap = somma min(pct_orig, pct_cand) su muscoli comuni; tie-break: stesso mechanic poi skill_level
+- ReadinessEvaluator: evaluate(SessionReadinessCheck) → ReadinessProposal; score 0-12 (somma 4 campi 0-3); soglie da config/readiness.php (high=9 none, 5-8 reduce_5pct, <5 reduce_10pct); applyReduction(float, int): float arrotondato a 2.5 kg
 
 ## Observers
 
@@ -135,6 +137,11 @@ Exercise model usa `getRouteKeyName() = 'slug'` (route binding su slug).
 | `openSubstitutionModal($seId)` | Blocca se set working completati; chiama ExerciseSubstitutionFinder; popola `$substitutionCandidates` come array scalare |
 | `confirmSubstitution($slug)` | Aggiorna `exercise_id`, setta `substituted_from_exercise_id`; mantiene set e prescrizione invariati; blocco doppio su set completati |
 | `closeSubstitutionModal()` | Azzera `$substitutingSeId` e `$substitutionCandidates` |
+| `submitReadiness($sleep, $stress, $soreness, $joint, $note)` | Salva SessionReadinessCheck; calcola ReadinessProposal; traccia in `trainer_notes`; se outcome != none mostra `$modulationProposal` |
+| `skipReadiness()` | Salta check, chiama `startSession()` direttamente |
+| `acceptModulation()` | Aggiorna `planned_weight_kg` set non completati + elimina set extra (fascia low); poi `startSession()` |
+| `rejectModulation()` | Avvia sessione senza modificare i carichi |
+| `startSession()` (private) | Transiziona `planned → in_progress` con `started_at` |
 
 **Alpine store `restTimer`** (definito in workout-session.blade.php): `start(sec)`, `skip()`, `fmt(s)`. Avvia vibrazione + Notification API allo scadere. Barra fissa bottom. Per cluster usa `intra_cluster_rest_sec`.
 
@@ -205,6 +212,8 @@ Release 04 Volume visuale completata (2026-07-03): body map SVG fronte/retro inl
 Release 05 PR detection completata (2026-07-03): tabella `personal_records` (athlete_id, exercise_id, exercise_set_id, record_type ENUM, value, achieved_at), model PersonalRecord, config/pr.php (max_reps_epley=12, min_sessions_before_pr=3). PersonalRecordDetector agganciato in WorkoutSession (quickLog + completeSet) e SyncBatchController (applyQuickLog + applyCompleteSet) — copre sia path online che offline. Toast Alpine auto-dismiss 4s su evento `pr-achieved`. Componente PersonalRecords (`/athlete/records`) con lista paginata e1RM per esercizio. Voce "Record" aggiunta in nav desktop e bottom nav. 6 test PersonalRecordDetectorTest verde. Suite 143/149 (6 skip pre-esistenti: Vite manifest + Volt auth), PHPStan 0 errori, Pint conforme.
 
 Release 06 Sostituzione esercizio completata (2026-07-03): colonna `substituted_from_exercise_id` nullable su `session_exercises` (FK ON DELETE SET NULL). Service `ExerciseSubstitutionFinder` (overlap su contribution_pct, max 5 candidati, stesso pattern XOR + measurement_type). Bottone "Sostituisci" in exercise-card (bloccato se set completati), bottom sheet modale con candidati e equipment slug. Badge audit "sost. da [originale]" in backoffice AthleteSessionHistory. `Exercise::primaryMuscles()` relation aggiunta. 14 test (ExerciseSubstitutionFinderTest 9 + WorkoutSessionSubstitutionTest 5) verdi. Suite 163/163 (6 skip pre-esistenti invariati), PHPStan 0 errori, Pint conforme.
+
+Release 07 Readiness check pre-sessione completata (2026-07-03): tabella `session_readiness_checks` (UNIQUE su training_session_id, campi 0-3). `ReadinessEvaluator` service con soglie configurabili. `WorkoutSession` intercetta sessioni `planned` senza check → modale 4 bottoni per campo (Alpine locale, zero round-trip) → proposta modulazione carichi (-5%/-10% arrotondato 2.5 kg, opzionale rimozione set). Trainer vede score/modulazione in AthleteSessionHistory. Fix pre-esistente: migration `personal_records` FK tipo incompatibile con `exercises.id` (UNSIGNED INT). 14 test ReadinessEvaluatorTest verdi. Suite 177/177 (171 pass + 6 skip invariati), PHPStan 0 errori, Pint conforme, `migrate:fresh --seed` OK.
 
 Prossima attività: raccogliere feedback dai primi atleti pilota dopo prima sessione.
 

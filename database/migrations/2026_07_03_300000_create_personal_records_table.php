@@ -11,8 +11,10 @@ return new class extends Migration
         Schema::create('personal_records', function (Blueprint $table) {
             $table->id();
             $table->foreignId('athlete_id')->constrained('users')->cascadeOnDelete();
-            $table->foreignId('exercise_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('exercise_set_id')->constrained()->cascadeOnDelete();
+            $table->unsignedInteger('exercise_id');
+            $table->foreign('exercise_id')->references('id')->on('exercises')->cascadeOnDelete();
+            $table->unsignedInteger('exercise_set_id');
+            $table->foreign('exercise_set_id')->references('id')->on('exercise_sets')->cascadeOnDelete();
             $table->enum('record_type', ['e1rm', 'max_weight', 'max_reps_at_weight']);
             $table->decimal('value', 7, 2);
             $table->timestamp('achieved_at');

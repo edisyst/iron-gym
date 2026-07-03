@@ -516,3 +516,44 @@ Revisione totale code quality e sicurezza, staged e reversibile. Nessuna funzion
 - Non registra prima della soglia minima di sessioni.
 
 **Suite finale:** 143/149 pass (6 skip pre-esistenti: Vite manifest + Volt auth — invariati). PHPStan L6 0 errori, Pint conforme.
+
+---
+
+## Release 07 — Readiness check pre-sessione con modulazione carichi (2026-07-03)
+
+**Obiettivo:** prima dell'avvio di ogni sessione, l'atleta compila un check rapido (4 campi 0-3, zero digitazione). Il sistema calcola uno score 0-12 e propone una modulazione dei carichi pianificati (nessuna / -5% / -10% + 1 set). L'atleta accetta o rifiuta esplicitamente. Il trainer vede score e modulazione applicata nella vista sessione.
+
+### Modello dati (Fase B)
+- Migration `2026_07_03_500000`: tabella `session_readiness_checks` con FK `UNSIGNED INT` su `training_sessions.id` (UNIQUE — un solo check per sessione), campi `sleep_quality`, `stress_level`, `soreness_level`, `joint_status` (TINYINT UNSIGNED 0-3, dove 3 = ottimo), `note` TEXT nullable, `created_at`. Nessun `updated_at` (immutabile dopo compilazione).
+- `SessionReadinessCheck` model: `$fillable`, relazione `session()`, accessor `getScoreAttribute()` (somma dei 4 campi).
+- `TrainingSession`: aggiunta relation `readinessCheck(): HasOne`.
+- Fix pre-esistente: migration `personal_records` usava `foreignId()` per `exercise_id` e `exercise_set_id` (BIGINT) su tabelle con PK `UNSIGNED INT` — sostituito con `unsignedInteger + foreign()` esplicito. Rende `migrate:fresh` funzionante.
+
+### Servizio e config (Fase C)
+- `config/readiness.php`: soglie `thresholds.high` (default 9) e `thresholds.low` (default 5), percentuali `reduction_pct.medium` (5%) e `reduction_pct.low` (10%), `joint_alert_threshold` (1), `min_sets_for_removal` (3). Tutti override via `.env`.
+- `ReadinessProposal` value object readonly: `score`, `outcome` (`none`|`reduce_5pct`|`reduce_10pct`), `suggestion`, `includesJointAlert`, `requiresModulation()`.
+- `ReadinessEvaluator::evaluate(SessionReadinessCheck): ReadinessProposal` — legge config, mappa score sui tre esiti, attiva `includesJointAlert` se `joint_status <= joint_alert_threshold`.
+- `ReadinessEvaluator::applyReduction(float, int): float` — riduzione percentuale arrotondata a 2.5 kg.
+
+### Flusso sessione (Fase D1)
+- `WorkoutSession::mount()`: se sessione `planned` senza check esistente → `$showReadinessModal = true` (non transiziona a `in_progress`); se check già presente → `startSession()` immediato.
+- `startSession()` metodo privato estratto per evitare duplicazione.
+- `submitReadiness(int $sleep, int $stress, int $soreness, int $joint, string $note)`: salva check, calcola proposta, traccia in `trainer_notes` ("Readiness pre-sessione: score X/12 — ..."), mostra proposta modulazione o avvia sessione direttamente se `outcome = none`.
+- `skipReadiness()`: avvia sessione senza check.
+- `acceptModulation()`: aggiorna `planned_weight_kg` set non completati + elimina set extra (fascia low, ≥ 3 set incompleti per esercizio).
+- `rejectModulation()`: avvia sessione senza modifiche.
+- UI: bottom sheet modale readiness con 4 gruppi di 4 bottoni (Alpine `x-data` locale, zero round-trip), colori 0=rosso/1=giallo/2=blu/3=verde. Campo note opzionale. Azioni "Inizia allenamento" e "Salta il check" (mai bloccante). Schermata riepilogo modulazione con tabella prima/dopo e lista set rimossi.
+
+### Backoffice (Fase D2)
+- `AthleteSessionHistory::getSelectedSessionProperty()`: aggiunto eager load `readinessCheck`.
+- View `athlete-session-history.blade.php`: sezione "Readiness pre-sessione" prima del feedback post-sessione — badge score (verde/giallo/rosso), 4 valori singoli, nota atleta, testo `trainer_notes` con la descrizione della modulazione.
+
+### Test (Fase E)
+14 test in `ReadinessEvaluatorTest.php` (Feature, RefreshDatabase):
+- Mappatura score → esito per le tre fasce (0, 5, 6, 9, 10 come casi limite).
+- Arrotondamento 2.5 kg: casi esatti e non esatti.
+- `includesJointAlert` per `joint_status` 0, 1, 2.
+- `SessionReadinessCheck::score` accessor.
+- Fix `WorkoutSessionTest`: il test "il completamento del primo set porta la sessione in in_progress" ora crea un readiness check prima del mount.
+
+**Suite finale:** 177/177 pass (171 pass + 6 skip pre-esistenti: Vite manifest + Volt auth — invariati). PHPStan L6 0 errori, Pint conforme. `migrate:fresh --seed` funzionante.

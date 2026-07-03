@@ -64,6 +64,7 @@ Gestionale palestra bodybuilding/fitness. Copre: anagrafica tesserati, abbonamen
 - BodyMeasurement: misurazioni corporee periodiche
 - ProgressPhoto: foto progressi per pose
 - PlateInventory: inventario dischi per lato (weight_kg, quantity_pairs, color, is_active)
+- PersonalRecord: PR per atleta+esercizio; record_type ENUM(e1rm, max_weight, max_reps_at_weight); questa release implementa solo e1rm
 
 **Sistema:**
 - FeedbackSubmission: feedback in-app utenti
@@ -81,6 +82,7 @@ Gestionale palestra bodybuilding/fitness. Copre: anagrafica tesserati, abbonamen
 - PtBookingService: prenotazioni PT con verifica disponibilità
 - ClassBookingService: iscrizioni corsi con gestione waitlist
 - E1rmCalculator: formula Epley per stima 1RM
+- PersonalRecordDetector: check(ExerciseSet, athleteId) → PersonalRecord|null; sincrono, pronto per migrazione a evento+listener; soglie in config/pr.php (max_reps_epley, min_sessions_before_pr)
 
 ## Observers
 
@@ -195,6 +197,8 @@ Release 03 Offline-first sync completata (2026-07-03): IndexedDB queue client-si
 - Livewire e pagine dinamiche: network-only, nessuna cache
 
 Release 04 Volume visuale completata (2026-07-03): body map SVG fronte/retro inline (25 path muscoli, `data-muscle="{slug}"`), colorazione intensity-0..5 via `intensityMap` Livewire → CSS, barre orizzontali con marker MEV/banda MAV/marker MRV per ogni muscolo, selettore settimana, interazione tap muscolo → scroll barra via Alpine `$dispatch`. Componente `WeeklyVolume` (`/athlete/volume`), voce "Volume" in nav desktop e bottom nav mobile (sostituisce Prenota nel bottom nav). 8 test WeeklyVolumeComponentTest verde. Suite 129/143 (8 pre-esistenti: Vite manifest + Volt auth), PHPStan 0 errori, Pint conforme.
+
+Release 05 PR detection completata (2026-07-03): tabella `personal_records` (athlete_id, exercise_id, exercise_set_id, record_type ENUM, value, achieved_at), model PersonalRecord, config/pr.php (max_reps_epley=12, min_sessions_before_pr=3). PersonalRecordDetector agganciato in WorkoutSession (quickLog + completeSet) e SyncBatchController (applyQuickLog + applyCompleteSet) — copre sia path online che offline. Toast Alpine auto-dismiss 4s su evento `pr-achieved`. Componente PersonalRecords (`/athlete/records`) con lista paginata e1RM per esercizio. Voce "Record" aggiunta in nav desktop e bottom nav. 6 test PersonalRecordDetectorTest verde. Suite 143/149 (6 skip pre-esistenti: Vite manifest + Volt auth), PHPStan 0 errori, Pint conforme.
 
 Prossima attività: raccogliere feedback dai primi atleti pilota dopo prima sessione.
 

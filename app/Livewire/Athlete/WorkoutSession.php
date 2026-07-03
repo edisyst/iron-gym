@@ -6,6 +6,7 @@ use App\Models\Exercise;
 use App\Models\ExerciseSet;
 use App\Models\SessionExercise;
 use App\Models\TrainingSession;
+use App\Services\PersonalRecordDetector;
 use App\Services\PlateLoadoutCalculator;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
@@ -213,6 +214,15 @@ class WorkoutSession extends Component
         }
 
         $set->update($updates);
+        $set->refresh();
+
+        $pr = app(PersonalRecordDetector::class)->check($set, auth()->id());
+        if ($pr !== null) {
+            $this->dispatch('pr-achieved',
+                exerciseName: $set->sessionExercise->exercise->name_it,
+                e1rm: $pr->value
+            );
+        }
 
         $this->setData[$setId] = [
             'reps' => $set->actual_reps !== null ? (string) $set->actual_reps : ($this->setData[$setId]['reps'] ?? ''),
@@ -248,6 +258,15 @@ class WorkoutSession extends Component
         }
 
         $set->update($updates);
+        $set->refresh();
+
+        $pr = app(PersonalRecordDetector::class)->check($set, auth()->id());
+        if ($pr !== null) {
+            $this->dispatch('pr-achieved',
+                exerciseName: $set->sessionExercise->exercise->name_it,
+                e1rm: $pr->value
+            );
+        }
 
         $this->reloadSets();
         $this->dispatch('set-completed', setId: $setId);

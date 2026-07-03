@@ -6,6 +6,7 @@ use App\Http\Requests\SyncBatchRequest;
 use App\Models\ExerciseSet;
 use App\Models\SessionExercise;
 use App\Models\SyncOperation;
+use App\Services\PersonalRecordDetector;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -84,6 +85,8 @@ class SyncBatchController extends Controller
         }
 
         $set->update($updates);
+        $set->refresh();
+        app(PersonalRecordDetector::class)->check($set, $athleteId);
 
         return 'ok';
     }
@@ -113,6 +116,8 @@ class SyncBatchController extends Controller
         }
 
         $set->update($updates);
+        $set->refresh();
+        app(PersonalRecordDetector::class)->check($set, $athleteId);
 
         return 'ok';
     }

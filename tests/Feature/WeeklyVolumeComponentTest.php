@@ -37,10 +37,10 @@ function makeAthleteWithWeek(bool $isDeload = false): array
 
     $week = MicrocycleWeek::factory()->create([
         'mesocycle_id' => $mesocycle->id,
-        'week_number'  => 1,
-        'is_deload'    => $isDeload,
-        'start_date'   => now()->startOfWeek(),
-        'end_date'     => now()->endOfWeek(),
+        'week_number' => 1,
+        'is_deload' => $isDeload,
+        'start_date' => now()->startOfWeek(),
+        'end_date' => now()->endOfWeek(),
     ]);
 
     return [$athlete, $week];
@@ -56,14 +56,14 @@ function attachMuscle(Exercise $exercise, Muscle $muscle, int $pct = 100): void
 function makeCompletedSet(TrainingSession $session, Exercise $exercise, bool $warmup = false): ExerciseSet
 {
     $se = SessionExercise::factory()->create([
-        'session_id'  => $session->id,
+        'session_id' => $session->id,
         'exercise_id' => $exercise->id,
     ]);
 
     return ExerciseSet::factory()->create([
         'session_exercise_id' => $se->id,
-        'is_warmup'           => $warmup,
-        'completed_at'        => now(),
+        'is_warmup' => $warmup,
+        'completed_at' => now(),
     ]);
 }
 
@@ -178,10 +178,10 @@ it('cambio settimana aggiorna i dati volume', function () {
 
     $week2 = MicrocycleWeek::factory()->create([
         'mesocycle_id' => $mesocycle->id,
-        'week_number'  => 2,
-        'is_deload'    => false,
-        'start_date'   => now()->addWeek()->startOfWeek(),
-        'end_date'     => now()->addWeek()->endOfWeek(),
+        'week_number' => 2,
+        'is_deload' => false,
+        'start_date' => now()->addWeek()->startOfWeek(),
+        'end_date' => now()->addWeek()->endOfWeek(),
     ]);
 
     $quad = Muscle::factory()->create(['slug' => 'quadriceps', 'name_it' => 'Quad', 'muscle_group' => 'legs']);

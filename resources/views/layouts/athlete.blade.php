@@ -68,6 +68,15 @@
                 </svg>
                 Volume
             </a>
+            <a href="{{ route('athlete.records') }}"
+               class="{{ request()->routeIs('athlete.records') ? 'active' : '' }}"
+               aria-current="{{ request()->routeIs('athlete.records') ? 'page' : 'false' }}">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                </svg>
+                Record
+            </a>
             <a href="{{ route('athlete.messages') }}"
                class="{{ request()->routeIs('athlete.messages') ? 'active' : '' }}"
                aria-current="{{ request()->routeIs('athlete.messages') ? 'page' : 'false' }}"
@@ -176,6 +185,19 @@
             <span>Volume</span>
         </a>
 
+        <a href="{{ route('athlete.records') }}"
+           class="{{ request()->routeIs('athlete.records') ? 'active' : '' }}"
+           aria-current="{{ request()->routeIs('athlete.records') ? 'page' : 'false' }}"
+           aria-label="Record personali">
+            <span class="nav-pill">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                </svg>
+            </span>
+            <span>Record</span>
+        </a>
+
         <a href="{{ route('athlete.messages') }}"
            class="{{ request()->routeIs('athlete.messages') ? 'active' : '' }}"
            aria-current="{{ request()->routeIs('athlete.messages') ? 'page' : 'false' }}"
@@ -202,6 +224,34 @@
             <span>Messaggi</span>
         </a>
     </nav>
+
+    {{-- Toast PR --}}
+    <div
+        x-data="{ show: false, exerciseName: '', e1rm: '' }"
+        x-on:pr-achieved.window="exerciseName = $event.detail.exerciseName; e1rm = $event.detail.e1rm; show = true; setTimeout(() => show = false, 4000)"
+        x-show="show"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 translate-y-4"
+        x-transition:enter-end="opacity-100 translate-y-0"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        style="position:fixed; bottom:80px; left:50%; transform:translateX(-50%); z-index:1060; display:none; min-width:260px; max-width:90vw;"
+        role="status"
+        aria-live="polite"
+    >
+        <div class="alert alert-warning shadow d-flex align-items-center gap-2 mb-0 py-2 px-3">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+            </svg>
+            <div>
+                <strong>Nuovo PR!</strong>
+                <span x-text="exerciseName"></span> &mdash;
+                <span x-text="e1rm + ' kg e1RM'"></span>
+            </div>
+        </div>
+    </div>
 
     @stack('scripts')
     @livewireScripts

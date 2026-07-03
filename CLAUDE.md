@@ -83,6 +83,7 @@ Gestionale palestra bodybuilding/fitness. Copre: anagrafica tesserati, abbonamen
 - ClassBookingService: iscrizioni corsi con gestione waitlist
 - E1rmCalculator: formula Epley per stima 1RM
 - PersonalRecordDetector: check(ExerciseSet, athleteId) → PersonalRecord|null; sincrono, pronto per migrazione a evento+listener; soglie in config/pr.php (max_reps_epley, min_sessions_before_pr)
+- ExerciseSubstitutionFinder: find(Exercise) → Collection max 5 candidati; matching per stesso joint_action_id o compound_pattern_id + stesso measurement_type + non soft-deleted; overlap = somma min(pct_orig, pct_cand) su muscoli comuni; tie-break: stesso mechanic poi skill_level
 
 ## Observers
 
@@ -119,7 +120,7 @@ Il layout è gestito con `->layout('layouts.backoffice')` nel `render()`. Questo
 pattern è necessario per embeddare componenti via `@livewire` (es. in `AthleteProfile`).
 Exercise model usa `getRouteKeyName() = 'slug'` (route binding su slug).
 
-## WorkoutSession — interazioni chiave (Release 01)
+## WorkoutSession — interazioni chiave (Release 01 + 06)
 
 **Componente:** `app/Livewire/Athlete/WorkoutSession.php`  
 **View:** `resources/views/livewire/athlete/workout-session.blade.php` + partial `partials/exercise-card.blade.php`
@@ -131,6 +132,9 @@ Exercise model usa `getRouteKeyName() = 'slug'` (route binding su slug).
 | `generateWarmup($seId)` | Crea set is_warmup=1: 50/70/85% arrotondati a 2.5kg; sotto 40kg solo 50%; idempotente |
 | `deleteWarmupSet($setId)` | Rimuove singolo set warmup; rifiuta working set con 404 |
 | `loadPreviousPerformance()` | Singola query aggregata, riempie `$previousPerformance[exercise_id][set_index]` |
+| `openSubstitutionModal($seId)` | Blocca se set working completati; chiama ExerciseSubstitutionFinder; popola `$substitutionCandidates` come array scalare |
+| `confirmSubstitution($slug)` | Aggiorna `exercise_id`, setta `substituted_from_exercise_id`; mantiene set e prescrizione invariati; blocco doppio su set completati |
+| `closeSubstitutionModal()` | Azzera `$substitutingSeId` e `$substitutionCandidates` |
 
 **Alpine store `restTimer`** (definito in workout-session.blade.php): `start(sec)`, `skip()`, `fmt(s)`. Avvia vibrazione + Notification API allo scadere. Barra fissa bottom. Per cluster usa `intra_cluster_rest_sec`.
 
@@ -199,6 +203,8 @@ Release 03 Offline-first sync completata (2026-07-03): IndexedDB queue client-si
 Release 04 Volume visuale completata (2026-07-03): body map SVG fronte/retro inline (25 path muscoli, `data-muscle="{slug}"`), colorazione intensity-0..5 via `intensityMap` Livewire → CSS, barre orizzontali con marker MEV/banda MAV/marker MRV per ogni muscolo, selettore settimana, interazione tap muscolo → scroll barra via Alpine `$dispatch`. Componente `WeeklyVolume` (`/athlete/volume`), voce "Volume" in nav desktop e bottom nav mobile (sostituisce Prenota nel bottom nav). 8 test WeeklyVolumeComponentTest verde. Suite 129/143 (8 pre-esistenti: Vite manifest + Volt auth), PHPStan 0 errori, Pint conforme.
 
 Release 05 PR detection completata (2026-07-03): tabella `personal_records` (athlete_id, exercise_id, exercise_set_id, record_type ENUM, value, achieved_at), model PersonalRecord, config/pr.php (max_reps_epley=12, min_sessions_before_pr=3). PersonalRecordDetector agganciato in WorkoutSession (quickLog + completeSet) e SyncBatchController (applyQuickLog + applyCompleteSet) — copre sia path online che offline. Toast Alpine auto-dismiss 4s su evento `pr-achieved`. Componente PersonalRecords (`/athlete/records`) con lista paginata e1RM per esercizio. Voce "Record" aggiunta in nav desktop e bottom nav. 6 test PersonalRecordDetectorTest verde. Suite 143/149 (6 skip pre-esistenti: Vite manifest + Volt auth), PHPStan 0 errori, Pint conforme.
+
+Release 06 Sostituzione esercizio completata (2026-07-03): colonna `substituted_from_exercise_id` nullable su `session_exercises` (FK ON DELETE SET NULL). Service `ExerciseSubstitutionFinder` (overlap su contribution_pct, max 5 candidati, stesso pattern XOR + measurement_type). Bottone "Sostituisci" in exercise-card (bloccato se set completati), bottom sheet modale con candidati e equipment slug. Badge audit "sost. da [originale]" in backoffice AthleteSessionHistory. `Exercise::primaryMuscles()` relation aggiunta. 14 test (ExerciseSubstitutionFinderTest 9 + WorkoutSessionSubstitutionTest 5) verdi. Suite 163/163 (6 skip pre-esistenti invariati), PHPStan 0 errori, Pint conforme.
 
 Prossima attività: raccogliere feedback dai primi atleti pilota dopo prima sessione.
 

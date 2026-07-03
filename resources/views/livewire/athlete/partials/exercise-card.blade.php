@@ -17,6 +17,9 @@
     $canGenerateWarmup  = $measurementType === 'reps_weight'
         && $firstWorkingWeight !== null
         && ! $hasWarmupSets;
+
+    $hasCompletedSets = $workingSets->whereNotNull('completed_at')->isNotEmpty();
+    $canSubstitute    = ! $hasCompletedSets;
 @endphp
 
 <div style="margin-bottom:{{ $loop->last ? '0' : '16px' }};">
@@ -43,7 +46,29 @@
             </svg>
             Info
         </button>
+        @if ($canSubstitute)
+            <button wire:click="openSubstitutionModal({{ $exercise->id }})"
+                    aria-label="Sostituisci esercizio"
+                    title="Macchina occupata? Cerca un'alternativa"
+                    style="background:#2A2A2A;border:1px solid #3A3A3A;border-radius:8px;padding:4px 10px;
+                           font-size:11px;font-weight:600;color:#aaa;cursor:pointer;white-space:nowrap;
+                           display:flex;align-items:center;gap:4px;line-height:1.4;">
+                <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4M4 17h12m0 0l-4-4m4 4l-4 4"/>
+                </svg>
+                Sostituisci
+            </button>
+        @endif
     </div>
+
+    @if ($exercise->substituted_from_exercise_id !== null && $exercise->substitutedFrom !== null)
+        <div style="font-size:11px;color:#888;margin-bottom:8px;display:flex;align-items:center;gap:4px;">
+            <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4M4 17h12m0 0l-4-4m4 4l-4 4"/>
+            </svg>
+            <span>Sostituito da: <em>{{ $exercise->substitutedFrom->name_it }}</em></span>
+        </div>
+    @endif
 
     @if ($exercise->exercise->execution_description)
         <div x-data="{ open: false }" style="margin-bottom:10px;">

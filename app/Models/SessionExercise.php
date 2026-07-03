@@ -20,6 +20,7 @@ class SessionExercise extends Model
         'session_id',
         'group_id',
         'exercise_id',
+        'substituted_from_exercise_id',
         'order_in_session',
         'order_in_group',
         'technique_type',
@@ -55,6 +56,15 @@ class SessionExercise extends Model
     public function exercise(): BelongsTo
     {
         return $this->belongsTo(Exercise::class);
+    }
+
+    /**
+     * Esercizio originale prescritto, valorizzato solo dopo sostituzione in sessione
+     *     */
+    /** @return BelongsTo<Exercise, $this> */
+    public function substitutedFrom(): BelongsTo
+    {
+        return $this->belongsTo(Exercise::class, 'substituted_from_exercise_id');
     }
 
     /**

@@ -436,6 +436,55 @@ Revisione totale code quality e sicurezza, staged e reversibile. Nessuna funzion
 
 ---
 
+## Release 06 — Sostituzione esercizio guidata in sessione (2026-07-03)
+
+**Obiettivo:** permettere all'atleta di sostituire un esercizio prescritto con un'alternativa equivalente quando la macchina è occupata, senza chiamare il trainer, mantenendo la prescrizione e la correttezza del calcolo volume.
+
+### Modello dati (Fase B)
+- Migration `2026_07_03_400000`: colonna `substituted_from_exercise_id` nullable (`unsignedInteger`) su `session_exercises`, FK → `exercises.id` ON DELETE SET NULL. Traccia l'esercizio originale prescritto a fini di audit del trainer.
+- `SessionExercise.$fillable` aggiornato. Relazione `substitutedFrom(): BelongsTo<Exercise>` aggiunta.
+
+### Servizio (Fase C)
+- `ExerciseSubstitutionFinder::find(Exercise): Collection` — max 5 candidati ordinati per similarità di reclutamento.
+- Matching: stesso `joint_action_id` (se valorizzato) o stesso `compound_pattern_id` + stesso `measurement_type` + non soft-deleted + esercizio stesso escluso.
+- Overlap = somma di `min(pct_orig, pct_cand)` su tutti i muscoli comuni; tie-break: stesso `mechanic` → `skill_level` ≤ originale.
+- Ogni candidato include `equipment_slugs[]` (per valutazione disponibilità in sala) e `primary_muscles[]`.
+- `Exercise::primaryMuscles()` relation aggiunta (BelongsToMany con `wherePivot('role','primary')`).
+- `ExerciseMuscle` annotato con `@property string $role` e `@property int $contribution_pct` per PHPStan.
+
+### UI (Fase D)
+- Bottone "Sostituisci" nell'header card esercizio: visibile solo se nessun set working è già completato.
+- Badge "Sostituito da [originale]" sotto l'header se l'esercizio è già stato sostituito in sessione.
+- Bottom sheet modale (z-index 1000, pattern identico alla plate calculator modale): 5 card candidati con nome, badge equipment slug, muscoli primary, percentuale overlap. Conferma con "Usa questo esercizio".
+- `WorkoutSession::openSubstitutionModal(seId)`: blocco server-side su set completati, popola `$substitutionCandidates` come array scalare serializzabile da Livewire.
+- `WorkoutSession::confirmSubstitution(slug)`: aggiorna `exercise_id`, setta `substituted_from_exercise_id`, mantiene invariati tutti i set pianificati e i parametri di prescrizione. Reload relazioni eager.
+- Backoffice `AthleteSessionHistory`: eager load `substitutedFrom` + badge `badge-warning` "sost. da [nome originale]" nella vista sessione del trainer.
+
+### Test (Fase E)
+14 test in due file:
+
+`ExerciseSubstitutionFinderTest` (9 test, LazilyRefreshDatabase + seed completo):
+- `dumbbell_bench_press` in top-3 alternative di `barbell_bench_press`
+- `machine_chest_press` tra le alternative di `barbell_bench_press`
+- alternative di `leg_extension` restano nel pattern `knee_extension`
+- esercizio stesso escluso dai candidati
+- max 5 risultati
+- `equipment_slugs` e `primary_muscles` sono array
+- esclusione per `measurement_type` diverso
+- esclusione soft-deleted
+- ordinamento per overlap decrescente
+
+`WorkoutSessionSubstitutionTest` (5 test, RefreshDatabase):
+- `exercise_id` aggiornato + `substituted_from_exercise_id` tracciato correttamente
+- set pianificati invariati dopo sostituzione
+- blocco se almeno un set working è già completato
+- `openSubstitutionModal` popola `substitutionCandidates`
+- `closeSubstitutionModal` azzera stato
+
+**Suite finale:** 163/163 pass, 6 skip pre-esistenti (Vite manifest + Volt auth — invariati). PHPStan L6 0 errori, Pint conforme.
+
+---
+
 ## Release 05 — PR detection in tempo reale e lista record (2026-07-03)
 
 **Obiettivo:** rilevare automaticamente i personal record e1RM al completamento di ogni set, con feedback immediato in sessione e pagina storico PR.

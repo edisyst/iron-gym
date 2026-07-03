@@ -68,6 +68,18 @@ class Exercise extends Model
     }
 
     /**
+     * Solo i muscoli con ruolo primary
+     *     */
+    /** @return BelongsToMany<Muscle, $this, ExerciseMuscle> */
+    public function primaryMuscles(): BelongsToMany
+    {
+        return $this->belongsToMany(Muscle::class, 'exercise_muscle')
+            ->withPivot('role', 'contribution_pct')
+            ->using(ExerciseMuscle::class)
+            ->wherePivot('role', 'primary');
+    }
+
+    /**
      * Attrezzatura richiesta per l'esercizio
      *     */
     /** @return BelongsToMany<Equipment, $this> */

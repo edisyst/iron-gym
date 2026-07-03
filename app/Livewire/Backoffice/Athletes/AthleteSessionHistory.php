@@ -92,6 +92,7 @@ class AthleteSessionHistory extends Component
                 'feedback',
                 'sessionExercises' => fn ($q) => $q->orderBy('order_in_session'),
                 'sessionExercises.exercise',
+                'sessionExercises.substitutedFrom',
                 'sessionExercises.sets' => fn ($q) => $q->orderBy('set_index'),
             ])
             ->find($this->selectedSessionId);

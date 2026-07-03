@@ -123,6 +123,11 @@
                                                    class="ml-1 text-muted" title="Scheda esercizio" target="_blank">
                                                     <i class="fas fa-external-link-alt fa-xs"></i>
                                                 </a>
+                                                @if ($exercise->substituted_from_exercise_id !== null && $exercise->substitutedFrom !== null)
+                                                    <span class="badge badge-warning ml-1" title="L'atleta ha sostituito l'esercizio originale in sessione">
+                                                        <i class="fas fa-exchange-alt fa-xs mr-1"></i>sost. da {{ $exercise->substitutedFrom->name_it }}
+                                                    </span>
+                                                @endif
                                                 <table class="table table-xs table-sm mb-0">
                                                     <thead class="thead-light">
                                                         <tr>

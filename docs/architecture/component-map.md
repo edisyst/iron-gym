@@ -125,7 +125,7 @@ Tutti in `app/Livewire/Athlete/`. Layout: `layouts.athlete` (dark, mobile-first,
 | Componente | Funzione |
 |---|---|
 | `Dashboard` | Sessione odierna, prossimi allenamenti, accesso rapido |
-| `WorkoutSession` | Logging live: peso/reps/RIR per set, timer riposo, note |
+| `WorkoutSession` | Logging live: peso/reps/RIR per set, timer riposo, note; sostituzione esercizio guidata in sessione |
 | `SessionFeedbackForm` | Feedback post-sessione (pump, soreness, effort, joint pain, performance) scala 0-3 |
 | `TrainingHub` | Hub storico: tab History + Progress + Measurements |
 | `History` | Storico sessioni completate (embedded in TrainingHub) |

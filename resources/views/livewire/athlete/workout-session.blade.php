@@ -570,6 +570,67 @@
         </div>
     </div>
 
+    {{-- Modale sostituzione esercizio --}}
+    <div x-data="{ open: false }"
+         x-on:open-substitution-modal.window="open = true"
+         x-show="open"
+         x-cloak
+         style="position:fixed;inset:0;z-index:1000;display:flex;align-items:flex-end;justify-content:center;
+                background:rgba(0,0,0,.75);"
+         @click.self="open = false; $wire.closeSubstitutionModal()">
+
+        <div style="background:#1A1A1A;border-radius:16px 16px 0 0;width:100%;max-width:480px;
+                    padding:20px;padding-bottom:max(20px, env(safe-area-inset-bottom));max-height:90vh;overflow-y:auto;"
+             @click.stop>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                <h3 style="margin:0;font-size:16px;font-weight:700;color:#fff;">Sostituisci esercizio</h3>
+                <button @click="open = false; $wire.closeSubstitutionModal()"
+                        aria-label="Chiudi"
+                        style="background:none;border:none;color:#666;font-size:20px;cursor:pointer;line-height:1;">&times;</button>
+            </div>
+            <p style="font-size:12px;color:#666;margin-bottom:16px;">Alternative con lo stesso pattern motorio, ordinate per sovrapposizione muscolare.</p>
+
+            @if (count($substitutionCandidates) > 0)
+                @foreach ($substitutionCandidates as $candidate)
+                    <div style="background:#262626;border-radius:12px;padding:14px;margin-bottom:10px;">
+                        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;gap:8px;">
+                            <div style="flex:1;">
+                                <p style="margin:0 0 6px;font-size:14px;font-weight:700;color:#fff;">{{ $candidate['name_it'] }}</p>
+                                <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;">
+                                    @foreach ($candidate['equipment_slugs'] as $eqSlug)
+                                        <span style="font-size:10px;background:#1A1A1A;border:1px solid #333;color:#888;
+                                                     padding:2px 7px;border-radius:999px;">{{ $eqSlug }}</span>
+                                    @endforeach
+                                </div>
+                                @if (count($candidate['primary_muscles']) > 0)
+                                    <p style="margin:0;font-size:11px;color:#666;">
+                                        Primari: {{ implode(', ', $candidate['primary_muscles']) }}
+                                    </p>
+                                @endif
+                            </div>
+                            <div style="text-align:right;flex-shrink:0;">
+                                <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px;">Overlap</div>
+                                <div style="font-size:18px;font-weight:700;color:#FF6B00;">{{ $candidate['overlap'] }}%</div>
+                            </div>
+                        </div>
+                        <button wire:click="confirmSubstitution('{{ $candidate['slug'] }}')"
+                                wire:loading.attr="disabled"
+                                @click="open = false"
+                                style="width:100%;background:#FF6B00;border:none;border-radius:8px;padding:9px;
+                                       font-size:13px;font-weight:700;color:#fff;cursor:pointer;">
+                            Usa questo esercizio
+                        </button>
+                    </div>
+                @endforeach
+            @else
+                <p style="text-align:center;color:#666;padding:24px 0;font-size:13px;">
+                    Nessuna alternativa trovata con lo stesso pattern e tipo di misurazione.
+                </p>
+            @endif
+        </div>
+    </div>
+
     {{-- Form feedback --}}
     <div x-data="{ open: {{ $showFeedback ? 'true' : 'false' }} }"
          @open-feedback.window="open = true">

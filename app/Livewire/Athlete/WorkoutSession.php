@@ -6,6 +6,7 @@ use App\Models\Exercise;
 use App\Models\ExerciseSet;
 use App\Models\SessionExercise;
 use App\Models\TrainingSession;
+use App\Services\ExerciseSubstitutionFinder;
 use App\Services\PersonalRecordDetector;
 use App\Services\PlateLoadoutCalculator;
 use Illuminate\Support\Collection;
@@ -29,6 +30,16 @@ class WorkoutSession extends Component
     public array $previousPerformance = [];
 
     public bool $showFeedback = false;
+
+    public ?int $substitutingSeId = null;
+
+    /**
+     * Candidati sostituzione serializzati per Livewire.
+     * Ogni elemento: id, slug, name_it, mechanic, skill_level, overlap, equipment_slugs[], primary_muscles[]
+     *
+     * @var array<int, array{id: int, slug: string, name_it: string, mechanic: string, skill_level: string, overlap: int, equipment_slugs: list<string>, primary_muscles: list<string>}>
+     */
+    public array $substitutionCandidates = [];
 
     public ?int $exerciseHistoryId = null;
 
@@ -437,6 +448,92 @@ class WorkoutSession extends Component
     {
         $calculator = app(PlateLoadoutCalculator::class);
         $this->plateLoadout = $calculator->calculate($targetKg, $this->plateBarWeight);
+    }
+
+    /**
+     * Apre la modale di sostituzione per un session_exercise.
+     * Bloccato se almeno un set working è già completato.
+     */
+    public function openSubstitutionModal(int $seId): void
+    {
+        $se = SessionExercise::where('session_id', $this->session->id)
+            ->with(['exercise', 'sets'])
+            ->findOrFail($seId);
+
+        $hasCompleted = $se->sets
+            ->where('is_warmup', false)
+            ->whereNotNull('completed_at')
+            ->isNotEmpty();
+
+        if ($hasCompleted) {
+            return;
+        }
+
+        $this->substitutingSeId = $seId;
+
+        $candidates = app(ExerciseSubstitutionFinder::class)->find($se->exercise);
+
+        $this->substitutionCandidates = $candidates->map(fn ($c) => [
+            'id' => $c['exercise']->id,
+            'slug' => $c['exercise']->slug,
+            'name_it' => $c['exercise']->name_it,
+            'mechanic' => $c['exercise']->mechanic,
+            'skill_level' => $c['exercise']->skill_level,
+            'overlap' => $c['overlap'],
+            'equipment_slugs' => $c['equipment_slugs'],
+            'primary_muscles' => $c['primary_muscles'],
+        ])->values()->all();
+
+        $this->dispatch('open-substitution-modal');
+    }
+
+    public function closeSubstitutionModal(): void
+    {
+        $this->substitutingSeId = null;
+        $this->substitutionCandidates = [];
+    }
+
+    /**
+     * Applica la sostituzione: aggiorna exercise_id e registra l'originale.
+     * Nessun set viene toccato.
+     */
+    public function confirmSubstitution(string $newExerciseSlug): void
+    {
+        if ($this->substitutingSeId === null) {
+            return;
+        }
+
+        $se = SessionExercise::where('session_id', $this->session->id)
+            ->with(['sets'])
+            ->findOrFail($this->substitutingSeId);
+
+        $hasCompleted = $se->sets
+            ->where('is_warmup', false)
+            ->whereNotNull('completed_at')
+            ->isNotEmpty();
+
+        if ($hasCompleted) {
+            $this->closeSubstitutionModal();
+
+            return;
+        }
+
+        $newExercise = Exercise::where('slug', $newExerciseSlug)->firstOrFail();
+
+        $se->update([
+            'substituted_from_exercise_id' => $se->exercise_id,
+            'exercise_id' => $newExercise->id,
+        ]);
+
+        $this->closeSubstitutionModal();
+
+        $this->session->load([
+            'sessionExercises' => fn ($q) => $q->orderBy('order_in_session'),
+            'sessionExercises.exercise',
+            'sessionExercises.exercise.equipment',
+            'sessionExercises.sets' => fn ($q) => $q->orderBy('set_index'),
+            'sessionExercises.group',
+        ]);
     }
 
     /**

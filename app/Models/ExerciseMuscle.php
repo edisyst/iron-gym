@@ -4,6 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
+/**
+ * @property string $role
+ * @property int $contribution_pct
+ */
 class ExerciseMuscle extends Pivot
 {
     protected $table = 'exercise_muscle';

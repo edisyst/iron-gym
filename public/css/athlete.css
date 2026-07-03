@@ -339,3 +339,224 @@ body {
         max-width: 1040px;
     }
 }
+
+/* =========================================================================
+   VOLUME SETTIMANALE — body map + barre
+   ========================================================================= */
+
+/* --- Palette intensità SVG (data-muscle path fill) --- */
+.body-map-muscle             { fill: #2a2a2a; cursor: pointer; stroke: #444; stroke-width: 0.6; transition: fill .2s, opacity .2s; }
+.body-map-muscle:hover       { opacity: .85; stroke: #FF6B00; stroke-width: 1; }
+.body-map-muscle.body-map-highlighted { stroke: #FF6B00 !important; stroke-width: 1.8 !important; opacity: 1 !important; }
+
+.body-map-muscle.intensity-0 { fill: #2a2a2a; }
+.body-map-muscle.intensity-1 { fill: #1a3a5c; }   /* blu — sotto MEV */
+.body-map-muscle.intensity-2 { fill: #7a6010; }   /* giallo scuro — tra MEV e MAV min */
+.body-map-muscle.intensity-3 { fill: #1a6635; }   /* verde — in MAV */
+.body-map-muscle.intensity-4 { fill: #a05510; }   /* arancio — approaching MRV */
+.body-map-muscle.intensity-5 { fill: #8b2020; }   /* rosso — oltre MRV */
+
+.body-map-outline            { fill: none; stroke: #555; stroke-width: 0.8; }
+.body-map-outline-light      { fill: none; stroke: #444; stroke-width: 0.5; }
+.body-map-label              { fill: #888; font-size: 11px; font-family: Inter, sans-serif; }
+
+/* SVG container */
+.wv-body-map-wrapper {
+    margin: 16px 0;
+    overflow-x: auto;
+}
+
+.body-map-svg {
+    width: 100%;
+    max-width: 520px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+/* --- Legenda --- */
+.wv-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin-bottom: 20px;
+    font-size: 11px;
+    color: #aaa;
+}
+
+.wv-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.wv-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+.wv-dot.intensity-0 { background: #2a2a2a; border: 1px solid #555; }
+.wv-dot.intensity-1 { background: #1a3a5c; }
+.wv-dot.intensity-2 { background: #c9a227; }
+.wv-dot.intensity-3 { background: #27a050; }
+.wv-dot.intensity-4 { background: #e07820; }
+.wv-dot.intensity-5 { background: #c0392b; }
+
+/* --- Week selector --- */
+.wv-week-selector {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.wv-week-label {
+    font-size: 13px;
+    color: #aaa;
+    white-space: nowrap;
+    margin: 0;
+}
+
+.wv-select {
+    background: #2a2a2a;
+    color: #eee;
+    border: 1px solid #444;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 13px;
+    flex: 1;
+    max-width: 260px;
+}
+
+/* --- Barre muscoli --- */
+.wv-bars-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.wv-bar-row {
+    background: #1e1e1e;
+    border: 1px solid #2e2e2e;
+    border-radius: 8px;
+    padding: 10px 12px;
+    transition: border-color .3s, box-shadow .3s;
+}
+
+.wv-bar-row.muscle-bar-highlighted {
+    border-color: #FF6B00;
+    box-shadow: 0 0 0 2px rgba(255,107,0,.25);
+}
+
+.wv-bar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+}
+
+.wv-muscle-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #ddd;
+}
+
+.wv-hard-sets {
+    font-size: 12px;
+    color: #FF6B00;
+    font-weight: 700;
+}
+
+.wv-bar-track {
+    position: relative;
+    height: 16px;
+    background: #2a2a2a;
+    border-radius: 4px;
+    overflow: visible;
+}
+
+.wv-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width .4s ease;
+    min-width: 2px;
+}
+
+.bar-fill-green  { background: #27a050; }
+.bar-fill-yellow { background: #c9a227; }
+.bar-fill-red    { background: #c0392b; }
+.bar-fill-grey   { background: #555; }
+
+/* Marker verticali (MEV, MRV) */
+.wv-marker {
+    position: absolute;
+    top: -4px;
+    width: 2px;
+    height: 24px;
+    background: #888;
+    transform: translateX(-50%);
+}
+
+.wv-marker-mev  { background: #c9a227; }
+.wv-marker-mrv  { background: #c0392b; }
+
+.wv-marker-label {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 8px;
+    color: #aaa;
+    white-space: nowrap;
+}
+
+/* Banda MAV */
+.wv-mav-band {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background: rgba(39,160,80,.18);
+    border-left: 1px dashed rgba(39,160,80,.5);
+    border-right: 1px dashed rgba(39,160,80,.5);
+    pointer-events: none;
+}
+
+.wv-bar-footer {
+    margin-top: 5px;
+}
+
+.wv-lm-text {
+    font-size: 10px;
+    color: #666;
+}
+
+.wv-lm-none {
+    color: #555;
+    font-style: italic;
+}
+
+/* --- Page header --- */
+.page-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.page-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+}
+
+/* --- Empty states --- */
+.wv-empty-state, .wv-no-data {
+    color: #888;
+    font-size: 14px;
+    padding: 32px 0;
+    text-align: center;
+}

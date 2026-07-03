@@ -360,4 +360,76 @@ Revisione totale code quality e sicurezza, staged e reversibile. Nessuna funzion
 
 ---
 
+---
+
+## Release 02 — Plate calculator con inventario dischi (2026-07-03)
+
+**Obiettivo:** visualizzare la combinazione di dischi per il carico target direttamente nella sessione.
+
+- `PlateInventory` model + migration + seeder (dischi reali: 20/15/10/5/2.5/1.25 kg per lato).
+- `PlateLoadoutCalculator`: algoritmo greedy decrescente su `PlateInventory` attivi; `delta_kg=0` se combinazione esatta, altrimenti combinazione per difetto più vicina.
+- `PlateInventoryManager` backoffice (CRUD inline gestore): aggiunta/modifica/attivazione-disattivazione dischi.
+- Modale atleta in sessione: campo peso → stack grafico dischi colorati per lato + `delta_kg` se non esatto.
+- 4 test Unit `PlateLoadoutCalculatorTest`.
+
+**Suite:** 125/135 pass (10 pre-esistenti Vite+Volt). PHPStan 0, Pint OK.
+
+---
+
+## Release 03 — Offline-first sync con IndexedDB (2026-07-03)
+
+**Obiettivo:** sessione di allenamento navigabile e loggabile senza connessione.
+
+- Alpine store `syncQueue` (in `workout-session.blade.php`): `enqueue`, `flush`, `isPending`; storage IDB vanilla, retry backoff esponenziale 2→4→8...→30s.
+- Intercettori offline in `exercise-card.blade.php` per `quickLog`, `completeSet`, `generateWarmup`, `deleteWarmup`: badge ⏳ su set pending.
+- Endpoint `POST /athlete/session/sync` (`SyncBatchController` + `SyncBatchRequest`): operazioni `quick_log`, `complete_set`, `generate_warmup`, `delete_warmup`; idempotenza via `sync_operations.client_uuid UNIQUE`; last-write-wins su `completed_at` vs `client_timestamp`.
+- Service worker v2: stale-while-revalidate statici, network-first con fallback cache per `/athlete/session/*`.
+- 4 test `SyncBatchTest`.
+
+**Suite:** 125/135 pass (10 pre-esistenti). PHPStan 0, Pint OK.
+
+---
+
+## Release 04 — Volume visuale: body map SVG e barre vs landmarks (2026-07-03)
+
+**Obiettivo:** esporre il motore di volume (`WeeklyVolumeCalculator`) all'atleta con body map colorata e barre di progresso posizionate sui landmark MEV/MAV/MRV personali.
+
+### Feature
+
+**Body map SVG (Fase B)**
+- SVG inline fronte + retro affiancati in `resources/views/livewire/athlete/partials/body-map.blade.php`.
+- 25 muscoli rappresentati con `<path data-muscle="{slug}">` usando lo slug esatto dalla tabella `muscles`.
+- Muscoli profondi non rappresentabili (`transverse_abdominis`) assenti dal SVG ma presenti nei dati.
+- Muscoli aggregati visivamente: `soleus` su `gastrocnemius` (path proprio), `trapezius_lower` su `trapezius_middle`, `brachioradialis` su `brachialis`.
+- Colorazione via classi CSS `intensity-0..5` iniettate da Livewire (`intensityMap`): grigio → blu → giallo → verde → arancio → rosso.
+- Tap su muscolo → Alpine `$dispatch('highlight-muscle')` → bordo arancio su tutti i path del muscolo + scroll alla barra, zero round-trip Livewire.
+
+**Componente Livewire `WeeklyVolume` (Fase C)**
+- Route `GET /athlete/volume`, componente `app/Livewire/Athlete/WeeklyVolume.php`.
+- Selettore settimana (default: settimana corrente per date; fallback prima con sessioni non completate; fallback prima assoluta).
+- Ownership check su `MicrocycleWeek` prima di chiamare il calculator.
+- Una sola invocazione di `WeeklyVolumeCalculator::calculate()` per render, nessun N+1.
+- Barre orizzontali per ogni muscolo con volume > 0 o landmark definito: fill colorato, marker MEV verticale, banda MAV semi-trasparente, marker MRV verticale.
+- `buildIntensityMap()`: con landmark usa status (`below_mev`/`in_mav`/`approaching_mrv`/`over_mrv`); senza landmark scala assoluta (1-2 set = intensity-1 ... 11+ = intensity-5). Documentata nel codice SVG.
+- `muscleName(slug)` statico: 26 slug → nome italiano, nessuna query DB aggiuntiva.
+- Voce "Volume" aggiunta in sidebar desktop e bottom nav mobile (sostituisce "Prenota" nel bottom nav; Prenota resta accessibile via URL e sidebar).
+
+### Test (Fase D)
+8 test in `WeeklyVolumeComponentTest.php`:
+- Mount senza errori per atleta autenticato.
+- Trainer ottiene 403 sulla route atleta.
+- Volume distribuito su più muscoli via `contribution_pct` (squat 70% quad + 30% gluteo, 3 set → 2.1 quad + 0.9 gluteo).
+- Warm-up esclusi dal conteggio (1 working + 2 warmup → 1.0 hard set).
+- Atleta senza landmarks: status `no_landmark`, mev null.
+- Settimana deload selezionabile, label contiene "deload".
+- Nessun mesociclo attivo: empty state visibile.
+- Cambio settimana aggiorna volumeData (0.0 in W1 → 1.0 in W2).
+
+### Documentazione
+- `docs/architecture/body-map-svg.md`: mappatura slug → path SVG, scala intensità, regole manutenzione.
+
+**Suite finale:** 129/143 pass (8 fallimenti pre-esistenti: Vite manifest + Volt auth — invariati). PHPStan L6 0 errori, Pint conforme.
+
+---
+
 *Ogni step ha lasciato test Pest verdi, PHPStan L6 a 0 errori, Pint conforme.*

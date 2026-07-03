@@ -59,6 +59,15 @@
                 </svg>
                 Prenota
             </a>
+            <a href="{{ route('athlete.volume') }}"
+               class="{{ request()->routeIs('athlete.volume') ? 'active' : '' }}"
+               aria-current="{{ request()->routeIs('athlete.volume') ? 'page' : 'false' }}">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+                Volume
+            </a>
             <a href="{{ route('athlete.messages') }}"
                class="{{ request()->routeIs('athlete.messages') ? 'active' : '' }}"
                aria-current="{{ request()->routeIs('athlete.messages') ? 'page' : 'false' }}"
@@ -154,17 +163,17 @@
             <span>Esercizi</span>
         </a>
 
-        <a href="{{ route('athlete.bookings') }}"
-           class="{{ request()->routeIs('athlete.bookings') ? 'active' : '' }}"
-           aria-current="{{ request()->routeIs('athlete.bookings') ? 'page' : 'false' }}"
-           aria-label="Prenota sessione PT o corso">
+        <a href="{{ route('athlete.volume') }}"
+           class="{{ request()->routeIs('athlete.volume') ? 'active' : '' }}"
+           aria-current="{{ request()->routeIs('athlete.volume') ? 'page' : 'false' }}"
+           aria-label="Volume settimanale muscolare">
             <span class="nav-pill">
                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                 </svg>
             </span>
-            <span>Prenota</span>
+            <span>Volume</span>
         </a>
 
         <a href="{{ route('athlete.messages') }}"

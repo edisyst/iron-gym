@@ -194,6 +194,8 @@ Release 03 Offline-first sync completata (2026-07-03): IndexedDB queue client-si
 - `/athlete/session/*`: network-first con fallback cache (pagina navigabile offline per tutta la sessione)
 - Livewire e pagine dinamiche: network-only, nessuna cache
 
+Release 04 Volume visuale completata (2026-07-03): body map SVG fronte/retro inline (25 path muscoli, `data-muscle="{slug}"`), colorazione intensity-0..5 via `intensityMap` Livewire → CSS, barre orizzontali con marker MEV/banda MAV/marker MRV per ogni muscolo, selettore settimana, interazione tap muscolo → scroll barra via Alpine `$dispatch`. Componente `WeeklyVolume` (`/athlete/volume`), voce "Volume" in nav desktop e bottom nav mobile (sostituisce Prenota nel bottom nav). 8 test WeeklyVolumeComponentTest verde. Suite 129/143 (8 pre-esistenti: Vite manifest + Volt auth), PHPStan 0 errori, Pint conforme.
+
 Prossima attività: raccogliere feedback dai primi atleti pilota dopo prima sessione.
 
 ## Setup pilota — dati e procedure

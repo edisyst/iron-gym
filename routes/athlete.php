@@ -12,6 +12,7 @@ use App\Livewire\Athlete\Messages;
 use App\Livewire\Athlete\Profile as AthleteProfile;
 use App\Livewire\Athlete\ProgressPhotoUpload;
 use App\Livewire\Athlete\TrainingHub;
+use App\Livewire\Athlete\WeeklyVolume;
 use App\Livewire\Athlete\WorkoutSession;
 use App\Models\Message;
 use Illuminate\Support\Facades\Route;
@@ -35,6 +36,7 @@ Route::prefix('athlete')
         // Step 6 — prenotazioni
         Route::get('/bookings', Booking::class)->name('bookings');
 
+        Route::get('/volume', WeeklyVolume::class)->name('volume');
         Route::get('/profile', AthleteProfile::class)->name('profile');
 
         // Step 7 — messaggistica e push

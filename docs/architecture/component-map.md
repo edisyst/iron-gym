@@ -69,6 +69,7 @@ Prefisso `/athlete`, middleware `auth + role:atleta`.
 | `athlete.push-subscribe` | POST `/athlete/push-subscribe` | `PushSubscriptionController@store` |
 | `athlete.volume` | `/athlete/volume` | `Athlete\WeeklyVolume` |
 | `athlete.records` | `/athlete/records` | `Athlete\PersonalRecords` |
+| `athlete.session.recap` | `/athlete/session/{session}/recap` | `Athlete\SessionRecap` |
 | `athlete.session.sync` | POST `/athlete/session/sync` | `SyncBatchController@handle` |
 
 ---
@@ -139,6 +140,7 @@ Tutti in `app/Livewire/Athlete/`. Layout: `layouts.athlete` (dark, mobile-first,
 | `Messages` | Chat atleta↔trainer con badge messaggi non letti |
 | `WeeklyVolume` | Body map SVG fronte/retro, barre volume vs landmark MEV/MAV/MRV, selettore settimana |
 | `PersonalRecords` | Elenco PR e1RM paginato per esercizio, ordinati per data decrescente |
+| `SessionRecap` | Card riepilogativa post-sessione (durata, tonnellaggio, set ratio, PR, top muscoli); export PNG via html-to-image + Web Share API |
 
 ## Componenti Livewire — shared
 

@@ -4,6 +4,21 @@ Tutto il lavoro notevole per versione/step. Ordine cronologico crescente.
 
 ---
 
+## Release 08 — Recap di fine sessione condivisibile (2026-07-03)
+
+**Obiettivo:** card riepilogativa post-sessione esportabile come PNG e condivisibile via Web Share API.
+
+- `SessionRecapBuilder` service: calcola durata, tonnellaggio (set working completati, warmup esclusi), ratio set completati/prescritti, PR ottenuti nel range temporale della sessione, top 3 muscoli pesati per `contribution_pct`. Cinque query separate, nessun N+1.
+- `SessionRecap` Livewire component (`/athlete/session/{session}/recap`): mostra la card, serializza i dati per la view (no model Eloquent in proprietà pubblica).
+- Card HTML (`session-recap.blade.php`): layout verticale 375 px, sfondo brand `#121212`, header arancio gradient, metriche in grid, badge PR, barre muscoli pesate, footer brand.
+- CSS standalone `public/css/session-recap.css`: nessuna dipendenza AdminLTE/Bootstrap; `@stack('styles')` aggiunto al layout atleta.
+- Export client-side via `html-to-image` (npm, ~45 KB gzipped): `toPng()` con `pixelRatio:2`, Web Share API con fallback download PNG. Entrypoint Vite `resources/js/session-recap.js`.
+- Integrazione flusso: `SessionFeedbackForm::save()` e `skip()` redirigono a `/recap` invece che alla dashboard.
+- Storico: bottone "Riepilogo" (icona share) su ogni sessione completata in `History`.
+- 6 test `SessionRecapBuilderTest` verdi (tonnellaggio esclude warmup, set parziali, zero PR, PR nel range, top muscoli pesati). Suite 183/183 (177 pass + 6 skip invariati), PHPStan 0 errori, Pint conforme.
+
+---
+
 ## Step 0 — Discovery e modello di dominio
 
 **Obiettivo:** fondamenta del dominio bodybuilding prima di scrivere una riga di codice applicativo.

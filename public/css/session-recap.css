@@ -1,0 +1,248 @@
+/* ============================================================
+   Session Recap Card — standalone, no AdminLTE / Bootstrap dep
+   Usato sia nella pagina web che nell'export PNG via html-to-image
+   ============================================================ */
+
+.recap-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 48px;
+    min-height: 100vh;
+    background: #0e0e0e;
+}
+
+/* La card è il target di html-to-image: 375px di larghezza base, 2× pixelRatio */
+#recap-card {
+    width: 375px;
+    max-width: 100%;
+    background: #121212;
+    border-radius: 20px;
+    overflow: hidden;
+    font-family: system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
+    color: #ffffff;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, .6);
+}
+
+/* ---- Header ---- */
+.rc-header {
+    background: linear-gradient(135deg, #E85D04 0%, #FF6B00 100%);
+    padding: 20px 20px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.rc-brand {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, .9);
+}
+
+.rc-date {
+    font-size: 12px;
+    color: rgba(255, 255, 255, .75);
+    text-align: right;
+    margin-top: 2px;
+}
+
+/* ---- Session name ---- */
+.rc-title {
+    padding: 18px 20px 10px;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -.01em;
+    border-bottom: 1px solid #1E1E1E;
+    margin-bottom: 0;
+}
+
+/* ---- Stats grid ---- */
+.rc-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1px;
+    background: #1E1E1E;
+    border-bottom: 1px solid #1E1E1E;
+}
+
+.rc-stat {
+    background: #121212;
+    padding: 14px 12px;
+    text-align: center;
+}
+
+.rc-stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #E85D04;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+
+.rc-stat-label {
+    font-size: 10px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-weight: 600;
+}
+
+/* ---- PR badges ---- */
+.rc-prs {
+    padding: 14px 20px;
+    border-bottom: 1px solid #1A1A1A;
+}
+
+.rc-section-title {
+    font-size: 10px;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.rc-pr-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(232, 93, 4, .12);
+    border: 1px solid rgba(232, 93, 4, .35);
+    border-radius: 999px;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #E85D04;
+    margin: 0 6px 6px 0;
+}
+
+.rc-pr-icon {
+    width: 12px;
+    height: 12px;
+}
+
+/* ---- Top muscles ---- */
+.rc-muscles {
+    padding: 14px 20px;
+}
+
+.rc-muscle-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.rc-muscle-rank {
+    font-size: 11px;
+    font-weight: 700;
+    color: #444;
+    width: 16px;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.rc-muscle-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: #ccc;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.rc-muscle-bar-wrap {
+    width: 80px;
+    flex-shrink: 0;
+    height: 5px;
+    background: #1E1E1E;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.rc-muscle-bar {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #E85D04, #FF6B00);
+}
+
+/* ---- Footer ---- */
+.rc-footer {
+    padding: 12px 20px 18px;
+    border-top: 1px solid #1A1A1A;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.rc-footer-logo {
+    width: 18px;
+    height: 18px;
+    fill: #E85D04;
+}
+
+.rc-footer-text {
+    font-size: 11px;
+    color: #3A3A3A;
+    font-weight: 500;
+    letter-spacing: .03em;
+}
+
+/* ---- Actions (fuori dalla card, non esportati) ---- */
+.recap-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+    width: 375px;
+    max-width: 100%;
+}
+
+.recap-btn-share {
+    flex: 1;
+    padding: 14px;
+    background: #E85D04;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: opacity .15s;
+}
+
+.recap-btn-share:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+.recap-btn-close {
+    padding: 14px 20px;
+    background: #1E1E1E;
+    color: #888;
+    border: 1px solid #2A2A2A;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s;
+}
+
+.recap-btn-close:hover {
+    background: #2A2A2A;
+    color: #ccc;
+}
+
+.recap-hint {
+    margin-top: 12px;
+    font-size: 11px;
+    color: #3A3A3A;
+    text-align: center;
+}

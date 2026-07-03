@@ -16,6 +16,7 @@
     @livewireStyles
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="{{ asset('css/athlete.css') }}">
+    @stack('styles')
 </head>
 <body>
     {{-- Sidebar navigation (desktop ≥ 1024px) --}}

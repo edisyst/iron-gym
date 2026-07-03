@@ -12,6 +12,7 @@ use App\Livewire\Athlete\Messages;
 use App\Livewire\Athlete\PersonalRecords;
 use App\Livewire\Athlete\Profile as AthleteProfile;
 use App\Livewire\Athlete\ProgressPhotoUpload;
+use App\Livewire\Athlete\SessionRecap;
 use App\Livewire\Athlete\TrainingHub;
 use App\Livewire\Athlete\WeeklyVolume;
 use App\Livewire\Athlete\WorkoutSession;
@@ -24,6 +25,7 @@ Route::prefix('athlete')
     ->group(function () {
         Route::get('/', Dashboard::class)->name('dashboard');
         Route::get('/session/{session}', WorkoutSession::class)->name('session');
+        Route::get('/session/{session}/recap', SessionRecap::class)->name('session.recap');
         Route::get('/history', TrainingHub::class)->name('history');
         Route::get('/progress', fn () => redirect()->route('athlete.history'))->name('progress');
         Route::get('/measurements', BodyMeasurementForm::class)->name('measurements');

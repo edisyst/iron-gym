@@ -16,25 +16,38 @@
     @forelse ($sessions as $session)
         {{-- Card sessione --}}
         <div class="athlete-card" style="margin-bottom:12px;">
-            <div wire:click="showDetail({{ $session->id }})"
-                 style="cursor:pointer;display:flex;align-items:center;gap:12px;">
-                <div style="flex:1;min-width:0;">
-                    <p style="font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                        {{ $session->name }}
-                    </p>
-                    <p style="font-size:12px;color:#666;margin-top:3px;">
-                        {{ $session->completed_at?->format('d/m/Y') }}
-                        @php $dur = $this->duration($session); @endphp
-                        @if ($dur) &bull; {{ $dur }} @endif
-                        &bull; {{ $session->week->mesocycle->name }}
-                        &bull; {{ $this->completedSetsCount($session) }} set
-                    </p>
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div wire:click="showDetail({{ $session->id }})"
+                     style="cursor:pointer;display:flex;align-items:center;gap:12px;flex:1;min-width:0;">
+                    <div style="flex:1;min-width:0;">
+                        <p style="font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                            {{ $session->name }}
+                        </p>
+                        <p style="font-size:12px;color:#666;margin-top:3px;">
+                            {{ $session->completed_at?->format('d/m/Y') }}
+                            @php $dur = $this->duration($session); @endphp
+                            @if ($dur) &bull; {{ $dur }} @endif
+                            &bull; {{ $session->week->mesocycle->name }}
+                            &bull; {{ $this->completedSetsCount($session) }} set
+                        </p>
+                    </div>
+                    <svg style="width:18px;height:18px;color:#555;flex-shrink:0;
+                         transition:transform .2s;{{ $selectedSessionId === $session->id ? 'transform:rotate(90deg)' : '' }}"
+                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                    </svg>
                 </div>
-                <svg style="width:18px;height:18px;color:#555;flex-shrink:0;
-                     transition:transform .2s;{{ $selectedSessionId === $session->id ? 'transform:rotate(90deg)' : '' }}"
-                     fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-                </svg>
+                <a href="{{ route('athlete.session.recap', $session->id) }}"
+                   title="Riepilogo sessione"
+                   style="display:flex;align-items:center;justify-content:center;background:#1E1E1E;
+                          border:1px solid #2A2A2A;border-radius:8px;padding:6px 8px;
+                          color:#E85D04;flex-shrink:0;text-decoration:none;"
+                   aria-label="Riepilogo sessione {{ $session->name }}">
+                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                    </svg>
+                </a>
             </div>
 
             {{-- Pannello dettaglio --}}

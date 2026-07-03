@@ -86,6 +86,7 @@ Gestionale palestra bodybuilding/fitness. Copre: anagrafica tesserati, abbonamen
 - PersonalRecordDetector: check(ExerciseSet, athleteId) → PersonalRecord|null; sincrono, pronto per migrazione a evento+listener; soglie in config/pr.php (max_reps_epley, min_sessions_before_pr)
 - ExerciseSubstitutionFinder: find(Exercise) → Collection max 5 candidati; matching per stesso joint_action_id o compound_pattern_id + stesso measurement_type + non soft-deleted; overlap = somma min(pct_orig, pct_cand) su muscoli comuni; tie-break: stesso mechanic poi skill_level
 - ReadinessEvaluator: evaluate(SessionReadinessCheck) → ReadinessProposal; score 0-12 (somma 4 campi 0-3); soglie da config/readiness.php (high=9 none, 5-8 reduce_5pct, <5 reduce_10pct); applyReduction(float, int): float arrotondato a 2.5 kg
+- SessionRecapBuilder: build(TrainingSession, athleteId) → array con duration_minutes, tonnage_kg (set working completati, warmup esclusi), sets_completed/sets_prescribed, prs (PersonalRecord nel range started_at..completed_at), top_muscles (top 3 per SUM contribution_pct su set completati non-warmup). Cinque query, nessun N+1.
 
 ## Observers
 
@@ -142,6 +143,10 @@ Exercise model usa `getRouteKeyName() = 'slug'` (route binding su slug).
 | `acceptModulation()` | Aggiorna `planned_weight_kg` set non completati + elimina set extra (fascia low); poi `startSession()` |
 | `rejectModulation()` | Avvia sessione senza modificare i carichi |
 | `startSession()` (private) | Transiziona `planned → in_progress` con `started_at` |
+| `completeSession()` | Transiziona `in_progress → completed` con `completed_at`; mostra `SessionFeedbackForm` embedded |
+
+**Flusso post-completamento (Release 08):**
+`completeSession()` → `$showFeedback=true` → `SessionFeedbackForm` (embedded) → `save()` o `skip()` → redirect `/athlete/session/{id}/recap` → `SessionRecap` mostra card + export PNG.
 
 **Alpine store `restTimer`** (definito in workout-session.blade.php): `start(sec)`, `skip()`, `fmt(s)`. Avvia vibrazione + Notification API allo scadere. Barra fissa bottom. Per cluster usa `intra_cluster_rest_sec`.
 
@@ -214,6 +219,8 @@ Release 05 PR detection completata (2026-07-03): tabella `personal_records` (ath
 Release 06 Sostituzione esercizio completata (2026-07-03): colonna `substituted_from_exercise_id` nullable su `session_exercises` (FK ON DELETE SET NULL). Service `ExerciseSubstitutionFinder` (overlap su contribution_pct, max 5 candidati, stesso pattern XOR + measurement_type). Bottone "Sostituisci" in exercise-card (bloccato se set completati), bottom sheet modale con candidati e equipment slug. Badge audit "sost. da [originale]" in backoffice AthleteSessionHistory. `Exercise::primaryMuscles()` relation aggiunta. 14 test (ExerciseSubstitutionFinderTest 9 + WorkoutSessionSubstitutionTest 5) verdi. Suite 163/163 (6 skip pre-esistenti invariati), PHPStan 0 errori, Pint conforme.
 
 Release 07 Readiness check pre-sessione completata (2026-07-03): tabella `session_readiness_checks` (UNIQUE su training_session_id, campi 0-3). `ReadinessEvaluator` service con soglie configurabili. `WorkoutSession` intercetta sessioni `planned` senza check → modale 4 bottoni per campo (Alpine locale, zero round-trip) → proposta modulazione carichi (-5%/-10% arrotondato 2.5 kg, opzionale rimozione set). Trainer vede score/modulazione in AthleteSessionHistory. Fix pre-esistente: migration `personal_records` FK tipo incompatibile con `exercises.id` (UNSIGNED INT). 14 test ReadinessEvaluatorTest verdi. Suite 177/177 (171 pass + 6 skip invariati), PHPStan 0 errori, Pint conforme, `migrate:fresh --seed` OK.
+
+Release 08 Recap sessione condivisibile completata (2026-07-03): `SessionRecapBuilder` service (durata, tonnellaggio, set ratio, PR nel range, top 3 muscoli per SUM contribution_pct). `SessionRecap` Livewire (`/athlete/session/{session}/recap`). Card HTML+CSS standalone (1080x1350-friendly, no AdminLTE dep). Export PNG lato client via html-to-image + Web Share API con fallback download. Integrazione flusso: `SessionFeedbackForm::save()` e `skip()` → recap invece di dashboard. Storico: bottone share su sessioni completate. 6 test SessionRecapBuilderTest verdi. Suite 183/183 (177 pass + 6 skip invariati), PHPStan 0 errori, Pint conforme.
 
 Prossima attività: raccogliere feedback dai primi atleti pilota dopo prima sessione.
 

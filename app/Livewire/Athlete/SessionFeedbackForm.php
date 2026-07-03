@@ -78,15 +78,15 @@ class SessionFeedbackForm extends Component
         );
 
         $this->dispatch('session-completed');
-        $this->redirect(route('athlete.dashboard'));
+        $this->redirect(route('athlete.session.recap', $this->sessionId));
     }
 
     /**
-     * Salta il feedback e torna alla dashboard senza creare il record
+     * Salta il feedback e va al riepilogo sessione
      */
     public function skip(): void
     {
-        $this->redirect(route('athlete.dashboard'));
+        $this->redirect(route('athlete.session.recap', $this->sessionId));
     }
 
     public function render(): View

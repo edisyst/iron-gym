@@ -27,7 +27,7 @@ Dark theme di default. Light theme via `[data-theme="light"]` (Alpine/localStora
 |---|---|---|
 | `--ig-text-1` | `#FFFFFF` | `#111111` |
 | `--ig-text-2` | `#AAAAAA` | `#555555` |
-| `--ig-text-3` | `#666666` | `#888888` |
+| `--ig-text-3` | `#7A7A7A` | `#777777` |
 
 ### Accento (brand arancio)
 
@@ -322,6 +322,8 @@ Non ancora migrate a `ig-*`. Usano già i token CSS e si adattano al tema.
 | `.athlete-badge` | `x-athlete.badge` | In graduale sostituzione |
 | `.btn-accent` | `x-athlete.button variant="primary"` | Usato in view non ancora migrate |
 | `.btn-ghost` | `x-athlete.button variant="ghost"` | Usato in view non ancora migrate |
-| `.workout-input` | `x-athlete.input-number` | Usato in sessione |
+| `.workout-input` | `x-athlete.input-number` | Usato in sessione; `font-size:16px` obbligatorio (evita zoom iOS) |
 | `.section-title` | (label uppercase inline) | Usato in molte view |
 | `.metric-row` / `.metric-options` | — | Pattern feedback sessione, non componente |
+| `.sr-only` | — | Screen-reader only; visivamente nascosto, accessibile ai SR |
+| `.bar-fill-green/yellow/red` | — | Barre volume; mappate a `--ig-intensity-3/2/5` |

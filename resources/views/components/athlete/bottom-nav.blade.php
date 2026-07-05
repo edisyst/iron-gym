@@ -46,25 +46,18 @@
         <span>Progressi</span>
     </a>
 
-    {{-- Profilo (con badge messaggi non letti) --}}
+    {{-- Profilo (badge messaggi non letti dallo store globale) --}}
     <a href="{{ route('athlete.profile') }}"
        class="{{ request()->routeIs('athlete.profile', 'athlete.messages', 'athlete.bookings', 'athlete.exercises*') ? 'active' : '' }}"
        aria-current="{{ request()->routeIs('athlete.profile', 'athlete.messages', 'athlete.bookings', 'athlete.exercises*') ? 'page' : 'false' }}"
-       aria-label="Profilo"
-       x-data="{ unread: 0 }"
-       x-init="
-           fetch('/athlete/messages-unread-count')
-               .then(r => r.ok ? r.json() : {count:0})
-               .then(d => unread = d.count ?? 0)
-               .catch(() => {})
-       ">
+       aria-label="Profilo">
         <span class="nav-pill">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round"
                       d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
             </svg>
-            <span x-show="unread > 0"
-                  x-text="unread > 9 ? '9+' : unread"
+            <span x-show="$store.messages.unread > 0"
+                  x-text="$store.messages.unread > 9 ? '9+' : $store.messages.unread"
                   class="nav-unread-badge"
                   aria-live="polite"></span>
         </span>

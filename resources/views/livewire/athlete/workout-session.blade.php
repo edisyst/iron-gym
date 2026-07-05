@@ -202,8 +202,8 @@
                 <button wire:click="completeSession"
                         wire:confirm="Terminare la sessione ora? I set non completati verranno ignorati."
                         style="background:transparent;border:1px solid var(--ig-border);color:var(--ig-text-2);
-                               font-size:var(--ig-text-xs);font-weight:600;padding:6px 12px;border-radius:var(--ig-radius-sm);
-                               cursor:pointer;white-space:nowrap;min-height:32px;">
+                               font-size:var(--ig-text-xs);font-weight:600;padding:8px 12px;border-radius:var(--ig-radius-sm);
+                               cursor:pointer;white-space:nowrap;min-height:40px;">
                     Termina
                 </button>
             </div>
@@ -345,10 +345,13 @@
 
         {{-- Rest timer (integrato nella zona azione) --}}
         <div x-data x-show="$store.restTimer.running" x-cloak class="ws-action-timer">
+            {{-- SR: annuncia il conto alla rovescia ogni 10s circa (polite, non interrompe) --}}
+            <span class="sr-only" aria-live="polite" aria-atomic="true"
+                  x-text="$store.restTimer.running ? $store.restTimer.fmt($store.restTimer.seconds) + ' al recupero' : ''"></span>
             <div>
                 <div style="font-size:var(--ig-text-xs);color:var(--ig-text-3);text-transform:uppercase;
                             font-weight:700;letter-spacing:.05em;margin-bottom:2px;">Recupero</div>
-                <div class="ws-action-timer-time" x-text="$store.restTimer.fmt($store.restTimer.seconds)"></div>
+                <div class="ws-action-timer-time" x-text="$store.restTimer.fmt($store.restTimer.seconds)" aria-hidden="true"></div>
             </div>
             <div style="flex:1;height:4px;background:var(--ig-border);border-radius:2px;overflow:hidden;margin:0 var(--ig-sp-3);">
                 <div style="height:100%;background:var(--ig-accent);border-radius:2px;transition:width .9s linear;"

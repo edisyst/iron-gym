@@ -70,6 +70,7 @@
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:var(--ig-sp-3);margin-bottom:var(--ig-sp-3);">
             <button wire:click="showExerciseHistory({{ $exercise->exercise_id }}, '{{ addslashes($exercise->exercise->name_it) }}')"
                     class="ws-exercise-name"
+                    aria-label="Storico {{ $exercise->exercise->name_it }}"
                     style="background:none;border:none;color:var(--ig-text-1);padding:0;text-align:left;
                            cursor:pointer;flex:1;text-decoration:underline dotted;text-underline-offset:3px;">
                 {{ $exercise->exercise->name_it }}
@@ -89,6 +90,7 @@
                         <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4M4 17h12m0 0l-4-4m4 4l-4 4"/>
                         </svg>
+                        Sost.
                     </button>
                 @endif
             </div>
@@ -157,11 +159,13 @@
                         <input type="number" inputmode="numeric" min="0"
                                wire:model="setData.{{ $wset->id }}.reps"
                                class="workout-input"
+                               aria-label="Reps riscaldamento"
                                placeholder="{{ $wset->planned_reps ?? '-' }}">
 
                         <input type="number" inputmode="decimal" min="0" step="0.5"
                                wire:model="setData.{{ $wset->id }}.weight"
                                class="workout-input"
+                               aria-label="Peso riscaldamento in kg"
                                placeholder="{{ $wset->planned_weight_kg ?? '-' }}">
 
                         <div style="display:flex;align-items:center;gap:4px;">
@@ -179,7 +183,7 @@
                                             }
                                         "
                                         style="flex:1;background:var(--ig-surface-raised);border:1px solid var(--ig-border);
-                                               border-radius:var(--ig-radius-sm);min-height:36px;font-size:var(--ig-text-sm);
+                                               border-radius:var(--ig-radius-sm);min-height:44px;font-size:var(--ig-text-sm);
                                                font-weight:600;color:var(--ig-text-2);cursor:pointer;padding:0 8px;">
                                     Fatto
                                 </button>

@@ -24,11 +24,11 @@
                                wire:model="{{ $metric['model'] }}"
                                value="{{ $v }}">
                         <span style="display:flex;align-items:center;justify-content:center;
-                                     width:36px;height:36px;border-radius:8px;
+                                     min-height:48px;border-radius:var(--ig-radius);
                                      border:1px solid {{ (int)($this->{$metric['model']}) === $v ? '#FF6B00' : '#333' }};
                                      background:{{ (int)($this->{$metric['model']}) === $v ? '#FF6B00' : 'transparent' }};
                                      color:{{ (int)($this->{$metric['model']}) === $v ? '#fff' : '#aaa' }};
-                                     cursor:pointer;font-size:14px;font-weight:600;">
+                                     cursor:pointer;font-size:var(--ig-text-base);font-weight:600;">
                             {{ $v }}
                         </span>
                     </label>
@@ -57,11 +57,11 @@
                 <label>
                     <input type="radio" wire:model="stressLevel" value="{{ $v }}">
                     <span style="display:flex;align-items:center;justify-content:center;
-                                 width:36px;height:36px;border-radius:8px;
+                                 min-height:48px;border-radius:var(--ig-radius);
                                  border:1px solid {{ (int)$stressLevel === $v ? '#FF6B00' : '#333' }};
                                  background:{{ (int)$stressLevel === $v ? '#FF6B00' : 'transparent' }};
                                  color:{{ (int)$stressLevel === $v ? '#fff' : '#aaa' }};
-                                 cursor:pointer;font-size:14px;font-weight:600;">
+                                 cursor:pointer;font-size:var(--ig-text-base);font-weight:600;">
                         {{ $v }}
                     </span>
                 </label>

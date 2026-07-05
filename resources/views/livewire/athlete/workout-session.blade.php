@@ -139,10 +139,12 @@
             running: false,
             seconds: 0,
             _intervalId: null,
+            _totalSec: 0,
             start(sec) {
                 if (!sec || sec <= 0) return;
                 clearInterval(this._intervalId);
                 this.seconds = sec;
+                this._totalSec = sec;
                 this.running = true;
                 this._intervalId = setInterval(() => {
                     if (this.seconds <= 0) {
@@ -174,462 +176,528 @@
     });
     </script>
 
-    {{-- Header sessione --}}
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-        <div>
-            <p style="font-size:12px;color:#666;margin-bottom:2px;">
-                Settimana {{ $session->week->week_number }}
-            </p>
-            <h1 style="font-size:22px;font-weight:700;">{{ $session->name }}</h1>
+    @push('styles')
+    <style>
+        /* Nascondi la bottom nav durante la sessione per dare spazio alla zona azione */
+        .bottom-nav { display: none !important; }
+        body { padding-bottom: 0 !important; }
+    </style>
+    @endpush
+
+    {{-- Header progresso sticky --}}
+    <div class="ws-progress-header">
+        <div class="ws-progress-info">
+            <div>
+                <span class="ws-progress-name">{{ $session->name }}</span>
+                <span style="font-size:var(--ig-text-xs);color:var(--ig-text-3);margin-left:var(--ig-sp-2);">
+                    Settimana {{ $session->week->week_number }}
+                </span>
+            </div>
+            <div style="display:flex;align-items:center;gap:var(--ig-sp-3);">
+                <span class="ws-progress-count">
+                    {{ $currentGroupIndex + 1 }}/{{ $totalGroups }}
+                    &bull;
+                    {{ $completedSets }}/{{ $totalSets }} set
+                </span>
+                <button wire:click="completeSession"
+                        wire:confirm="Terminare la sessione ora? I set non completati verranno ignorati."
+                        style="background:transparent;border:1px solid var(--ig-border);color:var(--ig-text-2);
+                               font-size:var(--ig-text-xs);font-weight:600;padding:6px 12px;border-radius:var(--ig-radius-sm);
+                               cursor:pointer;white-space:nowrap;min-height:32px;">
+                    Termina
+                </button>
+            </div>
         </div>
-        <div style="display:flex;gap:4px;">
-            <button wire:click="completeSession"
-                    wire:confirm="Terminare la sessione ora? I set non completati verranno ignorati."
-                    style="background:transparent;border:1px solid #444;color:#ccc;font-size:12px;
-                           font-weight:600;padding:6px 12px;border-radius:8px;cursor:pointer;">
-                Termina
-            </button>
-            <button wire:click="skipSession"
-                    wire:confirm="Sei sicuro di voler saltare questa sessione?"
-                    style="background:transparent;border:none;color:#666;font-size:13px;cursor:pointer;padding:8px;">
-                Salta
-            </button>
+        @php $pct = $totalSets > 0 ? round($completedSets / $totalSets * 100) : 0; @endphp
+        <div class="ws-progress-bar">
+            <div class="ws-progress-bar-fill" style="width:{{ $pct }}%;"></div>
         </div>
     </div>
 
-    {{-- Lista esercizi --}}
-    @php
-        $grouped = $session->sessionExercises->groupBy(fn ($e) => $e->group_id ?? 'solo_' . $e->id);
-    @endphp
-
-    @foreach ($grouped as $groupKey => $exercises)
-        @if ($exercises->first()->group_id !== null && $exercises->first()->group !== null)
-            <div class="athlete-card" style="border-left: 3px solid #FF6B00;">
-                <p style="font-size:11px;font-weight:700;text-transform:uppercase;color:#FF6B00;letter-spacing:.06em;margin-bottom:12px;">
-                    {{ $exercises->first()->group->group_type === 'superset' ? 'Superset' : 'Giant set' }}
-                    &bull; {{ $exercises->first()->group->rounds }} round
-                </p>
-
-                @foreach ($exercises->sortBy('order_in_group') as $exercise)
-                    @include('livewire.athlete.partials.exercise-card', ['exercise' => $exercise])
-                @endforeach
-            </div>
-        @else
-            @php $exercise = $exercises->first(); @endphp
-            <div class="athlete-card">
-                @include('livewire.athlete.partials.exercise-card', ['exercise' => $exercise])
-            </div>
-        @endif
-    @endforeach
-
-    {{-- Bottone completa sessione --}}
-    @if ($this->canCompleteSession())
-        <div style="margin-top:8px;margin-bottom:80px;">
-            <button wire:click="completeSession" class="btn-accent"
-                    wire:loading.attr="disabled">
-                <span wire:loading.remove>Completa sessione</span>
-                <span wire:loading>Salvataggio...</span>
-            </button>
-        </div>
+    {{-- Focus su un esercizio alla volta --}}
+    @if ($currentGroup->isNotEmpty())
+        @include('livewire.athlete.partials.session-exercise', ['exercises' => $currentGroup])
     @else
-        <div style="margin-bottom:80px;"></div>
+        <div style="padding:var(--ig-sp-8) var(--ig-sp-4);text-align:center;color:var(--ig-text-3);">
+            Nessun esercizio in questa sessione.
+        </div>
     @endif
 
-    {{-- Barra recupero fissa in basso --}}
-    <div x-data x-show="$store.restTimer.running" x-transition
-         x-cloak
-         style="position:fixed;bottom:0;left:0;right:0;z-index:500;
-                background:#111;border-top:2px solid #FF6B00;
-                padding:10px 16px;display:flex;align-items:center;justify-content:space-between;">
-        <div>
-            <div style="font-size:10px;color:#666;text-transform:uppercase;font-weight:700;
-                        letter-spacing:.06em;margin-bottom:2px;">Recupero</div>
-            <div style="font-size:26px;font-weight:700;color:#FF6B00;line-height:1;"
-                 x-text="$store.restTimer.fmt($store.restTimer.seconds)"></div>
+    {{-- Barra navigazione esercizi --}}
+    @php
+        $prevGroupName = null;
+        $nextGroupName = null;
+        if ($currentGroupIndex > 0 && isset($groupedExercises[$currentGroupIndex - 1])) {
+            $prevGroupName = collect($groupedExercises[$currentGroupIndex - 1])->map(fn($e) => $e->exercise->name_it)->implode(' + ');
+        }
+        if ($currentGroupIndex < $totalGroups - 1 && isset($groupedExercises[$currentGroupIndex + 1])) {
+            $nextGroupName = collect($groupedExercises[$currentGroupIndex + 1])->map(fn($e) => $e->exercise->name_it)->implode(' + ');
+        }
+    @endphp
+
+    <div class="ws-nav-bar" x-data="{ jumpOpen: false }">
+        <button wire:click="prevGroup"
+                @disabled($currentGroupIndex === 0)
+                class="ws-nav-btn"
+                aria-label="Esercizio precedente">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+            </svg>
+        </button>
+
+        <button @click="jumpOpen = true" class="ws-nav-list-btn">
+            <span style="font-size:var(--ig-text-xs);font-weight:700;color:var(--ig-text-2);">
+                {{ $currentGroupIndex + 1 }} / {{ $totalGroups }}
+            </span>
+            <span class="ws-nav-list-btn-name" style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                {{ $currentGroup->map(fn($e) => $e->exercise->name_it)->implode(' + ') }}
+            </span>
+            <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+        </button>
+
+        <button wire:click="nextGroup"
+                @disabled($currentGroupIndex >= $totalGroups - 1)
+                class="ws-nav-btn"
+                aria-label="Esercizio successivo">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+            </svg>
+        </button>
+
+        {{-- Jump drawer (bottom sheet) --}}
+        <div x-show="jumpOpen" x-cloak class="ws-jump-drawer" role="dialog" aria-modal="true" aria-label="Lista esercizi">
+            <div class="ws-jump-backdrop" @click="jumpOpen = false"></div>
+            <div class="ws-jump-sheet" @click.stop x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="transform translate-y-full" x-transition:enter-end="transform translate-y-0"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="transform translate-y-0" x-transition:leave-end="transform translate-y-full">
+                <div class="ws-jump-handle" aria-hidden="true"></div>
+                <div class="ws-jump-title">Salta a...</div>
+                @foreach ($groupedExercises as $gi => $grp)
+                    @php
+                        $grpCol = collect($grp);
+                        $grpName = $grpCol->map(fn($e) => $e->exercise->name_it)->implode(' + ');
+                        $grpDone = $grpCol->every(fn($se) => $se->sets->where('is_warmup', false)->whereNull('completed_at')->isEmpty());
+                        $grpTotal = $grpCol->sum(fn($se) => $se->sets->where('is_warmup', false)->count());
+                        $grpCompleted = $grpCol->sum(fn($se) => $se->sets->where('is_warmup', false)->whereNotNull('completed_at')->count());
+                    @endphp
+                    <button @click="$wire.jumpToGroup({{ $gi }}); jumpOpen = false;"
+                            class="ws-jump-item {{ $gi === $currentGroupIndex ? 'ws-jump-item--active' : '' }}"
+                            style="width:100%;background:none;border:none;text-align:left;">
+                        <span class="ws-jump-item-num">{{ $gi + 1 }}</span>
+                        <span class="ws-jump-item-name">{{ $grpName }}</span>
+                        <span class="ws-jump-item-status">
+                            @if ($grpDone)
+                                <svg style="width:14px;height:14px;color:var(--ig-success);" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                </svg>
+                            @else
+                                {{ $grpCompleted }}/{{ $grpTotal }}
+                            @endif
+                        </span>
+                    </button>
+                @endforeach
+            </div>
         </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
-            <div style="width:180px;height:4px;background:#2A2A2A;border-radius:4px;overflow:hidden;">
-                <div style="height:100%;background:#FF6B00;border-radius:4px;transition:width .9s linear;"
+    </div>
+
+    {{-- Zona azione fissa in basso --}}
+    @php
+        $actionSet  = null;
+        $actionSe   = null;
+        foreach ($currentGroup as $se) {
+            $firstIncomplete = $se->sets->where('is_warmup', false)->whereNull('completed_at')->sortBy('set_index')->first();
+            if ($firstIncomplete) {
+                $actionSet = $firstIncomplete;
+                $actionSe  = $se;
+                break;
+            }
+        }
+        $currentGroupAllDone = $actionSet === null;
+
+        // Verifica se tutti i gruppi sono completati
+        $allGroupsDone = true;
+        foreach ($groupedExercises as $grp) {
+            foreach (collect($grp) as $se) {
+                if ($se->sets->where('is_warmup', false)->whereNull('completed_at')->isNotEmpty()) {
+                    $allGroupsDone = false;
+                    break 2;
+                }
+            }
+        }
+
+        if ($actionSe) {
+            $actionRestSec    = $actionSe->technique_type === 'cluster'
+                                ? ($actionSe->intra_cluster_rest_sec ?? $actionSe->planned_rest_sec)
+                                : $actionSe->planned_rest_sec;
+            $actionRestSecJs  = $actionRestSec !== null ? (int) $actionRestSec : 'null';
+            $actionMeasure    = $actionSe->exercise->measurement_type ?? 'reps_weight';
+            $actionWorkingSets = $actionSe->sets->where('is_warmup', false)->sortBy('set_index');
+            $actionSetIndex   = $actionWorkingSets->search(fn($s) => $s->id === $actionSet->id) + 1;
+            $actionSetTotal   = $actionWorkingSets->count();
+            $actionPrevPerf   = $previousPerformance[$actionSe->exercise_id][$actionSet->set_index] ?? null;
+        }
+    @endphp
+
+    <div x-data="{ pending: false }" class="ws-action-zone">
+
+        {{-- Rest timer (integrato nella zona azione) --}}
+        <div x-data x-show="$store.restTimer.running" x-cloak class="ws-action-timer">
+            <div>
+                <div style="font-size:var(--ig-text-xs);color:var(--ig-text-3);text-transform:uppercase;
+                            font-weight:700;letter-spacing:.05em;margin-bottom:2px;">Recupero</div>
+                <div class="ws-action-timer-time" x-text="$store.restTimer.fmt($store.restTimer.seconds)"></div>
+            </div>
+            <div style="flex:1;height:4px;background:var(--ig-border);border-radius:2px;overflow:hidden;margin:0 var(--ig-sp-3);">
+                <div style="height:100%;background:var(--ig-accent);border-radius:2px;transition:width .9s linear;"
                      x-bind:style="'width:' + ($store.restTimer.seconds / ($store.restTimer._totalSec || 1) * 100) + '%'"></div>
             </div>
-            <button @click="$store.restTimer.skip()"
-                    style="background:#2A2A2A;border:1px solid #444;border-radius:6px;
-                           padding:5px 12px;color:#aaa;font-size:12px;cursor:pointer;">
-                Salta recupero
-            </button>
+            <button @click="$store.restTimer.skip()" class="ws-action-timer-skip">Salta</button>
         </div>
+
+        @if ($currentGroupAllDone)
+            {{-- Tutti i set del gruppo completati --}}
+            <div class="ws-action-done">
+                <div class="ws-action-done-msg">
+                    <svg style="width:20px;height:20px;color:var(--ig-success);display:inline;vertical-align:middle;margin-right:4px;" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    {{ $currentGroup->map(fn($e) => $e->exercise->name_it)->implode(' + ') }} completato
+                </div>
+                @if ($allGroupsDone)
+                    <x-athlete.button variant="primary" :full="true" wire:click="completeSession"
+                                      wire:loading.attr="disabled">
+                        <span wire:loading.remove>Completa sessione</span>
+                        <span wire:loading>Salvataggio...</span>
+                    </x-athlete.button>
+                @else
+                    <x-athlete.button variant="secondary" :full="true" wire:click="nextGroup">
+                        Prossimo esercizio
+                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true" style="display:inline;vertical-align:middle;margin-left:4px;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </x-athlete.button>
+                @endif
+            </div>
+
+        @elseif ($actionSet)
+            {{-- Input per il set corrente --}}
+            <div class="ws-action-info">
+                <span class="ws-action-set-label">
+                    {{ $actionSe->exercise->name_it }} &bull; Set {{ $actionSetIndex }}/{{ $actionSetTotal }}
+                </span>
+                @if ($actionPrevPerf && ($actionPrevPerf['reps'] !== null || $actionPrevPerf['weight'] !== null))
+                    <span class="ws-action-prev">
+                        prec:
+                        @if ($actionPrevPerf['weight'] !== null) {{ $actionPrevPerf['weight'] }}kg @endif
+                        @if ($actionPrevPerf['reps'] !== null) &times; {{ $actionPrevPerf['reps'] }} @endif
+                        @if ($actionPrevPerf['rir'] !== null) RIR{{ $actionPrevPerf['rir'] }} @endif
+                    </span>
+                @endif
+            </div>
+
+            <div class="ws-action-inputs">
+                @if (in_array($actionMeasure, ['reps_weight', 'reps_only', 'time_weight']))
+                    <div class="ws-action-input-group">
+                        <span class="ws-action-input-label">Reps</span>
+                        <x-athlete.input-number
+                            wire:model="setData.{{ $actionSet->id }}.reps"
+                            mode="numeric"
+                            min="0"
+                            step="1"
+                            :stepper="true"
+                            placeholder="{{ $actionSet->planned_reps ?? '0' }}"
+                        />
+                    </div>
+                @endif
+                @if (in_array($actionMeasure, ['reps_weight', 'time_weight']))
+                    <div class="ws-action-input-group">
+                        <span class="ws-action-input-label">Kg</span>
+                        <x-athlete.input-number
+                            wire:model="setData.{{ $actionSet->id }}.weight"
+                            mode="decimal"
+                            min="0"
+                            step="2.5"
+                            :stepper="true"
+                            placeholder="{{ $actionSet->planned_weight_kg ?? '0' }}"
+                        />
+                    </div>
+                @endif
+                @if (in_array($actionMeasure, ['time', 'isometric_hold']))
+                    <div class="ws-action-input-group" style="flex:2;">
+                        <span class="ws-action-input-label">Secondi</span>
+                        <x-athlete.input-number
+                            wire:model="setData.{{ $actionSet->id }}.duration"
+                            mode="numeric"
+                            min="0"
+                            step="5"
+                            :stepper="true"
+                            placeholder="{{ $actionSet->planned_duration_sec ?? '0' }}"
+                        />
+                    </div>
+                @endif
+                @if (in_array($actionMeasure, ['reps_weight', 'reps_only', 'time_weight']))
+                    <div class="ws-action-input-group">
+                        <span class="ws-action-input-label">RIR</span>
+                        <x-athlete.input-number
+                            wire:model="setData.{{ $actionSet->id }}.rir"
+                            mode="numeric"
+                            min="0"
+                            max="10"
+                            step="1"
+                            :stepper="true"
+                            placeholder="{{ $actionSet->planned_rir ?? '—' }}"
+                        />
+                    </div>
+                @endif
+            </div>
+
+            <div class="ws-action-btn">
+                <button @click="
+                            const setId = {{ $actionSet->id }};
+                            const restSec = {{ $actionRestSecJs }};
+                            pending = true;
+                            if (!navigator.onLine) {
+                                const d = $wire.__instance?.snapshot?.memo?.data ?? {};
+                                const sd = (d.setData ?? {})[setId] ?? {};
+                                $store.syncQueue.enqueue('complete_set', {
+                                    set_id: setId,
+                                    reps: sd.reps !== '' ? parseInt(sd.reps) : null,
+                                    weight: sd.weight !== '' ? parseFloat(sd.weight) : null,
+                                    rir: sd.rir !== '' ? parseInt(sd.rir) : null,
+                                    duration: sd.duration !== '' ? parseInt(sd.duration) : null,
+                                });
+                                pending = false;
+                                if (restSec) { $store.restTimer.start(restSec); }
+                            } else {
+                                $wire.completeSet(setId).then(() => {
+                                    pending = false;
+                                    if (restSec) { $store.restTimer.start(restSec); }
+                                });
+                            }
+                        "
+                        :disabled="pending"
+                        style="width:100%;background:var(--ig-accent);border:none;border-radius:var(--ig-radius);
+                               min-height:56px;font-size:var(--ig-text-md);font-weight:700;color:#fff;
+                               cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:8px;"
+                        :style="pending ? 'opacity:.7;cursor:not-allowed' : ''">
+                    <span x-show="!pending">
+                        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"
+                             style="display:inline;vertical-align:middle;margin-right:6px;" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        Fatto
+                    </span>
+                    <span x-show="pending" x-cloak>
+                        <span class="ig-spinner"></span>
+                    </span>
+                </button>
+            </div>
+
+        @endif
     </div>
 
     {{-- Drawer dettaglio esercizio --}}
     @if ($exerciseDetailId !== null && $this->exerciseDetail !== null)
         @php $ex = $this->exerciseDetail; @endphp
         <div style="position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.85);display:flex;align-items:flex-end;">
-            <div style="background:#1E1E1E;border-radius:16px 16px 0 0;padding:20px 16px 32px;width:100%;
-                        max-height:88vh;overflow-y:auto;">
-
-                <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
-                    <div style="flex:1;">
-                        <h2 style="font-size:18px;font-weight:700;color:#fff;margin:0 0 6px;">{{ $ex->name_it }}</h2>
-                        <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                            @if ($ex->mechanic === 'compound')
-                                <span style="font-size:10px;background:#FF6B00;color:#fff;padding:2px 8px;border-radius:999px;font-weight:700;">Compound</span>
-                            @else
-                                <span style="font-size:10px;background:#2A2A2A;color:#aaa;padding:2px 8px;border-radius:999px;font-weight:700;">Isolation</span>
-                            @endif
-                            @if ($ex->skill_level === 'beginner')
-                                <span style="font-size:10px;background:#166534;color:#bbf7d0;padding:2px 8px;border-radius:999px;font-weight:700;">Principiante</span>
-                            @elseif ($ex->skill_level === 'intermediate')
-                                <span style="font-size:10px;background:#FF6B00;color:#fff;padding:2px 8px;border-radius:999px;font-weight:700;">Intermedio</span>
-                            @else
-                                <span style="font-size:10px;background:#7f1d1d;color:#fca5a5;padding:2px 8px;border-radius:999px;font-weight:700;">Avanzato</span>
-                            @endif
-                        </div>
-                    </div>
-                    <button wire:click="showExerciseDetail({{ $exerciseDetailId }})"
-                            style="background:none;border:none;color:#666;font-size:26px;line-height:1;cursor:pointer;padding:0 0 0 12px;">&times;</button>
+            <div style="background:#1A1A1A;border-radius:16px 16px 0 0;width:100%;max-height:90vh;overflow-y:auto;
+                        padding:20px 20px calc(24px + env(safe-area-inset-bottom));"
+                 @click.stop>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                    <h3 style="margin:0;font-size:18px;font-weight:700;">{{ $ex->name_it }}</h3>
+                    <button wire:click="$set('exerciseDetailId', null)"
+                            style="background:none;border:none;color:#666;font-size:22px;cursor:pointer;line-height:1;"
+                            aria-label="Chiudi">&times;</button>
                 </div>
 
-                @if ($ex->video_url)
-                    <a href="{{ $ex->video_url }}" target="_blank" rel="noopener noreferrer"
-                       style="display:flex;align-items:center;gap:10px;background:#2A2A2A;border-radius:10px;
-                              padding:12px 14px;margin-bottom:14px;text-decoration:none;color:#FF6B00;font-size:13px;font-weight:600;">
-                        <svg width="18" height="18" fill="#FF6B00" viewBox="0 0 24 24"><path d="M8 5v14l11-7L8 5z"/></svg>
-                        Guarda il video tecnico
-                        <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="#FF6B00" stroke-width="2" style="margin-left:auto;">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                        </svg>
-                    </a>
-                @endif
-
-                @php
-                    $pattern    = $ex->compoundPattern ?? $ex->jointAction;
-                    $isCompound = $ex->compoundPattern !== null;
-                    $planeLabel = match($ex->plane) {
-                        'sagittal'    => 'Sagittale',
-                        'frontal'     => 'Frontale',
-                        'transverse'  => 'Trasversale',
-                        'multiplanar' => 'Multipiano',
-                        default       => ucfirst($ex->plane ?? ''),
-                    };
-                    $lateralityLabel = match($ex->laterality) {
-                        'bilateral'              => 'Bilaterale',
-                        'unilateral_alternating' => 'Unilaterale alternato',
-                        'unilateral_isolated'    => 'Unilaterale isolato',
-                        default                  => str_replace('_', ' ', $ex->laterality ?? ''),
-                    };
-                @endphp
-                <div style="background:#262626;border-radius:10px;padding:14px;margin-bottom:14px;">
-                    <p style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-bottom:10px;">Classificazione</p>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                        <div>
-                            <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px;">Piano</div>
-                            <div style="font-size:13px;color:#ccc;">{{ $planeLabel }}</div>
-                        </div>
-                        <div>
-                            <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px;">Lateralità</div>
-                            <div style="font-size:13px;color:#ccc;">{{ $lateralityLabel }}</div>
-                        </div>
-                        @if ($pattern)
-                            <div style="grid-column:span 2;">
-                                <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px;">Pattern motorio</div>
-                                <div style="font-size:13px;color:#ccc;">
-                                    {{ $pattern->name_it }}
-                                    <span style="font-size:10px;color:#555;margin-left:4px;">{{ $isCompound ? '(compound)' : '(joint action)' }}</span>
-                                </div>
-                            </div>
-                        @endif
-                    </div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;">
+                    @foreach ($ex->muscles->where('pivot.role', 'primary') as $m)
+                        <span style="background:#2A1A00;color:#FF6B00;font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;">
+                            {{ $m->name_it }}
+                        </span>
+                    @endforeach
+                    @foreach ($ex->muscles->where('pivot.role', 'secondary') as $m)
+                        <span style="background:#222;color:#666;font-size:10px;padding:3px 9px;border-radius:999px;">
+                            {{ $m->name_it }}
+                        </span>
+                    @endforeach
                 </div>
 
-                @if ($ex->equipment->count())
-                    <div style="background:#262626;border-radius:10px;padding:14px;margin-bottom:14px;">
-                        <p style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-bottom:10px;">Attrezzatura</p>
-                        <div style="display:flex;flex-wrap:wrap;gap:6px;">
-                            @foreach ($ex->equipment as $eq)
-                                <span style="background:#1E1E1E;border:1px solid #333;border-radius:20px;padding:3px 10px;font-size:12px;color:#ccc;">{{ $eq->name_it }}</span>
-                            @endforeach
-                        </div>
-                    </div>
-                @endif
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+                    @if ($ex->mechanic)
+                        <span style="font-size:11px;color:#888;background:#222;padding:3px 8px;border-radius:6px;">{{ $ex->mechanic }}</span>
+                    @endif
+                    @if ($ex->skill_level)
+                        <span style="font-size:11px;color:#888;background:#222;padding:3px 8px;border-radius:6px;">{{ $ex->skill_level }}</span>
+                    @endif
+                    @foreach ($ex->equipment as $eq)
+                        <span style="font-size:11px;color:#888;background:#222;padding:3px 8px;border-radius:6px;">{{ $eq->slug }}</span>
+                    @endforeach
+                </div>
 
-                @if ($ex->muscles->count())
-                    @php
-                        $roleOrder = ['primary' => 0, 'secondary' => 1, 'stabilizer' => 2];
-                        $sortedMuscles = $ex->muscles->sortBy([
-                            fn ($a, $b) => ($roleOrder[$a->pivot->role] ?? 9) <=> ($roleOrder[$b->pivot->role] ?? 9),
-                            fn ($a, $b) => $b->pivot->contribution_pct <=> $a->pivot->contribution_pct,
-                        ]);
-                    @endphp
-                    <div style="background:#262626;border-radius:10px;padding:14px;margin-bottom:14px;">
-                        <p style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-bottom:10px;">Muscoli coinvolti</p>
-                        <div style="display:flex;flex-direction:column;gap:8px;">
-                            @foreach ($sortedMuscles as $muscle)
-                                @php
-                                    $barColor = match($muscle->pivot->role) {
-                                        'primary'    => '#FF6B00',
-                                        'secondary'  => '#facc15',
-                                        'stabilizer' => '#38bdf8',
-                                        default      => '#555',
-                                    };
-                                    $roleLabel = match($muscle->pivot->role) {
-                                        'primary'    => 'Primario',
-                                        'secondary'  => 'Secondario',
-                                        'stabilizer' => 'Stabilizzatore',
-                                        default      => ucfirst($muscle->pivot->role),
-                                    };
-                                @endphp
-                                <div>
-                                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
-                                        <span style="font-size:13px;color:#ccc;font-weight:500;">{{ $muscle->name_it }}</span>
-                                        <div style="display:flex;align-items:center;gap:6px;">
-                                            <span style="font-size:10px;color:#666;">{{ $roleLabel }}</span>
-                                            <span style="font-size:11px;color:#888;">{{ $muscle->pivot->contribution_pct }}%</span>
-                                        </div>
-                                    </div>
-                                    <div style="background:#1A1A1A;border-radius:4px;height:5px;overflow:hidden;">
-                                        <div style="width:{{ $muscle->pivot->contribution_pct }}%;background:{{ $barColor }};height:100%;border-radius:4px;"></div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                @endif
-
-                @if ($ex->execution_description || $ex->description)
-                    <div style="background:#262626;border-radius:10px;padding:14px;">
-                        <p style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-bottom:8px;">Come eseguirlo</p>
-                        <p style="font-size:13px;color:#ccc;line-height:1.6;white-space:pre-line;margin:0;">{{ $ex->execution_description ?? $ex->description }}</p>
-                    </div>
+                @if ($ex->execution_description)
+                    <p style="font-size:13px;color:#ccc;line-height:1.6;margin:0;">{{ $ex->execution_description }}</p>
                 @endif
             </div>
         </div>
     @endif
 
-    {{-- Modal storico esercizio --}}
+    {{-- Modale storico esercizio --}}
     @if ($exerciseHistoryId !== null)
-        <div style="position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.8);display:flex;align-items:flex-end;">
-            <div style="background:#1E1E1E;border-radius:16px 16px 0 0;padding:20px 16px;width:100%;max-height:85vh;overflow-y:auto;">
+        <div style="position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.85);display:flex;align-items:flex-end;">
+            <div style="background:#1A1A1A;border-radius:16px 16px 0 0;width:100%;max-height:90vh;overflow-y:auto;
+                        padding:20px 20px calc(24px + env(safe-area-inset-bottom));"
+                 @click.stop>
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-                    <p style="font-size:15px;font-weight:700;color:#fff;">{{ $exerciseHistoryName }}</p>
-                    <button wire:click="showExerciseHistory({{ $exerciseHistoryId }}, '')"
-                            style="background:none;border:none;color:#666;font-size:22px;line-height:1;cursor:pointer;">&times;</button>
+                    <h3 style="margin:0;font-size:16px;font-weight:700;">{{ $exerciseHistoryName }}</h3>
+                    <button wire:click="$set('exerciseHistoryId', null)"
+                            style="background:none;border:none;color:#666;font-size:22px;cursor:pointer;line-height:1;"
+                            aria-label="Chiudi">&times;</button>
                 </div>
-
-                @forelse ($this->exerciseHistory as $se)
-                    <div style="margin-bottom:16px;">
-                        <p style="font-size:12px;color:#FF6B00;font-weight:600;margin-bottom:6px;">
-                            {{ $se->session->completed_at?->format('d/m/Y') }} &bull; {{ $se->session->name }}
-                        </p>
-                        @foreach ($se->sets->whereNotNull('actual_reps') as $set)
-                            <div style="display:flex;gap:10px;font-size:13px;color:#888;
-                                        padding:3px 0;border-bottom:1px solid #222;">
-                                <span style="color:#555;width:20px;">{{ $set->set_index }}</span>
-                                <span>{{ $set->actual_reps }} reps</span>
-                                @if ($set->actual_weight_kg)
-                                    <span>{{ $set->actual_weight_kg }} kg</span>
-                                @endif
-                                @if ($set->actual_rir !== null)
-                                    <span>RIR {{ $set->actual_rir }}</span>
-                                @endif
-                                @if ($set->estimated_1rm)
-                                    <span style="color:#FF6B00;margin-left:auto;">e1RM {{ $set->estimated_1rm }} kg</span>
-                                @endif
-                            </div>
-                        @endforeach
-                    </div>
-                @empty
-                    <p style="color:#666;text-align:center;padding:24px 0;">Nessuna sessione precedente.</p>
-                @endforelse
+                @if ($this->exerciseHistory->isEmpty())
+                    <p style="color:#666;font-size:13px;text-align:center;padding:24px 0;">Nessuna sessione precedente trovata.</p>
+                @else
+                    @foreach ($this->exerciseHistory as $pastSession)
+                        <div style="margin-bottom:16px;">
+                            <p style="font-size:11px;color:#666;font-weight:700;text-transform:uppercase;
+                                      letter-spacing:.05em;margin-bottom:6px;">
+                                {{ $pastSession->scheduled_date?->format('d/m/Y') ?? '—' }}
+                            </p>
+                            @foreach ($pastSession->completedWorkingSets as $pastSet)
+                                <div style="font-size:13px;color:#ccc;padding:3px 0;display:flex;gap:8px;">
+                                    <span style="color:#555;min-width:16px;">{{ $pastSet->set_index }}</span>
+                                    @if ($pastSet->actual_reps) <span>{{ $pastSet->actual_reps }}r</span> @endif
+                                    @if ($pastSet->actual_weight_kg) <span>&times; {{ $pastSet->actual_weight_kg }}kg</span> @endif
+                                    @if ($pastSet->actual_rir !== null) <span style="color:#666;">RIR{{ $pastSet->actual_rir }}</span> @endif
+                                    @if ($pastSet->actual_duration_sec) <span>{{ $pastSet->actual_duration_sec }}s</span> @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    @endforeach
+                @endif
             </div>
         </div>
     @endif
 
     {{-- Modale plate calculator --}}
-    <div x-data="{ open: false }"
-         x-on:open-plate-modal.window="open = true"
-         x-show="open"
-         x-cloak
-         style="position:fixed;inset:0;z-index:1000;display:flex;align-items:flex-end;justify-content:center;
-                background:rgba(0,0,0,.7);"
-         @click.self="open = false; $wire.closePlateModal()">
-
-        <div style="background:#1A1A1A;border-radius:16px 16px 0 0;width:100%;max-width:480px;
-                    padding:20px;padding-bottom:max(20px, env(safe-area-inset-bottom));"
-             @click.stop>
-
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-                <h3 style="margin:0;font-size:16px;font-weight:700;color:#fff;">Carica bilanciere</h3>
-                <button @click="open = false; $wire.closePlateModal()"
-                        aria-label="Chiudi"
-                        style="background:none;border:none;color:#666;font-size:20px;cursor:pointer;line-height:1;">&times;</button>
-            </div>
-
-            @if ($plateLoadout)
-                {{-- Selettore peso barra --}}
-                <div style="margin-bottom:16px;">
-                    <label style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px;">
-                        Peso barra
-                    </label>
-                    <div style="display:flex;gap:8px;">
-                        @foreach (config('barbell.weights', [20, 15, 10]) as $bw)
-                            <button wire:click="updatePlateBar({{ $bw }})"
-                                    style="flex:1;padding:6px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;
-                                           border: {{ $plateBarWeight == $bw ? '2px solid #FF6B00' : '1px solid #333' }};
-                                           background: {{ $plateBarWeight == $bw ? '#2A1A0A' : '#2A2A2A' }};
-                                           color: {{ $plateBarWeight == $bw ? '#FF6B00' : '#aaa' }};">
-                                {{ $bw }} kg
-                            </button>
-                        @endforeach
-                    </div>
+    @if ($plateModalSetId !== null)
+        <div style="position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.85);display:flex;align-items:flex-end;"
+             wire:click="closePlateModal">
+            <div style="background:#1A1A1A;border-radius:16px 16px 0 0;width:100%;max-height:90vh;overflow-y:auto;
+                        padding:20px 20px calc(24px + env(safe-area-inset-bottom));"
+                 @click.stop>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                    <h3 style="margin:0;font-size:16px;font-weight:700;">Calcola dischi</h3>
+                    <button wire:click="closePlateModal"
+                            style="background:none;border:none;color:#666;font-size:22px;cursor:pointer;line-height:1;"
+                            aria-label="Chiudi">&times;</button>
                 </div>
 
-                {{-- Risultato caricamento --}}
-                <div style="background:#111;border-radius:10px;padding:12px 14px;margin-bottom:16px;">
-                    <div style="font-size:13px;color:#888;margin-bottom:4px;">
-                        Obiettivo: <strong style="color:#fff;">{{ $plateLoadout['target_kg'] }} kg</strong>
-                    </div>
-                    <div style="font-size:13px;color:#888;">
-                        Caricato: <strong style="color:{{ $plateLoadout['delta_kg'] > 0 ? '#facc15' : '#22c55e' }};">
-                            {{ $plateLoadout['loaded_kg'] }} kg
-                        </strong>
-                        @if ($plateLoadout['delta_kg'] > 0)
-                            <span style="color:#888;font-size:11px;"> (mancano {{ $plateLoadout['delta_kg'] }} kg)</span>
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+                    <label style="font-size:13px;color:#aaa;">Peso bilanciere (kg)</label>
+                    <input type="number" step="0.5" min="0" inputmode="decimal"
+                           wire:model.live="plateBarWeight"
+                           style="background:#2A2A2A;border:1px solid #3A3A3A;border-radius:8px;
+                                  color:#fff;padding:6px 10px;width:80px;font-size:14px;text-align:center;">
+                    <button wire:click="calculatePlates" class="btn-accent" style="padding:8px 16px;font-size:13px;">
+                        Calcola
+                    </button>
+                </div>
+
+                @if ($plateLoadout !== null)
+                    <div style="margin-bottom:12px;">
+                        <p style="font-size:12px;color:#666;margin-bottom:8px;">
+                            Obiettivo: <strong style="color:#fff;">{{ $plateLoadout['target_kg'] }} kg</strong>
+                            &bull;
+                            Caricato: <strong style="color:{{ $plateLoadout['delta_kg'] == 0 ? '#22c55e' : '#f59e0b' }};">
+                                {{ $plateLoadout['loaded_kg'] }} kg
+                            </strong>
+                            @if ($plateLoadout['delta_kg'] != 0)
+                                <span style="color:#f59e0b;">({{ $plateLoadout['delta_kg'] > 0 ? '+' : '' }}{{ $plateLoadout['delta_kg'] }} kg)</span>
+                            @endif
+                        </p>
+
+                        @if (count($plateLoadout['plates']) > 0)
+                            <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
+                                @foreach ($plateLoadout['plates'] as $plate)
+                                    @for ($pi = 0; $pi < $plate['count']; $pi++)
+                                        <div style="background:{{ $plate['color'] ?? '#555' }};width:40px;height:40px;
+                                                    border-radius:50%;display:flex;align-items:center;justify-content:center;
+                                                    font-size:10px;font-weight:700;color:#fff;border:2px solid rgba(255,255,255,.2);">
+                                            {{ $plate['weight_kg'] }}
+                                        </div>
+                                    @endfor
+                                @endforeach
+                            </div>
+                            <p style="font-size:11px;color:#666;">Per lato del bilanciere</p>
+                        @else
+                            <p style="color:#666;font-size:13px;">Solo bilanciere nudo ({{ $plateLoadout['bar_kg'] }} kg).</p>
                         @endif
                     </div>
-                </div>
-
-                {{-- Visualizzazione grafica dischi per lato --}}
-                @if ($plateLoadout['plates'])
-                    <div style="margin-bottom:16px;">
-                        <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">
-                            Per lato
-                        </div>
-
-                        {{-- Stack orizzontale dischi --}}
-                        <div style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;">
-                            @php
-                                $colorMap = [
-                                    'rosso'   => '#ef4444',
-                                    'blu'     => '#3b82f6',
-                                    'giallo'  => '#eab308',
-                                    'verde'   => '#22c55e',
-                                    'bianco'  => '#e5e7eb',
-                                    'nero'    => '#374151',
-                                    'cromato' => '#9ca3af',
-                                ];
-                            @endphp
-                            @foreach ($plateLoadout['plates'] as $plate)
-                                @php
-                                    $hexColor = $colorMap[$plate['color'] ?? ''] ?? '#6b7280';
-                                    $heightPx = match(true) {
-                                        $plate['weight_kg'] >= 20 => 56,
-                                        $plate['weight_kg'] >= 10 => 46,
-                                        $plate['weight_kg'] >= 5  => 38,
-                                        default                   => 30,
-                                    };
-                                    $widthPx = match(true) {
-                                        $plate['weight_kg'] >= 20 => 20,
-                                        $plate['weight_kg'] >= 10 => 17,
-                                        default                   => 13,
-                                    };
-                                @endphp
-                                @for ($i = 0; $i < $plate['count']; $i++)
-                                    <div style="width:{{ $widthPx }}px;height:{{ $heightPx }}px;
-                                                background:{{ $hexColor }};border-radius:3px;
-                                                display:flex;align-items:center;justify-content:center;
-                                                writing-mode:vertical-rl;text-orientation:mixed;
-                                                font-size:9px;font-weight:700;color:#000;opacity:.9;"
-                                         title="{{ $plate['weight_kg'] }} kg">
-                                        {{ $plate['weight_kg'] }}
-                                    </div>
-                                @endfor
-                            @endforeach
-                            {{-- Barra centrale --}}
-                            <div style="width:40px;height:10px;background:#6b7280;border-radius:2px;"></div>
-                        </div>
-
-                        {{-- Lista testuale per lato --}}
-                        <div style="margin-top:10px;font-size:12px;color:#888;">
-                            @foreach ($plateLoadout['plates'] as $plate)
-                                <span style="margin-right:10px;">
-                                    {{ $plate['count'] }} &times; {{ $plate['weight_kg'] }} kg
-                                </span>
-                            @endforeach
-                        </div>
-                    </div>
-                @else
-                    <p style="color:#666;font-size:13px;text-align:center;padding:16px 0;">
-                        Solo barra — nessun disco da aggiungere.
-                    </p>
                 @endif
-            @else
-                <p style="color:#666;font-size:13px;text-align:center;padding:20px 0;">
-                    Calcolo in corso...
-                </p>
-            @endif
+            </div>
         </div>
-    </div>
+    @endif
 
     {{-- Modale sostituzione esercizio --}}
-    <div x-data="{ open: false }"
-         x-on:open-substitution-modal.window="open = true"
-         x-show="open"
-         x-cloak
-         style="position:fixed;inset:0;z-index:1000;display:flex;align-items:flex-end;justify-content:center;
-                background:rgba(0,0,0,.75);"
-         @click.self="open = false; $wire.closeSubstitutionModal()">
+    @if ($substitutingSeId !== null)
+        <div x-data="{ open: true }" x-show="open"
+             style="position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.85);display:flex;align-items:flex-end;"
+             role="dialog" aria-modal="true" aria-labelledby="modal-sost-title">
+            <div style="background:#1A1A1A;border-radius:16px 16px 0 0;width:100%;max-height:90vh;overflow-y:auto;
+                        padding:20px 20px calc(24px + env(safe-area-inset-bottom));"
+                 @click.stop>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                    <h3 id="modal-sost-title" style="margin:0;font-size:16px;font-weight:700;">Sostituisci esercizio</h3>
+                    <button wire:click="closeSubstitutionModal"
+                            style="background:none;border:none;color:#666;font-size:22px;cursor:pointer;line-height:1;"
+                            aria-label="Chiudi">&times;</button>
+                </div>
+                <p style="font-size:12px;color:#666;margin-bottom:16px;">Alternative con lo stesso pattern motorio, ordinate per sovrapposizione muscolare.</p>
 
-        <div style="background:#1A1A1A;border-radius:16px 16px 0 0;width:100%;max-width:480px;
-                    padding:20px;padding-bottom:max(20px, env(safe-area-inset-bottom));max-height:90vh;overflow-y:auto;"
-             @click.stop>
-
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-                <h3 style="margin:0;font-size:16px;font-weight:700;color:#fff;">Sostituisci esercizio</h3>
-                <button @click="open = false; $wire.closeSubstitutionModal()"
-                        aria-label="Chiudi"
-                        style="background:none;border:none;color:#666;font-size:20px;cursor:pointer;line-height:1;">&times;</button>
-            </div>
-            <p style="font-size:12px;color:#666;margin-bottom:16px;">Alternative con lo stesso pattern motorio, ordinate per sovrapposizione muscolare.</p>
-
-            @if (count($substitutionCandidates) > 0)
-                @foreach ($substitutionCandidates as $candidate)
-                    <div style="background:#262626;border-radius:12px;padding:14px;margin-bottom:10px;">
-                        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;gap:8px;">
-                            <div style="flex:1;">
-                                <p style="margin:0 0 6px;font-size:14px;font-weight:700;color:#fff;">{{ $candidate['name_it'] }}</p>
-                                <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;">
-                                    @foreach ($candidate['equipment_slugs'] as $eqSlug)
-                                        <span style="font-size:10px;background:#1A1A1A;border:1px solid #333;color:#888;
-                                                     padding:2px 7px;border-radius:999px;">{{ $eqSlug }}</span>
-                                    @endforeach
+                @if (count($substitutionCandidates) > 0)
+                    @foreach ($substitutionCandidates as $candidate)
+                        <div style="background:#262626;border-radius:12px;padding:14px;margin-bottom:10px;">
+                            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;gap:8px;">
+                                <div style="flex:1;">
+                                    <p style="margin:0 0 6px;font-size:14px;font-weight:700;color:#fff;">{{ $candidate['name_it'] }}</p>
+                                    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;">
+                                        @foreach ($candidate['equipment_slugs'] as $eqSlug)
+                                            <span style="font-size:10px;background:#1A1A1A;border:1px solid #333;color:#888;
+                                                         padding:2px 7px;border-radius:999px;">{{ $eqSlug }}</span>
+                                        @endforeach
+                                    </div>
+                                    @if (count($candidate['primary_muscles']) > 0)
+                                        <p style="margin:0;font-size:11px;color:#666;">
+                                            Primari: {{ implode(', ', $candidate['primary_muscles']) }}
+                                        </p>
+                                    @endif
                                 </div>
-                                @if (count($candidate['primary_muscles']) > 0)
-                                    <p style="margin:0;font-size:11px;color:#666;">
-                                        Primari: {{ implode(', ', $candidate['primary_muscles']) }}
-                                    </p>
-                                @endif
+                                <div style="text-align:right;flex-shrink:0;">
+                                    <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px;">Overlap</div>
+                                    <div style="font-size:18px;font-weight:700;color:#FF6B00;">{{ $candidate['overlap'] }}%</div>
+                                </div>
                             </div>
-                            <div style="text-align:right;flex-shrink:0;">
-                                <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px;">Overlap</div>
-                                <div style="font-size:18px;font-weight:700;color:#FF6B00;">{{ $candidate['overlap'] }}%</div>
-                            </div>
+                            <button wire:click="confirmSubstitution('{{ $candidate['slug'] }}')"
+                                    wire:loading.attr="disabled"
+                                    @click="open = false"
+                                    style="width:100%;background:#FF6B00;border:none;border-radius:8px;padding:9px;
+                                           font-size:13px;font-weight:700;color:#fff;cursor:pointer;">
+                                Usa questo esercizio
+                            </button>
                         </div>
-                        <button wire:click="confirmSubstitution('{{ $candidate['slug'] }}')"
-                                wire:loading.attr="disabled"
-                                @click="open = false"
-                                style="width:100%;background:#FF6B00;border:none;border-radius:8px;padding:9px;
-                                       font-size:13px;font-weight:700;color:#fff;cursor:pointer;">
-                            Usa questo esercizio
-                        </button>
-                    </div>
-                @endforeach
-            @else
-                <p style="text-align:center;color:#666;padding:24px 0;font-size:13px;">
-                    Nessuna alternativa trovata con lo stesso pattern e tipo di misurazione.
-                </p>
-            @endif
+                    @endforeach
+                @else
+                    <p style="text-align:center;color:#666;padding:24px 0;font-size:13px;">
+                        Nessuna alternativa trovata con lo stesso pattern e tipo di misurazione.
+                    </p>
+                @endif
+            </div>
         </div>
-    </div>
+    @endif
 
     {{-- Modale readiness pre-sessione --}}
     @if ($showReadinessModal)
@@ -656,79 +724,30 @@
             <h3 style="margin:0 0 4px;font-size:18px;font-weight:700;color:#fff;">Come stai oggi?</h3>
             <p style="font-size:12px;color:#666;margin:0 0 20px;">Check rapido pre-allenamento — aiuta il sistema a modulare i carichi.</p>
 
-            {{-- Qualità del sonno --}}
+            @foreach ([
+                ['key' => 'sleep',    'label' => 'Sonno'],
+                ['key' => 'stress',   'label' => 'Stress'],
+                ['key' => 'soreness', 'label' => 'Indolenzimento muscolare'],
+                ['key' => 'joint',    'label' => 'Articolazioni'],
+            ] as $field)
             <div style="margin-bottom:16px;">
                 <p style="font-size:12px;font-weight:600;color:#aaa;margin:0 0 8px;text-transform:uppercase;letter-spacing:.05em;">
-                    Sonno
+                    {{ $field['label'] }}
                 </p>
                 <div style="display:flex;gap:8px;">
                     @foreach ([0,1,2,3] as $v)
-                    <button @click="sleep = {{ $v }}"
-                            x-bind:style="sleep === {{ $v }} ? 'background:' + colorFor({{ $v }}) + ';color:#000;border-color:transparent;' : ''"
+                    <button @click="{{ $field['key'] }} = {{ $v }}"
+                            x-bind:style="{{ $field['key'] }} === {{ $v }} ? 'background:' + colorFor({{ $v }}) + ';color:#000;border-color:transparent;' : ''"
                             style="flex:1;padding:10px 4px;border-radius:10px;border:1px solid #333;
                                    background:#262626;color:#ccc;font-size:11px;font-weight:700;cursor:pointer;
-                                   transition:background .15s;">
-                        <span x-text="labels.sleep[{{ $v }}]"></span>
+                                   transition:background .15s;min-height:48px;">
+                        <span x-text="labels.{{ $field['key'] }}[{{ $v }}]"></span>
                     </button>
                     @endforeach
                 </div>
             </div>
+            @endforeach
 
-            {{-- Stress --}}
-            <div style="margin-bottom:16px;">
-                <p style="font-size:12px;font-weight:600;color:#aaa;margin:0 0 8px;text-transform:uppercase;letter-spacing:.05em;">
-                    Stress
-                </p>
-                <div style="display:flex;gap:8px;">
-                    @foreach ([0,1,2,3] as $v)
-                    <button @click="stress = {{ $v }}"
-                            x-bind:style="stress === {{ $v }} ? 'background:' + colorFor({{ $v }}) + ';color:#000;border-color:transparent;' : ''"
-                            style="flex:1;padding:10px 4px;border-radius:10px;border:1px solid #333;
-                                   background:#262626;color:#ccc;font-size:11px;font-weight:700;cursor:pointer;
-                                   transition:background .15s;">
-                        <span x-text="labels.stress[{{ $v }}]"></span>
-                    </button>
-                    @endforeach
-                </div>
-            </div>
-
-            {{-- Indolenzimento muscolare --}}
-            <div style="margin-bottom:16px;">
-                <p style="font-size:12px;font-weight:600;color:#aaa;margin:0 0 8px;text-transform:uppercase;letter-spacing:.05em;">
-                    Indolenzimento muscolare
-                </p>
-                <div style="display:flex;gap:8px;">
-                    @foreach ([0,1,2,3] as $v)
-                    <button @click="soreness = {{ $v }}"
-                            x-bind:style="soreness === {{ $v }} ? 'background:' + colorFor({{ $v }}) + ';color:#000;border-color:transparent;' : ''"
-                            style="flex:1;padding:10px 4px;border-radius:10px;border:1px solid #333;
-                                   background:#262626;color:#ccc;font-size:11px;font-weight:700;cursor:pointer;
-                                   transition:background .15s;">
-                        <span x-text="labels.soreness[{{ $v }}]"></span>
-                    </button>
-                    @endforeach
-                </div>
-            </div>
-
-            {{-- Stato articolazioni --}}
-            <div style="margin-bottom:16px;">
-                <p style="font-size:12px;font-weight:600;color:#aaa;margin:0 0 8px;text-transform:uppercase;letter-spacing:.05em;">
-                    Articolazioni
-                </p>
-                <div style="display:flex;gap:8px;">
-                    @foreach ([0,1,2,3] as $v)
-                    <button @click="joint = {{ $v }}"
-                            x-bind:style="joint === {{ $v }} ? 'background:' + colorFor({{ $v }}) + ';color:#000;border-color:transparent;' : ''"
-                            style="flex:1;padding:10px 4px;border-radius:10px;border:1px solid #333;
-                                   background:#262626;color:#ccc;font-size:11px;font-weight:700;cursor:pointer;
-                                   transition:background .15s;">
-                        <span x-text="labels.joint[{{ $v }}]"></span>
-                    </button>
-                    @endforeach
-                </div>
-            </div>
-
-            {{-- Note opzionale --}}
             <div style="margin-bottom:20px;">
                 <textarea x-model="note" placeholder="Note (opzionale)..."
                           style="width:100%;background:#262626;border:1px solid #333;border-radius:10px;
@@ -740,12 +759,12 @@
                 <button @click="$wire.submitReadiness(sleep, stress, soreness, joint, note)"
                         wire:loading.attr="disabled"
                         class="btn-accent"
-                        style="flex:1;">
+                        style="flex:1;min-height:48px;">
                     Inizia allenamento
                 </button>
                 <button @click="$wire.skipReadiness()"
                         style="background:transparent;border:1px solid #333;color:#666;
-                               padding:12px 16px;border-radius:10px;font-size:13px;cursor:pointer;white-space:nowrap;">
+                               padding:12px 16px;border-radius:10px;font-size:13px;cursor:pointer;white-space:nowrap;min-height:48px;">
                     Salta il check
                 </button>
             </div>
@@ -820,12 +839,12 @@
                 <button wire:click="acceptModulation"
                         wire:loading.attr="disabled"
                         class="btn-accent"
-                        style="flex:1;">
+                        style="flex:1;min-height:48px;">
                     Applica modifiche
                 </button>
                 <button wire:click="rejectModulation"
                         style="background:transparent;border:1px solid #333;color:#aaa;
-                               padding:12px 16px;border-radius:10px;font-size:13px;cursor:pointer;white-space:nowrap;">
+                               padding:12px 16px;border-radius:10px;font-size:13px;cursor:pointer;white-space:nowrap;min-height:48px;">
                     Allena al piano
                 </button>
             </div>

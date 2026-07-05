@@ -74,6 +74,8 @@ class WorkoutSession extends Component
      */
     public ?array $plateLoadout = null;
 
+    public int $currentGroupIndex = 0;
+
     public function mount(TrainingSession $session): void
     {
         $session->load([
@@ -105,10 +107,18 @@ class WorkoutSession extends Component
         foreach ($this->session->sessionExercises as $exercise) {
             foreach ($exercise->sets as $set) {
                 $this->setData[$set->id] = [
-                    'reps' => $set->actual_reps !== null ? (string) $set->actual_reps : '',
-                    'weight' => $set->actual_weight_kg !== null ? (string) $set->actual_weight_kg : '',
-                    'rir' => $set->actual_rir !== null ? (string) $set->actual_rir : '',
-                    'duration' => $set->actual_duration_sec !== null ? (string) $set->actual_duration_sec : '',
+                    'reps' => $set->actual_reps !== null
+                        ? (string) $set->actual_reps
+                        : ($set->planned_reps !== null ? (string) $set->planned_reps : ''),
+                    'weight' => $set->actual_weight_kg !== null
+                        ? (string) $set->actual_weight_kg
+                        : ($set->planned_weight_kg !== null ? (string) $set->planned_weight_kg : ''),
+                    'rir' => $set->actual_rir !== null
+                        ? (string) $set->actual_rir
+                        : ($set->planned_rir !== null ? (string) $set->planned_rir : ''),
+                    'duration' => $set->actual_duration_sec !== null
+                        ? (string) $set->actual_duration_sec
+                        : ($set->planned_duration_sec !== null ? (string) $set->planned_duration_sec : ''),
                 ];
             }
         }
@@ -732,9 +742,67 @@ class WorkoutSession extends Component
         );
     }
 
+    /** @return list<Collection<int, SessionExercise>> */
+    protected function buildGroupedExercises(): array
+    {
+        return $this->session->sessionExercises
+            ->sortBy('order_in_session')
+            ->groupBy(fn ($e) => $e->group_id !== null ? 'group_'.$e->group_id : 'solo_'.$e->id)
+            ->values()
+            ->all();
+    }
+
+    public function nextGroup(): void
+    {
+        $count = count($this->buildGroupedExercises());
+        if ($this->currentGroupIndex < $count - 1) {
+            $this->currentGroupIndex++;
+        }
+    }
+
+    public function prevGroup(): void
+    {
+        if ($this->currentGroupIndex > 0) {
+            $this->currentGroupIndex--;
+        }
+    }
+
+    public function jumpToGroup(int $index): void
+    {
+        $count = count($this->buildGroupedExercises());
+        if ($index >= 0 && $index < $count) {
+            $this->currentGroupIndex = $index;
+        }
+    }
+
     public function render(): View
     {
-        return view('livewire.athlete.workout-session')
-            ->layout('layouts.athlete');
+        $groupedExercises = $this->buildGroupedExercises();
+        $totalGroups = count($groupedExercises);
+
+        if ($this->currentGroupIndex >= $totalGroups && $totalGroups > 0) {
+            $this->currentGroupIndex = $totalGroups - 1;
+        }
+
+        $currentGroup = collect($groupedExercises[$this->currentGroupIndex] ?? []);
+
+        $totalSets = 0;
+        $completedSets = 0;
+        foreach ($this->session->sessionExercises as $se) {
+            foreach ($se->sets->where('is_warmup', false) as $set) {
+                $totalSets++;
+                if ($set->completed_at !== null) {
+                    $completedSets++;
+                }
+            }
+        }
+
+        return view('livewire.athlete.workout-session', [
+            'groupedExercises' => $groupedExercises,
+            'totalGroups' => $totalGroups,
+            'currentGroup' => $currentGroup,
+            'totalSets' => $totalSets,
+            'completedSets' => $completedSets,
+        ])->layout('layouts.athlete');
     }
 }

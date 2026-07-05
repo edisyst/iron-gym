@@ -834,3 +834,413 @@ body {
     margin: 0;
     line-height: 1.1;
 }
+
+/* === Workout Session (UX02) ============================================== */
+
+.ws-progress-header {
+    position: sticky;
+    top: 48px;
+    z-index: var(--ig-z-overlay);
+    background: var(--ig-surface);
+    border-bottom: 1px solid var(--ig-border);
+    padding: var(--ig-sp-3) var(--ig-sp-4);
+}
+.ws-progress-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--ig-sp-2);
+}
+.ws-progress-name {
+    font-weight: 700;
+    color: var(--ig-text-1);
+    font-size: var(--ig-text-base);
+}
+.ws-progress-count {
+    font-size: var(--ig-text-xs);
+    color: var(--ig-text-3);
+}
+.ws-progress-bar {
+    height: 3px;
+    background: var(--ig-border);
+    border-radius: 2px;
+    overflow: hidden;
+}
+.ws-progress-bar-fill {
+    height: 100%;
+    background: var(--ig-accent);
+    border-radius: 2px;
+    transition: width .4s ease;
+}
+
+.ws-exercise-focus {
+    padding: var(--ig-sp-4) var(--ig-sp-4) var(--ig-sp-2);
+}
+.ws-exercise-name {
+    font-size: var(--ig-text-lg);
+    font-weight: 700;
+    line-height: 1.2;
+}
+.ws-exercise-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ig-sp-2);
+    align-items: center;
+    margin-bottom: var(--ig-sp-3);
+}
+.ws-substituted-from {
+    font-size: var(--ig-text-xs);
+    color: var(--ig-text-3);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.ws-exercise-btns {
+    display: flex;
+    gap: var(--ig-sp-2);
+    flex-shrink: 0;
+}
+.ws-icon-btn {
+    background: var(--ig-surface-raised);
+    border: 1px solid var(--ig-border);
+    border-radius: var(--ig-radius-sm);
+    padding: 4px 10px;
+    font-size: var(--ig-text-xs);
+    font-weight: 600;
+    color: var(--ig-text-2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    line-height: 1.4;
+    min-height: 32px;
+    white-space: nowrap;
+}
+.ws-trainer-note {
+    font-size: var(--ig-text-sm);
+    color: var(--ig-text-3);
+    font-style: italic;
+    margin-bottom: var(--ig-sp-3);
+}
+.ws-exec-toggle {
+    margin-bottom: var(--ig-sp-3);
+}
+.ws-exec-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--ig-text-3);
+    font-size: var(--ig-text-sm);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.ws-exec-text {
+    font-size: var(--ig-text-sm);
+    color: var(--ig-text-2);
+    margin-top: var(--ig-sp-2);
+    line-height: 1.5;
+    padding: var(--ig-sp-2) var(--ig-sp-3);
+    background: var(--ig-bg);
+    border-radius: var(--ig-radius-sm);
+    border-left: 2px solid var(--ig-accent);
+}
+
+.ws-sets-section {
+    margin-bottom: var(--ig-sp-4);
+}
+.ws-warmup-label {
+    font-size: var(--ig-text-xs);
+    color: var(--ig-text-3);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    font-weight: 700;
+    padding: var(--ig-sp-2) 0;
+}
+.ws-warmup-gen-btn {
+    background: transparent;
+    border: 1px dashed var(--ig-border);
+    border-radius: var(--ig-radius-sm);
+    padding: var(--ig-sp-2) var(--ig-sp-3);
+    font-size: var(--ig-text-sm);
+    color: var(--ig-text-3);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: var(--ig-sp-2);
+    min-height: 36px;
+    transition: border-color .15s, color .15s;
+}
+.ws-warmup-gen-btn:hover { border-color: var(--ig-accent); color: var(--ig-accent); }
+.ws-warmup-row {
+    display: grid;
+    grid-template-columns: 20px 1fr 52px 52px 64px;
+    gap: var(--ig-sp-2);
+    align-items: center;
+    padding: var(--ig-sp-2) 0;
+    border-bottom: 1px solid var(--ig-border-subtle);
+}
+
+.ws-set-row {
+    display: flex;
+    align-items: center;
+    gap: var(--ig-sp-3);
+    padding: var(--ig-sp-3) var(--ig-sp-2);
+    border-bottom: 1px solid var(--ig-border-subtle);
+    border-radius: var(--ig-radius-sm);
+    transition: background .15s;
+}
+.ws-set-row--done { opacity: 0.5; }
+.ws-set-row--active {
+    background: var(--ig-accent-subtle);
+    border-bottom-color: transparent;
+    outline: 1px solid var(--ig-accent);
+}
+.ws-set-num {
+    font-size: var(--ig-text-sm);
+    color: var(--ig-text-3);
+    font-weight: 700;
+    min-width: 20px;
+    text-align: center;
+}
+.ws-set-plan {
+    font-size: var(--ig-text-sm);
+    color: var(--ig-text-2);
+    flex: 1;
+}
+.ws-set-actual {
+    font-size: var(--ig-text-sm);
+    color: var(--ig-text-1);
+    font-weight: 600;
+}
+.ws-set-active-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--ig-accent);
+    flex-shrink: 0;
+}
+.ws-prev-perf {
+    font-size: var(--ig-text-xs);
+    color: var(--ig-text-2);
+    padding: 2px 0 var(--ig-sp-2) 28px;
+}
+.ws-group-label {
+    font-size: var(--ig-text-xs);
+    color: var(--ig-accent);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-weight: 700;
+    padding: var(--ig-sp-1) var(--ig-sp-3);
+    background: var(--ig-accent-subtle);
+    border-radius: var(--ig-radius-full);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ig-sp-2);
+}
+.ws-exercise-divider {
+    border: none;
+    border-top: 2px dashed var(--ig-border);
+    margin: var(--ig-sp-4) var(--ig-sp-4);
+}
+
+/* Navigation bar */
+.ws-nav-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--ig-sp-2);
+    padding: var(--ig-sp-3) var(--ig-sp-4);
+    border-top: 1px solid var(--ig-border-subtle);
+    margin-bottom: 220px;
+}
+.ws-nav-btn {
+    background: var(--ig-surface-raised);
+    border: 1px solid var(--ig-border);
+    border-radius: var(--ig-radius);
+    min-height: var(--ig-touch-target);
+    min-width: var(--ig-touch-target);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--ig-text-1);
+    padding: 0 var(--ig-sp-3);
+    flex-shrink: 0;
+    transition: opacity .15s;
+}
+.ws-nav-btn:disabled { opacity: 0.3; cursor: default; }
+.ws-nav-list-btn {
+    flex: 1;
+    text-align: center;
+    background: none;
+    border: 1px solid var(--ig-border);
+    border-radius: var(--ig-radius);
+    color: var(--ig-text-2);
+    font-size: var(--ig-text-sm);
+    cursor: pointer;
+    padding: var(--ig-sp-2) var(--ig-sp-3);
+    min-height: var(--ig-touch-target);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    overflow: hidden;
+}
+.ws-nav-list-btn-name {
+    font-size: var(--ig-text-xs);
+    color: var(--ig-text-3);
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Jump drawer */
+.ws-jump-drawer {
+    position: fixed;
+    inset: 0;
+    z-index: 700;
+}
+.ws-jump-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, .7);
+}
+.ws-jump-sheet {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--ig-surface);
+    border-radius: var(--ig-radius-lg) var(--ig-radius-lg) 0 0;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.ws-jump-handle {
+    width: 36px;
+    height: 4px;
+    background: var(--ig-border);
+    border-radius: 2px;
+    margin: var(--ig-sp-3) auto;
+}
+.ws-jump-title {
+    font-size: var(--ig-text-base);
+    font-weight: 700;
+    color: var(--ig-text-1);
+    padding: 0 var(--ig-sp-4) var(--ig-sp-3);
+}
+.ws-jump-item {
+    display: flex;
+    align-items: center;
+    gap: var(--ig-sp-3);
+    padding: var(--ig-sp-3) var(--ig-sp-4);
+    border-bottom: 1px solid var(--ig-border-subtle);
+    min-height: var(--ig-touch-target);
+}
+.ws-jump-item--active { background: var(--ig-accent-subtle); }
+.ws-jump-item-num {
+    font-size: var(--ig-text-xs);
+    color: var(--ig-text-3);
+    min-width: 24px;
+}
+.ws-jump-item-name {
+    flex: 1;
+    font-size: var(--ig-text-base);
+    color: var(--ig-text-1);
+    text-align: left;
+}
+.ws-jump-item-status {
+    font-size: var(--ig-text-xs);
+    color: var(--ig-text-3);
+}
+
+/* Action zone */
+.ws-action-zone {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 200;
+    background: var(--ig-surface);
+    border-top: 2px solid var(--ig-border);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, .4);
+}
+.ws-action-timer {
+    padding: var(--ig-sp-2) var(--ig-sp-4);
+    border-bottom: 1px solid var(--ig-border-subtle);
+    display: flex;
+    align-items: center;
+    gap: var(--ig-sp-3);
+    background: var(--ig-bg);
+}
+.ws-action-timer-time {
+    font-size: var(--ig-text-lg);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--ig-accent);
+    min-width: 56px;
+}
+.ws-action-timer-skip {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--ig-text-3);
+    font-size: var(--ig-text-sm);
+    cursor: pointer;
+    padding: var(--ig-sp-2);
+    min-height: 36px;
+}
+.ws-action-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--ig-sp-2) var(--ig-sp-4) var(--ig-sp-1);
+}
+.ws-action-set-label {
+    font-size: var(--ig-text-xs);
+    color: var(--ig-text-3);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+.ws-action-prev {
+    font-size: var(--ig-text-xs);
+    color: var(--ig-text-2);
+}
+.ws-action-inputs {
+    display: flex;
+    gap: var(--ig-sp-2);
+    padding: 0 var(--ig-sp-4) var(--ig-sp-2);
+}
+.ws-action-input-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.ws-action-input-label {
+    font-size: var(--ig-text-xs);
+    color: var(--ig-text-3);
+    text-align: center;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+.ws-action-btn {
+    padding: var(--ig-sp-2) var(--ig-sp-4) var(--ig-sp-3);
+}
+.ws-action-done {
+    padding: var(--ig-sp-4) var(--ig-sp-4) var(--ig-sp-3);
+    display: flex;
+    flex-direction: column;
+    gap: var(--ig-sp-3);
+}
+.ws-action-done-msg {
+    font-size: var(--ig-text-sm);
+    color: var(--ig-text-2);
+    text-align: center;
+}

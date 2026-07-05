@@ -1,7 +1,7 @@
-# UI Atleta — Design System (UX01)
+# UI Atleta — Design System
 
-Inventario dei token CSS e dei componenti Blade della PWA atleta.
-File di riferimento per le release UX02–UX05.
+Inventario completo dei token CSS, componenti Blade e pattern CSS della PWA atleta.
+Aggiornato dopo UX01–UX05.
 
 ---
 
@@ -48,6 +48,19 @@ Dark theme di default. Light theme via `[data-theme="light"]` (Alpine/localStora
 | `--ig-danger` | `#EF4444` | `#DC2626` | Errori, joint pain, skip |
 | `--ig-danger-subtle` | `rgba(239,68,68,0.15)` | `rgba(220,38,38,0.10)` | Badge danger |
 
+### Intensità volume muscolare
+
+Unica fonte di verità per `body-map-muscle` (SVG fill) e `wv-dot` (legenda).
+
+| Token | Colore dark | Uso |
+|---|---|---|
+| `--ig-intensity-0` | `#2a2a2a` | Riposo / nessun volume |
+| `--ig-intensity-1` | `#1a3a5c` | Volume basso |
+| `--ig-intensity-2` | `#7a6010` | Volume moderato-basso |
+| `--ig-intensity-3` | `#1a6635` | Volume moderato-alto |
+| `--ig-intensity-4` | `#a05510` | Volume alto |
+| `--ig-intensity-5` | `#8b2020` | Volume massimo / prossimo MRV |
+
 ### Tipografia
 
 | Token | Valore | Uso |
@@ -80,11 +93,14 @@ Dark theme di default. Light theme via `[data-theme="light"]` (Alpine/localStora
 | Token | Valore | Uso |
 |---|---|---|
 | `--ig-touch-target` | 48px | `min-height` per tutti gli elementi interattivi |
+| `--topbar-h` | 48px | Altezza top bar — usato in `body padding-top` e `.app-main margin-top` |
+| `--ig-transition` | 180ms | Durata standard transizioni CSS |
+| `--ig-transition-slow` | 280ms | Transizioni più lente (es. modali) |
 | `--ig-z-overlay` | 400 | Modal detail/history |
 | `--ig-z-modal` | 600 | Modal principali |
 | `--ig-z-nav` | 1000 | Top bar, bottom nav |
 | `--ig-z-sidenav` | 1001 | Sidebar desktop |
-| `--ig-z-toast` | 1060 | Toast PR |
+| `--ig-z-toast` | 1060 | Toast stack |
 
 ---
 
@@ -107,7 +123,7 @@ Props:
 - `full`: bool — `width:100%` (default: `false`)
 - `size`: `base` | `sm` (default: `base`)
 
-Comportamento: gestisce automaticamente `wire:loading` per il target del `wire:click`/`wire:submit` dell'attributo. Spinner integrato. `min-height: var(--ig-touch-target)`.
+Spinner `wire:loading` integrato. `min-height: var(--ig-touch-target)`.
 
 ### `x-athlete.card`
 
@@ -117,95 +133,173 @@ Comportamento: gestisce automaticamente `wire:loading` per il target del `wire:c
 <x-athlete.card tag="section">Card semantica</x-athlete.card>
 ```
 
-Props:
-- `padding`: bool — aggiunge `ig-card--padded` (default: `true`)
-- `mb`: bool — aggiunge `ig-card--mb` margin-bottom (default: `true`)
-- `tag`: elemento HTML (default: `div`)
+Props: `padding` (bool, default true), `mb` (bool, default true), `tag` (default `div`).
 
 ### `x-athlete.stat`
 
 ```blade
 <x-athlete.stat label="e1RM" unit="kg">102.5</x-athlete.stat>
-<x-athlete.stat label="Durata">47 min</x-athlete.stat>
 ```
 
-Props:
-- `label`: string — etichetta uppercase
-- `unit`: string|null — unità di misura (più piccola, colore secondario)
-
-Slot: il valore numerico. Usa `font-variant-numeric: tabular-nums` e `--ig-text-xl`.
+Props: `label` (string), `unit` (string|null). Slot: valore numerico. Usa `tabular-nums` e `--ig-text-xl`.
 
 ### `x-athlete.badge`
 
 ```blade
 <x-athlete.badge status="completed">Completata</x-athlete.badge>
 <x-athlete.badge status="deload">DELOAD</x-athlete.badge>
-<x-athlete.badge status="warning">Readiness bassa</x-athlete.badge>
 ```
 
-`status` map → `ig-badge--{status}`:
-- `planned` / `gray` / `secondary` → grigio
-- `in_progress` / `accent` → arancio
-- `completed` / `success` → verde
-- `skipped` / `danger` → rosso
-- `deload` → arancio pieno
-- `warning` → giallo
+`status` → `ig-badge--{status}`: `planned`/`gray` (grigio), `in_progress`/`accent` (arancio),
+`completed`/`success` (verde), `skipped`/`danger` (rosso), `deload` (arancio pieno), `warning` (giallo).
 
 ### `x-athlete.input-number`
 
 ```blade
-{{-- Solo campo --}}
 <x-athlete.input-number wire:model="setData.1.reps" mode="numeric" placeholder="0" />
-
-{{-- Con stepper +/− (UX02) --}}
-<x-athlete.input-number
-    wire:model="weight"
-    mode="decimal"
-    step="2.5"
-    :stepper="true"
-    placeholder="kg"
-/>
+<x-athlete.input-number wire:model="weight" mode="decimal" step="2.5" :stepper="true" placeholder="kg" />
 ```
 
-Props:
-- `mode`: `numeric` | `decimal` (imposta `inputmode`, default: `numeric`)
-- `min`, `max`, `step`: passati all'`<input>` HTML
-- `placeholder`: stringa
-- `stepper`: bool — mostra bottoni +/− con `min-height: var(--ig-touch-target)` (default: `false`)
+Props: `mode` (`numeric`|`decimal`), `min`, `max`, `step`, `placeholder`, `stepper` (bool, default false).
+Stepper usa `x-ref="numInput"` Alpine; emette `input`+`change` per compatibilità `wire:model`.
 
-I bottoni stepper usano `x-ref="numInput"` via Alpine; emettono `input` e `change` per compatibilità con `wire:model`.
+### `x-athlete.bottom-nav` (UX03)
+
+```blade
+<x-athlete.bottom-nav />
+```
+
+4 tab: Home (`athlete.dashboard`), Allenamento (`athlete.history`), Progressi (`athlete.volume`),
+Profilo (`athlete.profile`). Profilo mostra badge messaggi non letti via `$store.messages.unread`
+(inizializzato una sola volta nel layout, nessun fetch duplicato).
+Attivo per route correlate: es. `session/*` attiva Allenamento, `records/*` attiva Progressi.
+
+### `x-athlete.empty-state` (UX04)
+
+```blade
+<x-athlete.empty-state title="Nessuna sessione" body="Completa qualche sessione." href="/athlete" cta="Vai alla home">
+    <svg>...</svg>  {{-- icona opzionale nello slot --}}
+</x-athlete.empty-state>
+```
+
+Props: `title` (string), `body` (string|null), `href` (string|null), `cta` (string|null).
+Slot opzionale: icona SVG. Classe CSS: `.ig-empty`. Usa `role="status"`.
+
+### `x-athlete.toast` (UX04)
+
+```blade
+{{-- Incluso una sola volta in athlete.blade.php, dopo il bottom nav --}}
+<x-athlete.toast />
+```
+
+Alpine `x-data` con coda `queue[]`. Ascolta eventi browser:
+- `toast` → `{ message, type }` — tipi: `success`, `error`, `info`, `set` (2 s), altri (3.2 s)
+- `set-completed` → shortcut toast tipo `set`
+
+Dispatch da Livewire: `$this->dispatch('toast', message: '...', type: 'success')`.
+`role="alert"` su ogni item. x-transition con classi CSS `.ig-toast-enter` / `.ig-toast-leave`.
+
+### `x-athlete.skeleton` (UX04)
+
+```blade
+<div wire:loading wire:target="loadData">
+    <x-athlete.skeleton :lines="4" height="200px" />
+</div>
+```
+
+Props: `lines` (int, default 3), `height` (string|null — altezza prima riga).
+`aria-hidden="true"` + `aria-label="Caricamento..."`. Shimmer via `@keyframes ig-shimmer`.
+Rispetta `@media (prefers-reduced-motion: reduce)`.
+
+---
+
+## Classi CSS pattern
+
+### Feedback metriche (`.metric-options`)
+
+```blade
+<div class="metric-options">
+    <label>
+        <input type="radio" wire:model="pump" value="0">
+        <span>0</span>
+    </label>
+</div>
+```
+
+Active state via CSS puro `label:has(input:checked)` — nessun PHP conditional inline.
+Fallback `input:checked + span` per browser senza `:has()`.
+
+### Tab switcher (`.ig-tab-group` / `.ig-tab`)
+
+```blade
+<div class="ig-tab-group">
+    <button class="ig-tab {{ $activeTab === 'pt' ? 'ig-tab--active' : '' }}"
+            wire:click="$set('activeTab','pt')">Sessione PT</button>
+    <button class="ig-tab {{ $activeTab === 'classes' ? 'ig-tab--active' : '' }}"
+            wire:click="$set('activeTab','classes')">Corsi</button>
+</div>
+
+{{-- Con Alpine (stato client-side immediato) --}}
+<div class="ig-tab-group">
+    <button class="ig-tab" :class="{ 'ig-tab--active': tab === 'body' }"
+            @click="tab='body'">Corpo</button>
+</div>
+```
+
+Variante danger: aggiungere `ig-tab--danger` al bottone + `ig-tab--active` → background `--ig-danger`.
+
+### Campi form (`.ig-form-input` / `.ig-form-label` / `.ig-field-error`)
+
+```blade
+<label class="ig-form-label">Nome</label>
+<input type="text" wire:model="name"
+       class="ig-form-input {{ $errors->has('name') ? 'is-invalid' : '' }}">
+@error('name') <span class="ig-field-error">{{ $message }}</span> @enderror
+```
+
+`.is-invalid` → `border-color: var(--ig-danger)`. `.ig-field-error` usa `var(--ig-danger)` e `font-size: var(--ig-text-xs)`.
+
+### Loading / wire:loading
+
+Pattern standard per bottoni azione:
+```blade
+<button wire:click="save" wire:loading.attr="disabled">
+    <span wire:loading.remove>Salva</span>
+    <span wire:loading>Salvataggio...</span>
+</button>
+```
+
+Per liste con skeleton:
+```blade
+<div wire:loading wire:target="loadData"><x-athlete.skeleton :lines="3" /></div>
+<div wire:loading.remove wire:target="loadData">
+    @forelse($items as $item) ... @empty <x-athlete.empty-state ... /> @endforelse
+</div>
+```
 
 ---
 
 ## Gestione tema
 
-**Inizializzazione (no FOUC):** script inline nel `<head>` del layout `athlete.blade.php` legge
-`localStorage.getItem('ig-theme')` e lo imposta come `data-theme` su `<html>` prima che il CSS venga applicato.
+**No FOUC:** script inline nel `<head>` legge `localStorage['ig-theme']` e imposta `data-theme` su `<html>` prima del CSS.
+**Toggle:** bottone `.ig-theme-toggle` nella topbar. Salva in `localStorage['ig-theme']`.
 
-**Toggle:** bottone `.ig-theme-toggle` nella topbar (Alpine `x-data` sull'`<header>`).
-Salva la scelta in `localStorage['ig-theme']`.
-
-**Cascade di precedenza:**
-1. `[data-theme="light"]` / `[data-theme="dark"]` — scelta esplicita utente (vince sempre)
+**Cascade:**
+1. `[data-theme="light"]` / `[data-theme="dark"]` — scelta utente (vince sempre)
 2. `@media (prefers-color-scheme: light)` su `:root:not([data-theme])` — preferenza sistema
 3. `:root` dark default
 
 ---
 
-## Classi legacy ancora in uso
+## Alpine store globali (layout `athlete.blade.php`)
 
-Le seguenti classi di `athlete.css` non sono ancora migrate a `ig-*` e restano per backward compat
-con le view UX02–UX05. Usano già i token CSS e si adattano al tema light/dark.
+| Store | Proprietà | Inizializzazione | Uso |
+|---|---|---|---|
+| `messages` | `unread: int` | `fetch('/athlete/messages-unread-count')` una volta per pagina | Badge in bottom-nav e sidebar |
+| `restTimer` | `active`, `remaining`, `fmt(s)`, `start(sec)`, `skip()` | definito in `workout-session.blade.php` | Timer riposo fisso in basso durante sessione |
+| `syncQueue` | `enqueue()`, `flush()`, `isPending()` | definito in `workout-session.blade.php` | Coda operazioni offline → IndexedDB |
 
-| Classe legacy | Componente ig-* target | Migrata in |
-|---|---|---|
-| `.athlete-card` | `x-athlete.card` | UX02–UX05 (progressivo) |
-| `.athlete-badge` | `x-athlete.badge` | UX02–UX05 |
-| `.btn-accent` | `x-athlete.button variant="primary"` | UX02 |
-| `.btn-ghost` | `x-athlete.button variant="ghost"` | UX02 |
-| `.workout-input` | `x-athlete.input-number` | UX02 |
-| `.section-title` | (inline o classe ig-) | UX02–UX05 |
-| `.status-*` | `x-athlete.badge status="*"` | UX03 |
+**Network error:** `livewire:request-failed` → `toast` event con `type: 'error'` (gestito in layout).
 
 ---
 
@@ -214,4 +308,20 @@ con le view UX02–UX05. Usano già i token CSS e si adattano al tema light/dark
 | File | Scopo |
 |---|---|
 | `public/css/athlete.css` | Token + base + legacy + componenti `ig-*` — unico entry point CSS atleta |
-| `public/css/session-recap.css` | Standalone card recap (esportata come PNG, nessuna dipendenza da `athlete.css`) |
+| `public/css/session-recap.css` | Standalone card recap (export PNG, nessuna dipendenza da `athlete.css`) |
+
+---
+
+## Classi legacy ancora in uso
+
+Non ancora migrate a `ig-*`. Usano già i token CSS e si adattano al tema.
+
+| Classe legacy | Target ig-* | Note |
+|---|---|---|
+| `.athlete-card` | `x-athlete.card` | In graduale sostituzione |
+| `.athlete-badge` | `x-athlete.badge` | In graduale sostituzione |
+| `.btn-accent` | `x-athlete.button variant="primary"` | Usato in view non ancora migrate |
+| `.btn-ghost` | `x-athlete.button variant="ghost"` | Usato in view non ancora migrate |
+| `.workout-input` | `x-athlete.input-number` | Usato in sessione |
+| `.section-title` | (label uppercase inline) | Usato in molte view |
+| `.metric-row` / `.metric-options` | — | Pattern feedback sessione, non componente |

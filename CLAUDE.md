@@ -226,6 +226,14 @@ UX01 Design foundation completata (2026-07-05): token CSS dark/light in athlete.
 
 UX02 Redesign schermata sessione completata (2026-07-05): layout un-esercizio-alla-volta con navigazione prev/next/jump-drawer (bottom sheet Alpine). `WorkoutSession` esteso con `currentGroupIndex`, `nextGroup/prevGroup/jumpToGroup`. `setData` pre-compilato con planned_* se actual_* assente (input pre-filled). Zona azione fissa in basso: stepper `x-athlete.input-number` (reps/kg/RIR) + bottone FATTO 56px; rest timer integrato. `partials/session-exercise.blade.php` nuovo partial (set senza input inline; prev-performance color var(--ig-text-2)); feedback form selettori da 36px → 48px. Tap count invariato (1 tap set uguale al piano), migliorato per valori diversi (stepper vs tastiera). 7 test navigazione verdi. Suite: 190/190 (184 pass + 6 skip), PHPStan 0 errori, Pint conforme.
 
+UX03 Navigazione 4-tab e home action-oriented completata (2026-07-05): bottom nav consolidato a 4 tab (Home/Allenamento/Progressi/Profilo). `x-athlete.bottom-nav` componente Blade. Dashboard riscritta: hero card sessione prossima/in-corso, striscia settimana mesociclo, recap ultimo allenamento, empty state contestuali. Alpine.store('messages') inizializzato una volta nel layout (elimina doppio fetch badge). Safe-area iOS (env(safe-area-inset-top/bottom) + viewport-fit=cover). `--topbar-h` CSS token. manifest.json fix (scope/orientation/maskable). PHPStan 0, Pint OK.
+
+UX04 Stati, feedback e micro-interazioni completata (2026-07-05): `x-athlete.toast` (coda Alpine, auto-dismiss, ascolta `toast`+`set-completed`); `x-athlete.skeleton` (shimmer, prefers-reduced-motion); `x-athlete.empty-state` applicato a 7 punti census. `wire:loading.attr="disabled"` su tutti i bottoni azione. `livewire:request-failed` → toast "Connessione assente". `@error` → `.ig-field-error` token. `--ig-transition 180ms` + `prefers-reduced-motion`. Suite: 190/190, PHPStan 0, Pint OK.
+
+UX05 Coerenza visiva e de-inlining CSS completata (2026-07-05): `--ig-intensity-0..5` CSS custom props (unica fonte per body-map SVG e wv-dot legenda). `.ig-tab-group/.ig-tab/.ig-tab--active` estratti da 5 view (booking, profile, progress, training-hub×2); Alpine usa `:class` invece di `:style`. `.ig-form-input/.ig-form-label/.is-invalid` campi form semantici. `.metric-options label:has(input:checked)` active state radio via CSS puro, zero PHP conditional inline. profile.blade.php completamente migrato a classi ig-*. Suite: 190/190, PHPStan 0, Pint OK.
+
+**Tag v0.9.0** (2026-07-05): UX01–UX05 completate — design foundation PWA atleta. Git flow inizializzato (develop da master). Prossime release su branch `feature/*` via git flow.
+
 Prossima attività: raccogliere feedback dai primi atleti pilota dopo prima sessione.
 
 ## Setup pilota — dati e procedure

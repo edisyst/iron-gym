@@ -44,6 +44,7 @@
                         <option value="{{ $trainer->id }}">{{ $trainer->name }}</option>
                     @endforeach
                 </select>
+                @error('selectedTrainerId') <span class="ig-field-error">{{ $message }}</span> @enderror
             </div>
 
             {{-- Date picker --}}
@@ -53,6 +54,7 @@
                        wire:model.live="selectedDate"
                        min="{{ now()->toDateString() }}"
                        style="width:100%;background:#2A2A2A;border:1px solid #333;border-radius:8px;color:#fff;padding:10px;font-size:15px;">
+                @error('selectedDate') <span class="ig-field-error">{{ $message }}</span> @enderror
             </div>
 
             {{-- Griglia slot disponibili --}}
@@ -64,8 +66,10 @@
                               style="color:#FF6B00;margin-left:6px;">...</span>
                     </label>
 
+                    @error('selectedStart') <span class="ig-field-error" style="margin-bottom:8px;">{{ $message }}</span> @enderror
                     @if($availableSlots->isEmpty())
-                        <p style="color:#666;font-size:14px;">Nessuno slot disponibile per la data selezionata.</p>
+                        <x-athlete.empty-state title="Nessuno slot disponibile"
+                            body="Prova un'altra data o un altro trainer." />
                     @else
                         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
                             @foreach($availableSlots as $slot)
@@ -83,6 +87,7 @@
             {{-- Bottone prenota --}}
             @if($selectedStart)
             <button wire:click="bookPt"
+                    wire:loading.attr="disabled"
                     style="width:100%;background:#FF6B00;color:#fff;border:none;border-radius:8px;padding:14px;font-size:16px;font-weight:700;cursor:pointer;margin-top:8px;">
                 <span wire:loading wire:target="bookPt">Prenotazione...</span>
                 <span wire:loading.remove wire:target="bookPt">Prenota {{ $selectedStart }}&ndash;{{ $selectedEnd }}</span>
@@ -185,9 +190,10 @@
             @endif
         </div>
         @empty
-        <div class="athlete-card" style="text-align:center;color:#666;">
-            Nessun corso disponibile al momento.
-        </div>
+        <x-athlete.card>
+            <x-athlete.empty-state title="Nessun corso disponibile"
+                body="Non ci sono corsi programmati al momento." />
+        </x-athlete.card>
         @endforelse
 
         {{-- Le mie iscrizioni attive --}}

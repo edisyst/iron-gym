@@ -5,14 +5,17 @@
         <button type="button"
                 @click="mainTab = 'storico'; $wire.set('mainTab', 'storico')"
                 :style="{ background: mainTab === 'storico' ? '#FF6B00' : 'transparent', color: mainTab === 'storico' ? '#fff' : '#888' }"
-                style="flex:1;border:none;border-radius:8px;padding:9px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.15s;">
+                style="flex:1;border:none;border-radius:8px;padding:9px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.15s;"
+                wire:loading.attr="disabled">
             Storico
         </button>
         <button type="button"
                 @click="mainTab = 'progress'; $wire.switchToProgress()"
                 :style="{ background: mainTab === 'progress' ? '#FF6B00' : 'transparent', color: mainTab === 'progress' ? '#fff' : '#888' }"
-                style="flex:1;border:none;border-radius:8px;padding:9px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.15s;">
+                style="flex:1;border:none;border-radius:8px;padding:9px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.15s;"
+                wire:loading.attr="disabled">
             Progressi
+            <span wire:loading wire:target="switchToProgress" style="margin-left:4px;opacity:.7;">...</span>
         </button>
     </div>
 
@@ -30,6 +33,10 @@
             </select>
         </div>
 
+        <div wire:loading wire:target="previousPage,nextPage,updatingMesocycleId">
+            <x-athlete.skeleton :lines="4" />
+        </div>
+        <div wire:loading.remove wire:target="previousPage,nextPage,updatingMesocycleId">
         @forelse ($sessions as $session)
             <div class="athlete-card" style="margin-bottom:12px;">
                 <div wire:click="showDetail({{ $session->id }})"
@@ -88,10 +95,18 @@
                 @endif
             </div>
         @empty
-            <div class="athlete-card" style="text-align:center;padding:32px 16px;">
-                <p style="color:#666;">Nessuna sessione completata.</p>
-            </div>
+            <x-athlete.card>
+                <x-athlete.empty-state title="Nessuna sessione completata"
+                    body="Le sessioni completate appariranno qui.">
+                    <svg width="44" height="44" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.3">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2
+                                 M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    </svg>
+                </x-athlete.empty-state>
+            </x-athlete.card>
         @endforelse
+        </div>{{-- /wire:loading.remove --}}
 
         {{-- Paginazione --}}
         @if ($sessions->hasPages())
@@ -123,7 +138,7 @@
                     </div>
 
                     @forelse ($this->exerciseHistory as $se)
-                        <div style="margin-bottom:16px;">
+                        <div style="margin-bottom:16px;" wire:key="ex-hist-{{ $se->id }}">
                             <p style="font-size:12px;color:#FF6B00;font-weight:600;margin-bottom:6px;">
                                 {{ $se->session->completed_at?->format('d/m/Y') }} &bull; {{ $se->session->name }}
                             </p>
@@ -145,7 +160,8 @@
                             @endforeach
                         </div>
                     @empty
-                        <p style="color:#666;text-align:center;padding:24px 0;">Nessuna sessione precedente.</p>
+                        <x-athlete.empty-state title="Nessuna sessione precedente"
+                            body="Completa qualche sessione con questo esercizio." />
                     @endforelse
                 </div>
             </div>
@@ -155,6 +171,10 @@
 
     {{-- ==================== TAB PROGRESSI ==================== --}}
     <div x-show="mainTab === 'progress'" x-cloak>
+        <div wire:loading wire:target="switchToProgress,loadProgressData">
+            <div class="athlete-card"><x-athlete.skeleton :lines="5" height="200px" /></div>
+        </div>
+        <div wire:loading.remove wire:target="switchToProgress,loadProgressData">
 
         {{-- Sub-tab: Corpo / Forza / Volume --}}
         <div style="display:flex;gap:0;margin-bottom:20px;background:#1A1A1A;border-radius:10px;padding:4px;">
@@ -207,9 +227,10 @@
                         <canvas id="weightChart"></canvas>
                     </div>
                 @else
-                    <p style="color:#888;font-size:14px;text-align:center;padding:24px 0;">
-                        Nessun dato. <a href="{{ route('athlete.measurements') }}" style="color:#FF6B00;">Aggiungi la prima misurazione.</a>
-                    </p>
+                    <x-athlete.empty-state title="Nessuna misurazione"
+                        body="Aggiungi la prima misurazione per vedere il grafico peso."
+                        href="{{ route('athlete.measurements') }}"
+                        cta="Aggiungi misurazione" />
                 @endif
             </div>
         </div>
@@ -243,13 +264,11 @@
                         <canvas id="e1rmChart"></canvas>
                     </div>
                 @elseif ($selectedExerciseId)
-                    <p style="color:#888;font-size:14px;text-align:center;padding:24px 0;">
-                        Nessun dato per questo esercizio.
-                    </p>
+                    <x-athlete.empty-state title="Nessun dato"
+                        body="Completa qualche set con questo esercizio per vedere il grafico." />
                 @else
-                    <p style="color:#888;font-size:14px;text-align:center;padding:24px 0;">
-                        Seleziona un esercizio per vedere l'andamento della forza.
-                    </p>
+                    <x-athlete.empty-state title="Seleziona un esercizio"
+                        body="Scegli un esercizio dal menu per vedere l'andamento e1RM." />
                 @endif
             </div>
         </div>
@@ -264,13 +283,13 @@
                         <canvas id="volumeChart"></canvas>
                     </div>
                 @else
-                    <p style="color:#888;font-size:14px;text-align:center;padding:24px 0;">
-                        Nessun dato di allenamento disponibile.
-                    </p>
+                    <x-athlete.empty-state title="Nessun dato disponibile"
+                        body="Completa qualche sessione per vedere il volume settimanale." />
                 @endif
             </div>
         </div>
 
+        </div>{{-- /wire:loading.remove progressi --}}
     </div>
 
 </div>

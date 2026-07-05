@@ -46,9 +46,8 @@
                     </div>
                 </div>
             @empty
-                <p style="color: #555; text-align: center; margin-top: 40px; font-size: 14px;">
-                    Nessun messaggio ancora. Scrivi il primo!
-                </p>
+                <x-athlete.empty-state title="Nessun messaggio"
+                    body="Scrivi il primo messaggio al tuo trainer." />
             @endforelse
         </div>
 
@@ -63,7 +62,8 @@
                     placeholder="Scrivi un messaggio..."
                     autocomplete="off"
                 >
-                <button type="submit" class="btn-accent" style="width: auto; padding: 10px 16px;">
+                <button type="submit" class="btn-accent" style="width: auto; padding: 10px 16px;"
+                        wire:loading.attr="disabled">
                     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
                     </svg>

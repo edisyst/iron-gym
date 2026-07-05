@@ -13,7 +13,7 @@
                 <label style="font-size:12px;color:#888;display:block;margin-bottom:4px;">DATA FOTO</label>
                 <input type="date" class="workout-input" style="width:100%;text-align:left;"
                        wire:model.live="takenAt">
-                @error('takenAt') <span style="color:#ef4444;font-size:12px;">{{ $message }}</span> @enderror
+                @error('takenAt') <span class="ig-field-error">{{ $message }}</span> @enderror
             </div>
 
             @php
@@ -43,7 +43,7 @@
                     <input type="file" accept="image/jpeg,image/jpg,image/png"
                            wire:model="photos.{{ $pose }}"
                            style="color:#ccc;font-size:13px;">
-                    @error("photos.$pose") <span style="color:#ef4444;font-size:12px;display:block;">{{ $message }}</span> @enderror
+                    @error("photos.$pose") <span class="ig-field-error">{{ $message }}</span> @enderror
 
                     {{-- Progress upload --}}
                     <div wire:loading wire:target="photos.{{ $pose }}"

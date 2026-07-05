@@ -64,6 +64,7 @@
                 </div>
 
                 <button type="submit"
+                        wire:loading.attr="disabled"
                         style="width:100%;background:#FF6B00;color:#fff;border:none;border-radius:8px;
                                padding:13px;font-size:15px;font-weight:600;cursor:pointer;">
                     <span wire:loading.remove wire:target="updateProfile">Salva modifiche</span>
@@ -139,6 +140,7 @@
                 </div>
 
                 <button type="submit"
+                        wire:loading.attr="disabled"
                         style="width:100%;background:#FF6B00;color:#fff;border:none;border-radius:8px;
                                padding:13px;font-size:15px;font-weight:600;cursor:pointer;">
                     <span wire:loading.remove wire:target="updatePassword">Aggiorna password</span>

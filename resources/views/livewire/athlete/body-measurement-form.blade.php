@@ -13,7 +13,7 @@
                     <label style="font-size:12px;color:#888;display:block;margin-bottom:4px;">DATA</label>
                     <input type="date" class="workout-input" style="width:100%;text-align:left;"
                            wire:model="measuredAt">
-                    @error('measuredAt') <span style="color:#ef4444;font-size:12px;">{{ $message }}</span> @enderror
+                    @error('measuredAt') <span class="ig-field-error">{{ $message }}</span> @enderror
                 </div>
 
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
@@ -21,13 +21,13 @@
                         <label style="font-size:12px;color:#888;display:block;margin-bottom:4px;">PESO (kg)</label>
                         <input type="number" step="0.1" class="workout-input" style="width:100%;text-align:left;"
                                wire:model="weightKg" placeholder="80.5">
-                        @error('weightKg') <span style="color:#ef4444;font-size:12px;">{{ $message }}</span> @enderror
+                        @error('weightKg') <span class="ig-field-error">{{ $message }}</span> @enderror
                     </div>
                     <div>
                         <label style="font-size:12px;color:#888;display:block;margin-bottom:4px;">BODY FAT %</label>
                         <input type="number" step="0.1" class="workout-input" style="width:100%;text-align:left;"
                                wire:model="bodyFatPct" placeholder="15.0">
-                        @error('bodyFatPct') <span style="color:#ef4444;font-size:12px;">{{ $message }}</span> @enderror
+                        @error('bodyFatPct') <span class="ig-field-error">{{ $message }}</span> @enderror
                     </div>
                 </div>
 

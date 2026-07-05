@@ -291,6 +291,35 @@ Disponibili in .claude/docs/domain/ ma NON caricati automaticamente per non satu
 - .claude/docs/domain/exercises-catalog.md — catalogo 83 esercizi (tassonomia, muscoli, note metodologiche; SQL rimosso → dati in database.sqlite)
 - .claude/docs/domain/glossary.md — terminologia BB e tassonomia (documento corto, ok includerlo)
 
+## Brand identity PWA atleta (UX01)
+
+Layer CSS dedicato alla PWA atleta. Dark theme di default; light theme via toggle (localStorage + `data-theme` su `<html>`).
+
+**Layout:** `resources/views/layouts/athlete.blade.php` — NON usa AdminLTE. Standalone.
+
+**CSS entry point:** `public/css/athlete.css` (statico, caricato con `<link>` nel layout atleta).
+Struttura: design tokens → base → navigazione → componenti legacy → componenti `ig-*` → volume.
+
+**Design tokens:** CSS custom properties su `:root` (dark default) e `[data-theme="light"]`.
+Token principali: `--ig-bg`, `--ig-surface`, `--ig-surface-raised`, `--ig-border`, `--ig-text-1/2/3`,
+`--ig-accent`, `--ig-success/warning/danger` + varianti `-subtle`, `--ig-touch-target` (48px),
+`--ig-font-sans`, `--ig-text-xs/sm/base/md/lg/xl/display`, `--ig-sp-1..10`, `--ig-radius-sm/lg/full`.
+
+**Componenti Blade (namespace `x-athlete.*`):**
+Path: `resources/views/components/athlete/`
+- `x-athlete.button` — varianti primary/secondary/ghost/danger; min-height `--ig-touch-target`; spinner wire:loading integrato
+- `x-athlete.card` — superficie base; props `padding`, `mb`, `tag`
+- `x-athlete.stat` — label + valore numerico grande; props `label`, `unit`
+- `x-athlete.badge` — status pill; prop `status` → classe `ig-badge--{status}`
+- `x-athlete.input-number` — input numerico con `inputmode`; prop `stepper` per bottoni +/−
+
+**Vite bundle atleta:** `@vite(['resources/css/app.css', 'resources/js/app.js'])` — `app.css` = solo
+Tailwind base utilities; `app.js` = vuoto. Il backoffice NON usa `@vite()`. Separazione de facto già esistente.
+
+**Documentazione design system:** `docs/architecture/ui-atleta.md`
+
+---
+
 ## Brand identity backoffice
 
 Layer CSS isolato e disattivabile sopra AdminLTE 3.x — nessun fork del tema.

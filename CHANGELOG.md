@@ -1,5 +1,22 @@
 # Changelog — iron-gym
 
+---
+
+## UX01 — Design foundation PWA atleta (2026-07-05)
+
+**Obiettivo:** design system condiviso (token CSS, componenti Blade) come base per UX02–UX05.
+
+- **Design tokens CSS** in `public/css/athlete.css`: ~40 custom properties su `:root` — superfici, testo, accento, semantic colors (success/warning/danger + subtle), tipografia (scala da 11px a 42px), spacing 4px-base, radius, `--ig-touch-target: 48px`, z-index.
+- **Light/dark theme**: dark default; `[data-theme="light"]` e `@media (prefers-color-scheme: light)` per light. Script inline nel `<head>` del layout atleta previene FOUC. Toggle bottone nella topbar (Alpine + localStorage). Cascade: scelta esplicita > preferenza sistema > dark default.
+- **Migrazione `athlete.css`**: tutte le classi legacy (`.athlete-card`, `.btn-accent`, `.btn-ghost`, `.workout-input`, `.status-*`, nav, sidebar, volume bars) ora usano token CSS — si adattano automaticamente al tema.
+- **Fix safe-area iOS**: `padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px))` su body; `min-height: 72px` + `padding-bottom: max(8px, env(safe-area-inset-bottom))` su `.bottom-nav`.
+- **Fix metriche feedback**: `.metric-options label` portato da 36×36px a 44×44px.
+- **Fix PR toast**: rimosso `alert alert-warning` Bootstrap; stile brand con `--ig-surface` + bordo `--ig-accent`.
+- **Componenti `x-athlete.*`** (`resources/views/components/athlete/`): `button` (primary/secondary/ghost/danger, loading spinner, min-height token), `card` (surface base, props padding/mb/tag), `stat` (label + valore numerico xl), `badge` (status pill), `input-number` (inputmode corretto, stepper +/− opzionale con target 48px).
+- **POC**: `personal-records.blade.php` convertita con `x-athlete.card`, `x-athlete.stat`, `x-athlete.badge` — zero classi Bootstrap/AdminLTE.
+- **Documentazione**: `docs/architecture/ui-atleta.md` — inventario completo token e componenti.
+- Suite 183/183 (177 pass + 6 skip invariati), PHPStan 0 errori, Pint conforme.
+
 Tutto il lavoro notevole per versione/step. Ordine cronologico crescente.
 
 ---

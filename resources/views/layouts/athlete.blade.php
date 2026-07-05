@@ -2,8 +2,16 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#FF6B00">
+    {{-- Imposta il tema prima del rendering per evitare flash --}}
+    <script>
+    (function(){
+        var s = localStorage.getItem('ig-theme');
+        var m = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+        document.documentElement.setAttribute('data-theme', s || (m ? 'light' : 'dark'));
+    })();
+    </script>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -111,9 +119,27 @@
         </div>
     </aside>
 
-    <header class="app-topbar">
+    <header class="app-topbar"
+            x-data="{
+                theme: document.documentElement.getAttribute('data-theme') || 'dark',
+                toggle() {
+                    this.theme = this.theme === 'dark' ? 'light' : 'dark';
+                    document.documentElement.setAttribute('data-theme', this.theme);
+                    localStorage.setItem('ig-theme', this.theme);
+                }
+            }">
         <span class="app-brand">Iron Gym</span>
         <a href="{{ route('athlete.profile') }}" class="user-name">{{ auth()->user()->name }}</a>
+        <button @click="toggle()" class="ig-theme-toggle"
+                :aria-label="theme === 'dark' ? 'Tema chiaro' : 'Tema scuro'">
+            <svg x-show="theme === 'dark'" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="12" cy="12" r="5"/>
+                <path stroke-linecap="round" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+            </svg>
+            <svg x-show="theme === 'light'" x-cloak width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+            </svg>
+        </button>
         <a href="{{ route('logout') }}" class="logout-btn"
            onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
            aria-label="Esci dall'applicazione">
@@ -241,15 +267,19 @@
         role="status"
         aria-live="polite"
     >
-        <div class="alert alert-warning shadow d-flex align-items-center gap-2 mb-0 py-2 px-3">
-            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <div style="background:var(--ig-surface);border:1px solid var(--ig-accent);border-radius:var(--ig-radius-lg);
+                    padding:var(--ig-sp-3) var(--ig-sp-4);display:flex;align-items:center;gap:var(--ig-sp-3);
+                    box-shadow:0 4px 24px rgba(0,0,0,0.5);">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                 aria-hidden="true" style="color:var(--ig-accent);flex-shrink:0;">
                 <path stroke-linecap="round" stroke-linejoin="round"
                       d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
             </svg>
             <div>
-                <strong>Nuovo PR!</strong>
-                <span x-text="exerciseName"></span> &mdash;
-                <span x-text="e1rm + ' kg e1RM'"></span>
+                <span style="font-weight:700;color:var(--ig-accent);font-size:var(--ig-text-sm);">Nuovo PR!</span>
+                <span style="color:var(--ig-text-1);font-size:var(--ig-text-sm);margin-left:4px;" x-text="exerciseName"></span>
+                <span style="color:var(--ig-text-2);font-size:var(--ig-text-sm);"> &mdash; </span>
+                <span style="color:var(--ig-text-1);font-size:var(--ig-text-sm);font-weight:600;" x-text="e1rm + ' kg e1RM'"></span>
             </div>
         </div>
     </div>

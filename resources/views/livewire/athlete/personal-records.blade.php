@@ -1,51 +1,43 @@
 <div>
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="h5 mb-0">Record personali</h2>
+    <div class="ig-page-header">
+        <h1 class="ig-page-title">Record personali</h1>
     </div>
 
-    @if($records->isEmpty())
-        <div class="alert alert-info">
-            Nessun record ancora registrato. Completa qualche sessione!
-        </div>
-    @else
-        <div class="card shadow-sm">
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Esercizio</th>
-                                <th class="text-end">e1RM stimato</th>
-                                <th class="text-end">Data</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($records as $record)
-                                <tr>
-                                    <td>
-                                        <a href="{{ route('athlete.exercises.show', $record->exercise->slug) }}"
-                                           class="text-decoration-none fw-semibold">
-                                            {{ $record->exercise->name_it }}
-                                        </a>
-                                    </td>
-                                    <td class="text-end">
-                                        <span class="badge bg-warning text-dark fs-6">
-                                            {{ number_format($record->value, 1) }} kg
-                                        </span>
-                                    </td>
-                                    <td class="text-end text-muted small">
-                                        {{ $record->achieved_at->format('d/m/Y') }}
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+    @if ($records->isEmpty())
+        <x-athlete.card>
+            <div class="ig-empty-state">
+                <svg class="ig-empty-state__icon" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                </svg>
+                <p class="ig-empty-state__title">Nessun record ancora</p>
+                <p class="ig-empty-state__body">Completa qualche sessione per vedere i tuoi PR!</p>
             </div>
-        </div>
+        </x-athlete.card>
+    @else
+        <x-athlete.card :padding="false" :mb="false">
+            @foreach ($records as $record)
+                <div class="ig-pr-row">
+                    <div class="ig-pr-row__info">
+                        <a href="{{ route('athlete.exercises.show', $record->exercise->slug) }}"
+                           class="ig-pr-row__name">
+                            {{ $record->exercise->name_it }}
+                        </a>
+                        <span class="ig-pr-row__date">
+                            {{ $record->achieved_at->format('d/m/Y') }}
+                        </span>
+                    </div>
+                    <x-athlete.stat label="e1RM" unit="kg">
+                        {{ number_format($record->value, 1) }}
+                    </x-athlete.stat>
+                </div>
+            @endforeach
+        </x-athlete.card>
 
-        <div class="mt-3">
-            {{ $records->links() }}
-        </div>
+        @if ($records->hasPages())
+            <div style="margin-top:var(--ig-sp-4);">
+                {{ $records->links() }}
+            </div>
+        @endif
     @endif
 </div>

@@ -7,6 +7,7 @@ use App\Models\MicrocycleWeek;
 use App\Models\TrainingSession;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -20,6 +21,14 @@ class Dashboard extends Component
 
     /** @var Collection<int, TrainingSession> */
     public Collection $weekSessions;
+
+    public ?TrainingSession $nextSession = null;
+
+    public ?TrainingSession $lastSession = null;
+
+    public float $lastTonnage = 0;
+
+    public int $lastSetsCompleted = 0;
 
     public function mount(): void
     {
@@ -70,6 +79,47 @@ class Dashboard extends Component
 
         if ($this->currentWeek !== null) {
             $this->weekSessions = $this->currentWeek->sessions->sortBy('order_in_week')->values();
+        }
+
+        // Prossima sessione planned o in_progress del mesociclo attivo
+        $this->nextSession = TrainingSession::whereHas(
+            'week.mesocycle',
+            fn ($q) => $q->where('id', $this->activeMesocycle->id)
+        )->whereIn('status', ['planned', 'in_progress'])
+            ->with([
+                'sessionExercises' => fn ($q) => $q->orderBy('order_in_session')->limit(5),
+                'sessionExercises.exercise',
+                'week',
+            ])
+            ->orderBy('scheduled_date')
+            ->first();
+
+        // Ultima sessione completata (qualunque mesociclo)
+        $this->lastSession = TrainingSession::whereHas(
+            'week.mesocycle',
+            fn ($q) => $q->where('athlete_id', auth()->id())
+        )->where('status', 'completed')
+            ->orderByDesc('completed_at')
+            ->first();
+
+        if ($this->lastSession !== null) {
+            $sessionId = $this->lastSession->id;
+
+            $this->lastTonnage = (float) DB::table('exercise_sets as es')
+                ->join('session_exercises as se', 'se.id', '=', 'es.session_exercise_id')
+                ->where('se.session_id', $sessionId)
+                ->where('es.is_warmup', false)
+                ->whereNotNull('es.completed_at')
+                ->whereNotNull('es.actual_weight_kg')
+                ->whereNotNull('es.actual_reps')
+                ->sum(DB::raw('es.actual_weight_kg * es.actual_reps'));
+
+            $this->lastSetsCompleted = DB::table('exercise_sets as es')
+                ->join('session_exercises as se', 'se.id', '=', 'es.session_exercise_id')
+                ->where('se.session_id', $sessionId)
+                ->where('es.is_warmup', false)
+                ->whereNotNull('es.completed_at')
+                ->count();
         }
     }
 

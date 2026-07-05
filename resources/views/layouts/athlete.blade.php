@@ -39,56 +39,50 @@
                     <path stroke-linecap="round" stroke-linejoin="round"
                           d="M3 12l2-2m0 0l7-7 7 7m-14 0v8a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-8"/>
                 </svg>
-                Oggi
+                Home
             </a>
             <a href="{{ route('athlete.history') }}"
-               class="{{ request()->routeIs('athlete.history') || request()->routeIs('athlete.progress') ? 'active' : '' }}"
-               aria-current="{{ request()->routeIs('athlete.history') || request()->routeIs('athlete.progress') ? 'page' : 'false' }}">
+               class="{{ request()->routeIs('athlete.history', 'athlete.progress', 'athlete.session', 'athlete.session.recap') ? 'active' : '' }}"
+               aria-current="{{ request()->routeIs('athlete.history', 'athlete.progress', 'athlete.session', 'athlete.session.recap') ? 'page' : 'false' }}">
                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round"
                           d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2
                              M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                 </svg>
-                Storico
-            </a>
-            <a href="{{ route('athlete.exercises.index') }}"
-               class="{{ request()->routeIs('athlete.exercises*') ? 'active' : '' }}"
-               aria-current="{{ request()->routeIs('athlete.exercises*') ? 'page' : 'false' }}">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
-                </svg>
-                Esercizi
-            </a>
-            <a href="{{ route('athlete.bookings') }}"
-               class="{{ request()->routeIs('athlete.bookings') ? 'active' : '' }}"
-               aria-current="{{ request()->routeIs('athlete.bookings') ? 'page' : 'false' }}">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                </svg>
-                Prenota
+                Allenamento
             </a>
             <a href="{{ route('athlete.volume') }}"
-               class="{{ request()->routeIs('athlete.volume') ? 'active' : '' }}"
-               aria-current="{{ request()->routeIs('athlete.volume') ? 'page' : 'false' }}">
+               class="{{ request()->routeIs('athlete.volume', 'athlete.records', 'athlete.measurements', 'athlete.photos.*') ? 'active' : '' }}"
+               aria-current="{{ request()->routeIs('athlete.volume', 'athlete.records', 'athlete.measurements', 'athlete.photos.*') ? 'page' : 'false' }}">
                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                          d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22
+                             m0 0l-3.714-.857m3.714.857l-.857 3.714"/>
                 </svg>
-                Volume
+                Progressi
             </a>
             <a href="{{ route('athlete.records') }}"
                class="{{ request()->routeIs('athlete.records') ? 'active' : '' }}"
-               aria-current="{{ request()->routeIs('athlete.records') ? 'page' : 'false' }}">
+               aria-current="{{ request()->routeIs('athlete.records') ? 'page' : 'false' }}"
+               style="padding-left:2.5rem;">
                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round"
                           d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
                 </svg>
                 Record
             </a>
-            <a href="{{ route('athlete.messages') }}"
-               class="{{ request()->routeIs('athlete.messages') ? 'active' : '' }}"
-               aria-current="{{ request()->routeIs('athlete.messages') ? 'page' : 'false' }}"
+            <a href="{{ route('athlete.exercises.index') }}"
+               class="{{ request()->routeIs('athlete.exercises*') ? 'active' : '' }}"
+               aria-current="{{ request()->routeIs('athlete.exercises*') ? 'page' : 'false' }}"
+               style="padding-left:2.5rem;">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                </svg>
+                Esercizi
+            </a>
+            <a href="{{ route('athlete.profile') }}"
+               class="{{ request()->routeIs('athlete.profile', 'athlete.messages', 'athlete.bookings') ? 'active' : '' }}"
+               aria-current="{{ request()->routeIs('athlete.profile', 'athlete.messages', 'athlete.bookings') ? 'page' : 'false' }}"
                x-data="{ unread: 0 }"
                x-init="
                    fetch('/athlete/messages-unread-count')
@@ -98,11 +92,11 @@
                ">
                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                          d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
                 </svg>
-                Messaggi
+                Profilo
                 <span x-show="unread > 0" x-text="unread > 9 ? '9+' : unread"
-                      class="nav-unread-badge" style="position:static; margin-left:auto;"
+                      class="nav-unread-badge" style="position:static;margin-left:auto;"
                       aria-live="polite"></span>
             </a>
         </nav>
@@ -158,99 +152,7 @@
         {{ $slot }}
     </main>
 
-    {{-- Bottom navigation (mobile / tablet) --}}
-    <nav class="bottom-nav" aria-label="Navigazione principale">
-        <a href="{{ route('athlete.dashboard') }}"
-           class="{{ request()->routeIs('athlete.dashboard') ? 'active' : '' }}"
-           aria-current="{{ request()->routeIs('athlete.dashboard') ? 'page' : 'false' }}"
-           aria-label="Oggi">
-            <span class="nav-pill">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M3 12l2-2m0 0l7-7 7 7m-14 0v8a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-8"/>
-                </svg>
-            </span>
-            <span>Oggi</span>
-        </a>
-
-        <a href="{{ route('athlete.history') }}"
-           class="{{ request()->routeIs('athlete.history') || request()->routeIs('athlete.progress') ? 'active' : '' }}"
-           aria-current="{{ request()->routeIs('athlete.history') || request()->routeIs('athlete.progress') ? 'page' : 'false' }}"
-           aria-label="Storico sessioni">
-            <span class="nav-pill">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2
-                             M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                </svg>
-            </span>
-            <span>Storico</span>
-        </a>
-
-        <a href="{{ route('athlete.exercises.index') }}"
-           class="{{ request()->routeIs('athlete.exercises*') ? 'active' : '' }}"
-           aria-current="{{ request()->routeIs('athlete.exercises*') ? 'page' : 'false' }}"
-           aria-label="Catalogo esercizi">
-            <span class="nav-pill">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
-                </svg>
-            </span>
-            <span>Esercizi</span>
-        </a>
-
-        <a href="{{ route('athlete.volume') }}"
-           class="{{ request()->routeIs('athlete.volume') ? 'active' : '' }}"
-           aria-current="{{ request()->routeIs('athlete.volume') ? 'page' : 'false' }}"
-           aria-label="Volume settimanale muscolare">
-            <span class="nav-pill">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                </svg>
-            </span>
-            <span>Volume</span>
-        </a>
-
-        <a href="{{ route('athlete.records') }}"
-           class="{{ request()->routeIs('athlete.records') ? 'active' : '' }}"
-           aria-current="{{ request()->routeIs('athlete.records') ? 'page' : 'false' }}"
-           aria-label="Record personali">
-            <span class="nav-pill">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
-                </svg>
-            </span>
-            <span>Record</span>
-        </a>
-
-        <a href="{{ route('athlete.messages') }}"
-           class="{{ request()->routeIs('athlete.messages') ? 'active' : '' }}"
-           aria-current="{{ request()->routeIs('athlete.messages') ? 'page' : 'false' }}"
-           aria-label="Messaggi dal trainer"
-           x-data="{ unread: 0 }"
-           x-init="
-               fetch('/athlete/messages-unread-count')
-                   .then(r => r.ok ? r.json() : {count:0})
-                   .then(d => unread = d.count ?? 0)
-                   .catch(() => {})
-           ">
-            <span class="nav-pill">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-                </svg>
-                <span
-                    x-show="unread > 0"
-                    x-text="unread > 9 ? '9+' : unread"
-                    class="nav-unread-badge"
-                    aria-live="polite"
-                ></span>
-            </span>
-            <span>Messaggi</span>
-        </a>
-    </nav>
+    <x-athlete.bottom-nav />
 
     {{-- Toast PR --}}
     <div

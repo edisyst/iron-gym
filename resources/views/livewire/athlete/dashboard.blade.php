@@ -1,115 +1,182 @@
 <div>
     @if ($activeMesocycle === null)
-        {{-- Nessuna scheda assegnata --}}
-        <div class="athlete-card" style="text-align: center; padding: 40px 16px;">
-            <svg style="width:56px;height:56px;color:#444;margin:0 auto 16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        {{-- Nessun mesociclo attivo --}}
+        <div class="home-empty">
+            <svg class="home-empty-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                       d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2
                          M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
             </svg>
-            <p style="color:#888;font-size:15px;line-height:1.6;">
-                Nessuna scheda assegnata.<br>
-                Contatta il tuo trainer.
-            </p>
+            <p class="home-empty-title">Nessuna scheda attiva</p>
+            <p class="home-empty-body">Il tuo trainer non ha ancora assegnato un mesociclo. Contattalo via messaggi.</p>
+            <a href="{{ route('athlete.messages') }}" class="ig-btn ig-btn--secondary" style="margin-top:var(--ig-sp-4);">
+                Apri messaggi
+            </a>
         </div>
+
     @else
-        {{-- Header mesociclo --}}
-        <div class="athlete-card">
-            <p class="section-title">Mesociclo attivo</p>
-            <h1 style="font-size:20px;font-weight:700;margin-bottom:8px;">
-                {{ $activeMesocycle->name }}
-            </h1>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-                <span class="athlete-badge badge-gray">
-                    {{ $this->goalLabel($activeMesocycle->goal) }}
-                </span>
-                @if ($currentWeek !== null)
-                    <span class="athlete-badge badge-gray">
-                        Settimana {{ $currentWeek->week_number }}
-                        di {{ $activeMesocycle->weeks_count }}
+
+        {{-- ===== HERO SESSIONE ===== --}}
+        @if ($nextSession !== null)
+            @php
+                $isInProgress = $nextSession->status === 'in_progress';
+                $heroExercises = $nextSession->sessionExercises->take(3);
+            @endphp
+
+            <a href="{{ route('athlete.session', $nextSession) }}" class="home-hero">
+                <div class="home-hero-header">
+                    <span class="home-hero-badge {{ $isInProgress ? 'home-hero-badge--active' : '' }}">
+                        {{ $isInProgress ? 'IN CORSO' : 'PROSSIMO' }}
                     </span>
-                    @if ($currentWeek->is_deload)
-                        <span class="athlete-badge badge-accent">DELOAD</span>
+                    @if ($nextSession->week?->is_deload)
+                        <span class="home-hero-badge home-hero-badge--deload">DELOAD</span>
                     @endif
-                @endif
-            </div>
-        </div>
+                </div>
 
-        {{-- Sessioni della settimana corrente --}}
-        @if ($currentWeek !== null)
-            <p class="section-title" style="padding: 0 4px;">Sessioni di questa settimana</p>
+                <h1 class="home-hero-name">{{ $nextSession->name }}</h1>
 
-            @forelse ($weekSessions as $session)
-                @php
-                    $isClickable = in_array($session->status, ['planned', 'in_progress']);
-                @endphp
-
-                @if ($isClickable)
-                    <a href="{{ route('athlete.session', $session) }}"
-                       style="display:block;text-decoration:none;color:inherit;">
-                @else
-                    <div>
-                @endif
-
-                <div class="athlete-card" style="display:flex;align-items:center;gap:12px;
-                     {{ $isClickable ? 'cursor:pointer;' : 'opacity:.6;' }}">
-                    {{-- Icona status --}}
-                    <div class="{{ $this->sessionStatusClass($session->status) }}" style="flex-shrink:0;">
-                        @if ($session->status === 'completed')
-                            <svg style="width:28px;height:28px;" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                            </svg>
-                        @elseif ($session->status === 'in_progress')
-                            <svg style="width:28px;height:28px;" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
-                            </svg>
-                        @elseif ($session->status === 'skipped')
-                            <svg style="width:28px;height:28px;" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                            </svg>
-                        @else
-                            <svg style="width:28px;height:28px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                                <circle cx="12" cy="12" r="9" stroke-dasharray="4 2"/>
-                            </svg>
+                @if ($heroExercises->isNotEmpty())
+                    <div class="home-hero-exercises">
+                        @foreach ($heroExercises as $se)
+                            <span class="home-hero-ex-pill">{{ $se->exercise->name_it }}</span>
+                        @endforeach
+                        @if ($nextSession->sessionExercises->count() > 3)
+                            <span class="home-hero-ex-pill home-hero-ex-pill--more">
+                                +{{ $nextSession->sessionExercises->count() - 3 }}
+                            </span>
                         @endif
                     </div>
+                @endif
 
-                    <div style="flex:1;min-width:0;">
-                        <p style="font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                            {{ $session->name }}
-                        </p>
-                        <p style="font-size:13px;color:#888;margin-top:2px;">
-                            {{ $this->sessionStatusLabel($session->status) }}
-                            @if ($session->scheduled_date)
-                                &bull; {{ $session->scheduled_date->format('d/m') }}
-                            @endif
-                        </p>
-                    </div>
-
-                    @if ($isClickable)
-                        <svg style="width:20px;height:20px;color:#555;flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-                        </svg>
-                    @elseif ($session->status === 'skipped')
-                        <button wire:click.stop="restoreSession({{ $session->id }})"
-                                wire:confirm="Ripristinare questa sessione come pianificata?"
-                                style="flex-shrink:0;background:#1E1E1E;border:1px solid #444;color:#ccc;
-                                       font-size:12px;font-weight:600;padding:6px 12px;border-radius:8px;cursor:pointer;">
-                            Ripristina
-                        </button>
+                <div class="home-hero-meta">
+                    <span>
+                        W{{ $nextSession->week?->week_number ?? '?' }}
+                        di {{ $activeMesocycle->weeks_count }}
+                    </span>
+                    @if ($nextSession->scheduled_date)
+                        <span>&bull; {{ $nextSession->scheduled_date->format('l d/m') }}</span>
                     @endif
                 </div>
 
-                @if ($isClickable)
-                    </a>
-                @else
-                    </div>
-                @endif
-            @empty
-                <div class="athlete-card">
-                    <p style="color:#888;text-align:center;">Nessuna sessione in questa settimana.</p>
+                <div class="home-hero-cta">
+                    <span class="ig-btn ig-btn--primary ig-btn--lg" style="width:100%;">
+                        {{ $isInProgress ? 'Riprendi sessione' : 'Inizia sessione' }}
+                    </span>
                 </div>
-            @endforelse
+            </a>
+
+        @else
+            {{-- Tutte le sessioni completate o saltate --}}
+            <div class="home-empty home-empty--success">
+                <svg class="home-empty-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <p class="home-empty-title">Settimana completata</p>
+                <p class="home-empty-body">Tutte le sessioni di questa settimana sono concluse. Ottimo lavoro!</p>
+            </div>
         @endif
+
+        {{-- ===== STRIP MESOCICLO ===== --}}
+        <div class="home-meso-strip">
+            <div class="home-meso-meta">
+                <span class="home-meso-name">{{ $activeMesocycle->name }}</span>
+                <span class="home-meso-goal">{{ $this->goalLabel($activeMesocycle->goal) }}</span>
+            </div>
+            @if ($currentWeek !== null)
+                <div class="home-meso-dots" aria-label="Settimane mesociclo">
+                    @for ($w = 1; $w <= $activeMesocycle->weeks_count; $w++)
+                        @php
+                            $week = $activeMesocycle->weeks->firstWhere('week_number', $w);
+                            $isCurrent = $week?->id === $currentWeek->id;
+                            $isPast = $week !== null && ! $isCurrent && $week->week_number < $currentWeek->week_number;
+                            $isDeloadW = $week?->is_deload;
+                        @endphp
+                        <span class="home-meso-dot
+                            {{ $isCurrent ? 'home-meso-dot--current' : '' }}
+                            {{ $isPast ? 'home-meso-dot--past' : '' }}
+                            {{ $isDeloadW ? 'home-meso-dot--deload' : '' }}"
+                              title="W{{ $w }}{{ $isDeloadW ? ' deload' : '' }}"
+                              aria-label="Settimana {{ $w }}{{ $isDeloadW ? ' (deload)' : '' }}{{ $isCurrent ? ' — attuale' : '' }}">
+                        </span>
+                    @endfor
+                </div>
+                <span class="home-meso-week-label">
+                    Settimana {{ $currentWeek->week_number }} di {{ $activeMesocycle->weeks_count }}
+                    @if ($currentWeek->is_deload)
+                        &bull; <strong>Deload</strong>
+                    @endif
+                </span>
+            @endif
+        </div>
+
+        {{-- ===== ULTIMO ALLENAMENTO ===== --}}
+        @if ($lastSession !== null)
+            <div class="home-last">
+                <p class="home-section-label">Ultimo allenamento</p>
+                <div class="home-last-card">
+                    <div class="home-last-info">
+                        <span class="home-last-name">{{ $lastSession->name }}</span>
+                        @if ($lastSession->completed_at)
+                            <span class="home-last-date">{{ $lastSession->completed_at->format('d/m/Y') }}</span>
+                        @endif
+                    </div>
+                    <div class="home-last-stats">
+                        @if ($lastTonnage > 0)
+                            <span class="home-last-stat">
+                                <strong>{{ number_format($lastTonnage, 0, ',', '.') }}</strong>
+                                <span>kg</span>
+                            </span>
+                        @endif
+                        @if ($lastSetsCompleted > 0)
+                            <span class="home-last-stat">
+                                <strong>{{ $lastSetsCompleted }}</strong>
+                                <span>set</span>
+                            </span>
+                        @endif
+                    </div>
+                    <a href="{{ route('athlete.session.recap', $lastSession) }}" class="home-last-link" aria-label="Vedi recap sessione">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        @endif
+
+        {{-- ===== SESSIONI SETTIMANA (lista compatta) ===== --}}
+        @if ($currentWeek !== null && $weekSessions->isNotEmpty())
+            <p class="home-section-label">Questa settimana</p>
+
+            <div class="home-week-list">
+                @foreach ($weekSessions as $session)
+                    @php $isClickable = in_array($session->status, ['planned', 'in_progress']); @endphp
+                    <div class="home-week-item {{ $session->status === 'completed' ? 'home-week-item--done' : '' }}
+                                               {{ $session->status === 'skipped' ? 'home-week-item--skipped' : '' }}">
+                        <span class="home-week-dot home-week-dot--{{ $session->status }}"></span>
+                        <span class="home-week-name">{{ $session->name }}</span>
+                        <span class="home-week-date">
+                            @if ($session->scheduled_date)
+                                {{ $session->scheduled_date->format('d/m') }}
+                            @endif
+                        </span>
+                        @if ($isClickable && $session->id !== $nextSession?->id)
+                            <a href="{{ route('athlete.session', $session) }}" class="home-week-action" aria-label="Vai alla sessione">
+                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </a>
+                        @elseif ($session->status === 'skipped')
+                            <button wire:click="restoreSession({{ $session->id }})"
+                                    wire:confirm="Ripristinare questa sessione come pianificata?"
+                                    class="home-week-restore">
+                                Ripristina
+                            </button>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        @endif
+
     @endif
 </div>

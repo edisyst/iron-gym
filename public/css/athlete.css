@@ -1244,3 +1244,296 @@ body {
     color: var(--ig-text-2);
     text-align: center;
 }
+
+/* ==========================================================================
+   10. HOME DASHBOARD (UX03)
+   ========================================================================== */
+
+/* Hero sessione */
+.home-hero {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    background: var(--ig-surface);
+    border: 1px solid var(--ig-border);
+    border-radius: var(--ig-radius-lg);
+    padding: var(--ig-sp-5);
+    margin-bottom: var(--ig-sp-4);
+    transition: border-color 0.15s;
+}
+.home-hero:hover,
+.home-hero:focus-visible { border-color: var(--ig-accent); outline: none; }
+
+.home-hero-header {
+    display: flex;
+    gap: var(--ig-sp-2);
+    margin-bottom: var(--ig-sp-3);
+}
+.home-hero-badge {
+    font-size: var(--ig-text-xs);
+    font-weight: 700;
+    letter-spacing: .06em;
+    padding: 3px 8px;
+    border-radius: var(--ig-radius-full);
+    background: var(--ig-surface-raised);
+    color: var(--ig-text-2);
+    text-transform: uppercase;
+}
+.home-hero-badge--active {
+    background: var(--ig-accent-subtle);
+    color: var(--ig-accent);
+}
+.home-hero-badge--deload {
+    background: var(--ig-warning-subtle);
+    color: var(--ig-warning);
+}
+.home-hero-name {
+    font-size: var(--ig-text-xl);
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: var(--ig-sp-3);
+    color: var(--ig-text-1);
+}
+.home-hero-exercises {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ig-sp-2);
+    margin-bottom: var(--ig-sp-4);
+}
+.home-hero-ex-pill {
+    font-size: var(--ig-text-xs);
+    background: var(--ig-surface-raised);
+    color: var(--ig-text-2);
+    border-radius: var(--ig-radius-full);
+    padding: 4px 10px;
+}
+.home-hero-ex-pill--more { color: var(--ig-text-3); }
+.home-hero-meta {
+    font-size: var(--ig-text-sm);
+    color: var(--ig-text-2);
+    display: flex;
+    gap: var(--ig-sp-2);
+    margin-bottom: var(--ig-sp-5);
+    text-transform: capitalize;
+}
+.home-hero-cta .ig-btn--lg {
+    min-height: 56px;
+    font-size: var(--ig-text-md);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Strip mesociclo */
+.home-meso-strip {
+    background: var(--ig-surface);
+    border: 1px solid var(--ig-border);
+    border-radius: var(--ig-radius-lg);
+    padding: var(--ig-sp-4) var(--ig-sp-5);
+    margin-bottom: var(--ig-sp-4);
+}
+.home-meso-meta {
+    display: flex;
+    align-items: baseline;
+    gap: var(--ig-sp-3);
+    margin-bottom: var(--ig-sp-3);
+}
+.home-meso-name {
+    font-size: var(--ig-text-base);
+    font-weight: 700;
+    color: var(--ig-text-1);
+}
+.home-meso-goal {
+    font-size: var(--ig-text-sm);
+    color: var(--ig-text-3);
+}
+.home-meso-dots {
+    display: flex;
+    gap: 6px;
+    margin-bottom: var(--ig-sp-2);
+}
+.home-meso-dot {
+    flex: 1;
+    height: 6px;
+    border-radius: var(--ig-radius-full);
+    background: var(--ig-border);
+    transition: background 0.2s;
+}
+.home-meso-dot--past     { background: var(--ig-text-3); }
+.home-meso-dot--current  { background: var(--ig-accent); }
+.home-meso-dot--deload   { background: var(--ig-warning); }
+.home-meso-week-label {
+    font-size: var(--ig-text-sm);
+    color: var(--ig-text-2);
+}
+
+/* Ultimo allenamento */
+.home-last { margin-bottom: var(--ig-sp-4); }
+.home-last-card {
+    background: var(--ig-surface);
+    border: 1px solid var(--ig-border);
+    border-radius: var(--ig-radius-lg);
+    padding: var(--ig-sp-4) var(--ig-sp-5);
+    display: flex;
+    align-items: center;
+    gap: var(--ig-sp-4);
+}
+.home-last-info {
+    flex: 1;
+    min-width: 0;
+}
+.home-last-name {
+    display: block;
+    font-size: var(--ig-text-base);
+    font-weight: 600;
+    color: var(--ig-text-1);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.home-last-date {
+    display: block;
+    font-size: var(--ig-text-sm);
+    color: var(--ig-text-3);
+    margin-top: 2px;
+}
+.home-last-stats {
+    display: flex;
+    gap: var(--ig-sp-4);
+    flex-shrink: 0;
+}
+.home-last-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+}
+.home-last-stat strong {
+    font-size: var(--ig-text-md);
+    font-weight: 700;
+    color: var(--ig-text-1);
+    font-variant-numeric: tabular-nums;
+}
+.home-last-stat span {
+    font-size: var(--ig-text-xs);
+    color: var(--ig-text-3);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+.home-last-link {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    color: var(--ig-text-3);
+    transition: color 0.15s;
+    text-decoration: none;
+}
+.home-last-link:hover { color: var(--ig-accent); }
+.home-last-link svg { width: 18px; height: 18px; }
+
+/* Label sezione */
+.home-section-label {
+    font-size: var(--ig-text-xs);
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--ig-text-3);
+    margin-bottom: var(--ig-sp-3);
+}
+
+/* Lista sessioni settimana */
+.home-week-list {
+    background: var(--ig-surface);
+    border: 1px solid var(--ig-border);
+    border-radius: var(--ig-radius-lg);
+    overflow: hidden;
+    margin-bottom: var(--ig-sp-4);
+}
+.home-week-item {
+    display: flex;
+    align-items: center;
+    gap: var(--ig-sp-3);
+    padding: var(--ig-sp-3) var(--ig-sp-5);
+    border-bottom: 1px solid var(--ig-border-subtle);
+}
+.home-week-item:last-child { border-bottom: none; }
+.home-week-item--done   { opacity: .5; }
+.home-week-item--skipped { opacity: .4; }
+.home-week-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: var(--ig-border);
+}
+.home-week-dot--planned     { background: var(--ig-text-3); border: 2px solid var(--ig-text-3); }
+.home-week-dot--in_progress { background: var(--ig-accent); box-shadow: 0 0 6px var(--ig-accent); }
+.home-week-dot--completed   { background: var(--ig-success); }
+.home-week-dot--skipped     { background: transparent; border: 2px solid var(--ig-text-3); }
+.home-week-name {
+    flex: 1;
+    font-size: var(--ig-text-sm);
+    font-weight: 500;
+    color: var(--ig-text-1);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.home-week-date {
+    font-size: var(--ig-text-xs);
+    color: var(--ig-text-3);
+    flex-shrink: 0;
+}
+.home-week-action {
+    flex-shrink: 0;
+    color: var(--ig-text-3);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+.home-week-action svg { width: 16px; height: 16px; }
+.home-week-restore {
+    flex-shrink: 0;
+    font-size: var(--ig-text-xs);
+    font-weight: 600;
+    background: transparent;
+    border: 1px solid var(--ig-border);
+    color: var(--ig-text-2);
+    border-radius: var(--ig-radius);
+    padding: 4px 10px;
+    cursor: pointer;
+}
+
+/* Empty states */
+.home-empty {
+    background: var(--ig-surface);
+    border: 1px solid var(--ig-border);
+    border-radius: var(--ig-radius-lg);
+    padding: var(--ig-sp-10) var(--ig-sp-5);
+    text-align: center;
+    margin-bottom: var(--ig-sp-4);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.home-empty--success { border-color: var(--ig-success); }
+.home-empty-icon {
+    width: 48px;
+    height: 48px;
+    color: var(--ig-text-3);
+    margin-bottom: var(--ig-sp-4);
+}
+.home-empty--success .home-empty-icon { color: var(--ig-success); }
+.home-empty-title {
+    font-size: var(--ig-text-md);
+    font-weight: 700;
+    color: var(--ig-text-1);
+    margin-bottom: var(--ig-sp-2);
+}
+.home-empty-body {
+    font-size: var(--ig-text-sm);
+    color: var(--ig-text-2);
+    line-height: 1.6;
+    max-width: 280px;
+}

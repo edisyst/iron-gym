@@ -222,6 +222,10 @@ Release 07 Readiness check pre-sessione completata (2026-07-03): tabella `sessio
 
 Release 08 Recap sessione condivisibile completata (2026-07-03): `SessionRecapBuilder` service (durata, tonnellaggio, set ratio, PR nel range, top 3 muscoli per SUM contribution_pct). `SessionRecap` Livewire (`/athlete/session/{session}/recap`). Card HTML+CSS standalone (1080x1350-friendly, no AdminLTE dep). Export PNG lato client via html-to-image + Web Share API con fallback download. Integrazione flusso: `SessionFeedbackForm::save()` e `skip()` → recap invece di dashboard. Storico: bottone share su sessioni completate. 6 test SessionRecapBuilderTest verdi. Suite 183/183 (177 pass + 6 skip invariati), PHPStan 0 errori, Pint conforme.
 
+UX01 Design foundation completata (2026-07-05): token CSS dark/light in athlete.css, 5 componenti Blade `x-athlete.*` (button, card, stat, badge, input-number), migrazione personal-records a ig-*, doc `docs/architecture/ui-atleta.md`.
+
+UX02 Redesign schermata sessione completata (2026-07-05): layout un-esercizio-alla-volta con navigazione prev/next/jump-drawer (bottom sheet Alpine). `WorkoutSession` esteso con `currentGroupIndex`, `nextGroup/prevGroup/jumpToGroup`. `setData` pre-compilato con planned_* se actual_* assente (input pre-filled). Zona azione fissa in basso: stepper `x-athlete.input-number` (reps/kg/RIR) + bottone FATTO 56px; rest timer integrato. `partials/session-exercise.blade.php` nuovo partial (set senza input inline; prev-performance color var(--ig-text-2)); feedback form selettori da 36px → 48px. Tap count invariato (1 tap set uguale al piano), migliorato per valori diversi (stepper vs tastiera). 7 test navigazione verdi. Suite: 190/190 (184 pass + 6 skip), PHPStan 0 errori, Pint conforme.
+
 Prossima attività: raccogliere feedback dai primi atleti pilota dopo prima sessione.
 
 ## Setup pilota — dati e procedure

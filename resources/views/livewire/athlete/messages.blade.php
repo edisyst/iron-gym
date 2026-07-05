@@ -69,9 +69,7 @@
                     </svg>
                 </button>
             </form>
-            @error('newMessage')
-                <div style="color: #ef4444; font-size: 12px; margin-top: 4px;">{{ $message }}</div>
-            @enderror
+            @error('newMessage') <span class="ig-field-error">{{ $message }}</span> @enderror
         </div>
     @endif
 </div>

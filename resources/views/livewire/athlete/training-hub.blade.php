@@ -1,18 +1,16 @@
 <div x-data="{ mainTab: @entangle('mainTab'), progressTab: @entangle('progressTab') }">
 
     {{-- Tab esterno: Storico / Progressi --}}
-    <div style="display:flex;gap:0;margin-bottom:20px;background:#1E1E1E;border-radius:10px;padding:4px;">
+    <div class="ig-tab-group">
         <button type="button"
                 @click="mainTab = 'storico'; $wire.set('mainTab', 'storico')"
-                :style="{ background: mainTab === 'storico' ? '#FF6B00' : 'transparent', color: mainTab === 'storico' ? '#fff' : '#888' }"
-                style="flex:1;border:none;border-radius:8px;padding:9px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.15s;"
+                class="ig-tab" :class="{ 'ig-tab--active': mainTab === 'storico' }"
                 wire:loading.attr="disabled">
             Storico
         </button>
         <button type="button"
                 @click="mainTab = 'progress'; $wire.switchToProgress()"
-                :style="{ background: mainTab === 'progress' ? '#FF6B00' : 'transparent', color: mainTab === 'progress' ? '#fff' : '#888' }"
-                style="flex:1;border:none;border-radius:8px;padding:9px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.15s;"
+                class="ig-tab" :class="{ 'ig-tab--active': mainTab === 'progress' }"
                 wire:loading.attr="disabled">
             Progressi
             <span wire:loading wire:target="switchToProgress" style="margin-left:4px;opacity:.7;">...</span>
@@ -177,23 +175,17 @@
         <div wire:loading.remove wire:target="switchToProgress,loadProgressData">
 
         {{-- Sub-tab: Corpo / Forza / Volume --}}
-        <div style="display:flex;gap:0;margin-bottom:20px;background:#1A1A1A;border-radius:10px;padding:4px;">
-            <button type="button"
-                    @click="progressTab = 'body'; $wire.set('progressTab','body')"
-                    :style="{ background: progressTab === 'body' ? '#333' : 'transparent', color: progressTab === 'body' ? '#fff' : '#666' }"
-                    style="flex:1;border:none;border-radius:8px;padding:7px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s;">
+        <div class="ig-tab-group">
+            <button type="button" @click="progressTab = 'body'; $wire.set('progressTab','body')"
+                    class="ig-tab" :class="{ 'ig-tab--active': progressTab === 'body' }">
                 Corpo
             </button>
-            <button type="button"
-                    @click="progressTab = 'strength'; $wire.set('progressTab','strength')"
-                    :style="{ background: progressTab === 'strength' ? '#333' : 'transparent', color: progressTab === 'strength' ? '#fff' : '#666' }"
-                    style="flex:1;border:none;border-radius:8px;padding:7px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s;">
+            <button type="button" @click="progressTab = 'strength'; $wire.set('progressTab','strength')"
+                    class="ig-tab" :class="{ 'ig-tab--active': progressTab === 'strength' }">
                 Forza
             </button>
-            <button type="button"
-                    @click="progressTab = 'volume'; $wire.set('progressTab','volume'); $wire.loadVolumeData()"
-                    :style="{ background: progressTab === 'volume' ? '#333' : 'transparent', color: progressTab === 'volume' ? '#fff' : '#666' }"
-                    style="flex:1;border:none;border-radius:8px;padding:7px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s;">
+            <button type="button" @click="progressTab = 'volume'; $wire.set('progressTab','volume'); $wire.loadVolumeData()"
+                    class="ig-tab" :class="{ 'ig-tab--active': progressTab === 'volume' }">
                 Volume
             </button>
         </div>

@@ -2,23 +2,17 @@
     <h2 style="font-size:20px;font-weight:700;margin-bottom:16px;">Progressi</h2>
 
     {{-- Tab navigation --}}
-    <div style="display:flex;gap:0;margin-bottom:20px;background:#1E1E1E;border-radius:10px;padding:4px;">
-        <button type="button"
-                @click="tab='body'; $wire.set('activeTab','body')"
-                :style="tab==='body' ? 'background:#FF6B00;color:#fff;' : 'background:transparent;color:#888;'"
-                style="flex:1;border:none;border-radius:8px;padding:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;">
+    <div class="ig-tab-group">
+        <button type="button" @click="tab='body'; $wire.set('activeTab','body')"
+                class="ig-tab" :class="{ 'ig-tab--active': tab==='body' }">
             Corpo
         </button>
-        <button type="button"
-                @click="tab='strength'; $wire.set('activeTab','strength')"
-                :style="tab==='strength' ? 'background:#FF6B00;color:#fff;' : 'background:transparent;color:#888;'"
-                style="flex:1;border:none;border-radius:8px;padding:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;">
+        <button type="button" @click="tab='strength'; $wire.set('activeTab','strength')"
+                class="ig-tab" :class="{ 'ig-tab--active': tab==='strength' }">
             Forza
         </button>
-        <button type="button"
-                @click="tab='volume'; $wire.set('activeTab','volume'); $wire.loadVolumeData()"
-                :style="tab==='volume' ? 'background:#FF6B00;color:#fff;' : 'background:transparent;color:#888;'"
-                style="flex:1;border:none;border-radius:8px;padding:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;">
+        <button type="button" @click="tab='volume'; $wire.set('activeTab','volume'); $wire.loadVolumeData()"
+                class="ig-tab" :class="{ 'ig-tab--active': tab==='volume' }">
             Volume
         </button>
     </div>

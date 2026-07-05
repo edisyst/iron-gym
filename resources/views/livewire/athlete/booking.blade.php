@@ -13,15 +13,13 @@
     @endif
 
     {{-- Tab switcher --}}
-    <div style="display:flex;background:#1E1E1E;border-radius:10px;padding:4px;margin-bottom:16px;" x-data>
+    <div class="ig-tab-group">
         <button wire:click="$set('activeTab','pt')"
-                style="flex:1;padding:10px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:.15s;
-                       {{ $activeTab === 'pt' ? 'background:#FF6B00;color:#fff;' : 'background:transparent;color:#888;' }}">
+                class="ig-tab {{ $activeTab === 'pt' ? 'ig-tab--active' : '' }}">
             Sessione PT
         </button>
         <button wire:click="$set('activeTab','classes')"
-                style="flex:1;padding:10px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:.15s;
-                       {{ $activeTab === 'classes' ? 'background:#FF6B00;color:#fff;' : 'background:transparent;color:#888;' }}">
+                class="ig-tab {{ $activeTab === 'classes' ? 'ig-tab--active' : '' }}">
             Corsi
         </button>
     </div>

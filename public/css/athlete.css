@@ -87,6 +87,14 @@
   --ig-z-overlay: 400;
   --ig-z-modal:   600;
   --ig-z-toast:   1060;
+
+  /* Intensità volume muscolare (0 = riposo, 5 = massimo) */
+  --ig-intensity-0: #2a2a2a;
+  --ig-intensity-1: #1a3a5c;
+  --ig-intensity-2: #7a6010;
+  --ig-intensity-3: #1a6635;
+  --ig-intensity-4: #a05510;
+  --ig-intensity-5: #8b2020;
 }
 
 /* Light theme — esplicito via data-theme */
@@ -462,10 +470,18 @@ body {
 }
 .metric-options label:hover { border-color: var(--ig-accent); }
 .metric-options input[type="radio"] { display: none; }
-.metric-options input[type="radio"]:checked + span {
+.metric-options label:has(input[type="radio"]:checked) {
     background-color: var(--ig-accent);
+    border-color: var(--ig-accent);
     color: #fff;
-    border-radius: var(--ig-radius);
+}
+/* fallback per browser senza :has() — mantiene compatibilità con :checked+span */
+.metric-options input[type="radio"]:checked + span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
 }
 
 /* ==========================================================================
@@ -503,12 +519,12 @@ body {
 .body-map-muscle:hover       { opacity: .85; stroke: var(--ig-accent); stroke-width: 1; }
 .body-map-muscle.body-map-highlighted { stroke: var(--ig-accent) !important; stroke-width: 1.8 !important; opacity: 1 !important; }
 
-.body-map-muscle.intensity-0 { fill: #2a2a2a; }
-.body-map-muscle.intensity-1 { fill: #1a3a5c; }
-.body-map-muscle.intensity-2 { fill: #7a6010; }
-.body-map-muscle.intensity-3 { fill: #1a6635; }
-.body-map-muscle.intensity-4 { fill: #a05510; }
-.body-map-muscle.intensity-5 { fill: #8b2020; }
+.body-map-muscle.intensity-0 { fill: var(--ig-intensity-0); }
+.body-map-muscle.intensity-1 { fill: var(--ig-intensity-1); }
+.body-map-muscle.intensity-2 { fill: var(--ig-intensity-2); }
+.body-map-muscle.intensity-3 { fill: var(--ig-intensity-3); }
+.body-map-muscle.intensity-4 { fill: var(--ig-intensity-4); }
+.body-map-muscle.intensity-5 { fill: var(--ig-intensity-5); }
 
 .body-map-outline       { fill: none; stroke: #555; stroke-width: 0.8; }
 .body-map-outline-light { fill: none; stroke: #444; stroke-width: 0.5; }
@@ -521,12 +537,12 @@ body {
 .wv-legend { display: flex; flex-wrap: wrap; gap: var(--ig-sp-2) var(--ig-sp-4); margin-bottom: var(--ig-sp-5); font-size: var(--ig-text-xs); color: var(--ig-text-2); }
 .wv-legend-item { display: flex; align-items: center; gap: 5px; }
 .wv-dot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
-.wv-dot.intensity-0 { background: #2a2a2a; border: 1px solid #555; }
-.wv-dot.intensity-1 { background: #1a3a5c; }
-.wv-dot.intensity-2 { background: #c9a227; }
-.wv-dot.intensity-3 { background: #27a050; }
-.wv-dot.intensity-4 { background: #e07820; }
-.wv-dot.intensity-5 { background: #c0392b; }
+.wv-dot.intensity-0 { background: var(--ig-intensity-0); border: 1px solid #555; }
+.wv-dot.intensity-1 { background: var(--ig-intensity-1); }
+.wv-dot.intensity-2 { background: var(--ig-intensity-2); }
+.wv-dot.intensity-3 { background: var(--ig-intensity-3); }
+.wv-dot.intensity-4 { background: var(--ig-intensity-4); }
+.wv-dot.intensity-5 { background: var(--ig-intensity-5); }
 
 /* Week selector */
 .wv-week-selector { display: flex; align-items: center; gap: var(--ig-sp-3); margin-bottom: var(--ig-sp-4); }
@@ -792,6 +808,61 @@ body {
 }
 .ig-theme-toggle:hover { color: var(--ig-text-1); border-color: var(--ig-text-2); }
 .ig-theme-toggle:focus-visible { outline: 2px solid var(--ig-accent); outline-offset: 2px; }
+
+/* --- ig-tab-group / ig-tab ---------------------------------------------- */
+.ig-tab-group {
+    display: flex;
+    gap: 0;
+    background: var(--ig-surface);
+    border-radius: var(--ig-radius);
+    padding: 4px;
+    margin-bottom: var(--ig-sp-5);
+}
+.ig-tab {
+    flex: 1;
+    border: none;
+    border-radius: var(--ig-radius-sm);
+    padding: 9px var(--ig-sp-3);
+    font-size: var(--ig-text-sm);
+    font-weight: 600;
+    cursor: pointer;
+    background: transparent;
+    color: var(--ig-text-3);
+    transition: background var(--ig-transition), color var(--ig-transition);
+}
+.ig-tab--active {
+    background: var(--ig-accent);
+    color: #fff;
+}
+.ig-tab--danger.ig-tab--active {
+    background: var(--ig-danger);
+}
+.ig-tab:hover:not(.ig-tab--active) { color: var(--ig-text-1); }
+.ig-tab:focus-visible { outline: 2px solid var(--ig-accent); outline-offset: -2px; border-radius: var(--ig-radius-sm); }
+
+/* --- ig-form-input ------------------------------------------------------- */
+.ig-form-input {
+    width: 100%;
+    background: var(--ig-surface-raised);
+    border: 1px solid var(--ig-border);
+    border-radius: var(--ig-radius-sm);
+    color: var(--ig-text-1);
+    padding: 12px 14px;
+    font-size: var(--ig-text-base);
+    transition: border-color var(--ig-transition);
+}
+.ig-form-input:focus { outline: none; border-color: var(--ig-accent); }
+.ig-form-input.is-invalid { border-color: var(--ig-danger); }
+
+/* --- ig-form-label ------------------------------------------------------- */
+.ig-form-label {
+    display: block;
+    font-size: var(--ig-text-xs);
+    color: var(--ig-text-3);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin-bottom: var(--ig-sp-1);
+}
 
 /* --- ig-empty-state ----------------------------------------------------- */
 .ig-empty-state {

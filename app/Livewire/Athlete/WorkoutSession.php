@@ -405,6 +405,7 @@ class WorkoutSession extends Component
 
         $this->showFeedback = true;
         $this->dispatch('open-feedback');
+        $this->dispatch('toast', message: 'Sessione completata!', type: 'success');
     }
 
     public function skipSession(): void

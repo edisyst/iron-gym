@@ -77,6 +77,10 @@
   /* Topbar height — usato in body padding-top e app-main margin-top */
   --topbar-h: 48px;
 
+  /* Transizioni — durata unica per coerenza */
+  --ig-transition:       180ms;
+  --ig-transition-slow:  280ms;
+
   /* Z-index */
   --ig-z-nav:     1000;
   --ig-z-sidenav: 1001;
@@ -1545,4 +1549,146 @@ body {
     color: var(--ig-text-2);
     line-height: 1.6;
     max-width: 280px;
+}
+
+/* ==========================================================================
+   11. EMPTY STATE (UX04) — componente x-athlete.empty-state
+   ========================================================================== */
+
+.ig-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: var(--ig-sp-10) var(--ig-sp-5);
+}
+.ig-empty__icon {
+    color: var(--ig-text-3);
+    margin-bottom: var(--ig-sp-4);
+}
+.ig-empty__icon svg { width: 44px; height: 44px; }
+.ig-empty__title {
+    font-size: var(--ig-text-md);
+    font-weight: 700;
+    color: var(--ig-text-1);
+    margin-bottom: var(--ig-sp-2);
+}
+.ig-empty__body {
+    font-size: var(--ig-text-sm);
+    color: var(--ig-text-2);
+    line-height: 1.6;
+    max-width: 280px;
+    margin-bottom: var(--ig-sp-1);
+}
+.ig-empty__cta { margin-top: var(--ig-sp-4); }
+
+/* ==========================================================================
+   12. TOAST (UX04) — componente x-athlete.toast
+   ========================================================================== */
+
+.ig-toast-stack {
+    position: fixed;
+    bottom: calc(80px + env(safe-area-inset-bottom, 0px) + var(--ig-sp-3));
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: var(--ig-z-toast);
+    display: flex;
+    flex-direction: column;
+    gap: var(--ig-sp-2);
+    align-items: center;
+    pointer-events: none;
+    width: min(90vw, 320px);
+}
+.ig-toast {
+    display: flex;
+    align-items: center;
+    gap: var(--ig-sp-3);
+    padding: var(--ig-sp-3) var(--ig-sp-4);
+    border-radius: var(--ig-radius-lg);
+    background: var(--ig-surface-raised);
+    border: 1px solid var(--ig-border);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+    font-size: var(--ig-text-sm);
+    font-weight: 500;
+    color: var(--ig-text-1);
+    pointer-events: all;
+    max-width: 100%;
+}
+.ig-toast--success { border-color: var(--ig-success); }
+.ig-toast--error   { border-color: var(--ig-danger); color: var(--ig-danger); }
+.ig-toast--info    { border-color: var(--ig-accent); }
+.ig-toast--set     {
+    padding: var(--ig-sp-2) var(--ig-sp-3);
+    font-size: var(--ig-text-xs);
+    background: var(--ig-surface);
+    border-color: var(--ig-success);
+    color: var(--ig-success);
+}
+.ig-toast__msg { flex: 1; }
+.ig-toast__close {
+    background: none;
+    border: none;
+    color: var(--ig-text-3);
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    padding: 2px 4px;
+    flex-shrink: 0;
+}
+
+/* Toast transitions */
+.ig-toast-enter           { transition: opacity var(--ig-transition) ease, transform var(--ig-transition) ease; }
+.ig-toast-enter-from      { opacity: 0; transform: translateY(8px); }
+.ig-toast-enter-to        { opacity: 1; transform: translateY(0); }
+.ig-toast-leave           { transition: opacity var(--ig-transition) ease; }
+.ig-toast-leave-from      { opacity: 1; }
+.ig-toast-leave-to        { opacity: 0; }
+
+/* ==========================================================================
+   13. SKELETON (UX04) — componente x-athlete.skeleton
+   ========================================================================== */
+
+@keyframes ig-shimmer {
+    0%   { background-position: -300px 0; }
+    100% { background-position: 300px 0; }
+}
+.ig-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ig-sp-3);
+    padding: var(--ig-sp-4) 0;
+}
+.ig-skeleton__line {
+    height: 14px;
+    border-radius: var(--ig-radius-full);
+    width: 60%;
+    background: linear-gradient(90deg, var(--ig-surface-raised) 25%, var(--ig-border) 50%, var(--ig-surface-raised) 75%);
+    background-size: 600px 100%;
+    animation: ig-shimmer 1.4s infinite linear;
+}
+.ig-skeleton__line--wide { width: 85%; height: 18px; }
+
+/* ==========================================================================
+   14. ERRORI VALIDAZIONE — colore token (UX04)
+   ========================================================================== */
+
+.ig-field-error {
+    color: var(--ig-danger);
+    font-size: var(--ig-text-xs);
+    margin-top: var(--ig-sp-1);
+    display: block;
+}
+
+/* ==========================================================================
+   15. ACCESSIBILITÀ — reduced motion (UX04)
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        transition-duration: 1ms !important;
+        animation-duration: 1ms !important;
+        animation-iteration-count: 1 !important;
+    }
 }

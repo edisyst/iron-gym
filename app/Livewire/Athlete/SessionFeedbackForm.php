@@ -78,6 +78,7 @@ class SessionFeedbackForm extends Component
         );
 
         $this->dispatch('session-completed');
+        $this->dispatch('toast', message: 'Feedback salvato!', type: 'success');
         $this->redirect(route('athlete.session.recap', $this->sessionId));
     }
 

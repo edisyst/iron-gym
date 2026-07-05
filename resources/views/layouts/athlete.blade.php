@@ -147,6 +147,7 @@
     </main>
 
     <x-athlete.bottom-nav />
+    <x-athlete.toast />
 
     {{-- Toast PR --}}
     <div
@@ -183,6 +184,13 @@
     @stack('scripts')
     @livewireScripts
     <script>
+    // Rete assente — toast di errore
+    document.addEventListener('livewire:request-failed', function () {
+        window.dispatchEvent(new CustomEvent('toast', {
+            detail: { message: 'Connessione assente — riprova', type: 'error' }
+        }));
+    });
+
     document.addEventListener('alpine:init', function () {
         Alpine.store('messages', {
             unread: 0,

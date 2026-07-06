@@ -203,7 +203,9 @@
                                     "
                                     aria-label="Rimuovi set riscaldamento"
                                     style="background:none;border:none;color:var(--ig-text-3);font-size:18px;cursor:pointer;
-                                           padding:0 4px;line-height:1;flex-shrink:0;">&times;</button>
+                                           padding:0 4px;line-height:1;flex-shrink:0;
+                                           min-width:var(--ig-touch-target);min-height:var(--ig-touch-target);
+                                           display:flex;align-items:center;justify-content:center;">&times;</button>
                         </div>
                     </div>
                 @endforeach

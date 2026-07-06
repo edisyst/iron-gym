@@ -203,7 +203,7 @@
                         wire:confirm="Terminare la sessione ora? I set non completati verranno ignorati."
                         style="background:transparent;border:1px solid var(--ig-border);color:var(--ig-text-2);
                                font-size:var(--ig-text-xs);font-weight:600;padding:8px 12px;border-radius:var(--ig-radius-sm);
-                               cursor:pointer;white-space:nowrap;min-height:40px;">
+                               cursor:pointer;white-space:nowrap;min-height:var(--ig-touch-target);">
                     Termina
                 </button>
             </div>
@@ -404,7 +404,7 @@
             <div class="ws-action-inputs">
                 @if (in_array($actionMeasure, ['reps_weight', 'reps_only', 'time_weight']))
                     <div class="ws-action-input-group">
-                        <span class="ws-action-input-label">Reps</span>
+                        <span class="ws-action-input-label" aria-hidden="true">Reps</span>
                         <x-athlete.input-number
                             wire:model="setData.{{ $actionSet->id }}.reps"
                             mode="numeric"
@@ -412,12 +412,13 @@
                             step="1"
                             :stepper="true"
                             placeholder="{{ $actionSet->planned_reps ?? '0' }}"
+                            aria-label="Ripetizioni"
                         />
                     </div>
                 @endif
                 @if (in_array($actionMeasure, ['reps_weight', 'time_weight']))
                     <div class="ws-action-input-group">
-                        <span class="ws-action-input-label">Kg</span>
+                        <span class="ws-action-input-label" aria-hidden="true">Kg</span>
                         <x-athlete.input-number
                             wire:model="setData.{{ $actionSet->id }}.weight"
                             mode="decimal"
@@ -425,12 +426,13 @@
                             step="2.5"
                             :stepper="true"
                             placeholder="{{ $actionSet->planned_weight_kg ?? '0' }}"
+                            aria-label="Peso in kg"
                         />
                     </div>
                 @endif
                 @if (in_array($actionMeasure, ['time', 'isometric_hold']))
                     <div class="ws-action-input-group" style="flex:2;">
-                        <span class="ws-action-input-label">Secondi</span>
+                        <span class="ws-action-input-label" aria-hidden="true">Secondi</span>
                         <x-athlete.input-number
                             wire:model="setData.{{ $actionSet->id }}.duration"
                             mode="numeric"
@@ -438,12 +440,13 @@
                             step="5"
                             :stepper="true"
                             placeholder="{{ $actionSet->planned_duration_sec ?? '0' }}"
+                            aria-label="Durata in secondi"
                         />
                     </div>
                 @endif
                 @if (in_array($actionMeasure, ['reps_weight', 'reps_only', 'time_weight']))
                     <div class="ws-action-input-group">
-                        <span class="ws-action-input-label">RIR</span>
+                        <span class="ws-action-input-label" aria-hidden="true">RIR</span>
                         <x-athlete.input-number
                             wire:model="setData.{{ $actionSet->id }}.rir"
                             mode="numeric"
@@ -452,6 +455,7 @@
                             step="1"
                             :stepper="true"
                             placeholder="{{ $actionSet->planned_rir ?? '—' }}"
+                            aria-label="Reps in riserva"
                         />
                     </div>
                 @endif
@@ -512,7 +516,7 @@
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
                     <h3 style="margin:0;font-size:18px;font-weight:700;">{{ $ex->name_it }}</h3>
                     <button wire:click="$set('exerciseDetailId', null)"
-                            style="background:none;border:none;color:#666;font-size:22px;cursor:pointer;line-height:1;"
+                            style="background:none;border:none;color:#666;font-size:22px;cursor:pointer;line-height:1;min-width:var(--ig-touch-target);min-height:var(--ig-touch-target);display:flex;align-items:center;justify-content:center;"
                             aria-label="Chiudi">&times;</button>
                 </div>
 
@@ -557,7 +561,7 @@
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
                     <h3 style="margin:0;font-size:16px;font-weight:700;">{{ $exerciseHistoryName }}</h3>
                     <button wire:click="$set('exerciseHistoryId', null)"
-                            style="background:none;border:none;color:#666;font-size:22px;cursor:pointer;line-height:1;"
+                            style="background:none;border:none;color:#666;font-size:22px;cursor:pointer;line-height:1;min-width:var(--ig-touch-target);min-height:var(--ig-touch-target);display:flex;align-items:center;justify-content:center;"
                             aria-label="Chiudi">&times;</button>
                 </div>
                 @if ($this->exerciseHistory->isEmpty())
@@ -595,7 +599,7 @@
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
                     <h3 style="margin:0;font-size:16px;font-weight:700;">Calcola dischi</h3>
                     <button wire:click="closePlateModal"
-                            style="background:none;border:none;color:#666;font-size:22px;cursor:pointer;line-height:1;"
+                            style="background:none;border:none;color:#666;font-size:22px;cursor:pointer;line-height:1;min-width:var(--ig-touch-target);min-height:var(--ig-touch-target);display:flex;align-items:center;justify-content:center;"
                             aria-label="Chiudi">&times;</button>
                 </div>
 
@@ -604,7 +608,7 @@
                     <input type="number" step="0.5" min="0" inputmode="decimal"
                            wire:model.live="plateBarWeight"
                            style="background:#2A2A2A;border:1px solid #3A3A3A;border-radius:8px;
-                                  color:#fff;padding:6px 10px;width:80px;font-size:14px;text-align:center;">
+                                  color:#fff;padding:6px 10px;width:80px;font-size:16px;text-align:center;">
                     <button wire:click="calculatePlates" class="btn-accent" style="padding:8px 16px;font-size:13px;">
                         Calcola
                     </button>
@@ -656,7 +660,7 @@
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
                     <h3 id="modal-sost-title" style="margin:0;font-size:16px;font-weight:700;">Sostituisci esercizio</h3>
                     <button wire:click="closeSubstitutionModal"
-                            style="background:none;border:none;color:#666;font-size:22px;cursor:pointer;line-height:1;"
+                            style="background:none;border:none;color:#666;font-size:22px;cursor:pointer;line-height:1;min-width:var(--ig-touch-target);min-height:var(--ig-touch-target);display:flex;align-items:center;justify-content:center;"
                             aria-label="Chiudi">&times;</button>
                 </div>
                 <p style="font-size:12px;color:#666;margin-bottom:16px;">Alternative con lo stesso pattern motorio, ordinate per sovrapposizione muscolare.</p>
@@ -688,7 +692,7 @@
                                     wire:loading.attr="disabled"
                                     @click="open = false"
                                     style="width:100%;background:#FF6B00;border:none;border-radius:8px;padding:9px;
-                                           font-size:13px;font-weight:700;color:#fff;cursor:pointer;">
+                                           font-size:13px;font-weight:700;color:#fff;cursor:pointer;min-height:var(--ig-touch-target);">
                                 Usa questo esercizio
                             </button>
                         </div>

@@ -30,7 +30,7 @@
   /* Testo */
   --ig-text-1:          #FFFFFF;
   --ig-text-2:          #AAAAAA;
-  --ig-text-3:          #7A7A7A;
+  --ig-text-3:          #888888;
 
   /* Accento — arancio brand */
   --ig-accent:          #FF6B00;
@@ -106,10 +106,10 @@
   --ig-border-subtle:  #E8E8E4;
   --ig-text-1:         #111111;
   --ig-text-2:         #555555;
-  --ig-text-3:         #777777;
-  --ig-accent:         #D45A00;
+  --ig-text-3:         #767676;
+  --ig-accent:         #C05000;
   --ig-accent-hover:   #B84E00;
-  --ig-accent-subtle:  rgba(212, 90, 0, 0.10);
+  --ig-accent-subtle:  rgba(192, 80, 0, 0.10);
   --ig-success:        #16A34A;
   --ig-success-subtle: rgba(22, 163, 74, 0.12);
   --ig-danger:         #DC2626;
@@ -128,10 +128,10 @@
     --ig-border-subtle:  #E8E8E4;
     --ig-text-1:         #111111;
     --ig-text-2:         #555555;
-    --ig-text-3:         #777777;
-    --ig-accent:         #D45A00;
+    --ig-text-3:         #767676;
+    --ig-accent:         #C05000;
     --ig-accent-hover:   #B84E00;
-    --ig-accent-subtle:  rgba(212, 90, 0, 0.10);
+    --ig-accent-subtle:  rgba(192, 80, 0, 0.10);
     --ig-success:        #16A34A;
     --ig-success-subtle: rgba(22, 163, 74, 0.12);
     --ig-danger:         #DC2626;
@@ -179,13 +179,12 @@ body {
     position: fixed;
     top: 0; left: 0; right: 0;
     min-height: var(--topbar-h);
-    padding-top: env(safe-area-inset-top, 0px);
     background-color: var(--ig-surface);
     border-bottom: 1px solid var(--ig-border);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 var(--ig-sp-4);
+    padding: env(safe-area-inset-top, 0px) var(--ig-sp-4) 0;
     z-index: var(--ig-z-nav);
 }
 .app-topbar .app-brand {
@@ -420,7 +419,7 @@ body {
     padding: 10px var(--ig-sp-4);
     font-size: var(--ig-text-base);
     cursor: pointer;
-    min-height: 44px;
+    min-height: var(--ig-touch-target);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -816,7 +815,7 @@ body {
     display: flex;
     align-items: center;
     gap: var(--ig-sp-1);
-    min-height: 32px;
+    min-height: var(--ig-touch-target);
     transition: color 0.15s, border-color 0.15s;
 }
 .ig-theme-toggle:hover { color: var(--ig-text-1); border-color: var(--ig-text-2); }
@@ -1010,7 +1009,7 @@ body {
     align-items: center;
     gap: 4px;
     line-height: 1.4;
-    min-height: 44px;
+    min-height: var(--ig-touch-target);
     white-space: nowrap;
 }
 .ws-icon-btn:hover { color: var(--ig-text-1); border-color: var(--ig-accent); }
@@ -1034,7 +1033,7 @@ body {
     display: flex;
     align-items: center;
     gap: 4px;
-    min-height: 36px;
+    min-height: var(--ig-touch-target);
 }
 .ws-exec-btn:hover { color: var(--ig-text-2); }
 .ws-exec-btn:focus-visible { outline: 2px solid var(--ig-accent); outline-offset: 2px; border-radius: 2px; }
@@ -1071,7 +1070,7 @@ body {
     display: flex;
     align-items: center;
     gap: var(--ig-sp-2);
-    min-height: 44px;
+    min-height: var(--ig-touch-target);
     transition: border-color .15s, color .15s;
 }
 .ws-warmup-gen-btn:hover { border-color: var(--ig-accent); color: var(--ig-accent); }
@@ -1294,7 +1293,7 @@ body {
     font-size: var(--ig-text-sm);
     cursor: pointer;
     padding: var(--ig-sp-2) var(--ig-sp-3);
-    min-height: 44px;
+    min-height: var(--ig-touch-target);
 }
 .ws-action-timer-skip:hover { color: var(--ig-text-1); }
 .ws-action-info {
@@ -1528,6 +1527,9 @@ body {
     flex-shrink: 0;
     display: flex;
     align-items: center;
+    justify-content: center;
+    min-width: var(--ig-touch-target);
+    min-height: var(--ig-touch-target);
     color: var(--ig-text-3);
     transition: color 0.15s;
     text-decoration: none;
@@ -1594,6 +1596,9 @@ body {
     text-decoration: none;
     display: flex;
     align-items: center;
+    justify-content: center;
+    min-width: var(--ig-touch-target);
+    min-height: var(--ig-touch-target);
 }
 .home-week-action svg { width: 16px; height: 16px; }
 .home-week-restore {
@@ -1606,6 +1611,7 @@ body {
     border-radius: var(--ig-radius);
     padding: 4px 10px;
     cursor: pointer;
+    min-height: var(--ig-touch-target);
 }
 
 /* Empty states */

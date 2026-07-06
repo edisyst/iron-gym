@@ -2,6 +2,22 @@
 
 ---
 
+## UX05-B — Audit ergonomia PWA atleta, Fase B (2026-07-06)
+
+**Obiettivo:** fix puntuali post-audit su contrasto, touch target, safe-area, input mobile, accessibilità.
+
+- **Safe-area topbar (P1):** `padding: 0 var(--ig-sp-4)` nella `.app-topbar` sovrascriveva `padding-top: env(safe-area-inset-top)`. Corretto in `padding: env(safe-area-inset-top, 0px) var(--ig-sp-4) 0`.
+- **Contrasto WCAG AA (P1/P2):** `--ig-accent` light `#D45A00` → `#C05000` (contrasto su bianco: 3.99:1 → 4.78:1); `--ig-text-3` dark `#7A7A7A` → `#888888` (3.88:1 → 4.56:1); `--ig-text-3` light `#777777` → `#767676` (borderline fix).
+- **Touch target ≥ 48px (P2):** portati a `var(--ig-touch-target)` (48px): `.ws-icon-btn`, `.ws-warmup-gen-btn`, `.ws-action-timer-skip`, `.ws-exec-btn`, `.ig-theme-toggle`, `.btn-ghost`, `.home-last-link`, `.home-week-action`, `.home-week-restore`. Bottoni × nelle 4 modali sessione e pulsante delete warmup con min-height+min-width 48px via inline style. "Usa questo esercizio" nel modale sostituzione + "Termina" nell'header sessione portati a 48px.
+- **Font-size input (P2):** input peso bilanciere nel plate calculator da 14px → 16px (evita zoom iOS).
+- **aria-label input zona azione (P2):** `<span class="ws-action-input-label">` contrassegnati `aria-hidden="true"`; aggiunto `aria-label` esplicito a ciascun `x-athlete.input-number` ("Ripetizioni", "Peso in kg", "Reps in riserva", "Durata in secondi").
+- **autocomplete form profilo (P3):** aggiunto `autocomplete="name"` e `autocomplete="email"` ai campi profilo (password già corrette).
+- **Token documentazione:** `ui-atleta.md` aggiornato con valori token revised.
+- Report completo: `docs/reviews/ui-atleta-ergonomia-2026-07-06.md`.
+- Suite: 190/190 (184 pass + 6 skip), PHPStan 0 errori, Pint conforme.
+
+---
+
 ## UX01 — Design foundation PWA atleta (2026-07-05)
 
 **Obiettivo:** design system condiviso (token CSS, componenti Blade) come base per UX02–UX05.

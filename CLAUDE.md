@@ -234,6 +234,8 @@ UX05 Coerenza visiva e de-inlining CSS completata (2026-07-05): `--ig-intensity-
 
 **Tag v0.9.0** (2026-07-05): UX01–UX05 completate — design foundation PWA atleta. Git flow inizializzato (develop da master). Prossime release su branch `feature/*` via git flow.
 
+Audit ergonomia UX05-B completato (2026-07-06): fix safe-area topbar (padding shorthand override), contrasto WCAG AA (accent light #C05000, text-3 dark #888888 / light #767676), 13 touch target sotto 48px portati a token, font-size 14px→16px nel plate modal, aria-label su input-number zona azione, autocomplete su form profilo. Fase C aperta: tokenizzare colori modali dark-only, action zone a 360px, translate-y-full in Tailwind safelist. Suite: 190/190, PHPStan 0, Pint OK. Report: docs/reviews/ui-atleta-ergonomia-2026-07-06.md.
+
 Prossima attività: raccogliere feedback dai primi atleti pilota dopo prima sessione.
 
 ## Setup pilota — dati e procedure

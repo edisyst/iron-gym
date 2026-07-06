@@ -27,15 +27,15 @@ Dark theme di default. Light theme via `[data-theme="light"]` (Alpine/localStora
 |---|---|---|
 | `--ig-text-1` | `#FFFFFF` | `#111111` |
 | `--ig-text-2` | `#AAAAAA` | `#555555` |
-| `--ig-text-3` | `#7A7A7A` | `#777777` |
+| `--ig-text-3` | `#888888` | `#767676` |
 
 ### Accento (brand arancio)
 
 | Token | Dark | Light |
 |---|---|---|
-| `--ig-accent` | `#FF6B00` | `#D45A00` |
+| `--ig-accent` | `#FF6B00` | `#C05000` |
 | `--ig-accent-hover` | `#E05E00` | `#B84E00` |
-| `--ig-accent-subtle` | `rgba(255,107,0,0.12)` | `rgba(212,90,0,0.10)` |
+| `--ig-accent-subtle` | `rgba(255,107,0,0.12)` | `rgba(192,80,0,0.10)` |
 
 ### Semantic
 

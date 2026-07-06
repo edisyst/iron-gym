@@ -33,14 +33,14 @@
 
                 <div style="margin-bottom:16px;">
                     <label class="ig-form-label">Nome</label>
-                    <input type="text" wire:model="name"
+                    <input type="text" wire:model="name" autocomplete="name"
                            class="ig-form-input {{ $errors->has('name') ? 'is-invalid' : '' }}">
                     @error('name') <span class="ig-field-error">{{ $message }}</span> @enderror
                 </div>
 
                 <div style="margin-bottom:20px;">
                     <label class="ig-form-label">Email</label>
-                    <input type="email" wire:model="email"
+                    <input type="email" wire:model="email" autocomplete="email"
                            class="ig-form-input {{ $errors->has('email') ? 'is-invalid' : '' }}">
                     @error('email') <span class="ig-field-error">{{ $message }}</span> @enderror
                 </div>

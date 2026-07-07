@@ -70,6 +70,10 @@ php artisan schedule:work
 
 L'app è raggiungibile su `http://localhost:8000`.
 
+> **Laragon (alternativa):** se usi Laragon, il vhost è configurato su `http://iron-gym.test`.
+> Imposta `APP_URL=http://iron-gym.test` nel `.env` e avvia MySQL/Redis tramite Laragon
+> invece di Docker. Non serve `php artisan serve`.
+
 ## Account di default
 
 Dopo il seed sono disponibili questi utenti:

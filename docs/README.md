@@ -19,8 +19,8 @@ Indice di tutta la documentazione di progetto.
 - [audit-codice.md](review/audit-codice.md) — security/performance audit codice (2026-06-28); 15 fix applicati
 - [audit-grafica.md](review/audit-grafica.md) — audit grafico backoffice (2026-06-28); brand identity + coerenza UI
 - [test-per-ruolo.md](review/test-per-ruolo.md) — matrice test funzionali per ruolo
-- [ui-atleta-audit-2026-07-05.md](reviews/ui-atleta-audit-2026-07-05.md) — audit UX/UI PWA atleta; 18 findings P0–P3, quick wins, ordine esecuzione UX02/03/04
-- [ui-atleta-ergonomia-2026-07-06.md](reviews/ui-atleta-ergonomia-2026-07-06.md) — audit ergonomia in sala (UX05-B): touch target, contrasto WCAG AA, safe-area, input mobile, SR; Fase B applicata
+- [ui-atleta-audit-2026-07-05.md](reviews/ui-atleta-audit-2026-07-05.md) — audit UX/UI PWA atleta pre-UX02; 18 findings P0–P3, ordine esecuzione UX02/03/04
+- [ui-atleta-ergonomia-2026-07-06.md](reviews/ui-atleta-ergonomia-2026-07-06.md) — audit ergonomia in sala (UX05-B): touch target, contrasto WCAG AA, safe-area, input mobile, SR; Fase B applicata (Fase C aperta)
 
 ## Test
 

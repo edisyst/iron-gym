@@ -97,11 +97,12 @@ Tutti in `app/Livewire/Backoffice/`. Layout: `->layout('layouts.backoffice')`.
 | `Exercises` | `ExerciseDetail` | Scheda tecnica esercizio (breadcrumb, muscoli con progress bar, video). Binding su slug. |
 | `Exercises` | `ExerciseForm` | CRUD esercizio con pivot exercise_muscle e exercise_equipment |
 | `Members` | `MemberList` | Lista tesserati con link a profilo allenamento |
-| `Members` | `MemberForm` | CRUD anagrafica tesserato |
+| `Members` | `MemberForm` | CRUD anagrafica tesserato; sezione opzionale "Crea account accesso app" (crea User + ruolo atleta in un unico submit) |
 | `Mesocycles` | `MesocycleList` | Lista mesocicli con link a profilo atleta e dettaglio |
 | `Mesocycles` | `MesocycleDetail` | Tabella volume per muscolo, progressione, forza deload; gated su `periodization_engine` |
 | `Mesocycles` | `MesocycleAssign` | Assegnazione template a atleta con data inizio e numero settimane |
 | `Mesocycles` | `VolumeLandmarkManager` | CRUD MEV/MAV/MRV per atleta-muscolo |
+| `PlateInventory` | `PlateInventoryManager` | CRUD inline dischi (weight_kg, quantity_pairs, color, is_active). Solo gestore. |
 | `Messages` | `MessageThread` | Chat real-time trainer↔atleta (polling ogni 3s) |
 | `Reports` | `ManagerDashboard` | KPI gestore: info-box, grafici Chart.js fatturato/piano/occupancy, churn. Solo gestore. |
 | `Reports` | `FinancialReport` | Report mensile/trimestrale/annuale, export CSV e PDF. Solo gestore. |
@@ -125,8 +126,8 @@ Tutti in `app/Livewire/Athlete/`. Layout: `layouts.athlete` (dark, mobile-first,
 
 | Componente | Funzione |
 |---|---|
-| `Dashboard` | Sessione odierna, prossimi allenamenti, accesso rapido |
-| `WorkoutSession` | Logging live: peso/reps/RIR per set, timer riposo, note; sostituzione esercizio guidata in sessione |
+| `Dashboard` | Hero card sessione prossima/in-corso, striscia settimana mesociclo, recap ultimo allenamento, empty state contestuali |
+| `WorkoutSession` | Logging live un-esercizio-alla-volta (nav prev/next/jump-drawer); readiness check pre-sessione; modulazione carichi; quick-log; previous performance inline; sostituzione esercizio guidata; rest timer Alpine; warmup generator; export sessione completata |
 | `SessionFeedbackForm` | Feedback post-sessione (pump, soreness, effort, joint pain, performance) scala 0-3 |
 | `TrainingHub` | Hub storico: tab History + Progress + Measurements |
 | `History` | Storico sessioni completate (embedded in TrainingHub) |
@@ -181,6 +182,9 @@ Tutti in `app/Services/`.
 | `E1rmCalculator` | Formula Epley: `w * (1 + r/30)`. |
 | `PlateLoadoutCalculator` | Algoritmo greedy decrescente su `PlateInventory` attivi; `delta_kg=0` se combinazione esatta, altrimenti combinazione per difetto. |
 | `PersonalRecordDetector` | `check(ExerciseSet, athleteId)` — rileva PR e1RM dopo soglie configurabili (`config/pr.php`). Sincrono, pronto per migrazione a evento+listener. |
+| `ExerciseSubstitutionFinder` | `find(Exercise)` → Collection max 5 candidati. Match su stesso `joint_action_id` o `compound_pattern_id` + stesso `measurement_type`. Overlap = somma min(pct_orig, pct_cand) su muscoli comuni; tie-break: stesso mechanic poi skill_level. |
+| `ReadinessEvaluator` | `evaluate(SessionReadinessCheck)` → `ReadinessProposal`. Score 0-12 (4 campi TINYINT 0-3). Soglie in `config/readiness.php` (≥9=none, 5-8=reduce_5pct, <5=reduce_10pct). `applyReduction(float, int): float` arrotonda a 2.5 kg. |
+| `SessionRecapBuilder` | `build(TrainingSession, athleteId)` → array con `duration_minutes`, `tonnage_kg`, `sets_completed/sets_prescribed`, `prs`, `top_muscles` (top 3 per SUM contribution_pct). 5 query, nessun N+1. |
 
 ---
 
@@ -225,7 +229,7 @@ Usati solo per operazioni non-Livewire.
 | File | Usato da | Note |
 |---|---|---|
 | `layouts/backoffice.blade.php` | Tutti i componenti backoffice | AdminLTE 3, flash messages Alpine.js |
-| `layouts/athlete.blade.php` | Tutti i componenti atleta | Dark (#121212), bottom nav a 6 voci, PWA meta tags |
+| `layouts/athlete.blade.php` | Tutti i componenti atleta | Dark (#121212), bottom nav 4 tab (Home/Allenamento/Progressi/Profilo), PWA meta tags, viewport-fit=cover safe-area |
 
 ---
 

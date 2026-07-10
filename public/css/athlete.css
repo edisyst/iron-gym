@@ -506,16 +506,54 @@ body {
     .athlete-card { padding: var(--ig-sp-5); }
 }
 
+/* Sidebar aperta: visibile su qualsiasi larghezza (mobile = drawer, desktop = layout shift) */
+.sidenav-is-open .app-sidenav { display: flex; }
+
 @media (min-width: 1024px) {
     body {
         padding-bottom: 0;
         padding-top: 0;
-        padding-left: 220px;
     }
-    .app-topbar { left: 220px; padding: 0 var(--ig-sp-8); }
+    .app-topbar { padding: 0 var(--ig-sp-8); }
     .app-main   { max-width: 900px; padding: var(--ig-sp-8) var(--ig-sp-8) 0; margin-top: var(--topbar-h); }
     .bottom-nav  { display: none; }
-    .app-sidenav { display: flex; }
+
+    /* Sidebar aperta su desktop: sposta il layout */
+    .sidenav-is-open           { padding-left: 220px; }
+    .sidenav-is-open .app-topbar   { left: 220px; }
+    .sidenav-is-open .ws-action-zone { left: 220px; }
+}
+
+/* Hamburger toggle sidebar */
+.ig-hamburger {
+    display: flex;
+    background: none;
+    border: none;
+    color: var(--ig-text-2);
+    cursor: pointer;
+    min-width: 40px;
+    min-height: 40px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    flex-shrink: 0;
+    border-radius: var(--ig-radius-sm);
+    transition: color var(--ig-transition), background var(--ig-transition);
+    margin-right: var(--ig-sp-2);
+}
+.ig-hamburger:hover { color: var(--ig-text-1); background: rgba(255,255,255,.06); }
+
+/* Backdrop sidebar mobile */
+.ig-sidenav-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .55);
+    z-index: calc(var(--ig-z-sidenav) - 1);
+}
+.sidenav-is-open .ig-sidenav-backdrop { display: block; }
+@media (min-width: 1024px) {
+    .ig-sidenav-backdrop { display: none !important; }
 }
 
 @media (min-width: 1280px) {
@@ -1074,14 +1112,94 @@ body {
     transition: border-color .15s, color .15s;
 }
 .ws-warmup-gen-btn:hover { border-color: var(--ig-accent); color: var(--ig-accent); }
-.ws-warmup-row {
-    display: grid;
-    grid-template-columns: 20px 1fr 52px 52px 64px;
-    gap: var(--ig-sp-2);
+
+/* Warmup row — azioni conferma/elimina */
+.ws-warmup-actions {
+    display: flex;
     align-items: center;
+    gap: var(--ig-sp-3);
+    flex-shrink: 0;
+}
+.ws-warmup-confirm-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--ig-touch-target);
+    min-height: var(--ig-touch-target);
+    background: var(--ig-success-subtle, rgba(34,197,94,.12));
+    border: 1px solid var(--ig-success, #22c55e);
+    border-radius: var(--ig-radius-sm);
+    color: var(--ig-success, #22c55e);
+    cursor: pointer;
+    transition: background var(--ig-transition), border-color var(--ig-transition);
+}
+.ws-warmup-confirm-btn:hover { background: var(--ig-success, #22c55e); color: #fff; }
+.ws-warmup-done-icon {
+    width: 20px;
+    height: 20px;
+    color: var(--ig-success, #22c55e);
+    flex-shrink: 0;
+}
+.ws-warmup-delete-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--ig-touch-target);
+    min-height: var(--ig-touch-target);
+    background: none;
+    border: 1px solid var(--ig-border);
+    border-radius: var(--ig-radius-sm);
+    color: var(--ig-text-3);
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background var(--ig-transition), border-color var(--ig-transition), color var(--ig-transition);
+}
+.ws-warmup-delete-btn:hover { background: var(--ig-danger-subtle); border-color: var(--ig-danger); color: var(--ig-danger); }
+
+.ws-warmup-row {
+    display: flex;
+    align-items: center;
+    gap: var(--ig-sp-3);
     padding: var(--ig-sp-2) 0;
     border-bottom: 1px solid var(--ig-border-subtle);
 }
+.ws-warmup-row--done { opacity: .5; }
+.ws-warmup-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: var(--ig-sp-2);
+    min-width: 0;
+}
+.ws-warmup-badge {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ig-text-3);
+    flex-shrink: 0;
+}
+.ws-warmup-plan {
+    font-size: var(--ig-text-sm);
+    color: var(--ig-text-3);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.ws-warmup-weight-input {
+    background: var(--ig-surface-raised);
+    border: 1px solid var(--ig-border);
+    border-radius: var(--ig-radius-sm);
+    color: var(--ig-text-1);
+    padding: var(--ig-sp-2) var(--ig-sp-2);
+    font-size: 16px;
+    width: 80px;
+    text-align: center;
+    flex-shrink: 0;
+}
+.ws-warmup-weight-input:focus { outline: none; border-color: var(--ig-accent); }
+.ws-warmup-weight-input::-webkit-outer-spin-button,
+.ws-warmup-weight-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.ws-warmup-weight-input[type=number] { -moz-appearance: textfield; }
 
 .ws-set-row {
     display: flex;
@@ -1098,6 +1216,22 @@ body {
     border-bottom-color: transparent;
     outline: 1px solid var(--ig-accent);
 }
+.ws-skip-set-btn {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--ig-text-3);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--ig-touch-target);
+    min-height: var(--ig-touch-target);
+    border-radius: var(--ig-radius-sm);
+    flex-shrink: 0;
+    transition: color var(--ig-transition), background var(--ig-transition);
+}
+.ws-skip-set-btn:hover { color: var(--ig-danger); background: var(--ig-danger-subtle); }
 .ws-set-num {
     font-size: var(--ig-text-sm);
     color: var(--ig-text-3);
@@ -1323,6 +1457,15 @@ body {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    padding: 0 var(--ig-sp-2);
+    border-right: 1px solid var(--ig-border);
+}
+.ws-action-input-group:last-child {
+    border-right: none;
+    padding-right: 0;
+}
+.ws-action-input-group:first-child {
+    padding-left: 0;
 }
 .ws-action-input-label {
     font-size: var(--ig-text-xs);
@@ -1332,6 +1475,11 @@ body {
     text-transform: uppercase;
     letter-spacing: .04em;
 }
+/* Gruppo KG: input più prominente */
+.ws-action-input-group--kg { flex: 1.4; }
+.ws-action-input-group--kg .ws-action-input-label { color: var(--ig-accent); }
+.ws-action-input-group--kg .ig-num-input { border-color: var(--ig-accent); }
+.ws-action-input-group--kg .ig-num-input__field { font-size: var(--ig-text-lg); font-weight: 700; }
 .ws-action-btn {
     padding: var(--ig-sp-2) var(--ig-sp-4) var(--ig-sp-3);
 }

@@ -383,6 +383,22 @@ class WorkoutSession extends Component
         $this->reloadSets();
     }
 
+    /**
+     * Salta (elimina) un working set non ancora completato.
+     */
+    public function skipSet(int $setId): void
+    {
+        $set = ExerciseSet::whereHas('sessionExercise', fn ($q) => $q->where('session_id', $this->session->id))
+            ->where('is_warmup', false)
+            ->whereNull('completed_at')
+            ->findOrFail($setId);
+
+        $set->delete();
+        unset($this->setData[$setId]);
+
+        $this->reloadSets();
+    }
+
     public function canCompleteSession(): bool
     {
         foreach ($this->session->sessionExercises as $exercise) {

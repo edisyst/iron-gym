@@ -26,9 +26,10 @@
     <link rel="stylesheet" href="{{ asset('css/athlete.css') }}">
     @stack('styles')
 </head>
-<body>
+<body x-data :class="$store.sidenav.open ? 'sidenav-is-open' : ''">
     {{-- Sidebar navigation (desktop ≥ 1024px) --}}
-    <aside class="app-sidenav" aria-label="Navigazione principale">
+    <div class="ig-sidenav-backdrop" @click="$store.sidenav.toggle()" aria-hidden="true"></div>
+    <aside class="app-sidenav" id="athlete-sidenav" aria-label="Navigazione principale">
         <div class="sidenav-brand">Iron Gym</div>
         <div class="sidenav-user">{{ auth()->user()->name ?? '' }}</div>
         <nav>
@@ -116,6 +117,15 @@
                     localStorage.setItem('ig-theme', this.theme);
                 }
             }">
+        <button @click="$store.sidenav.toggle()"
+                class="ig-hamburger"
+                :aria-expanded="$store.sidenav.open"
+                aria-controls="athlete-sidenav"
+                aria-label="Apri/chiudi navigazione">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+        </button>
         <span class="app-brand">Iron Gym</span>
         <a href="{{ route('athlete.profile') }}" class="user-name">{{ auth()->user()->name }}</a>
         <button @click="toggle()" class="ig-theme-toggle"
@@ -192,6 +202,15 @@
     });
 
     document.addEventListener('alpine:init', function () {
+        Alpine.store('sidenav', {
+            open: window.matchMedia('(min-width: 1024px)').matches
+                  && localStorage.getItem('ig-sidenav') !== 'false',
+            toggle: function () {
+                this.open = !this.open;
+                localStorage.setItem('ig-sidenav', this.open);
+            },
+        });
+
         Alpine.store('messages', {
             unread: 0,
             init: function () {

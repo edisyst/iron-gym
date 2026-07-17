@@ -334,7 +334,7 @@
                                 : $actionSe->planned_rest_sec;
             $actionRestSecJs  = $actionRestSec !== null ? (int) $actionRestSec : 'null';
             $actionMeasure    = $actionSe->exercise->measurement_type ?? 'reps_weight';
-            $actionWorkingSets = $actionSe->sets->where('is_warmup', false)->sortBy('set_index');
+            $actionWorkingSets = $actionSe->sets->where('is_warmup', false)->sortBy('set_index')->values();
             $actionSetIndex   = $actionWorkingSets->search(fn($s) => $s->id === $actionSet->id) + 1;
             $actionSetTotal   = $actionWorkingSets->count();
             $actionPrevPerf   = $previousPerformance[$actionSe->exercise_id][$actionSet->set_index] ?? null;
@@ -554,9 +554,9 @@
 
     {{-- Modale storico esercizio --}}
     @if ($exerciseHistoryId !== null)
-        <div style="position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.85);display:flex;align-items:flex-end;">
-            <div style="background:#1A1A1A;border-radius:16px 16px 0 0;width:100%;max-height:90vh;overflow-y:auto;
-                        padding:20px 20px calc(24px + env(safe-area-inset-bottom));"
+        <div style="position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;">
+            <div style="background:#1A1A1A;border-radius:16px;width:50%;max-height:80vh;overflow-y:auto;
+                        padding:20px 20px 24px;"
                  @click.stop>
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
                     <h3 style="margin:0;font-size:16px;font-weight:700;">{{ $exerciseHistoryName }}</h3>
@@ -571,9 +571,9 @@
                         <div style="margin-bottom:16px;">
                             <p style="font-size:11px;color:#666;font-weight:700;text-transform:uppercase;
                                       letter-spacing:.05em;margin-bottom:6px;">
-                                {{ $pastSession->scheduled_date?->format('d/m/Y') ?? '—' }}
+                                {{ $pastSession->session->scheduled_date?->format('d/m/Y') ?? '—' }}
                             </p>
-                            @foreach ($pastSession->completedWorkingSets as $pastSet)
+                            @foreach ($pastSession->sets->where('is_warmup', false)->whereNotNull('completed_at')->sortBy('set_index') as $pastSet)
                                 <div style="font-size:13px;color:#ccc;padding:3px 0;display:flex;gap:8px;">
                                     <span style="color:#555;min-width:16px;">{{ $pastSet->set_index }}</span>
                                     @if ($pastSet->actual_reps) <span>{{ $pastSet->actual_reps }}r</span> @endif

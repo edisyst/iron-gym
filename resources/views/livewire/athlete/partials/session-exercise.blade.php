@@ -96,11 +96,25 @@
             </div>
         </div>
 
+        {{-- Immagine esercizio --}}
+        @php
+            $exSlug = $exercise->exercise->slug;
+            $imgFile = public_path('images/exercises/' . $exSlug . '.png');
+            $imgSrc  = file_exists($imgFile)
+                ? asset('images/exercises/' . $exSlug . '.png')
+                : asset('images/exercises/no-image.svg');
+        @endphp
+        <div class="ws-exercise-img-wrap">
+            <img src="{{ $imgSrc }}"
+                 alt="{{ $exercise->exercise->name_it }}"
+                 class="ws-exercise-img">
+        </div>
+
         {{-- Esecuzione (collassabile) --}}
         @if ($exercise->exercise->execution_description)
             <div x-data="{ open: false }" class="ws-exec-toggle">
                 <button type="button" @click="open = !open" class="ws-exec-btn">
-                    <svg x-bind:style="open ? 'transform:rotate(90deg)' : ''"
+                    <svg :style="open ? 'transform:rotate(90deg)' : ''"
                          style="width:10px;height:10px;transition:transform .2s;fill:currentColor;" viewBox="0 0 20 20" aria-hidden="true">
                         <path d="M7 5l6 5-6 5V5z"/>
                     </svg>
@@ -228,7 +242,7 @@
                         @elseif ($isActive)
                             <div class="ws-set-active-dot"></div>
                         @else
-                            <span class="ws-set-num">{{ $set->set_index }}</span>
+                            <span class="ws-set-num">{{ $loop->iteration }}</span>
                         @endif
                     </div>
 
@@ -265,7 +279,7 @@
                             </button>
                         @endif
                     @elseif ($isActive)
-                        <span style="font-size:var(--ig-text-xs);color:var(--ig-accent);font-weight:700;white-space:nowrap;">set {{ $set->set_index }}</span>
+                        <span style="font-size:var(--ig-text-xs);color:var(--ig-accent);font-weight:700;white-space:nowrap;">set {{ $loop->iteration }}</span>
                     @endif
 
                     @if (! $isDone)

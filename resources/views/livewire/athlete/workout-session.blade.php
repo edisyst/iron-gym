@@ -571,9 +571,9 @@
                         <div style="margin-bottom:16px;">
                             <p style="font-size:11px;color:#666;font-weight:700;text-transform:uppercase;
                                       letter-spacing:.05em;margin-bottom:6px;">
-                                {{ $pastSession->scheduled_date?->format('d/m/Y') ?? '—' }}
+                                {{ $pastSession->session->scheduled_date?->format('d/m/Y') ?? '—' }}
                             </p>
-                            @foreach ($pastSession->completedWorkingSets as $pastSet)
+                            @foreach ($pastSession->sets->where('is_warmup', false)->whereNotNull('completed_at')->sortBy('set_index') as $pastSet)
                                 <div style="font-size:13px;color:#ccc;padding:3px 0;display:flex;gap:8px;">
                                     <span style="color:#555;min-width:16px;">{{ $pastSet->set_index }}</span>
                                     @if ($pastSet->actual_reps) <span>{{ $pastSet->actual_reps }}r</span> @endif

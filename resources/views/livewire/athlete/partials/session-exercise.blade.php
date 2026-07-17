@@ -96,33 +96,31 @@
             </div>
         </div>
 
+        {{-- Immagine esercizio --}}
+        @php
+            $exSlug = $exercise->exercise->slug;
+            $imgFile = public_path('images/exercises/' . $exSlug . '.png');
+            $imgSrc  = file_exists($imgFile)
+                ? asset('images/exercises/' . $exSlug . '.png')
+                : asset('images/exercises/no-image.svg');
+        @endphp
+        <div class="ws-exercise-img-wrap">
+            <img src="{{ $imgSrc }}"
+                 alt="{{ $exercise->exercise->name_it }}"
+                 class="ws-exercise-img">
+        </div>
+
         {{-- Esecuzione (collassabile) --}}
-        @if ($exercise->exercise->execution_description || $exercise->exercise->thumbnail_url)
-            <div x-data="{ execOpen: false, imgOpen: false }" class="ws-exec-toggle">
-                @if ($exercise->exercise->execution_description)
-                    <button type="button" @click="execOpen = !execOpen" class="ws-exec-btn">
-                        <svg :style="execOpen ? 'transform:rotate(90deg)' : ''"
-                             style="width:10px;height:10px;transition:transform .2s;fill:currentColor;" viewBox="0 0 20 20" aria-hidden="true">
-                            <path d="M7 5l6 5-6 5V5z"/>
-                        </svg>
-                        <span x-text="execOpen ? 'Nascondi esecuzione' : 'Come eseguire'"></span>
-                    </button>
-                    <p x-show="execOpen" x-cloak class="ws-exec-text">{{ $exercise->exercise->execution_description }}</p>
-                @endif
-                @if ($exercise->exercise->thumbnail_url)
-                    <button type="button" @click="imgOpen = !imgOpen" class="ws-exec-btn" style="margin-top:var(--ig-sp-1);">
-                        <svg :style="imgOpen ? 'transform:rotate(90deg)' : ''"
-                             style="width:10px;height:10px;transition:transform .2s;fill:currentColor;" viewBox="0 0 20 20" aria-hidden="true">
-                            <path d="M7 5l6 5-6 5V5z"/>
-                        </svg>
-                        <span x-text="imgOpen ? 'Nascondi immagine' : 'Mostra immagine'"></span>
-                    </button>
-                    <div x-show="imgOpen" x-cloak style="margin-top:var(--ig-sp-2);">
-                        <img src="{{ $exercise->exercise->thumbnail_url }}"
-                             alt="{{ $exercise->exercise->name_it }}"
-                             style="width:100%;border-radius:var(--ig-radius-lg);display:block;">
-                    </div>
-                @endif
+        @if ($exercise->exercise->execution_description)
+            <div x-data="{ open: false }" class="ws-exec-toggle">
+                <button type="button" @click="open = !open" class="ws-exec-btn">
+                    <svg :style="open ? 'transform:rotate(90deg)' : ''"
+                         style="width:10px;height:10px;transition:transform .2s;fill:currentColor;" viewBox="0 0 20 20" aria-hidden="true">
+                        <path d="M7 5l6 5-6 5V5z"/>
+                    </svg>
+                    <span x-text="open ? 'Nascondi esecuzione' : 'Come eseguire'"></span>
+                </button>
+                <p x-show="open" x-cloak class="ws-exec-text">{{ $exercise->exercise->execution_description }}</p>
             </div>
         @endif
 

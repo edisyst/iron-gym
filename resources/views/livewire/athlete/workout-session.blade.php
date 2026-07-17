@@ -334,7 +334,7 @@
                                 : $actionSe->planned_rest_sec;
             $actionRestSecJs  = $actionRestSec !== null ? (int) $actionRestSec : 'null';
             $actionMeasure    = $actionSe->exercise->measurement_type ?? 'reps_weight';
-            $actionWorkingSets = $actionSe->sets->where('is_warmup', false)->sortBy('set_index');
+            $actionWorkingSets = $actionSe->sets->where('is_warmup', false)->sortBy('set_index')->values();
             $actionSetIndex   = $actionWorkingSets->search(fn($s) => $s->id === $actionSet->id) + 1;
             $actionSetTotal   = $actionWorkingSets->count();
             $actionPrevPerf   = $previousPerformance[$actionSe->exercise_id][$actionSet->set_index] ?? null;

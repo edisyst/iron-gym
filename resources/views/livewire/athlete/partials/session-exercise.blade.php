@@ -244,7 +244,7 @@
                         @elseif ($isActive)
                             <div class="ws-set-active-dot"></div>
                         @else
-                            <span class="ws-set-num">{{ $set->set_index }}</span>
+                            <span class="ws-set-num">{{ $loop->iteration }}</span>
                         @endif
                     </div>
 
@@ -281,7 +281,7 @@
                             </button>
                         @endif
                     @elseif ($isActive)
-                        <span style="font-size:var(--ig-text-xs);color:var(--ig-accent);font-weight:700;white-space:nowrap;">set {{ $set->set_index }}</span>
+                        <span style="font-size:var(--ig-text-xs);color:var(--ig-accent);font-weight:700;white-space:nowrap;">set {{ $loop->iteration }}</span>
                     @endif
 
                     @if (! $isDone)

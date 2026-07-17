@@ -554,9 +554,9 @@
 
     {{-- Modale storico esercizio --}}
     @if ($exerciseHistoryId !== null)
-        <div style="position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.85);display:flex;align-items:flex-end;justify-content:flex-end;">
-            <div style="background:#1A1A1A;border-radius:16px 0 0 0;width:50%;max-height:90vh;overflow-y:auto;
-                        padding:20px 20px calc(24px + env(safe-area-inset-bottom));"
+        <div style="position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;">
+            <div style="background:#1A1A1A;border-radius:16px;width:50%;max-height:80vh;overflow-y:auto;
+                        padding:20px 20px 24px;"
                  @click.stop>
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
                     <h3 style="margin:0;font-size:16px;font-weight:700;">{{ $exerciseHistoryName }}</h3>

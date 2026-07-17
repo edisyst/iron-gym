@@ -172,15 +172,21 @@
     <x-athlete.toast />
 
     @if(app()->environment('local'))
-    {{-- Badge stato viewport forzato — visibile solo in local --}}
-    <div x-data="{ desktop: localStorage.getItem('ig-viewport') === 'desktop' }"
-         x-show="desktop"
-         x-cloak
-         class="ig-viewport-badge"
-         role="status"
-         aria-label="Vista desktop forzata attiva">
-        Vista desktop
-    </div>
+    {{-- Toggle viewport dev — sempre visibile in local, click per switch + reload --}}
+    <button x-data="{ desktop: localStorage.getItem('ig-viewport') === 'desktop' }"
+            class="ig-viewport-toggle"
+            :class="desktop ? 'ig-viewport-toggle--desktop' : 'ig-viewport-toggle--mobile'"
+            :aria-label="desktop ? 'Passa a vista mobile' : 'Passa a vista desktop'"
+            @click="
+                if (desktop) {
+                    localStorage.removeItem('ig-viewport');
+                } else {
+                    localStorage.setItem('ig-viewport', 'desktop');
+                }
+                location.reload();
+            ">
+        <span x-text="desktop ? 'Desktop' : 'Mobile'"></span>
+    </button>
     @endif
 
     {{-- Toast PR --}}

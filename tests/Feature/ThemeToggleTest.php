@@ -54,7 +54,7 @@ it('il toggle viewport e visibile in ambiente local', function () {
 
     $response->assertOk();
     $response->assertSee('ig-devtools-card', false);
-    $response->assertSee('ig-viewport', false);
+    $response->assertSee('ig-viewport-toggle', false);
 });
 
 it('il toggle viewport e assente in ambiente production', function () {

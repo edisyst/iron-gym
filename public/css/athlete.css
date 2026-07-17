@@ -860,21 +860,32 @@ body {
 .ig-theme-toggle:focus-visible { outline: 2px solid var(--ig-accent); outline-offset: 2px; }
 .ig-theme-toggle-label { font-size: var(--ig-text-xs); font-weight: 500; letter-spacing: 0.02em; }
 
-/* --- ig-viewport-badge (devtools, solo local) ---------------------------- */
-.ig-viewport-badge {
+/* --- ig-viewport-toggle (devtools, solo local) --------------------------- */
+.ig-viewport-toggle {
     position: fixed;
     top: calc(var(--topbar-h) + var(--ig-sp-2));
     right: var(--ig-sp-3);
-    z-index: var(--ig-z-toast);
-    background: var(--ig-warning);
-    color: #111111;
+    z-index: calc(var(--ig-z-toast) + 10);
     font-size: var(--ig-text-xs);
     font-weight: 700;
     padding: var(--ig-sp-1) var(--ig-sp-3);
     border-radius: var(--ig-radius-full);
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    pointer-events: none;
+    border: none;
+    cursor: pointer;
+    min-height: var(--ig-touch-target);
+    display: flex;
+    align-items: center;
+}
+.ig-viewport-toggle--desktop {
+    background: var(--ig-warning);
+    color: #111111;
+}
+.ig-viewport-toggle--mobile {
+    background: var(--ig-surface-raised);
+    color: var(--ig-text-2);
+    border: 1px solid var(--ig-border);
 }
 
 /* --- ig-devtools-card (profilo atleta, solo local) ----------------------- */

@@ -12,6 +12,16 @@
         document.documentElement.setAttribute('data-theme', s || (m ? 'light' : 'dark'));
     })();
     </script>
+    @if(app()->environment('local'))
+    {{-- Forza viewport desktop per revisione grafica (solo local) --}}
+    <script>
+    (function(){
+        if (localStorage.getItem('ig-viewport') === 'desktop') {
+            document.querySelector('meta[name="viewport"]').content = 'width=1280, initial-scale=1';
+        }
+    })();
+    </script>
+    @endif
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -26,9 +36,10 @@
     <link rel="stylesheet" href="{{ asset('css/athlete.css') }}">
     @stack('styles')
 </head>
-<body>
+<body x-data :class="$store.sidenav.open ? 'sidenav-is-open' : ''">
     {{-- Sidebar navigation (desktop ≥ 1024px) --}}
-    <aside class="app-sidenav" aria-label="Navigazione principale">
+    <div class="ig-sidenav-backdrop" @click="$store.sidenav.toggle()" aria-hidden="true"></div>
+    <aside class="app-sidenav" id="athlete-sidenav" aria-label="Navigazione principale">
         <div class="sidenav-brand">Iron Gym</div>
         <div class="sidenav-user">{{ auth()->user()->name ?? '' }}</div>
         <nav>
@@ -116,10 +127,20 @@
                     localStorage.setItem('ig-theme', this.theme);
                 }
             }">
+        <button @click="$store.sidenav.toggle()"
+                class="ig-hamburger"
+                :aria-expanded="$store.sidenav.open"
+                aria-controls="athlete-sidenav"
+                aria-label="Apri/chiudi navigazione">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+        </button>
         <span class="app-brand">Iron Gym</span>
         <a href="{{ route('athlete.profile') }}" class="user-name">{{ auth()->user()->name }}</a>
         <button @click="toggle()" class="ig-theme-toggle"
-                :aria-label="theme === 'dark' ? 'Tema chiaro' : 'Tema scuro'">
+                :aria-pressed="theme === 'light'"
+                :aria-label="theme === 'dark' ? 'Attiva tema chiaro' : 'Attiva tema scuro'">
             <svg x-show="theme === 'dark'" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
                 <circle cx="12" cy="12" r="5"/>
                 <path stroke-linecap="round" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
@@ -127,6 +148,7 @@
             <svg x-show="theme === 'light'" x-cloak width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
             </svg>
+            <span class="ig-theme-toggle-label" x-text="theme === 'dark' ? 'Chiaro' : 'Scuro'" aria-hidden="true"></span>
         </button>
         <a href="{{ route('logout') }}" class="logout-btn"
            onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
@@ -148,6 +170,18 @@
 
     <x-athlete.bottom-nav />
     <x-athlete.toast />
+
+    @if(app()->environment('local'))
+    {{-- Badge stato viewport forzato — visibile solo in local --}}
+    <div x-data="{ desktop: localStorage.getItem('ig-viewport') === 'desktop' }"
+         x-show="desktop"
+         x-cloak
+         class="ig-viewport-badge"
+         role="status"
+         aria-label="Vista desktop forzata attiva">
+        Vista desktop
+    </div>
+    @endif
 
     {{-- Toast PR --}}
     <div
@@ -192,6 +226,15 @@
     });
 
     document.addEventListener('alpine:init', function () {
+        Alpine.store('sidenav', {
+            open: window.matchMedia('(min-width: 1024px)').matches
+                  && localStorage.getItem('ig-sidenav') !== 'false',
+            toggle: function () {
+                this.open = !this.open;
+                localStorage.setItem('ig-sidenav', this.open);
+            },
+        });
+
         Alpine.store('messages', {
             unread: 0,
             init: function () {

@@ -144,69 +144,65 @@
                 @foreach ($warmupSets as $wset)
                     <div x-data="{ done: {{ $wset->completed_at ? 'true' : 'false' }}, pending: $store.syncQueue.isPending({{ $wset->id }}) }"
                          class="ws-warmup-row"
-                         :style="done ? 'opacity:.5' : ''">
+                         :class="done ? 'ws-warmup-row--done' : ''">
 
-                        <span style="font-size:11px;color:var(--ig-text-3);font-weight:700;">W</span>
-
-                        <span style="font-size:var(--ig-text-sm);color:var(--ig-text-3);">
-                            @if ($wset->planned_reps) {{ $wset->planned_reps }}r @endif
-                            @if ($wset->planned_weight_kg) {{ $wset->planned_weight_kg }}kg @endif
+                        {{-- Info sinistra --}}
+                        <div class="ws-warmup-info">
+                            <span class="ws-warmup-badge">W</span>
+                            <span class="ws-warmup-plan">
+                                @if ($wset->planned_reps) {{ $wset->planned_reps }}r @endif
+                                @if ($wset->planned_weight_kg) {{ $wset->planned_weight_kg }}kg @endif
+                            </span>
                             <template x-if="pending">
-                                <span style="font-size:10px;color:var(--ig-warning);margin-left:4px;" title="In attesa di sync">⏳</span>
+                                <span style="font-size:10px;color:var(--ig-warning);" title="In attesa di sync">⏳</span>
                             </template>
-                        </span>
+                        </div>
 
-                        <input type="number" inputmode="numeric" min="0"
-                               wire:model="setData.{{ $wset->id }}.reps"
-                               class="workout-input"
-                               aria-label="Reps riscaldamento"
-                               placeholder="{{ $wset->planned_reps ?? '-' }}">
-
+                        {{-- Peso modificabile --}}
                         <input type="number" inputmode="decimal" min="0" step="0.5"
                                wire:model="setData.{{ $wset->id }}.weight"
-                               class="workout-input"
+                               class="ws-warmup-weight-input"
                                aria-label="Peso riscaldamento in kg"
                                placeholder="{{ $wset->planned_weight_kg ?? '-' }}">
 
-                        <div style="display:flex;align-items:center;gap:4px;">
-                            <template x-if="!done">
-                                <button @click="
-                                            done = true;
-                                            if (!navigator.onLine) {
-                                                pending = true;
-                                                $store.syncQueue.enqueue('quick_log', { set_id: {{ $wset->id }} });
-                                                if ({{ $restSecJs }}) { $store.restTimer.start({{ $restSecJs }}); }
-                                            } else {
-                                                $wire.quickLog({{ $wset->id }}).then(() => {
-                                                    if ({{ $restSecJs }}) { $store.restTimer.start({{ $restSecJs }}); }
-                                                });
-                                            }
-                                        "
-                                        style="flex:1;background:var(--ig-surface-raised);border:1px solid var(--ig-border);
-                                               border-radius:var(--ig-radius-sm);min-height:44px;font-size:var(--ig-text-sm);
-                                               font-weight:600;color:var(--ig-text-2);cursor:pointer;padding:0 8px;">
-                                    Fatto
-                                </button>
-                            </template>
-                            <template x-if="done">
-                                <svg style="width:18px;height:18px;color:var(--ig-success);flex-shrink:0;" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                </svg>
-                            </template>
+                        {{-- Conferma --}}
+                        <template x-if="!done">
                             <button @click="
+                                        done = true;
                                         if (!navigator.onLine) {
-                                            $el.closest('[x-data]').style.display = 'none';
-                                            $store.syncQueue.enqueue('delete_warmup', { set_id: {{ $wset->id }} });
+                                            pending = true;
+                                            $store.syncQueue.enqueue('quick_log', { set_id: {{ $wset->id }} });
+                                            if ({{ $restSecJs }}) { $store.restTimer.start({{ $restSecJs }}); }
                                         } else {
-                                            $wire.deleteWarmupSet({{ $wset->id }});
+                                            $wire.quickLog({{ $wset->id }}).then(() => {
+                                                if ({{ $restSecJs }}) { $store.restTimer.start({{ $restSecJs }}); }
+                                            });
                                         }
                                     "
-                                    aria-label="Rimuovi set riscaldamento"
-                                    style="background:none;border:none;color:var(--ig-text-3);font-size:18px;cursor:pointer;
-                                           padding:0 4px;line-height:1;flex-shrink:0;
-                                           min-width:var(--ig-touch-target);min-height:var(--ig-touch-target);
-                                           display:flex;align-items:center;justify-content:center;">&times;</button>
-                        </div>
+                                    class="ws-warmup-confirm-btn"
+                                    aria-label="Conferma set riscaldamento">
+                                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                                </svg>
+                            </button>
+                        </template>
+                        <template x-if="done">
+                            <svg class="ws-warmup-done-icon" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                        </template>
+
+                        {{-- Elimina --}}
+                        <button @click="
+                                    if (!navigator.onLine) {
+                                        $el.closest('[x-data]').style.display = 'none';
+                                        $store.syncQueue.enqueue('delete_warmup', { set_id: {{ $wset->id }} });
+                                    } else {
+                                        $wire.deleteWarmupSet({{ $wset->id }});
+                                    }
+                                "
+                                class="ws-warmup-delete-btn"
+                                aria-label="Rimuovi set riscaldamento">&times;</button>
                     </div>
                 @endforeach
             </div>
@@ -270,6 +266,17 @@
                         @endif
                     @elseif ($isActive)
                         <span style="font-size:var(--ig-text-xs);color:var(--ig-accent);font-weight:700;white-space:nowrap;">set {{ $set->set_index }}</span>
+                    @endif
+
+                    @if (! $isDone)
+                        <button wire:click="skipSet({{ $set->id }})"
+                                wire:confirm="Saltare questo set?"
+                                class="ws-skip-set-btn"
+                                aria-label="Salta set {{ $set->set_index }}">
+                            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
                     @endif
                 </div>
 

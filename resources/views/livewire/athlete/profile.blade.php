@@ -109,6 +109,33 @@
         </form>
     @endif
 
+    {{-- ===== STRUMENTI SVILUPPO (solo local) ===== --}}
+    @if(app()->environment('local'))
+    <div class="ig-devtools-card"
+         x-data="{ desktop: localStorage.getItem('ig-viewport') === 'desktop' }">
+        <div class="section-title" style="margin-bottom:8px;">STRUMENTI SVILUPPO</div>
+        <p class="ig-devtools-desc">
+            Forza layout desktop per revisione grafica dallo stesso dispositivo mobile.
+            Limiti noti: safe-area inset non applicata, DPR del device invariato,
+            rendering non identico a desktop reale.
+        </p>
+        <button type="button"
+                class="ig-devtools-btn"
+                :aria-pressed="desktop"
+                :aria-label="desktop ? 'Ripristina layout mobile' : 'Forza layout desktop'"
+                @click="
+                    if (desktop) {
+                        localStorage.removeItem('ig-viewport');
+                    } else {
+                        localStorage.setItem('ig-viewport', 'desktop');
+                    }
+                    location.reload();
+                ">
+            <span x-text="desktop ? 'Ripristina layout mobile' : 'Forza layout desktop'"></span>
+        </button>
+    </div>
+    @endif
+
     {{-- ===== SEZIONE ACCOUNT / DANGER ===== --}}
     @if ($activeSection === 'danger')
         <div class="athlete-card" style="border:1px solid #2a1a1a;">

@@ -417,7 +417,7 @@
                     </div>
                 @endif
                 @if (in_array($actionMeasure, ['reps_weight', 'time_weight']))
-                    <div class="ws-action-input-group">
+                    <div class="ws-action-input-group ws-action-input-group--kg">
                         <span class="ws-action-input-label" aria-hidden="true">Kg</span>
                         <x-athlete.input-number
                             wire:model="setData.{{ $actionSet->id }}.weight"

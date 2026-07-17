@@ -281,13 +281,39 @@ Per liste con skeleton:
 
 ## Gestione tema
 
-**No FOUC:** script inline nel `<head>` legge `localStorage['ig-theme']` e imposta `data-theme` su `<html>` prima del CSS.
-**Toggle:** bottone `.ig-theme-toggle` nella topbar. Salva in `localStorage['ig-theme']`.
+**No FOUC:** script inline nel `<head>` (prima di `<link rel="stylesheet">`) legge `localStorage['ig-theme']`
+e imposta `data-theme` su `<html>`. Nessun flash visibile.
+
+**Toggle:** bottone `.ig-theme-toggle` nella topbar. Props a11y: `aria-pressed` dinamico
+(`:aria-pressed="theme === 'light'"`), `aria-label` "Attiva tema chiaro/scuro",
+label testuale visibile "Chiaro"/"Scuro" via `.ig-theme-toggle-label`. `min-height: var(--ig-touch-target)`.
 
 **Cascade:**
 1. `[data-theme="light"]` / `[data-theme="dark"]` — scelta utente (vince sempre)
 2. `@media (prefers-color-scheme: light)` su `:root:not([data-theme])` — preferenza sistema
 3. `:root` dark default
+
+---
+
+## Toggle viewport (devtools, solo `local`)
+
+Strumento di revisione grafica — non esposto in produzione.
+
+**Meccanismo:** script inline nel `<head>` (subito dopo lo script anti-FOUC, protetto da `@if(app()->environment('local'))`)
+legge `localStorage['ig-viewport']`. Se vale `'desktop'`, sovrascrive il `content` di `meta[name=viewport]`
+a `width=1280, initial-scale=1` prima che il CSS venga applicato.
+
+**Toggle UI:** sezione "Strumenti sviluppo" in `/athlete/profile`, visibile solo in `local`.
+Bottone con `aria-pressed`, al click scrive/rimuove `localStorage['ig-viewport']` e chiama `location.reload()`.
+
+**Badge stato:** `.ig-viewport-badge` — pill giallo fisso in alto a destra (`z-index: var(--ig-z-toast)`),
+visibile via Alpine `x-show` quando `localStorage['ig-viewport'] === 'desktop'`. `pointer-events: none`.
+
+**Limiti noti:**
+- `safe-area-inset-*` non calcolate (meta viewport diverso) — padding topbar/bottom-nav perde i margini iOS
+- DPR del device rimane quello fisico (es. 3x) — testo piu' nitido rispetto a un desktop reale
+- Hover states, font hinting e scroll behavior differiscono da un browser desktop reale
+- `location.reload()` necessario per riapplicare il meta viewport in modo pulito
 
 ---
 

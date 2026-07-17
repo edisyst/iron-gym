@@ -858,6 +858,7 @@ body {
 }
 .ig-theme-toggle:hover { color: var(--ig-text-1); border-color: var(--ig-text-2); }
 .ig-theme-toggle:focus-visible { outline: 2px solid var(--ig-accent); outline-offset: 2px; }
+.ig-theme-toggle-label { font-size: var(--ig-text-xs); font-weight: 500; letter-spacing: 0.02em; }
 
 /* --- ig-tab-group / ig-tab ---------------------------------------------- */
 .ig-tab-group {

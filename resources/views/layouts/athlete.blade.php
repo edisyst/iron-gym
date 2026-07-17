@@ -129,7 +129,8 @@
         <span class="app-brand">Iron Gym</span>
         <a href="{{ route('athlete.profile') }}" class="user-name">{{ auth()->user()->name }}</a>
         <button @click="toggle()" class="ig-theme-toggle"
-                :aria-label="theme === 'dark' ? 'Tema chiaro' : 'Tema scuro'">
+                :aria-pressed="theme === 'light'"
+                :aria-label="theme === 'dark' ? 'Attiva tema chiaro' : 'Attiva tema scuro'">
             <svg x-show="theme === 'dark'" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
                 <circle cx="12" cy="12" r="5"/>
                 <path stroke-linecap="round" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
@@ -137,6 +138,7 @@
             <svg x-show="theme === 'light'" x-cloak width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
             </svg>
+            <span class="ig-theme-toggle-label" x-text="theme === 'dark' ? 'Chiaro' : 'Scuro'" aria-hidden="true"></span>
         </button>
         <a href="{{ route('logout') }}" class="logout-btn"
            onclick="event.preventDefault(); document.getElementById('logout-form').submit();"

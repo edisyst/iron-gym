@@ -12,6 +12,16 @@
         document.documentElement.setAttribute('data-theme', s || (m ? 'light' : 'dark'));
     })();
     </script>
+    @if(app()->environment('local'))
+    {{-- Forza viewport desktop per revisione grafica (solo local) --}}
+    <script>
+    (function(){
+        if (localStorage.getItem('ig-viewport') === 'desktop') {
+            document.querySelector('meta[name="viewport"]').content = 'width=1280, initial-scale=1';
+        }
+    })();
+    </script>
+    @endif
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -160,6 +170,18 @@
 
     <x-athlete.bottom-nav />
     <x-athlete.toast />
+
+    @if(app()->environment('local'))
+    {{-- Badge stato viewport forzato — visibile solo in local --}}
+    <div x-data="{ desktop: localStorage.getItem('ig-viewport') === 'desktop' }"
+         x-show="desktop"
+         x-cloak
+         class="ig-viewport-badge"
+         role="status"
+         aria-label="Vista desktop forzata attiva">
+        Vista desktop
+    </div>
+    @endif
 
     {{-- Toast PR --}}
     <div

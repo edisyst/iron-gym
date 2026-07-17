@@ -43,3 +43,28 @@ it('il layout atleta contiene script anti-FOUC prima del CSS', function () {
 
     expect($posScript)->toBeLessThan($posCss);
 });
+
+it('il toggle viewport e visibile in ambiente local', function () {
+    $athlete = User::factory()->create();
+    $athlete->assignRole('atleta');
+
+    $this->app->detectEnvironment(fn () => 'local');
+
+    $response = $this->actingAs($athlete)->get(route('athlete.profile'));
+
+    $response->assertOk();
+    $response->assertSee('ig-devtools-card', false);
+    $response->assertSee('ig-viewport', false);
+});
+
+it('il toggle viewport e assente in ambiente production', function () {
+    $athlete = User::factory()->create();
+    $athlete->assignRole('atleta');
+
+    $this->app->detectEnvironment(fn () => 'production');
+
+    $response = $this->actingAs($athlete)->get(route('athlete.profile'));
+
+    $response->assertOk();
+    $response->assertDontSee('ig-devtools-card', false);
+});

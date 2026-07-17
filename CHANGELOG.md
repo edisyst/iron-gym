@@ -2,6 +2,29 @@
 
 ---
 
+## UX06 — Toggle tema dark/light e toggle viewport mobile/desktop (2026-07-17)
+
+**Obiettivo:** due controlli di revisione grafica nell'area atleta.
+
+- **B1 — Toggle tema completato:**
+  - `aria-pressed` dinamico sul bottone `.ig-theme-toggle` (`:aria-pressed="theme === 'light'"`)
+  - Label testuale visibile "Chiaro"/"Scuro" accanto all'icona SVG via `.ig-theme-toggle-label`
+  - `aria-label` aggiornato a "Attiva tema chiaro/scuro"
+  - Anti-FOUC: script inline nel `<head>` era gia' presente e corretto da UX01 — nessun intervento
+- **B2 — Toggle viewport (solo `local`):**
+  - Script inline nel `<head>` (condizionale `@env('local')`): legge `localStorage['ig-viewport']`,
+    sovrascrive `meta[name=viewport]` a `width=1280, initial-scale=1` prima del render CSS
+  - Badge fisso "Vista desktop" in alto a destra (Alpine `x-show`, `x-cloak`, `role=status`,
+    `pointer-events:none`), visibile solo quando viewport e' forzato
+  - Sezione "Strumenti sviluppo" in `/athlete/profile` con bottone toggle (`aria-pressed`,
+    reload on click) e nota limiti noti inline
+  - Limiti noti: `safe-area-inset` non applicata in modalita' desktop, DPR del device invariato,
+    rendering non identico a un desktop reale (hover states, font hinting)
+  - Classi CSS: `.ig-viewport-badge`, `.ig-devtools-card`, `.ig-devtools-desc`, `.ig-devtools-btn`
+- Suite: 189/195 (6 skip pre-esistenti invariati), PHPStan 0 errori, Pint conforme.
+
+---
+
 ## UX05-B — Audit ergonomia PWA atleta, Fase B (2026-07-06)
 
 **Obiettivo:** fix puntuali post-audit su contrasto, touch target, safe-area, input mobile, accessibilità.

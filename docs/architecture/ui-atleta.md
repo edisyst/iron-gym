@@ -1,7 +1,7 @@
 # UI Atleta — Design System
 
 Inventario completo dei token CSS, componenti Blade e pattern CSS della PWA atleta.
-Aggiornato dopo UX01–UX05.
+Aggiornato dopo UX01–UX06.
 
 ---
 

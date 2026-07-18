@@ -607,7 +607,7 @@
     {{-- Modale sostituzione esercizio --}}
     @if ($substitutingSeId !== null)
         <div x-data="{ open: true }" x-show="open"
-             style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:1100;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;"
+             style="position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;"
              role="dialog" aria-modal="true" aria-labelledby="modal-sost-title">
             <div style="background:#1A1A1A;border-radius:16px;width:min(90%,480px);max-height:90vh;overflow-y:auto;
                         padding:20px;"
@@ -657,7 +657,7 @@
                         Nessuna alternativa trovata con lo stesso pattern e tipo di misurazione.
                     </p>
                 @endif
-                <button @click="open = false; $nextTick(() => $wire.closeSubstitutionModal())"
+                <button wire:click="closeSubstitutionModal"
                         style="width:100%;margin-top:12px;background:none;border:1px solid #333;border-radius:8px;
                                padding:9px;font-size:13px;font-weight:600;color:#888;cursor:pointer;
                                min-height:var(--ig-touch-target);">

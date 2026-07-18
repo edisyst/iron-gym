@@ -603,7 +603,7 @@
 
     {{-- Modale sostituzione esercizio --}}
     @if ($substitutingSeId !== null)
-        <div x-data="{ open: true }" x-show="open"
+        <div x-data="{ open: true }"
              style="position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;"
              role="dialog" aria-modal="true" aria-labelledby="modal-sost-title">
             <div style="background:#1A1A1A;border-radius:16px;width:min(90%,480px);max-height:90vh;overflow-y:auto;

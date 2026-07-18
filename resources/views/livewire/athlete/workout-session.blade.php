@@ -506,51 +506,6 @@
         @endif
     </div>
 
-    {{-- Drawer dettaglio esercizio --}}
-    @if ($exerciseDetailId !== null && $this->exerciseDetail !== null)
-        @php $ex = $this->exerciseDetail; @endphp
-        <div style="position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.85);display:flex;align-items:flex-end;">
-            <div style="background:#1A1A1A;border-radius:16px 16px 0 0;width:100%;max-height:90vh;overflow-y:auto;
-                        padding:20px 20px calc(24px + env(safe-area-inset-bottom));"
-                 @click.stop>
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-                    <h3 style="margin:0;font-size:18px;font-weight:700;">{{ $ex->name_it }}</h3>
-                    <button wire:click="$set('exerciseDetailId', null)"
-                            style="background:none;border:none;color:#666;font-size:22px;cursor:pointer;line-height:1;min-width:var(--ig-touch-target);min-height:var(--ig-touch-target);display:flex;align-items:center;justify-content:center;"
-                            aria-label="Chiudi">&times;</button>
-                </div>
-
-                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;">
-                    @foreach ($ex->muscles->where('pivot.role', 'primary') as $m)
-                        <span style="background:#2A1A00;color:#FF6B00;font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;">
-                            {{ $m->name_it }}
-                        </span>
-                    @endforeach
-                    @foreach ($ex->muscles->where('pivot.role', 'secondary') as $m)
-                        <span style="background:#222;color:#666;font-size:10px;padding:3px 9px;border-radius:999px;">
-                            {{ $m->name_it }}
-                        </span>
-                    @endforeach
-                </div>
-
-                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
-                    @if ($ex->mechanic)
-                        <span style="font-size:11px;color:#888;background:#222;padding:3px 8px;border-radius:6px;">{{ $ex->mechanic }}</span>
-                    @endif
-                    @if ($ex->skill_level)
-                        <span style="font-size:11px;color:#888;background:#222;padding:3px 8px;border-radius:6px;">{{ $ex->skill_level }}</span>
-                    @endif
-                    @foreach ($ex->equipment as $eq)
-                        <span style="font-size:11px;color:#888;background:#222;padding:3px 8px;border-radius:6px;">{{ $eq->slug }}</span>
-                    @endforeach
-                </div>
-
-                @if ($ex->execution_description)
-                    <p style="font-size:13px;color:#ccc;line-height:1.6;margin:0;">{{ $ex->execution_description }}</p>
-                @endif
-            </div>
-        </div>
-    @endif
 
     {{-- Modale storico esercizio --}}
     @if ($exerciseHistoryId !== null)
@@ -652,10 +607,10 @@
     {{-- Modale sostituzione esercizio --}}
     @if ($substitutingSeId !== null)
         <div x-data="{ open: true }" x-show="open"
-             style="position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.85);display:flex;align-items:flex-end;"
+             style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:1100;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;"
              role="dialog" aria-modal="true" aria-labelledby="modal-sost-title">
-            <div style="background:#1A1A1A;border-radius:16px 16px 0 0;width:100%;max-height:90vh;overflow-y:auto;
-                        padding:20px 20px calc(24px + env(safe-area-inset-bottom));"
+            <div style="background:#1A1A1A;border-radius:16px;width:min(90%,480px);max-height:90vh;overflow-y:auto;
+                        padding:20px;"
                  @click.stop>
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
                     <h3 id="modal-sost-title" style="margin:0;font-size:16px;font-weight:700;">Sostituisci esercizio</h3>
@@ -702,6 +657,12 @@
                         Nessuna alternativa trovata con lo stesso pattern e tipo di misurazione.
                     </p>
                 @endif
+                <button @click="open = false; $nextTick(() => $wire.closeSubstitutionModal())"
+                        style="width:100%;margin-top:12px;background:none;border:1px solid #333;border-radius:8px;
+                               padding:9px;font-size:13px;font-weight:600;color:#888;cursor:pointer;
+                               min-height:var(--ig-touch-target);">
+                    Annulla
+                </button>
             </div>
         </div>
     @endif

@@ -1116,6 +1116,18 @@ body {
     font-style: italic;
     margin-bottom: var(--ig-sp-3);
 }
+.ws-img-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ig-sp-1);
+    background: none;
+    border: none;
+    color: var(--ig-text-3);
+    cursor: pointer;
+    padding: var(--ig-sp-1) 0 var(--ig-sp-2);
+    min-height: 32px;
+}
+.ws-img-toggle-btn:hover { color: var(--ig-text-2); }
 .ws-exercise-img-wrap {
     margin-bottom: var(--ig-sp-3);
     border-radius: var(--ig-radius-lg);
@@ -1125,9 +1137,44 @@ body {
 }
 .ws-exercise-img {
     width: 100%;
-    max-height: 220px;
-    object-fit: cover;
+    max-height: 300px;
+    object-fit: contain;
     display: block;
+}
+.ws-muscle-chip {
+    display: inline-flex;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    padding: 4px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+    letter-spacing: .02em;
+}
+.ws-muscle-chip--primary {
+    background: rgba(232, 93, 4, .18);
+    color: #FF6B00;
+    border: 1px solid rgba(232, 93, 4, .35);
+}
+.ws-muscle-chip--secondary {
+    background: var(--ig-surface-raised);
+    color: var(--ig-text-2);
+    border: 1px solid var(--ig-border);
+}
+.ws-meta-chip {
+    display: inline-flex;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--ig-text-2);
+    background: var(--ig-surface-raised);
+    border: 1px solid var(--ig-border);
+    padding: 4px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    text-transform: capitalize;
 }
 
 .ws-exec-toggle {

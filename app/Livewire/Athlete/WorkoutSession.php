@@ -47,9 +47,7 @@ class WorkoutSession extends Component
 
     public string $exerciseHistoryName = '';
 
-    public ?int $exerciseDetailId = null;
-
-    public bool $showReadinessModal = false;
+public bool $showReadinessModal = false;
 
     public bool $showModulationProposal = false;
 
@@ -81,6 +79,7 @@ class WorkoutSession extends Component
         $session->load([
             'sessionExercises' => fn ($q) => $q->orderBy('order_in_session'),
             'sessionExercises.exercise',
+            'sessionExercises.exercise.muscles',
             'sessionExercises.exercise.equipment',
             'sessionExercises.sets' => fn ($q) => $q->orderBy('set_index'),
             'sessionExercises.group',
@@ -170,20 +169,6 @@ class WorkoutSession extends Component
         $this->previousPerformance = $result;
     }
 
-    public function showExerciseDetail(int $exerciseId): void
-    {
-        $this->exerciseDetailId = ($this->exerciseDetailId === $exerciseId) ? null : $exerciseId;
-    }
-
-    public function getExerciseDetailProperty(): ?Exercise
-    {
-        if ($this->exerciseDetailId === null) {
-            return null;
-        }
-
-        return Exercise::with(['muscles', 'equipment', 'compoundPattern', 'jointAction'])
-            ->find($this->exerciseDetailId);
-    }
 
     public function showExerciseHistory(int $exerciseId, string $name): void
     {

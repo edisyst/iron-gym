@@ -306,7 +306,7 @@
                         @if ($usesBell && $set->planned_weight_kg)
                             <button wire:click="openPlateModal({{ $set->id }})"
                                     aria-label="Calcola dischi"
-                                    class="ws-icon-btn" style="padding:4px 8px;min-height:32px;">
+                                    class="ws-icon-btn">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                                     <rect x="2" y="10" width="4" height="4" rx="1"/>
                                     <rect x="18" y="10" width="4" height="4" rx="1"/>

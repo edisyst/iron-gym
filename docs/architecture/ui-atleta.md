@@ -1,7 +1,7 @@
 # UI Atleta — Design System
 
 Inventario completo dei token CSS, componenti Blade e pattern CSS della PWA atleta.
-Aggiornato dopo UX01–UX06.
+Aggiornato dopo UX01–UX07.
 
 ---
 
@@ -69,10 +69,10 @@ Unica fonte di verità per `body-map-muscle` (SVG fill) e `wv-dot` (legenda).
 | `--ig-text-xs` | 11px | Label uppercase, badge, colonne tabella |
 | `--ig-text-sm` | 13px | Testo secondario, date |
 | `--ig-text-base` | 16px | Corpo testo, input (evita zoom iOS) |
-| `--ig-text-md` | 18px | Unità in stat, sottotitoli |
-| `--ig-text-lg` | 22px | Input numerici set |
-| `--ig-text-xl` | 28px | Valori stat (e1RM, peso, reps) |
-| `--ig-text-display` | 42px | Timer, numero peso principale |
+| `--ig-text-md` | 22px | Unità in stat, sottotitoli |
+| `--ig-text-lg` | 26px | Input numerici set |
+| `--ig-text-xl` | 34px | Valori stat (e1RM, peso, reps) |
+| `--ig-text-display` | 48px | Timer, numero peso principale |
 
 ### Spacing (base 4px)
 
@@ -92,7 +92,11 @@ Unica fonte di verità per `body-map-muscle` (SVG fill) e `wv-dot` (legenda).
 
 | Token | Valore | Uso |
 |---|---|---|
-| `--ig-touch-target` | 48px | `min-height` per tutti gli elementi interattivi |
+| `--ig-touch-target` | 56px | `min-height` per tutti gli elementi interattivi |
+| `--ig-touch-target-sm` | 40px | Bottoni secondari piccoli (`.ig-btn--sm`) |
+| `--ig-touch-target-xl` | 64px | CTA primaria sessione (bottone FATTO, step height in action zone) |
+| `--ig-bottom-nav-h` | 72px | Altezza bottom nav — usato in `body padding-bottom` calc |
+| `--ig-nav-icon` | 26px | Dimensione icone SVG nella navigazione |
 | `--topbar-h` | 48px | Altezza top bar — usato in `body padding-top` e `.app-main margin-top` |
 | `--ig-transition` | 180ms | Durata standard transizioni CSS |
 | `--ig-transition-slow` | 280ms | Transizioni più lente (es. modali) |

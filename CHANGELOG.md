@@ -2,6 +2,62 @@
 
 ---
 
+## UX07 — Scala UI maggiorata per schermi piccoli (2026-07-18)
+
+**Obiettivo:** alzare la scala dell'interfaccia atleta oltre il minimo WCAG per uso in palestra con una mano sola.
+
+### B1 — Token di scala
+
+Aggiornati in `public/css/athlete.css`:
+
+| Token | Prima | Dopo |
+|---|---|---|
+| `--ig-text-md` | 18px | 22px |
+| `--ig-text-lg` | 22px | 26px |
+| `--ig-text-xl` | 28px | 34px |
+| `--ig-text-display` | 42px | 48px |
+| `--ig-touch-target` | 48px | 56px |
+
+Nuovi token introdotti: `--ig-touch-target-sm` (40px), `--ig-touch-target-xl` (64px),
+`--ig-bottom-nav-h` (72px), `--ig-nav-icon` (26px).
+
+### B2 — Tokenizzazione valori hardcoded
+
+- `.ig-btn--sm` min-height: 36px → `var(--ig-touch-target-sm)`
+- `.ig-num-input__step` font-size: 22px → `var(--ig-text-lg)`
+- `.metric-options label` width/height: 44px → `var(--ig-touch-target)`
+- `.ig-form-input` padding: `12px 14px` → `var(--ig-sp-3) var(--ig-sp-4)`
+- `.ig-tab` padding: `9px` → `var(--ig-sp-2)`
+- `.home-hero-cta .ig-btn--lg` min-height: 56px → `var(--ig-touch-target-xl)`
+- `.bottom-nav` min-height, svg size → token
+- `ws-muscle-chip`, `ws-meta-chip`, `ws-warmup-badge`, `body-map-label` font-size → `var(--ig-text-xs)`
+- `ws-muscle-chip`, `ws-meta-chip` padding → token
+- `ws-icon-btn` padding 10px hardcoded → `var(--ig-sp-3)`
+
+### B3 — Bottone FATTO
+
+Inline style rimossa da `workout-session.blade.php`. Nuova classe CSS `ws-action-done-btn`
+(64px min-height, font-size `--ig-text-md`, usa tutti i token). Override `min-height:48px` rimossi
+dai bottoni delle modali readiness e modulazione.
+
+### B4 — Riquadri numerici
+
+`ig-stat__value` aggiunto `white-space: nowrap; overflow: hidden; text-overflow: ellipsis`
+per proteggere da overflow su valori lunghi (tonnellaggio 5 cifre, e1RM con decimale).
+
+### B5 — Fix casi a rischio
+
+Action zone 3-stepper: `.ws-action-inputs .ig-num-input__step` → `min-width: 44px` (non cresce con
+`--ig-touch-target`), `min-height: var(--ig-touch-target-xl)` (64px — area tap più grande in verticale,
+senza spezzare il layout orizzontale su iPhone SE). Plate button in session-exercise: inline style
+`min-height:32px` rimossa (la classe `ws-icon-btn` ora fornisce il touch target corretto).
+
+### Verifica finale
+
+Suite: 189/195 (6 skip pre-esistenti invariati). PHPStan 0 errori. Pint conforme.
+
+---
+
 ## UX06 — Toggle tema dark/light e toggle viewport mobile/desktop (2026-07-17)
 
 **Obiettivo:** due controlli di revisione grafica nell'area atleta.

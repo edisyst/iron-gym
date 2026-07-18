@@ -50,10 +50,10 @@
   --ig-text-xs:         11px;
   --ig-text-sm:         13px;
   --ig-text-base:       16px;
-  --ig-text-md:         18px;
-  --ig-text-lg:         22px;
-  --ig-text-xl:         28px;
-  --ig-text-display:    42px;
+  --ig-text-md:         22px;
+  --ig-text-lg:         26px;
+  --ig-text-xl:         34px;
+  --ig-text-display:    48px;
 
   /* Spacing (base 4px) */
   --ig-sp-1:  4px;
@@ -72,7 +72,13 @@
   --ig-radius-full: 999px;
 
   /* Touch target — min-height per elementi interattivi */
-  --ig-touch-target: 48px;
+  --ig-touch-target:    56px;
+  --ig-touch-target-sm: 40px;
+  --ig-touch-target-xl: 64px;
+
+  /* Navigazione */
+  --ig-bottom-nav-h: 72px;
+  --ig-nav-icon:     26px;
 
   /* Topbar height — usato in body padding-top e app-main margin-top */
   --topbar-h: 48px;
@@ -218,7 +224,7 @@ body {
 .bottom-nav {
     position: fixed;
     bottom: 0; left: 0; right: 0;
-    min-height: 72px;
+    min-height: var(--ig-bottom-nav-h);
     height: auto;
     padding-bottom: max(var(--ig-sp-2), env(safe-area-inset-bottom, 0px));
     background-color: var(--ig-surface);
@@ -245,7 +251,7 @@ body {
 }
 .bottom-nav a.active { color: var(--ig-accent); font-weight: 700; }
 .bottom-nav a:hover  { color: var(--ig-accent); }
-.bottom-nav svg      { width: 22px; height: 22px; }
+.bottom-nav svg      { width: var(--ig-nav-icon); height: var(--ig-nav-icon); }
 
 .nav-pill {
     position: relative;
@@ -471,8 +477,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 44px;
-    height: 44px;
+    width: var(--ig-touch-target);
+    height: var(--ig-touch-target);
     border-radius: var(--ig-radius);
     border: 1px solid var(--ig-border);
     cursor: pointer;
@@ -578,7 +584,7 @@ body {
 
 .body-map-outline       { fill: none; stroke: #555; stroke-width: 0.8; }
 .body-map-outline-light { fill: none; stroke: #444; stroke-width: 0.5; }
-.body-map-label         { fill: var(--ig-text-3); font-size: 11px; font-family: var(--ig-font-sans); }
+.body-map-label         { fill: var(--ig-text-3); font-size: var(--ig-text-xs); font-family: var(--ig-font-sans); }
 
 .wv-body-map-wrapper { margin: var(--ig-sp-4) 0; overflow-x: auto; }
 .body-map-svg { width: 100%; max-width: 520px; height: auto; display: block; margin: 0 auto; }
@@ -675,7 +681,7 @@ body {
 .ig-btn:disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
 .ig-btn:focus-visible { outline: 2px solid var(--ig-accent); outline-offset: 2px; }
 .ig-btn--full { width: 100%; }
-.ig-btn--sm   { min-height: 36px; font-size: var(--ig-text-sm); padding: 0 var(--ig-sp-3); }
+.ig-btn--sm   { min-height: var(--ig-touch-target-sm); font-size: var(--ig-text-sm); padding: 0 var(--ig-sp-3); }
 
 .ig-btn--primary { background: var(--ig-accent); color: #fff; }
 .ig-btn--primary:hover:not(:disabled) { background: var(--ig-accent-hover); }
@@ -748,6 +754,10 @@ body {
     color: var(--ig-text-1);
     font-variant-numeric: tabular-nums;
     line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
 }
 .ig-stat__unit {
     font-size: var(--ig-text-md);
@@ -794,7 +804,7 @@ body {
     background: none;
     border: none;
     color: var(--ig-text-2);
-    font-size: 22px;
+    font-size: var(--ig-text-lg);
     font-weight: 300;
     cursor: pointer;
     display: flex;
@@ -930,7 +940,7 @@ body {
     flex: 1;
     border: none;
     border-radius: var(--ig-radius-sm);
-    padding: 9px var(--ig-sp-3);
+    padding: var(--ig-sp-2) var(--ig-sp-3);
     font-size: var(--ig-text-sm);
     font-weight: 600;
     cursor: pointer;
@@ -955,7 +965,7 @@ body {
     border: 1px solid var(--ig-border);
     border-radius: var(--ig-radius-sm);
     color: var(--ig-text-1);
-    padding: 12px 14px;
+    padding: var(--ig-sp-3) var(--ig-sp-4);
     font-size: var(--ig-text-base);
     transition: border-color var(--ig-transition);
 }
@@ -1096,7 +1106,7 @@ body {
     background: var(--ig-surface-raised);
     border: 1px solid var(--ig-border);
     border-radius: var(--ig-radius-sm);
-    padding: var(--ig-sp-2) 10px;
+    padding: var(--ig-sp-2) var(--ig-sp-3);
     font-size: var(--ig-text-sm);
     font-weight: 600;
     color: var(--ig-text-2);
@@ -1144,10 +1154,10 @@ body {
 .ws-muscle-chip {
     display: inline-flex;
     align-items: center;
-    font-size: 11px;
+    font-size: var(--ig-text-xs);
     font-weight: 700;
     line-height: 1;
-    padding: 4px 10px;
+    padding: var(--ig-sp-1) var(--ig-sp-3);
     border-radius: 999px;
     white-space: nowrap;
     letter-spacing: .02em;
@@ -1165,13 +1175,13 @@ body {
 .ws-meta-chip {
     display: inline-flex;
     align-items: center;
-    font-size: 11px;
+    font-size: var(--ig-text-xs);
     font-weight: 600;
     line-height: 1;
     color: var(--ig-text-2);
     background: var(--ig-surface-raised);
     border: 1px solid var(--ig-border);
-    padding: 4px 10px;
+    padding: var(--ig-sp-1) var(--ig-sp-3);
     border-radius: 6px;
     white-space: nowrap;
     text-transform: capitalize;
@@ -1292,7 +1302,7 @@ body {
     min-width: 0;
 }
 .ws-warmup-badge {
-    font-size: 11px;
+    font-size: var(--ig-text-xs);
     font-weight: 700;
     color: var(--ig-text-3);
     flex-shrink: 0;
@@ -1511,6 +1521,33 @@ body {
     color: var(--ig-text-3);
 }
 
+/* Bottone primario zona azione — dimensione XL per uso con una mano */
+.ws-action-done-btn {
+    width: 100%;
+    background: var(--ig-accent);
+    border: none;
+    border-radius: var(--ig-radius);
+    min-height: var(--ig-touch-target-xl);
+    font-size: var(--ig-text-md);
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    transition: background var(--ig-transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--ig-sp-2);
+}
+.ws-action-done-btn:hover:not(:disabled) { background: var(--ig-accent-hover); }
+.ws-action-done-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+.ws-action-done-btn:focus-visible { outline: 2px solid var(--ig-accent); outline-offset: 2px; }
+
+/* Stepper in zona azione: min-width limitato per evitare overflow orizzontale su SE */
+.ws-action-inputs .ig-num-input__step {
+    min-width: 44px;
+    min-height: var(--ig-touch-target-xl);
+}
+
 /* Action zone */
 .ws-action-zone {
     position: fixed;
@@ -1686,7 +1723,7 @@ body {
     text-transform: capitalize;
 }
 .home-hero-cta .ig-btn--lg {
-    min-height: 56px;
+    min-height: var(--ig-touch-target-xl);
     font-size: var(--ig-text-md);
     font-weight: 700;
     display: flex;

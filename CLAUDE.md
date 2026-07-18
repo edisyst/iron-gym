@@ -238,6 +238,8 @@ Audit ergonomia UX05-B completato (2026-07-06): fix safe-area topbar (padding sh
 
 UX06 Toggle tema e viewport completata (2026-07-17): aria-pressed + label testuale sul toggle tema esistente; toggle viewport (solo local) via meta[name=viewport] riscritta da script inline head + sezione devtools in /athlete/profile + badge fisso "Vista desktop". 5 test ThemeToggleTest verdi. Suite: 189/195 (6 skip pre-esistenti invariati), PHPStan 0 errori, Pint conforme.
 
+UX07 Scala UI maggiorata completata (2026-07-18): touch-target 48→56px, touch-target-xl 64px (nuovo, CTA sessione + step height), text-xl 28→34px, text-lg 22→26px, text-md 18→22px, text-display 42→48px. Token ig-touch-target-sm/xl/ig-bottom-nav-h/ig-nav-icon introdotti. Tokenizzati tutti i valori hardcoded principali: ig-btn--sm, ig-num-input__step font-size, metric-options label, ig-form-input padding, ig-tab padding, bottom-nav min-height, svg nav icon, ws-muscle-chip/ws-meta-chip, body-map-label, ws-warmup-badge, ws-icon-btn padding. Bottone FATTO: rimossa inline style, nuova classe ws-action-done-btn (64px). Step buttons action zone: min-width 44px, min-height 64px (non bloccano layout orizzontale su SE). Override min-height:48px rimossi da modali readiness e modulazione. Suite: 189/195 (6 skip invariati), PHPStan 0 errori, Pint conforme.
+
 Prossima attività: raccogliere feedback dai primi atleti pilota dopo prima sessione.
 
 ## Setup pilota — dati e procedure
@@ -318,8 +320,11 @@ Struttura: design tokens → base → navigazione → componenti legacy → comp
 
 **Design tokens:** CSS custom properties su `:root` (dark default) e `[data-theme="light"]`.
 Token principali: `--ig-bg`, `--ig-surface`, `--ig-surface-raised`, `--ig-border`, `--ig-text-1/2/3`,
-`--ig-accent`, `--ig-success/warning/danger` + varianti `-subtle`, `--ig-touch-target` (48px),
-`--ig-font-sans`, `--ig-text-xs/sm/base/md/lg/xl/display`, `--ig-sp-1..10`, `--ig-radius-sm/lg/full`.
+`--ig-accent`, `--ig-success/warning/danger` + varianti `-subtle`,
+`--ig-touch-target` (56px), `--ig-touch-target-sm` (40px), `--ig-touch-target-xl` (64px — CTA sessione),
+`--ig-bottom-nav-h` (72px), `--ig-nav-icon` (26px),
+`--ig-font-sans`, `--ig-text-xs` (11px) `/sm` (13px) `/base` (16px) `/md` (22px) `/lg` (26px) `/xl` (34px) `/display` (48px),
+`--ig-sp-1..10`, `--ig-radius-sm/lg/full`.
 
 **Componenti Blade (namespace `x-athlete.*`):**
 Path: `resources/views/components/athlete/`

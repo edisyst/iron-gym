@@ -486,10 +486,7 @@
                             }
                         "
                         :disabled="pending"
-                        style="width:100%;background:var(--ig-accent);border:none;border-radius:var(--ig-radius);
-                               min-height:56px;font-size:var(--ig-text-md);font-weight:700;color:#fff;
-                               cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:8px;"
-                        :style="pending ? 'opacity:.7;cursor:not-allowed' : ''">
+                        class="ws-action-done-btn">
                     <span x-show="!pending">
                         <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"
                              style="display:inline;vertical-align:middle;margin-right:6px;" aria-hidden="true">
@@ -708,7 +705,7 @@
                             x-bind:style="{{ $field['key'] }} === {{ $v }} ? 'background:' + colorFor({{ $v }}) + ';color:#000;border-color:transparent;' : ''"
                             style="flex:1;padding:10px 4px;border-radius:10px;border:1px solid #333;
                                    background:#262626;color:#ccc;font-size:11px;font-weight:700;cursor:pointer;
-                                   transition:background .15s;min-height:48px;">
+                                   transition:background .15s;min-height:var(--ig-touch-target);">
                         <span x-text="labels.{{ $field['key'] }}[{{ $v }}]"></span>
                     </button>
                     @endforeach
@@ -727,12 +724,12 @@
                 <button @click="$wire.submitReadiness(sleep, stress, soreness, joint, note)"
                         wire:loading.attr="disabled"
                         class="btn-accent"
-                        style="flex:1;min-height:48px;">
+                        style="flex:1;">
                     Inizia allenamento
                 </button>
                 <button @click="$wire.skipReadiness()"
                         style="background:transparent;border:1px solid #333;color:#666;
-                               padding:12px 16px;border-radius:10px;font-size:13px;cursor:pointer;white-space:nowrap;min-height:48px;">
+                               padding:12px 16px;border-radius:10px;font-size:13px;cursor:pointer;white-space:nowrap;min-height:var(--ig-touch-target);">
                     Salta il check
                 </button>
             </div>
@@ -807,12 +804,12 @@
                 <button wire:click="acceptModulation"
                         wire:loading.attr="disabled"
                         class="btn-accent"
-                        style="flex:1;min-height:48px;">
+                        style="flex:1;">
                     Applica modifiche
                 </button>
                 <button wire:click="rejectModulation"
                         style="background:transparent;border:1px solid #333;color:#aaa;
-                               padding:12px 16px;border-radius:10px;font-size:13px;cursor:pointer;white-space:nowrap;min-height:48px;">
+                               padding:12px 16px;border-radius:10px;font-size:13px;cursor:pointer;white-space:nowrap;min-height:var(--ig-touch-target);">
                     Allena al piano
                 </button>
             </div>

@@ -47,7 +47,7 @@ class WorkoutSession extends Component
 
     public string $exerciseHistoryName = '';
 
-public bool $showReadinessModal = false;
+    public bool $showReadinessModal = false;
 
     public bool $showModulationProposal = false;
 
@@ -168,7 +168,6 @@ public bool $showReadinessModal = false;
 
         $this->previousPerformance = $result;
     }
-
 
     public function showExerciseHistory(int $exerciseId, string $name): void
     {

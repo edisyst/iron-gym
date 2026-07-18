@@ -1147,7 +1147,6 @@ body {
 }
 .ws-exercise-img {
     width: 100%;
-    max-height: 300px;
     object-fit: contain;
     display: block;
 }

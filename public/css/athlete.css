@@ -477,14 +477,15 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: var(--ig-touch-target);
+    min-width: var(--ig-touch-target);
     height: var(--ig-touch-target);
-    border-radius: var(--ig-radius);
+    padding: 0 var(--ig-sp-3);
+    border-radius: var(--ig-radius-full);
     border: 1px solid var(--ig-border);
     cursor: pointer;
     font-size: var(--ig-text-base);
     color: var(--ig-text-2);
-    transition: border-color 0.15s, background 0.15s;
+    transition: border-color 0.15s, background 0.15s, font-weight 0.1s;
 }
 .metric-options label:hover { border-color: var(--ig-accent); }
 .metric-options input[type="radio"] { display: none; }
@@ -492,6 +493,8 @@ body {
     background-color: var(--ig-accent);
     border-color: var(--ig-accent);
     color: #fff;
+    font-weight: 700;
+    padding: 0 var(--ig-sp-4);
 }
 /* fallback per browser senza :has() — mantiene compatibilità con :checked+span */
 .metric-options input[type="radio"]:checked + span {

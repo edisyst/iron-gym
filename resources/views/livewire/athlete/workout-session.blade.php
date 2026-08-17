@@ -702,10 +702,10 @@
                 <div style="display:flex;gap:8px;">
                     @foreach ([0,1,2,3] as $v)
                     <button @click="{{ $field['key'] }} = {{ $v }}"
-                            x-bind:style="{{ $field['key'] }} === {{ $v }} ? 'background:' + colorFor({{ $v }}) + ';color:#000;border-color:transparent;' : ''"
+                            x-bind:style="{{ $field['key'] }} === {{ $v }} ? 'background:' + colorFor({{ $v }}) + ';color:#000;border-color:transparent;border-radius:999px;padding:10px 14px;flex:unset;' : ''"
                             style="flex:1;padding:10px 4px;border-radius:10px;border:1px solid #333;
-                                   background:#262626;color:#ccc;font-size:11px;font-weight:700;cursor:pointer;
-                                   transition:background .15s;min-height:var(--ig-touch-target);">
+                                   background:#262626;color:#ccc;font-size:13px;font-weight:700;cursor:pointer;
+                                   transition:background .15s,border-radius .15s,padding .15s;min-height:var(--ig-touch-target);">
                         <span x-text="labels.{{ $field['key'] }}[{{ $v }}]"></span>
                     </button>
                     @endforeach

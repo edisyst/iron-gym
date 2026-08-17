@@ -1340,8 +1340,9 @@ body {
     border-bottom: 1px solid var(--ig-border-subtle);
     border-radius: var(--ig-radius-sm);
     transition: background .15s;
+    margin-bottom: 2px;
 }
-.ws-set-row--done { opacity: 0.5; }
+.ws-set-row--done { opacity: 0.6; background: rgba(34, 197, 94, 0.08); border-radius: var(--ig-radius-sm); }
 .ws-set-row--active {
     background: var(--ig-accent-subtle);
     border-bottom-color: transparent;

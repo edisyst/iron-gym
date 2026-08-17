@@ -383,6 +383,40 @@ class WorkoutSession extends Component
         $this->reloadSets();
     }
 
+    /**
+     * Aggiunge un set working extra clonando l'ultimo set pianificato dell'esercizio.
+     */
+    public function addExtraSet(int $sessionExerciseId): void
+    {
+        $se = SessionExercise::where('session_id', $this->session->id)
+            ->findOrFail($sessionExerciseId);
+
+        $lastSet = ExerciseSet::where('session_exercise_id', $se->id)
+            ->where('is_warmup', false)
+            ->orderByDesc('set_index')
+            ->firstOrFail();
+
+        $new = ExerciseSet::create([
+            'session_exercise_id' => $se->id,
+            'set_index' => $lastSet->set_index + 1,
+            'is_warmup' => false,
+            'planned_reps' => $lastSet->planned_reps,
+            'planned_weight_kg' => $lastSet->planned_weight_kg,
+            'planned_rir' => $lastSet->planned_rir,
+            'planned_duration_sec' => $lastSet->planned_duration_sec,
+            'set_subtype' => $lastSet->set_subtype,
+        ]);
+
+        $this->setData[$new->id] = [
+            'weight' => $new->planned_weight_kg,
+            'reps' => $new->planned_reps,
+            'rir' => $new->planned_rir,
+            'duration' => $new->planned_duration_sec,
+        ];
+
+        $this->reloadSets();
+    }
+
     public function canCompleteSession(): bool
     {
         foreach ($this->session->sessionExercises as $exercise) {

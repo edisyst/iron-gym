@@ -357,7 +357,7 @@
         }
     @endphp
 
-    <div x-data="{ pending: false }" class="ws-action-zone">
+    <div x-data="{ pending: false }" class="ws-action-zone" @if($showFeedback) style="display:none;" @endif>
 
         {{-- Rest timer (integrato nella zona azione) --}}
         <div x-data x-show="$store.restTimer.running" x-cloak class="ws-action-timer">
@@ -799,13 +799,11 @@
     @endif
 
     {{-- Form feedback --}}
-    <div x-data="{ open: {{ $showFeedback ? 'true' : 'false' }} }"
-         @open-feedback.window="open = true">
-        <div x-show="open" x-transition style="position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.7);display:flex;align-items:flex-end;">
-            <div x-show="open" @click.outside="open = false"
-                 style="background:#1E1E1E;border-radius:16px 16px 0 0;padding:24px 20px;width:100%;max-height:90vh;overflow-y:auto;">
-                <livewire:athlete.session-feedback-form :session="$session" />
-            </div>
+    @if ($showFeedback)
+    <div style="position:fixed;inset:0;z-index:1050;background:rgba(0,0,0,.7);display:flex;align-items:flex-end;">
+        <div style="background:#1E1E1E;border-radius:16px 16px 0 0;padding:24px 20px 32px;width:100%;max-height:90vh;overflow-y:auto;box-sizing:border-box;">
+            <livewire:athlete.session-feedback-form :session="$session" />
         </div>
     </div>
+    @endif
 </div>

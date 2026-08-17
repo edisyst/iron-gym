@@ -284,7 +284,7 @@ class WorkoutSession extends Component
         $this->reloadSets();
 
         if ($this->selectedSetId === $setId) {
-            $this->selectedSetId = $this->findFirstIncompleteSetId();
+            $this->selectedSetId = $this->findFirstIncompleteSetIdInCurrentGroup();
             $this->reloadSetDataForSelected();
         } else {
             $this->dispatch('set-completed', setId: $setId);
@@ -302,7 +302,7 @@ class WorkoutSession extends Component
 
     public function cancelSelection(): void
     {
-        $this->selectedSetId = $this->findFirstIncompleteSetId();
+        $this->selectedSetId = null;
         $this->reloadSetDataForSelected();
     }
 
@@ -325,6 +325,20 @@ class WorkoutSession extends Component
     private function findFirstIncompleteSetId(): ?int
     {
         foreach ($this->session->sessionExercises as $se) {
+            $first = $se->sets->where('is_warmup', false)->whereNull('completed_at')->sortBy('set_index')->first();
+            if ($first) {
+                return $first->id;
+            }
+        }
+
+        return null;
+    }
+
+    private function findFirstIncompleteSetIdInCurrentGroup(): ?int
+    {
+        $grouped = $this->buildGroupedExercises();
+        $group = collect($grouped[$this->currentGroupIndex] ?? []);
+        foreach ($group as $se) {
             $first = $se->sets->where('is_warmup', false)->whereNull('completed_at')->sortBy('set_index')->first();
             if ($first) {
                 return $first->id;

@@ -34,7 +34,6 @@
                               && $warmupSets->isEmpty();
         $hasCompletedSets   = $workingSets->whereNotNull('completed_at')->isNotEmpty();
         $canSubstitute      = ! $hasCompletedSets;
-        $usesBell           = $this->exerciseUsesBarbell($exercise->id);
         $firstIncompleteId  = $workingSets->whereNull('completed_at')->first()?->id;
         $restSec            = $exercise->technique_type === 'cluster'
                               ? ($exercise->intra_cluster_rest_sec ?? $exercise->planned_rest_sec)
@@ -202,8 +201,8 @@
                         <div class="ws-warmup-info">
                             <span class="ws-warmup-badge">W</span>
                             <span class="ws-warmup-plan">
-                                @if ($wset->planned_reps) {{ $wset->planned_reps }}r @endif
-                                @if ($wset->planned_weight_kg) {{ $wset->planned_weight_kg }}kg @endif
+                                @if ($wset->planned_reps) {{ $wset->planned_reps }} reps @endif
+                                @if ($wset->planned_weight_kg) &times; {{ $wset->planned_weight_kg }} kg @endif
                             </span>
                             <template x-if="pending">
                                 <span style="font-size:10px;color:var(--ig-warning);" title="In attesa di sync">⏳</span>
@@ -269,7 +268,9 @@
                     $prevPerf  = $previousPerformance[$exercise->exercise_id][$set->set_index] ?? null;
                 @endphp
 
-                <div class="ws-set-row {{ $isDone ? 'ws-set-row--done' : ($isActive ? 'ws-set-row--active' : '') }}">
+                <div x-data="{ editing: false }"
+                     class="ws-set-row {{ $isDone ? 'ws-set-row--done' : ($isActive ? 'ws-set-row--active' : '') }}"
+                     style="{{ $isDone ? 'flex-wrap:wrap;' : '' }}">
 
                     {{-- Indicatore stato --}}
                     <div style="width:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
@@ -286,10 +287,10 @@
 
                     {{-- Piano --}}
                     <div class="ws-set-plan">
-                        @if ($set->planned_reps) {{ $set->planned_reps }}r @endif
-                        @if ($set->planned_weight_kg) &times; {{ $set->planned_weight_kg }}kg @endif
-                        @if ($set->planned_rir !== null) RIR{{ $set->planned_rir }} @endif
-                        @if ($set->planned_duration_sec) {{ $set->planned_duration_sec }}s @endif
+                        @if ($set->planned_reps) {{ $set->planned_reps }} reps @endif
+                        @if ($set->planned_weight_kg) &times; {{ $set->planned_weight_kg }} kg @endif
+                        @if ($set->planned_rir !== null) - RIR {{ $set->planned_rir }} @endif
+                        @if ($set->planned_duration_sec) {{ $set->planned_duration_sec }} s @endif
                         @if ($set->is_warmup === false && $set->set_subtype)
                             <span style="font-size:10px;color:var(--ig-text-3);">({{ $set->set_subtype }})</span>
                         @endif
@@ -297,25 +298,67 @@
 
                     {{-- Eseguito (se completato) --}}
                     @if ($isDone)
-                        <div class="ws-set-actual">
-                            @if ($set->actual_reps) {{ $set->actual_reps }}r @endif
-                            @if ($set->actual_weight_kg) &times; {{ $set->actual_weight_kg }}kg @endif
-                            @if ($set->actual_rir !== null) RIR{{ $set->actual_rir }} @endif
-                            @if ($set->actual_duration_sec) {{ $set->actual_duration_sec }}s @endif
+                        <div class="ws-set-actual" x-show="!editing">
+                            @if ($set->actual_reps) {{ $set->actual_reps }} reps @endif
+                            @if ($set->actual_weight_kg) &times; {{ $set->actual_weight_kg }} kg @endif
+                            @if ($set->actual_rir !== null) - RIR {{ $set->actual_rir }} @endif
+                            @if ($set->actual_duration_sec) {{ $set->actual_duration_sec }} s @endif
                         </div>
-                        @if ($usesBell && $set->planned_weight_kg)
-                            <button wire:click="openPlateModal({{ $set->id }})"
-                                    aria-label="Calcola dischi"
-                                    class="ws-icon-btn">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                    <rect x="2" y="10" width="4" height="4" rx="1"/>
-                                    <rect x="18" y="10" width="4" height="4" rx="1"/>
-                                    <rect x="6" y="8" width="3" height="8" rx="1"/>
-                                    <rect x="15" y="8" width="3" height="8" rx="1"/>
-                                    <line x1="9" y1="12" x2="15" y2="12"/>
+                        <button @click="editing = !editing"
+                                :aria-pressed="editing.toString()"
+                                class="ws-icon-btn"
+                                aria-label="Modifica set {{ $loop->iteration }}">
+                            <template x-if="!editing">
+                                <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.5-6.5a2 2 0 012.828 2.828L11.828 15.828A2 2 0 0110.414 16.5H8v-2.414a2 2 0 01.586-1.414z"/>
+                                </svg>
+                            </template>
+                            <template x-if="editing">
+                                <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </template>
+                        </button>
+                        {{-- Riga edit inline (occupa tutta la larghezza sotto) --}}
+                        <div x-show="editing" x-cloak
+                             style="width:100%;padding:var(--ig-sp-2) 0 var(--ig-sp-1);display:flex;gap:var(--ig-sp-2);align-items:center;flex-wrap:wrap;">
+                            @if (in_array($measurementType, ['reps_weight', 'reps']))
+                                <input type="number" inputmode="numeric" min="0"
+                                       wire:model="setData.{{ $set->id }}.reps"
+                                       class="ws-warmup-weight-input"
+                                       style="width:56px;"
+                                       placeholder="rep" aria-label="Ripetizioni effettive">
+                            @endif
+                            @if ($measurementType === 'reps_weight')
+                                <input type="number" inputmode="decimal" min="0" step="0.5"
+                                       wire:model="setData.{{ $set->id }}.weight"
+                                       class="ws-warmup-weight-input"
+                                       style="width:64px;"
+                                       placeholder="kg" aria-label="Peso effettivo in kg">
+                            @endif
+                            @if (in_array($measurementType, ['reps_weight', 'reps']))
+                                <input type="number" inputmode="numeric" min="0" max="10"
+                                       wire:model="setData.{{ $set->id }}.rir"
+                                       class="ws-warmup-weight-input"
+                                       style="width:48px;"
+                                       placeholder="RIR" aria-label="RIR effettivo">
+                            @endif
+                            @if ($measurementType === 'duration')
+                                <input type="number" inputmode="numeric" min="0"
+                                       wire:model="setData.{{ $set->id }}.duration"
+                                       class="ws-warmup-weight-input"
+                                       style="width:64px;"
+                                       placeholder="sec" aria-label="Durata in secondi">
+                            @endif
+                            <button @click="editing = false"
+                                    wire:click="completeSet({{ $set->id }})"
+                                    class="ws-warmup-confirm-btn"
+                                    aria-label="Salva modifiche set">
+                                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
                                 </svg>
                             </button>
-                        @endif
+                        </div>
                     @elseif ($isActive)
                         <span style="font-size:var(--ig-text-xs);color:var(--ig-accent);font-weight:700;white-space:nowrap;">set {{ $loop->iteration }}</span>
                     @endif

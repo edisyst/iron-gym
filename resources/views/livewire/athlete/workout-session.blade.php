@@ -541,66 +541,6 @@
         </div>
     @endif
 
-    {{-- Modale plate calculator --}}
-    @if ($plateModalSetId !== null)
-        <div style="position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.85);display:flex;align-items:flex-end;"
-             wire:click="closePlateModal">
-            <div style="background:#1A1A1A;border-radius:16px 16px 0 0;width:100%;max-height:90vh;overflow-y:auto;
-                        padding:20px 20px calc(24px + env(safe-area-inset-bottom));"
-                 @click.stop>
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-                    <h3 style="margin:0;font-size:16px;font-weight:700;">Calcola dischi</h3>
-                    <button wire:click="closePlateModal"
-                            style="background:none;border:none;color:#666;font-size:22px;cursor:pointer;line-height:1;min-width:var(--ig-touch-target);min-height:var(--ig-touch-target);display:flex;align-items:center;justify-content:center;"
-                            aria-label="Chiudi">&times;</button>
-                </div>
-
-                <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
-                    <label style="font-size:13px;color:#aaa;">Peso bilanciere (kg)</label>
-                    <input type="number" step="0.5" min="0" inputmode="decimal"
-                           wire:model.live="plateBarWeight"
-                           style="background:#2A2A2A;border:1px solid #3A3A3A;border-radius:8px;
-                                  color:#fff;padding:6px 10px;width:80px;font-size:16px;text-align:center;">
-                    <button wire:click="calculatePlates" class="btn-accent" style="padding:8px 16px;font-size:13px;">
-                        Calcola
-                    </button>
-                </div>
-
-                @if ($plateLoadout !== null)
-                    <div style="margin-bottom:12px;">
-                        <p style="font-size:12px;color:#666;margin-bottom:8px;">
-                            Obiettivo: <strong style="color:#fff;">{{ $plateLoadout['target_kg'] }} kg</strong>
-                            &bull;
-                            Caricato: <strong style="color:{{ $plateLoadout['delta_kg'] == 0 ? '#22c55e' : '#f59e0b' }};">
-                                {{ $plateLoadout['loaded_kg'] }} kg
-                            </strong>
-                            @if ($plateLoadout['delta_kg'] != 0)
-                                <span style="color:#f59e0b;">({{ $plateLoadout['delta_kg'] > 0 ? '+' : '' }}{{ $plateLoadout['delta_kg'] }} kg)</span>
-                            @endif
-                        </p>
-
-                        @if (count($plateLoadout['plates']) > 0)
-                            <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
-                                @foreach ($plateLoadout['plates'] as $plate)
-                                    @for ($pi = 0; $pi < $plate['count']; $pi++)
-                                        <div style="background:{{ $plate['color'] ?? '#555' }};width:40px;height:40px;
-                                                    border-radius:50%;display:flex;align-items:center;justify-content:center;
-                                                    font-size:10px;font-weight:700;color:#fff;border:2px solid rgba(255,255,255,.2);">
-                                            {{ $plate['weight_kg'] }}
-                                        </div>
-                                    @endfor
-                                @endforeach
-                            </div>
-                            <p style="font-size:11px;color:#666;">Per lato del bilanciere</p>
-                        @else
-                            <p style="color:#666;font-size:13px;">Solo bilanciere nudo ({{ $plateLoadout['bar_kg'] }} kg).</p>
-                        @endif
-                    </div>
-                @endif
-            </div>
-        </div>
-    @endif
-
     {{-- Modale sostituzione esercizio --}}
     @if ($substitutingSeId !== null)
         <div x-data="{ open: true }"

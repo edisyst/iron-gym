@@ -268,9 +268,9 @@
                     $prevPerf  = $previousPerformance[$exercise->exercise_id][$set->set_index] ?? null;
                 @endphp
 
-                <div x-data="{ editing: false }"
-                     class="ws-set-row {{ $isDone ? 'ws-set-row--done' : ($isActive ? 'ws-set-row--active' : '') }}"
-                     style="{{ $isDone ? 'flex-wrap:wrap;' : '' }}">
+                <div wire:click="selectSet({{ $set->id }})"
+                     class="ws-set-row {{ $isDone ? 'ws-set-row--done' : ($isActive ? 'ws-set-row--active' : '') }} {{ $selectedSetId === $set->id ? 'ws-set-row--selected' : '' }}"
+                     style="cursor:pointer;{{ $isDone ? 'flex-wrap:wrap;' : '' }}">
 
                     {{-- Indicatore stato --}}
                     <div style="width:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
@@ -298,81 +298,16 @@
 
                     {{-- Eseguito (se completato) --}}
                     @if ($isDone)
-                        <div class="ws-set-actual" x-show="!editing">
+                        <div class="ws-set-actual">
                             @if ($set->actual_reps) {{ $set->actual_reps }} reps @endif
                             @if ($set->actual_weight_kg) &times; {{ $set->actual_weight_kg }} kg @endif
                             @if ($set->actual_rir !== null) - RIR {{ $set->actual_rir }} @endif
                             @if ($set->actual_duration_sec) {{ $set->actual_duration_sec }} s @endif
                         </div>
-                        <button @click="editing = !editing"
-                                :aria-pressed="editing.toString()"
-                                class="ws-icon-btn"
-                                aria-label="Modifica set {{ $loop->iteration }}">
-                            <template x-if="!editing">
-                                <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.5-6.5a2 2 0 012.828 2.828L11.828 15.828A2 2 0 0110.414 16.5H8v-2.414a2 2 0 01.586-1.414z"/>
-                                </svg>
-                            </template>
-                            <template x-if="editing">
-                                <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                                </svg>
-                            </template>
-                        </button>
-                        {{-- Riga edit inline (occupa tutta la larghezza sotto) --}}
-                        <div x-show="editing" x-cloak
-                             style="width:100%;padding:var(--ig-sp-2) 0 var(--ig-sp-1);display:flex;gap:var(--ig-sp-2);align-items:center;flex-wrap:wrap;">
-                            @if (in_array($measurementType, ['reps_weight', 'reps']))
-                                <input type="number" inputmode="numeric" min="0"
-                                       wire:model="setData.{{ $set->id }}.reps"
-                                       class="ws-warmup-weight-input"
-                                       style="width:56px;"
-                                       placeholder="rep" aria-label="Ripetizioni effettive">
-                            @endif
-                            @if ($measurementType === 'reps_weight')
-                                <input type="number" inputmode="decimal" min="0" step="0.5"
-                                       wire:model="setData.{{ $set->id }}.weight"
-                                       class="ws-warmup-weight-input"
-                                       style="width:64px;"
-                                       placeholder="kg" aria-label="Peso effettivo in kg">
-                            @endif
-                            @if (in_array($measurementType, ['reps_weight', 'reps']))
-                                <input type="number" inputmode="numeric" min="0" max="10"
-                                       wire:model="setData.{{ $set->id }}.rir"
-                                       class="ws-warmup-weight-input"
-                                       style="width:48px;"
-                                       placeholder="RIR" aria-label="RIR effettivo">
-                            @endif
-                            @if ($measurementType === 'duration')
-                                <input type="number" inputmode="numeric" min="0"
-                                       wire:model="setData.{{ $set->id }}.duration"
-                                       class="ws-warmup-weight-input"
-                                       style="width:64px;"
-                                       placeholder="sec" aria-label="Durata in secondi">
-                            @endif
-                            <button @click="editing = false"
-                                    wire:click="completeSet({{ $set->id }})"
-                                    class="ws-warmup-confirm-btn"
-                                    aria-label="Salva modifiche set">
-                                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                                </svg>
-                            </button>
-                        </div>
                     @elseif ($isActive)
                         <span style="font-size:var(--ig-text-xs);color:var(--ig-accent);font-weight:700;white-space:nowrap;">set {{ $loop->iteration }}</span>
                     @endif
 
-                    @if (! $isDone)
-                        <button wire:click="skipSet({{ $set->id }})"
-                                wire:confirm="Saltare questo set?"
-                                class="ws-skip-set-btn"
-                                aria-label="Salta set {{ $set->set_index }}">
-                            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
-                        </button>
-                    @endif
                 </div>
 
                 {{-- Performance precedente sotto set attivo --}}

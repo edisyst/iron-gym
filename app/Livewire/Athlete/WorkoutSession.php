@@ -62,6 +62,8 @@ class WorkoutSession extends Component
 
     public int $currentGroupIndex = 0;
 
+    public ?int $selectedSetId = null;
+
     public function mount(TrainingSession $session): void
     {
         $session->load([
@@ -109,6 +111,8 @@ class WorkoutSession extends Component
         }
 
         $this->loadPreviousPerformance();
+
+        $this->selectedSetId = $this->findFirstIncompleteSetId();
 
         if (request()->query('feedback') == '1') {
             $this->showFeedback = true;
@@ -278,7 +282,86 @@ class WorkoutSession extends Component
         }
 
         $this->reloadSets();
-        $this->dispatch('set-completed', setId: $setId);
+
+        if ($this->selectedSetId === $setId) {
+            $this->selectedSetId = $this->findFirstIncompleteSetId();
+            $this->reloadSetDataForSelected();
+        } else {
+            $this->dispatch('set-completed', setId: $setId);
+        }
+    }
+
+    public function selectSet(int $setId): void
+    {
+        ExerciseSet::whereHas('sessionExercise', fn ($q) => $q->where('session_id', $this->session->id))
+            ->findOrFail($setId);
+
+        $this->selectedSetId = $setId;
+        $this->reloadSetDataForSelected();
+    }
+
+    public function cancelSelection(): void
+    {
+        $this->selectedSetId = $this->findFirstIncompleteSetId();
+        $this->reloadSetDataForSelected();
+    }
+
+    public function deleteSelectedSet(): void
+    {
+        if ($this->selectedSetId === null) {
+            return;
+        }
+
+        ExerciseSet::whereHas('sessionExercise', fn ($q) => $q->where('session_id', $this->session->id))
+            ->findOrFail($this->selectedSetId)
+            ->delete();
+
+        unset($this->setData[$this->selectedSetId]);
+        $this->reloadSets();
+        $this->selectedSetId = $this->findFirstIncompleteSetId();
+        $this->reloadSetDataForSelected();
+    }
+
+    private function findFirstIncompleteSetId(): ?int
+    {
+        foreach ($this->session->sessionExercises as $se) {
+            $first = $se->sets->where('is_warmup', false)->whereNull('completed_at')->sortBy('set_index')->first();
+            if ($first) {
+                return $first->id;
+            }
+        }
+
+        return null;
+    }
+
+    private function reloadSetDataForSelected(): void
+    {
+        if ($this->selectedSetId === null) {
+            return;
+        }
+
+        foreach ($this->session->sessionExercises as $se) {
+            $set = $se->sets->firstWhere('id', $this->selectedSetId);
+            if (! $set) {
+                continue;
+            }
+
+            $this->setData[$this->selectedSetId] = [
+                'reps' => $set->actual_reps !== null
+                    ? (string) $set->actual_reps
+                    : ($set->planned_reps !== null ? (string) $set->planned_reps : ''),
+                'weight' => $set->actual_weight_kg !== null
+                    ? (string) $set->actual_weight_kg
+                    : ($set->planned_weight_kg !== null ? (string) $set->planned_weight_kg : ''),
+                'rir' => $set->actual_rir !== null
+                    ? (string) $set->actual_rir
+                    : ($set->planned_rir !== null ? (string) $set->planned_rir : ''),
+                'duration' => $set->actual_duration_sec !== null
+                    ? (string) $set->actual_duration_sec
+                    : ($set->planned_duration_sec !== null ? (string) $set->planned_duration_sec : ''),
+            ];
+            break;
+        }
     }
 
     /**
@@ -356,19 +439,6 @@ class WorkoutSession extends Component
     /**
      * Salta (elimina) un working set non ancora completato.
      */
-    public function skipSet(int $setId): void
-    {
-        $set = ExerciseSet::whereHas('sessionExercise', fn ($q) => $q->where('session_id', $this->session->id))
-            ->where('is_warmup', false)
-            ->whereNull('completed_at')
-            ->findOrFail($setId);
-
-        $set->delete();
-        unset($this->setData[$setId]);
-
-        $this->reloadSets();
-    }
-
     /**
      * Aggiunge un set working extra clonando l'ultimo set pianificato dell'esercizio.
      */
@@ -394,13 +464,14 @@ class WorkoutSession extends Component
         ]);
 
         $this->setData[$new->id] = [
-            'weight' => $new->planned_weight_kg,
-            'reps' => $new->planned_reps,
-            'rir' => $new->planned_rir,
-            'duration' => $new->planned_duration_sec,
+            'weight' => $new->planned_weight_kg !== null ? (string) $new->planned_weight_kg : '',
+            'reps' => $new->planned_reps !== null ? (string) $new->planned_reps : '',
+            'rir' => $new->planned_rir !== null ? (string) $new->planned_rir : '',
+            'duration' => $new->planned_duration_sec !== null ? (string) $new->planned_duration_sec : '',
         ];
 
         $this->reloadSets();
+        $this->selectedSetId = $new->id;
     }
 
     public function canCompleteSession(): bool

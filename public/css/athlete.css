@@ -799,6 +799,10 @@ body {
     overflow: hidden;
     background: var(--ig-surface-raised);
 }
+.ws-action-inputs .ig-num-input {
+    display: flex;
+    width: 100%;
+}
 .ig-num-input:focus-within { border-color: var(--ig-accent); }
 
 .ig-num-input__step {
@@ -1348,6 +1352,10 @@ body {
     border-bottom-color: transparent;
     outline: 1px solid var(--ig-accent);
 }
+.ws-set-row--selected {
+    outline: 2px solid var(--ig-accent);
+    outline-offset: 1px;
+}
 .ws-skip-set-btn {
     margin-left: auto;
     background: none;
@@ -1549,6 +1557,10 @@ body {
 .ws-action-inputs .ig-num-input__step {
     min-width: 44px;
     min-height: var(--ig-touch-target-xl);
+}
+.ws-action-inputs .ig-num-input__field {
+    flex: 1;
+    width: auto;
 }
 
 /* Action zone */

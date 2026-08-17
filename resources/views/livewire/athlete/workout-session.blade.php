@@ -305,17 +305,32 @@
 
     {{-- Zona azione fissa in basso --}}
     @php
-        $actionSet  = null;
-        $actionSe   = null;
-        foreach ($currentGroup as $se) {
-            $firstIncomplete = $se->sets->where('is_warmup', false)->whereNull('completed_at')->sortBy('set_index')->first();
-            if ($firstIncomplete) {
-                $actionSet = $firstIncomplete;
-                $actionSe  = $se;
-                break;
+        // Trova il set selezionato e il suo session_exercise
+        $selectedSet = null;
+        $selectedSe  = null;
+        if ($selectedSetId !== null) {
+            foreach ($groupedExercises as $grp) {
+                foreach (collect($grp) as $se) {
+                    $found = $se->sets->firstWhere('id', $selectedSetId);
+                    if ($found) {
+                        $selectedSet = $found;
+                        $selectedSe  = $se;
+                        break 2;
+                    }
+                }
             }
         }
-        $currentGroupAllDone = $actionSet === null;
+
+        // Verifica se tutti i set del gruppo corrente sono completati E nessun set è selezionato
+        $currentGroupAllDone = $selectedSet === null;
+        if ($currentGroupAllDone) {
+            foreach ($currentGroup as $se) {
+                if ($se->sets->where('is_warmup', false)->whereNull('completed_at')->isNotEmpty()) {
+                    $currentGroupAllDone = false;
+                    break;
+                }
+            }
+        }
 
         // Verifica se tutti i gruppi sono completati
         $allGroupsDone = true;
@@ -328,16 +343,17 @@
             }
         }
 
-        if ($actionSe) {
-            $actionRestSec    = $actionSe->technique_type === 'cluster'
-                                ? ($actionSe->intra_cluster_rest_sec ?? $actionSe->planned_rest_sec)
-                                : $actionSe->planned_rest_sec;
-            $actionRestSecJs  = $actionRestSec !== null ? (int) $actionRestSec : 'null';
-            $actionMeasure    = $actionSe->exercise->measurement_type ?? 'reps_weight';
-            $actionWorkingSets = $actionSe->sets->where('is_warmup', false)->sortBy('set_index')->values();
-            $actionSetIndex   = $actionWorkingSets->search(fn($s) => $s->id === $actionSet->id) + 1;
-            $actionSetTotal   = $actionWorkingSets->count();
-            $actionPrevPerf   = $previousPerformance[$actionSe->exercise_id][$actionSet->set_index] ?? null;
+        if ($selectedSe) {
+            $selRestSec    = $selectedSe->technique_type === 'cluster'
+                             ? ($selectedSe->intra_cluster_rest_sec ?? $selectedSe->planned_rest_sec)
+                             : $selectedSe->planned_rest_sec;
+            $selRestSecJs  = $selRestSec !== null ? (int) $selRestSec : 'null';
+            $selMeasure    = $selectedSe->exercise->measurement_type ?? 'reps_weight';
+            $selWorkingSets = $selectedSe->sets->where('is_warmup', false)->sortBy('set_index')->values();
+            $selSetIndex   = $selWorkingSets->search(fn ($s) => $s->id === $selectedSet->id) + 1;
+            $selSetTotal   = $selWorkingSets->count();
+            $selPrevPerf   = $previousPerformance[$selectedSe->exercise_id][$selectedSet->set_index] ?? null;
+            $selIsCompleted = $selectedSet->completed_at !== null;
         }
     @endphp
 
@@ -345,7 +361,6 @@
 
         {{-- Rest timer (integrato nella zona azione) --}}
         <div x-data x-show="$store.restTimer.running" x-cloak class="ws-action-timer">
-            {{-- SR: annuncia il conto alla rovescia ogni 10s circa (polite, non interrompe) --}}
             <span class="sr-only" aria-live="polite" aria-atomic="true"
                   x-text="$store.restTimer.running ? $store.restTimer.fmt($store.restTimer.seconds) + ' al recupero' : ''"></span>
             <div>
@@ -361,13 +376,13 @@
         </div>
 
         @if ($currentGroupAllDone)
-            {{-- Tutti i set del gruppo completati --}}
+            {{-- Tutti i set del gruppo completati, nessun set selezionato --}}
             <div class="ws-action-done">
                 <div class="ws-action-done-msg">
                     <svg style="width:20px;height:20px;color:var(--ig-success);display:inline;vertical-align:middle;margin-right:4px;" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                         <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                     </svg>
-                    {{ $currentGroup->map(fn($e) => $e->exercise->name_it)->implode(' + ') }} completato
+                    {{ $currentGroup->map(fn ($e) => $e->exercise->name_it)->implode(' + ') }} completato
                 </div>
                 @if ($allGroupsDone)
                     <x-athlete.button variant="primary" :full="true" wire:click="completeSession"
@@ -385,118 +400,144 @@
                 @endif
             </div>
 
-        @elseif ($actionSet)
-            {{-- Input per il set corrente --}}
+        @elseif ($selectedSet)
+            {{-- Set selezionato (attivo, completato o extra) --}}
             <div class="ws-action-info">
                 <span class="ws-action-set-label">
-                    {{ $actionSe->exercise->name_it }} &bull; Set {{ $actionSetIndex }}/{{ $actionSetTotal }}
+                    @if ($selIsCompleted) Modifica &bull; @endif
+                    {{ $selectedSe->exercise->name_it }} &bull; Set {{ $selSetIndex }}/{{ $selSetTotal }}
                 </span>
-                @if ($actionPrevPerf && ($actionPrevPerf['reps'] !== null || $actionPrevPerf['weight'] !== null))
+                @if (! $selIsCompleted && $selPrevPerf && ($selPrevPerf['reps'] !== null || $selPrevPerf['weight'] !== null))
                     <span class="ws-action-prev">
                         prec:
-                        @if ($actionPrevPerf['weight'] !== null) {{ $actionPrevPerf['weight'] }}kg @endif
-                        @if ($actionPrevPerf['reps'] !== null) &times; {{ $actionPrevPerf['reps'] }} @endif
-                        @if ($actionPrevPerf['rir'] !== null) RIR{{ $actionPrevPerf['rir'] }} @endif
+                        @if ($selPrevPerf['weight'] !== null) {{ $selPrevPerf['weight'] }}kg @endif
+                        @if ($selPrevPerf['reps'] !== null) &times; {{ $selPrevPerf['reps'] }} @endif
+                        @if ($selPrevPerf['rir'] !== null) RIR{{ $selPrevPerf['rir'] }} @endif
                     </span>
                 @endif
             </div>
 
             <div class="ws-action-inputs">
-                @if (in_array($actionMeasure, ['reps_weight', 'reps_only', 'time_weight']))
+                @if (in_array($selMeasure, ['reps_weight', 'reps_only', 'time_weight']))
                     <div class="ws-action-input-group">
                         <span class="ws-action-input-label" aria-hidden="true">Reps</span>
                         <x-athlete.input-number
-                            wire:model="setData.{{ $actionSet->id }}.reps"
+                            wire:model="setData.{{ $selectedSet->id }}.reps"
                             mode="numeric"
                             min="0"
                             step="1"
                             :stepper="true"
-                            placeholder="{{ $actionSet->planned_reps ?? '0' }}"
                             aria-label="Ripetizioni"
                         />
                     </div>
                 @endif
-                @if (in_array($actionMeasure, ['reps_weight', 'time_weight']))
+                @if (in_array($selMeasure, ['reps_weight', 'time_weight']))
                     <div class="ws-action-input-group ws-action-input-group--kg">
                         <span class="ws-action-input-label" aria-hidden="true">Kg</span>
                         <x-athlete.input-number
-                            wire:model="setData.{{ $actionSet->id }}.weight"
+                            wire:model="setData.{{ $selectedSet->id }}.weight"
                             mode="decimal"
                             min="0"
                             step="2.5"
                             :stepper="true"
-                            placeholder="{{ $actionSet->planned_weight_kg ?? '0' }}"
                             aria-label="Peso in kg"
                         />
                     </div>
                 @endif
-                @if (in_array($actionMeasure, ['time', 'isometric_hold']))
+                @if (in_array($selMeasure, ['time', 'isometric_hold']))
                     <div class="ws-action-input-group" style="flex:2;">
                         <span class="ws-action-input-label" aria-hidden="true">Secondi</span>
                         <x-athlete.input-number
-                            wire:model="setData.{{ $actionSet->id }}.duration"
+                            wire:model="setData.{{ $selectedSet->id }}.duration"
                             mode="numeric"
                             min="0"
                             step="5"
                             :stepper="true"
-                            placeholder="{{ $actionSet->planned_duration_sec ?? '0' }}"
                             aria-label="Durata in secondi"
                         />
                     </div>
                 @endif
-                @if (in_array($actionMeasure, ['reps_weight', 'reps_only', 'time_weight']))
+                @if (in_array($selMeasure, ['reps_weight', 'reps_only', 'time_weight']))
                     <div class="ws-action-input-group">
                         <span class="ws-action-input-label" aria-hidden="true">RIR</span>
                         <x-athlete.input-number
-                            wire:model="setData.{{ $actionSet->id }}.rir"
+                            wire:model="setData.{{ $selectedSet->id }}.rir"
                             mode="numeric"
                             min="0"
                             max="10"
                             step="1"
                             :stepper="true"
-                            placeholder="{{ $actionSet->planned_rir ?? '—' }}"
                             aria-label="Reps in riserva"
                         />
                     </div>
                 @endif
             </div>
 
-            <div class="ws-action-btn">
-                <button @click="
-                            const setId = {{ $actionSet->id }};
-                            const restSec = {{ $actionRestSecJs }};
-                            pending = true;
-                            if (!navigator.onLine) {
-                                const d = $wire.__instance?.snapshot?.memo?.data ?? {};
-                                const sd = (d.setData ?? {})[setId] ?? {};
-                                $store.syncQueue.enqueue('complete_set', {
-                                    set_id: setId,
-                                    reps: sd.reps !== '' ? parseInt(sd.reps) : null,
-                                    weight: sd.weight !== '' ? parseFloat(sd.weight) : null,
-                                    rir: sd.rir !== '' ? parseInt(sd.rir) : null,
-                                    duration: sd.duration !== '' ? parseInt(sd.duration) : null,
-                                });
-                                pending = false;
-                                if (restSec) { $store.restTimer.start(restSec); }
-                            } else {
-                                $wire.completeSet(setId).then(() => {
+            <div class="ws-action-btn" style="display:flex;gap:var(--ig-sp-2);">
+                @if (! $selIsCompleted)
+                    {{-- Prima completamento: pulsante unico con offline sync + rest timer --}}
+                    <button @click="
+                                const setId = {{ $selectedSet->id }};
+                                const restSec = {{ $selRestSecJs }};
+                                pending = true;
+                                if (!navigator.onLine) {
+                                    const d = $wire.__instance?.snapshot?.memo?.data ?? {};
+                                    const sd = (d.setData ?? {})[setId] ?? {};
+                                    $store.syncQueue.enqueue('complete_set', {
+                                        set_id: setId,
+                                        reps: sd.reps !== '' ? parseInt(sd.reps) : null,
+                                        weight: sd.weight !== '' ? parseFloat(sd.weight) : null,
+                                        rir: sd.rir !== '' ? parseInt(sd.rir) : null,
+                                        duration: sd.duration !== '' ? parseInt(sd.duration) : null,
+                                    });
                                     pending = false;
                                     if (restSec) { $store.restTimer.start(restSec); }
-                                });
-                            }
-                        "
-                        :disabled="pending"
-                        class="ws-action-done-btn">
-                    <span x-show="!pending">
+                                } else {
+                                    $wire.completeSet(setId).then(() => {
+                                        pending = false;
+                                        if (restSec) { $store.restTimer.start(restSec); }
+                                    });
+                                }
+                            "
+                            :disabled="pending"
+                            class="ws-action-done-btn"
+                            style="flex:1;">
+                        <span x-show="!pending">
+                            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"
+                                 style="display:inline;vertical-align:middle;margin-right:6px;" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Fatto
+                        </span>
+                        <span x-show="pending" x-cloak>
+                            <span class="ig-spinner"></span>
+                        </span>
+                    </button>
+                @else
+                    {{-- Re-edit set già completato: Salva / Annulla / Elimina --}}
+                    <button wire:click="completeSet({{ $selectedSet->id }})"
+                            class="ws-action-done-btn"
+                            style="flex:1;"
+                            aria-label="Salva modifiche set">
                         <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"
                              style="display:inline;vertical-align:middle;margin-right:6px;" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
                         </svg>
-                        Fatto
-                    </span>
-                    <span x-show="pending" x-cloak>
-                        <span class="ig-spinner"></span>
-                    </span>
+                        Salva
+                    </button>
+                @endif
+                <button wire:click="cancelSelection"
+                        class="ws-action-done-btn"
+                        style="flex:1;background:var(--ig-surface-raised);color:var(--ig-text-1);"
+                        aria-label="Annulla selezione">
+                    Annulla
+                </button>
+                <button wire:click="deleteSelectedSet"
+                        wire:confirm="Eliminare questo set?"
+                        class="ws-action-done-btn"
+                        style="flex:1;background:var(--ig-danger);color:#fff;"
+                        aria-label="Elimina set">
+                    Elimina
                 </button>
             </div>
 

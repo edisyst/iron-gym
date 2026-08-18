@@ -240,6 +240,8 @@ UX06 Toggle tema e viewport completata (2026-07-17): aria-pressed + label testua
 
 UX07 Scala UI maggiorata completata (2026-07-18): touch-target 48→56px, touch-target-xl 64px (nuovo, CTA sessione + step height), text-xl 28→34px, text-lg 22→26px, text-md 18→22px, text-display 42→48px. Token ig-touch-target-sm/xl/ig-bottom-nav-h/ig-nav-icon introdotti. Tokenizzati tutti i valori hardcoded principali: ig-btn--sm, ig-num-input__step font-size, metric-options label, ig-form-input padding, ig-tab padding, bottom-nav min-height, svg nav icon, ws-muscle-chip/ws-meta-chip, body-map-label, ws-warmup-badge, ws-icon-btn padding. Bottone FATTO: rimossa inline style, nuova classe ws-action-done-btn (64px). Step buttons action zone: min-width 44px, min-height 64px (non bloccano layout orizzontale su SE). Override min-height:48px rimossi da modali readiness e modulazione. Suite: 189/195 (6 skip invariati), PHPStan 0 errori, Pint conforme.
 
+Audit funzionale PWA atleta completato (2026-08-18): 11 finding identificati, 8 chiusi nel branch feature/audit-funzionale-atleta-2026-08-18. Fix principali: storico include sessioni `skipped`; null-guard member in cancel booking; tab Corsi gated su feature flag; set time-based visibili nel dettaglio; N+1 eliminato in WeeklyVolume mount; push subscribe idempotente con getSubscription(); translate-y-full in safelist Tailwind; componente History orfano rimosso. Suite: 189/195 (6 skip pre-esistenti invariati), PHPStan 0 errori, Pint OK. Report: docs/reviews/ui-atleta-funzionale-2026-08-18.md.
+
 Prossima attività: raccogliere feedback dai primi atleti pilota dopo prima sessione.
 
 ## Setup pilota — dati e procedure

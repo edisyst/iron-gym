@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
         if (app()->isLocal()) {
             $this->call([
                 DemoSeeder::class,
+                DemoTemplatesSeeder::class,
                 TrainingHistorySeeder::class,
                 ActiveMesocycleSeeder::class,
                 ProgressDemoSeeder::class,

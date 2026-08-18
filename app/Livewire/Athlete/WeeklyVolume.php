@@ -37,7 +37,7 @@ class WeeklyVolume extends Component
     {
         $mesocycle = Mesocycle::where('athlete_id', auth()->id())
             ->where('status', 'active')
-            ->with(['weeks' => fn ($q) => $q->orderBy('week_number')])
+            ->with(['weeks' => fn ($q) => $q->orderBy('week_number')->with('sessions')])
             ->latest()
             ->first();
 
@@ -60,7 +60,7 @@ class WeeklyVolume extends Component
         // Fallback: prima settimana con sessioni non completate, poi prima assoluta
         if ($currentWeek === null) {
             $currentWeek = $mesocycle->weeks->first(
-                fn (MicrocycleWeek $w) => $w->sessions()->where('status', '!=', 'completed')->exists()
+                fn (MicrocycleWeek $w) => $w->sessions->contains(fn ($s) => $s->status !== 'completed')
             ) ?? $mesocycle->weeks->first();
         }
 

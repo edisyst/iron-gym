@@ -19,19 +19,22 @@
 
 ## Riepilogo finding per severità
 
-| ID | Severità | Area | Titolo |
-|---|---|---|---|
-| F-HUB-01 | **Alto** | Storico | Sessioni `skipped` assenti dallo storico |
-| F-BOOK-01 | **Alto** | Prenotazioni | `cancelPtBooking`/`cancelClassBooking` crash su `member = null` |
-| F-HUB-02 | **Medio** | Storico | Dettaglio sessione: esercizi time-based invisibili |
-| F-BOOK-02 | **Medio** | Prenotazioni | Tab "Corsi" visibile senza feature flag `group_classes` |
-| F-VOLUME-01 | **Medio** | Volume | N+1 in `WeeklyVolume::mount()` fallback settimana corrente |
-| F-PUSH-01 | **Medio** | Push | `pushManager.subscribe()` chiamata ad ogni page load |
-| F-SESSION-01 | **Basso** | Sessione | `deleteSelectedSet()` può eliminare set working senza guard |
-| F-LAY-01 | **Basso** | Layout | `translate-y-full` Tailwind assente in JIT (già P3-A) |
-| F-HIST-01 | **Basso** | Storico | Componente `History.php` e `history.blade.php` orfani (dead code) |
-| F-SESSION-02 | **Basso** | Sessione | Offline sync JS usa API interna Livewire (`snapshot.memo.data`) |
-| F-EMPTY-01 | **Basso** | Volume | Stato vuoto `WeeklyVolume` senza mesociclo attivo — view non verificata |
+| ID | Severità | Area | Titolo | Stato |
+|---|---|---|---|---|
+| F-HUB-01 | **Alto** | Storico | Sessioni `skipped` assenti dallo storico | ✅ Chiuso |
+| F-BOOK-01 | **Alto** | Prenotazioni | `cancelPtBooking`/`cancelClassBooking` crash su `member = null` | ✅ Chiuso |
+| F-HUB-02 | **Medio** | Storico | Dettaglio sessione: esercizi time-based invisibili | ✅ Chiuso |
+| F-BOOK-02 | **Medio** | Prenotazioni | Tab "Corsi" visibile senza feature flag `group_classes` | ✅ Chiuso |
+| F-VOLUME-01 | **Medio** | Volume | N+1 in `WeeklyVolume::mount()` fallback settimana corrente | ✅ Chiuso |
+| F-PUSH-01 | **Medio** | Push | `pushManager.subscribe()` chiamata ad ogni page load | ✅ Chiuso |
+| F-SESSION-01 | **Basso** | Sessione | `deleteSelectedSet()` può eliminare set working senza guard | No fix (intenzionale, `wire:confirm` presente) |
+| F-LAY-01 | **Basso** | Layout | `translate-y-full` Tailwind assente in JIT (già P3-A) | ✅ Chiuso |
+| F-HIST-01 | **Basso** | Storico | Componente `History.php` e `history.blade.php` orfani (dead code) | ✅ Chiuso |
+| F-SESSION-02 | **Basso** | Sessione | Offline sync JS usa API interna Livewire (`snapshot.memo.data`) | Rinviato (refactor complesso) |
+| F-EMPTY-01 | **Basso** | Volume | Stato vuoto `WeeklyVolume` senza mesociclo attivo — view non verificata | No fix (già implementato) |
+
+**Fase 2 completata:** 2026-08-18 — branch `feature/audit-funzionale-atleta-2026-08-18`.
+Suite: 189/195 (6 skip pre-esistenti invariati). PHPStan 0 errori. Pint OK.
 
 ---
 

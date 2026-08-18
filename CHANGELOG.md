@@ -2,6 +2,35 @@
 
 ---
 
+## Audit funzionale PWA atleta — fix (2026-08-18)
+
+**Branch:** `feature/audit-funzionale-atleta-2026-08-18`
+
+### Fix chiusi
+
+| ID | Area | Descrizione |
+|---|---|---|
+| F-HUB-01 | Storico | Sessioni `skipped` ora visibili nello storico con badge "saltata" |
+| F-HUB-02 | Storico | Set time-based filtrati per `completed_at`; durata mostrata al posto di reps |
+| F-BOOK-01 | Prenotazioni | Null-guard su `$member` in `cancelPtBooking` e `cancelClassBooking` |
+| F-BOOK-02 | Prenotazioni | Tab Corsi e azioni classe gated su feature flag `group_classes` |
+| F-VOLUME-01 | Volume | N+1 eliminato in `WeeklyVolume::mount()` — eager-load `weeks.sessions` |
+| F-PUSH-01 | Push | `getSubscription()` check prima di `subscribe()` — subscribe idempotente |
+| F-LAY-01 | Layout/CSS | `translate-y-full`/`translate-y-0` in safelist Tailwind JIT |
+| F-HIST-01 | Cleanup | Componente `History.php` e view orfani rimossi |
+
+### Rinviati / No fix
+
+| ID | Decisione |
+|---|---|
+| F-SESSION-01 | No fix — comportamento intenzionale, `wire:confirm` presente |
+| F-SESSION-02 | Rinviato — refactor sync offline complesso |
+| F-EMPTY-01 | No fix — stato vuoto già implementato nella view |
+
+**Suite:** 189/195 (6 skip pre-esistenti invariati). PHPStan 0 errori. Pint OK.
+
+---
+
 ## UX07 — Scala UI maggiorata per schermi piccoli (2026-07-18)
 
 **Obiettivo:** alzare la scala dell'interfaccia atleta oltre il minimo WCAG per uso in palestra con una mano sola.

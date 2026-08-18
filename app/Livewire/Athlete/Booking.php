@@ -6,6 +6,7 @@ use App\Exceptions\BookingException;
 use App\Models\ClassBooking;
 use App\Models\GroupClass;
 use App\Models\Member;
+use App\Models\Mesocycle;
 use App\Models\PtBooking;
 use App\Models\TrainerAvailability;
 use App\Models\User;
@@ -220,6 +221,25 @@ class Booking extends Component
         /** @var Member|null $member */
         $member = Auth::user()->member;
 
+        // Trainer del mesociclo attivo/più recente dell'atleta
+        $assignedTrainer = null;
+        if ($member) {
+            $activeMesocycle = Mesocycle::with('trainer')
+                ->where('athlete_id', Auth::id())
+                ->whereIn('status', ['active', 'in_progress'])
+                ->latest('start_date')
+                ->first();
+
+            if ($activeMesocycle === null) {
+                $activeMesocycle = Mesocycle::with('trainer')
+                    ->where('athlete_id', Auth::id())
+                    ->latest('start_date')
+                    ->first();
+            }
+
+            $assignedTrainer = $activeMesocycle?->trainer;
+        }
+
         // Trainer disponibili per la prenotazione PT
         $trainers = User::role(['trainer', 'gestore'])->orderBy('name')->get();
 
@@ -261,6 +281,7 @@ class Booking extends Component
             'myClassBookings',
             'myEnrolledClassIds',
             'member',
+            'assignedTrainer',
         ))->layout('layouts.athlete');
     }
 }

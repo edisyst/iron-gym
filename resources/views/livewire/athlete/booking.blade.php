@@ -29,10 +29,12 @@
                 class="ig-tab {{ $activeTab === 'pt' ? 'ig-tab--active' : '' }}">
             Sessione PT
         </button>
+        @feature('group_classes')
         <button wire:click="$set('activeTab','classes')"
                 class="ig-tab {{ $activeTab === 'classes' ? 'ig-tab--active' : '' }}">
             Corsi
         </button>
+        @endfeature
     </div>
 
     {{-- ============================================================ --}}
@@ -139,6 +141,7 @@
     {{-- ============================================================ --}}
     {{-- Tab Corsi --}}
     {{-- ============================================================ --}}
+    @feature('group_classes')
     @if($activeTab === 'classes')
     <div>
         <p class="section-title">Corsi disponibili</p>
@@ -228,4 +231,5 @@
         @endif
     </div>
     @endif
+    @endfeature
 </div>

@@ -144,8 +144,14 @@ class Booking extends Component
      */
     public function cancelPtBooking(int $bookingId): void
     {
-        /** @var Member $member */
+        /** @var Member|null $member */
         $member = Auth::user()->member;
+
+        if ($member === null) {
+            session()->flash('error', 'Profilo membro non trovato.');
+
+            return;
+        }
 
         $booking = PtBooking::where('id', $bookingId)
             ->where('member_id', $member->id)
@@ -173,6 +179,8 @@ class Booking extends Component
      */
     public function enrollClass(int $classId): void
     {
+        abort_unless(\Laravel\Pennant\Feature::active('group_classes'), 403);
+
         $member = Auth::user()->member;
 
         if ($member === null) {
@@ -201,8 +209,16 @@ class Booking extends Component
      */
     public function cancelClassBooking(int $bookingId): void
     {
-        /** @var Member $member */
+        abort_unless(\Laravel\Pennant\Feature::active('group_classes'), 403);
+
+        /** @var Member|null $member */
         $member = Auth::user()->member;
+
+        if ($member === null) {
+            session()->flash('error', 'Profilo membro non trovato.');
+
+            return;
+        }
 
         $booking = ClassBooking::where('id', $bookingId)
             ->where('member_id', $member->id)

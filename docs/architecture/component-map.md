@@ -129,8 +129,7 @@ Tutti in `app/Livewire/Athlete/`. Layout: `layouts.athlete` (dark, mobile-first,
 | `Dashboard` | Hero card sessione prossima/in-corso, striscia settimana mesociclo, recap ultimo allenamento, empty state contestuali |
 | `WorkoutSession` | Logging live un-esercizio-alla-volta (nav prev/next/jump-drawer); readiness check pre-sessione; modulazione carichi; quick-log; previous performance inline; sostituzione esercizio guidata; rest timer Alpine; warmup generator; export sessione completata |
 | `SessionFeedbackForm` | Feedback post-sessione (pump, soreness, effort, joint pain, performance) scala 0-3 |
-| `TrainingHub` | Hub storico: tab History + Progress + Measurements |
-| `History` | Storico sessioni completate (embedded in TrainingHub) |
+| `TrainingHub` | Hub storico: tab Storico (sessioni completate e saltate) + Progressi + Misurazioni |
 | `Progress` | Grafici Chart.js peso e BF% nel tempo (embedded in TrainingHub) |
 | `BodyMeasurementForm` | Form misurazioni con storico tabellare |
 | `ProgressPhotoUpload` | Upload foto progressi con preview |

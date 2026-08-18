@@ -44,11 +44,15 @@
                             {{ $session->name }}
                         </p>
                         <p style="font-size:12px;color:#666;margin-top:3px;">
-                            {{ $session->completed_at?->format('d/m/Y') }}
-                            @php $dur = $this->duration($session); @endphp
-                            @if ($dur) &bull; {{ $dur }} @endif
+                            {{ ($session->completed_at ?? $session->scheduled_date)?->format('d/m/Y') }}
+                            @if ($session->status === 'skipped')
+                                &bull; <span style="color:#888;">saltata</span>
+                            @else
+                                @php $dur = $this->duration($session); @endphp
+                                @if ($dur) &bull; {{ $dur }} @endif
+                                &bull; {{ $this->completedSetsCount($session) }} set
+                            @endif
                             &bull; {{ $session->week->mesocycle->name }}
-                            &bull; {{ $this->completedSetsCount($session) }} set
                         </p>
                     </div>
                     <svg style="width:18px;height:18px;color:#555;flex-shrink:0;
@@ -58,7 +62,7 @@
                     </svg>
                 </div>
 
-                @if ($selectedSessionId === $session->id && $this->selectedSession !== null)
+                @if ($selectedSessionId === $session->id && $this->selectedSession !== null && $session->status === 'completed')
                     <div style="margin-top:16px;border-top:1px solid #2A2A2A;padding-top:16px;">
                         @foreach ($this->selectedSession->sessionExercises as $exercise)
                             <div style="margin-bottom:16px;">
@@ -69,11 +73,15 @@
                                     {{ $exercise->exercise->name_it }}
                                 </button>
 
-                                @foreach ($exercise->sets->sortBy('set_index')->whereNotNull('actual_reps') as $set)
+                                @foreach ($exercise->sets->sortBy('set_index')->filter(fn ($s) => $s->completed_at !== null) as $set)
                                     <div style="display:flex;gap:12px;font-size:13px;color:#888;
                                                 padding:4px 0;border-bottom:1px solid #222;">
                                         <span style="color:#666;width:24px;">{{ $set->set_index }}</span>
-                                        <span>{{ $set->actual_reps }} reps</span>
+                                        @if ($set->actual_duration_sec !== null)
+                                            <span>{{ $set->actual_duration_sec }}s</span>
+                                        @else
+                                            <span>{{ $set->actual_reps }} reps</span>
+                                        @endif
                                         @if ($set->actual_weight_kg)
                                             <span>{{ $set->actual_weight_kg }} kg</span>
                                         @endif
@@ -94,8 +102,8 @@
             </div>
         @empty
             <x-athlete.card>
-                <x-athlete.empty-state title="Nessuna sessione completata"
-                    body="Le sessioni completate appariranno qui.">
+                <x-athlete.empty-state title="Nessuna sessione registrata"
+                    body="Le sessioni completate e saltate appariranno qui.">
                     <svg width="44" height="44" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.3">
                         <path stroke-linecap="round" stroke-linejoin="round"
                               d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2
@@ -140,11 +148,15 @@
                             <p style="font-size:12px;color:#FF6B00;font-weight:600;margin-bottom:6px;">
                                 {{ $se->session->completed_at?->format('d/m/Y') }} &bull; {{ $se->session->name }}
                             </p>
-                            @foreach ($se->sets->whereNotNull('actual_reps') as $set)
+                            @foreach ($se->sets->filter(fn ($s) => $s->completed_at !== null) as $set)
                                 <div style="display:flex;gap:10px;font-size:13px;color:#888;
                                             padding:3px 0;border-bottom:1px solid #222;">
                                     <span style="color:#555;width:20px;">{{ $set->set_index }}</span>
-                                    <span>{{ $set->actual_reps }} reps</span>
+                                    @if ($set->actual_duration_sec !== null)
+                                        <span>{{ $set->actual_duration_sec }}s</span>
+                                    @else
+                                        <span>{{ $set->actual_reps }} reps</span>
+                                    @endif
                                     @if ($set->actual_weight_kg)
                                         <span>{{ $set->actual_weight_kg }} kg</span>
                                     @endif

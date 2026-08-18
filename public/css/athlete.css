@@ -654,6 +654,30 @@ body {
 .page-header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--ig-sp-4); }
 .page-title      { font-size: var(--ig-text-lg); font-weight: 700; color: var(--ig-text-1); margin: 0; }
 
+/* Guida lettura volume */
+.wv-guide {
+    background: var(--ig-surface);
+    border: 1px solid var(--ig-border);
+    border-left: 3px solid var(--ig-accent);
+    border-radius: var(--ig-radius-sm);
+    padding: var(--ig-sp-3) var(--ig-sp-4);
+    margin-bottom: var(--ig-sp-5);
+}
+.wv-guide-title {
+    font-size: var(--ig-text-sm);
+    font-weight: 600;
+    color: var(--ig-text-1);
+    margin: 0 0 var(--ig-sp-2);
+}
+.wv-guide-text {
+    font-size: var(--ig-text-sm);
+    color: var(--ig-text-2);
+    line-height: 1.6;
+    margin: 0;
+}
+.wv-guide-text--mt { margin-top: var(--ig-sp-3); }
+.wv-guide-text strong { color: var(--ig-text-1); font-weight: 600; }
+
 /* Empty states */
 .wv-empty-state, .wv-no-data { color: var(--ig-text-2); font-size: var(--ig-text-base); padding: var(--ig-sp-8) 0; text-align: center; }
 

@@ -464,17 +464,17 @@ class WorkoutSession extends Component
         $lastSet = ExerciseSet::where('session_exercise_id', $se->id)
             ->where('is_warmup', false)
             ->orderByDesc('set_index')
-            ->firstOrFail();
+            ->first();
 
         $new = ExerciseSet::create([
             'session_exercise_id' => $se->id,
-            'set_index' => $lastSet->set_index + 1,
+            'set_index' => $lastSet ? $lastSet->set_index + 1 : 1,
             'is_warmup' => false,
-            'planned_reps' => $lastSet->planned_reps,
-            'planned_weight_kg' => $lastSet->planned_weight_kg,
-            'planned_rir' => $lastSet->planned_rir,
-            'planned_duration_sec' => $lastSet->planned_duration_sec,
-            'set_subtype' => $lastSet->set_subtype,
+            'planned_reps' => $lastSet?->planned_reps,
+            'planned_weight_kg' => $lastSet?->planned_weight_kg,
+            'planned_rir' => $lastSet?->planned_rir,
+            'planned_duration_sec' => $lastSet?->planned_duration_sec,
+            'set_subtype' => $lastSet?->set_subtype,
         ]);
 
         $this->setData[$new->id] = [

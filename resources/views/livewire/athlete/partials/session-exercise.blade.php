@@ -323,20 +323,18 @@
         </div>
 
         {{-- Aggiungi set extra --}}
-        @if ($workingSets->isNotEmpty())
-            <div style="padding:var(--ig-sp-2) 0 var(--ig-sp-1);display:flex;justify-content:center;">
-                <button wire:click="addExtraSet({{ $exercise->id }})"
-                        wire:loading.attr="disabled"
-                        class="ws-warmup-gen-btn"
-                        style="gap:var(--ig-sp-2);"
-                        aria-label="Aggiungi set extra">
-                    <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-                    </svg>
-                    Aggiungi set
-                </button>
-            </div>
-        @endif
+        <div style="padding:var(--ig-sp-2) 0 var(--ig-sp-1);display:flex;justify-content:center;">
+            <button wire:click="addExtraSet({{ $exercise->id }})"
+                    wire:loading.attr="disabled"
+                    class="ws-warmup-gen-btn"
+                    style="gap:var(--ig-sp-2);"
+                    aria-label="Aggiungi set extra">
+                <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                </svg>
+                Aggiungi set
+            </button>
+        </div>
 
     </div>{{-- /ws-exercise-focus --}}
 @endforeach

@@ -369,11 +369,7 @@ return [
             'text' => 'Report allenamento',
             'url' => 'backoffice/reports/training',
             'icon' => 'fas fa-chart-bar',
-        ],
-        [
-            'text' => 'Storico atleti',
-            'url' => 'backoffice/members',
-            'icon' => 'fas fa-history',
+            'can' => 'view-training-reports',
         ],
         ['header' => 'CALENDARIO'],
         [

@@ -63,6 +63,9 @@ class AppServiceProvider extends ServiceProvider
     {
         // Gate usato da AdminLTE sidebar per la voce "Corsi collettivi"
         Gate::define('view-group-classes', fn () => Feature::active('group_classes'));
+
+        // Gate usato da AdminLTE sidebar per la voce "Report allenamento"
+        Gate::define('view-training-reports', fn (User $user) => ! $user->hasRole('receptionist'));
     }
 
     private function configureFlare(): void

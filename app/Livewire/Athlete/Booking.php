@@ -16,6 +16,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Laravel\Pennant\Feature;
 use Livewire\Component;
 
 class Booking extends Component
@@ -179,7 +180,7 @@ class Booking extends Component
      */
     public function enrollClass(int $classId): void
     {
-        abort_unless(\Laravel\Pennant\Feature::active('group_classes'), 403);
+        abort_unless(Feature::active('group_classes'), 403);
 
         $member = Auth::user()->member;
 
@@ -209,7 +210,7 @@ class Booking extends Component
      */
     public function cancelClassBooking(int $bookingId): void
     {
-        abort_unless(\Laravel\Pennant\Feature::active('group_classes'), 403);
+        abort_unless(Feature::active('group_classes'), 403);
 
         /** @var Member|null $member */
         $member = Auth::user()->member;

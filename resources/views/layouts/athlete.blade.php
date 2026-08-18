@@ -289,17 +289,21 @@
                     const vapidPublicKey = '{{ config("services.vapid.public_key") }}';
                     if (!vapidPublicKey) return;
 
-                    registration.pushManager.subscribe({
-                        userVisibleOnly: true,
-                        applicationServerKey: vapidPublicKey,
-                    }).then(function (subscription) {
-                        fetch('{{ route("athlete.push-subscribe") }}', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            },
-                            body: JSON.stringify(subscription.toJSON()),
+                    registration.pushManager.getSubscription().then(function (existing) {
+                        if (existing) return;
+
+                        registration.pushManager.subscribe({
+                            userVisibleOnly: true,
+                            applicationServerKey: vapidPublicKey,
+                        }).then(function (subscription) {
+                            fetch('{{ route("athlete.push-subscribe") }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                },
+                                body: JSON.stringify(subscription.toJSON()),
+                            });
                         });
                     });
                 });

@@ -14,6 +14,11 @@
                         <option value="active">Solo attivi</option>
                         <option value="cert_issues">Certificato scaduto</option>
                     </select>
+                    @if($search !== '' || $filter !== 'all')
+                        <button type="button" wire:click="resetFilters" class="btn btn-outline-secondary btn-sm" aria-label="Azzera filtri">
+                            <i class="fas fa-times"></i> Azzera
+                        </button>
+                    @endif
                 </div>
                 <a href="{{ route('backoffice.members.create') }}" class="btn btn-primary btn-sm">
                     <i class="fas fa-plus"></i> Nuovo tesserato

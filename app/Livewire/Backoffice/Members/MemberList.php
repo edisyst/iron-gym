@@ -31,6 +31,13 @@ class MemberList extends Component
         $this->resetPage();
     }
 
+    public function resetFilters(): void
+    {
+        $this->search = '';
+        $this->filter = 'all';
+        $this->resetPage();
+    }
+
     public function render(): View
     {
         // Eager loading per evitare N+1 su activeSubscription e piano

@@ -74,14 +74,16 @@
                                 @endif
                             </td>
                             <td>
-                                <a href="{{ route('backoffice.members.edit', $member) }}" class="btn btn-sm btn-default" aria-label="Modifica {{ $member->full_name }}">
-                                    <i class="fas fa-edit" aria-hidden="true"></i>
-                                </a>
-                                @if ($member->user_id)
-                                    <a href="{{ route('backoffice.athletes.profile', ['athleteId' => $member->user_id]) }}"
-                                       class="btn btn-sm btn-outline-info ml-1">
-                                        <i class="fas fa-dumbbell"></i> Profilo allenamento
+                                @if (auth()->user()->hasAnyRole(['gestore', 'trainer']))
+                                    <a href="{{ route('backoffice.members.edit', $member) }}" class="btn btn-sm btn-default" aria-label="Modifica {{ $member->full_name }}">
+                                        <i class="fas fa-edit" aria-hidden="true"></i>
                                     </a>
+                                    @if ($member->user_id)
+                                        <a href="{{ route('backoffice.athletes.profile', ['athleteId' => $member->user_id]) }}"
+                                           class="btn btn-sm btn-outline-info ml-1">
+                                            <i class="fas fa-dumbbell"></i> Profilo allenamento
+                                        </a>
+                                    @endif
                                 @endif
                             </td>
                         </tr>

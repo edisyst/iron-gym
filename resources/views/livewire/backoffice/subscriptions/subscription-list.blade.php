@@ -40,15 +40,15 @@
                             </td>
                             <td>
                                 @php
-                                    $badge = match($sub->status) {
-                                        'active'    => 'success',
-                                        'expired'   => 'danger',
-                                        'suspended' => 'warning',
-                                        'cancelled' => 'secondary',
-                                        default     => 'secondary',
+                                    [$badge, $label] = match($sub->status) {
+                                        'active'    => ['success',   'Attivo'],
+                                        'expired'   => ['danger',    'Scaduto'],
+                                        'suspended' => ['warning',   'Sospeso'],
+                                        'cancelled' => ['secondary', 'Cancellato'],
+                                        default     => ['secondary', ucfirst($sub->status)],
                                     };
                                 @endphp
-                                <span class="badge badge-{{ $badge }}">{{ ucfirst($sub->status) }}</span>
+                                <span class="badge badge-{{ $badge }}">{{ $label }}</span>
                             </td>
                         </tr>
                     @empty

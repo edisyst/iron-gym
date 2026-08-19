@@ -70,8 +70,10 @@
                     class="form-control form-control-sm filter-w-lg"
                 >
             </div>
-            <button class="btn btn-primary btn-sm" wire:click="openModal">
-                <i class="fas fa-sign-in-alt"></i> Registra accesso
+            <button class="btn btn-primary btn-sm" wire:click="openModal" wire:loading.attr="disabled">
+                <span wire:loading wire:target="openModal" class="spinner-border spinner-border-sm mr-1"></span>
+                <i class="fas fa-sign-in-alt" wire:loading.remove wire:target="openModal"></i>
+                Registra accesso
             </button>
         </div>
         <div class="card-body p-0">

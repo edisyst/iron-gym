@@ -17,7 +17,9 @@ class PtBookingFactory extends Factory
     public function definition(): array
     {
         $date = fake()->dateTimeBetween('now', '+30 days');
-        $start = fake()->randomElement(['09:00', '10:00', '11:00', '15:00', '16:00', '17:00']);
+        $startHour = fake()->randomElement([9, 10, 11, 15, 16, 17]);
+        $start = sprintf('%02d:00', $startHour);
+        $end = sprintf('%02d:00', $startHour + 1);
 
         return [
             'trainer_id' => User::factory(),
@@ -25,7 +27,7 @@ class PtBookingFactory extends Factory
             'session_id' => null,
             'booked_date' => $date->format('Y-m-d'),
             'start_time' => $start,
-            'end_time' => null,
+            'end_time' => $end,
             'status' => 'confirmed',
             'cancelled_by' => null,
             'cancellation_reason' => null,

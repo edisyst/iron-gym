@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Database\Factories\PtBookingFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -14,6 +16,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class PtBooking extends Model
 {
+    /** @use HasFactory<PtBookingFactory> */
+    use HasFactory;
+
     protected $fillable = [
         'trainer_id',
         'member_id',

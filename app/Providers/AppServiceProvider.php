@@ -66,6 +66,10 @@ class AppServiceProvider extends ServiceProvider
 
         // Gate usato da AdminLTE sidebar per la voce "Report allenamento"
         Gate::define('view-training-reports', fn (User $user) => ! $user->hasRole('receptionist'));
+
+        // Gate usati da AdminLTE sidebar per voci riservate a trainer/gestore
+        Gate::define('manage-trainer-availability', fn (User $user) => $user->hasAnyRole(['gestore', 'trainer']));
+        Gate::define('send-campaigns', fn (User $user) => $user->hasAnyRole(['gestore', 'trainer']));
     }
 
     private function configureFlare(): void

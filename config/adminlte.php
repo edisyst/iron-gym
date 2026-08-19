@@ -381,6 +381,7 @@ return [
             'text' => 'Disponibilità',
             'url' => 'backoffice/calendar/availability',
             'icon' => 'fas fa-clock',
+            'can' => 'manage-trainer-availability',
         ],
         [
             'text' => 'Prenotazioni PT',
@@ -398,6 +399,7 @@ return [
             'text' => 'Campagne',
             'url' => 'backoffice/communications/campaign',
             'icon' => 'fas fa-bullhorn',
+            'can' => 'send-campaigns',
         ],
         ['header' => 'ADMIN'],
         [

@@ -58,9 +58,8 @@ Route::prefix('backoffice')
         // Mesocicli — lista: visibile anche al receptionist
         Route::get('/mesocycles', MesocycleList::class)->name('mesocycles.index');
 
-        // Step 6 — prenotazioni e calendario (receptionist gestisce queste)
+        // Step 6 — prenotazioni e calendario
         Route::get('/calendar', TrainerCalendar::class)->name('calendar.index');
-        Route::get('/calendar/availability', AvailabilityManager::class)->name('calendar.availability');
         Route::get('/bookings', BookingList::class)->name('bookings.index');
         Route::get('/group-classes', GroupClassManager::class)->name('group-classes.index');
 
@@ -69,6 +68,10 @@ Route::prefix('backoffice')
             // Libreria esercizi — creazione e modifica
             Route::get('/exercises/create', ExerciseForm::class)->name('exercises.create');
             Route::get('/exercises/{exercise:slug}/edit', ExerciseForm::class)->name('exercises.edit');
+
+            // Gestione disponibilità trainer e campagne comunicazione
+            Route::get('/calendar/availability', AvailabilityManager::class)->name('calendar.availability');
+            Route::get('/communications/campaign', CommunicationCampaign::class)->name('communications.campaign');
 
             // Template schede — creazione e builder
             Route::get('/templates/create', TemplateForm::class)->name('templates.create');
@@ -84,9 +87,8 @@ Route::prefix('backoffice')
             Route::get('/athletes/{athleteId}/analytics', AthleteAnalytics::class)->name('athletes.analytics');
             Route::get('/athletes/{athleteId}/profile', AthleteProfile::class)->name('athletes.profile');
 
-            // Step 7 — messaggistica e comunicazione con atleti
+            // Step 7 — messaggistica con atleti
             Route::get('/athletes/{athleteId}/messages', MessageThread::class)->name('athletes.messages');
-            Route::get('/communications/campaign', CommunicationCampaign::class)->name('communications.campaign');
         });
 
         // Step 8 — reportistica gestore

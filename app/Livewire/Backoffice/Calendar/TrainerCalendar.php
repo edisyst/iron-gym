@@ -222,6 +222,11 @@ class TrainerCalendar extends Component
     {
         $booking = PtBooking::findOrFail($bookingId);
 
+        abort_unless(
+            Auth::user()->hasRole('gestore') || $booking->trainer_id === Auth::id(),
+            403
+        );
+
         try {
             app(PtBookingService::class)->cancel(
                 booking: $booking,

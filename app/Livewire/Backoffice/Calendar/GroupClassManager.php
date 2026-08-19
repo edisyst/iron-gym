@@ -103,6 +103,8 @@ class GroupClassManager extends Component
      */
     public function save(): void
     {
+        abort_unless(Auth::user()->hasAnyRole(['gestore', 'trainer']), 403);
+
         $this->validate([
             'formTrainerId' => 'required|integer|exists:users,id',
             'formName' => 'required|string|max:128',
@@ -142,6 +144,8 @@ class GroupClassManager extends Component
      */
     public function deleteClass(int $id): void
     {
+        abort_unless(Auth::user()->hasAnyRole(['gestore', 'trainer']), 403);
+
         $class = GroupClass::findOrFail($id);
 
         $hasConfirmed = $class->confirmedBookings()->exists();

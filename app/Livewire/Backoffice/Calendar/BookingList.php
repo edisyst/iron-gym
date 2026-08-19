@@ -61,6 +61,8 @@ class BookingList extends Component
     {
         $user = Auth::user();
 
+        abort_unless($user->hasAnyRole(['gestore', 'trainer']), 403);
+
         $query = PtBooking::where('id', $bookingId)->where('status', 'pending');
 
         if (! $user->hasRole('gestore')) {
@@ -87,6 +89,8 @@ class BookingList extends Component
      */
     public function cancel(): void
     {
+        abort_unless(Auth::user()->hasAnyRole(['gestore', 'trainer']), 403);
+
         $this->validate([
             'cancelReason' => 'required|string|min:5|max:500',
         ], [

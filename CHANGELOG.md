@@ -2,11 +2,25 @@
 
 ---
 
+## Audit receptionist — chiusura (2026-08-19)
+
+**Branch:** `develop` — commit `db0dd0a`
+
+Decisione dominio: `GroupClassManager.removeParticipant()` intenzionalmente accessibile al receptionist (gestione iscrizioni ai corsi = operazione front-desk).
+
+- `ClassBooking`: aggiunto `HasFactory` trait
+- `ReceptionistCheckinTest`: test #24 — receptionist chiama `removeParticipant()` con successo
+- `docs/review/audit-receptionist-2026-08-19.md`: finding #17 (colonna cert. in AccessLogList — backlog P3), tabella stato finale
+
+Suite: 24/24 `ReceptionistCheckinTest` — PHPStan 0 errori — Pint OK.
+
+---
+
 ## Audit receptionist — E2E test (2026-08-19)
 
 **Branch:** `develop` — commit `3c40ee4`
 
-23 test in `tests/Feature/ReceptionistCheckinTest.php`:
+24 test in `tests/Feature/ReceptionistCheckinTest.php`:
 - Check-in flusso positivo (cert. valida + abb. attivo) + incremento `accesses_used`
 - Blocco check-in: cert. scaduta, cert. assente, nessun abbonamento, accessi esauriti, nessun tesserato selezionato
 - 403 receptionist su route `communications.campaign` e `calendar.availability`

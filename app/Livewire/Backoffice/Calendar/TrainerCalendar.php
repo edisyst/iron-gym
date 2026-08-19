@@ -47,7 +47,7 @@ class TrainerCalendar extends Component
     {
         // Inizia dalla settimana corrente (lunedì ISO)
         $this->weekStart = Carbon::now()->startOfWeek(Carbon::MONDAY)->toDateString();
-        $this->selectedTrainerId = (int) Auth::id();
+        $this->selectedTrainerId = 0;
     }
 
     public function previousWeek(): void
@@ -93,41 +93,44 @@ class TrainerCalendar extends Component
         $end = $start->copy()->endOfWeek(Carbon::SUNDAY);
         $events = [];
 
-        // Disponibilità (slot aperti) — colore verde
-        for ($day = $start->copy(); $day->lte($end); $day->addDay()) {
-            $slots = TrainerAvailability::where('trainer_id', $this->selectedTrainerId)
-                ->forDate($day)
-                ->where('is_available', true)
-                ->get();
+        $showAll = $this->selectedTrainerId === 0;
 
-            foreach ($slots as $slot) {
-                $events[] = [
-                    'id' => 'avail_'.$slot->id,
-                    'title' => 'Disponibile',
-                    'start' => $day->toDateString().'T'.substr($slot->start_time, 0, 5),
-                    'end' => $day->toDateString().'T'.substr($slot->end_time, 0, 5),
-                    'color' => '#22c55e',
-                    'display' => 'background',
-                    'extendedProps' => ['type' => 'availability', 'id' => $slot->id],
-                ];
+        // Disponibilità (slot aperti) — colore verde; in vista "tutti" si omette per non sovrapporre sfondi
+        if (! $showAll) {
+            for ($day = $start->copy(); $day->lte($end); $day->addDay()) {
+                $slots = TrainerAvailability::where('trainer_id', $this->selectedTrainerId)
+                    ->forDate($day)
+                    ->where('is_available', true)
+                    ->get();
+
+                foreach ($slots as $slot) {
+                    $events[] = [
+                        'id' => 'avail_'.$slot->id,
+                        'title' => 'Disponibile',
+                        'start' => $day->toDateString().'T'.substr($slot->start_time, 0, 5),
+                        'end' => $day->toDateString().'T'.substr($slot->end_time, 0, 5),
+                        'color' => '#22c55e',
+                        'display' => 'background',
+                        'extendedProps' => ['type' => 'availability', 'id' => $slot->id],
+                    ];
+                }
             }
         }
 
         // Prenotazioni PT — colore blu
-        $ptBookings = PtBooking::with('member')
-            ->where('trainer_id', $this->selectedTrainerId)
+        $ptBookings = PtBooking::with(['member', 'trainer'])
+            ->when(! $showAll, fn ($q) => $q->where('trainer_id', $this->selectedTrainerId))
             ->whereBetween('booked_date', [$start->toDateString(), $end->toDateString()])
             ->whereIn('status', ['pending', 'confirmed'])
             ->get();
 
         foreach ($ptBookings as $booking) {
-            $memberName = $booking->member
-                ? $booking->member->full_name
-                : 'N/D';
+            $memberName = $booking->member ? $booking->member->full_name : 'N/D';
+            $trainerLabel = $showAll && $booking->trainer ? ' ('.$booking->trainer->name.')' : '';
 
             $events[] = [
                 'id' => 'pt_'.$booking->id,
-                'title' => 'PT: '.$memberName,
+                'title' => 'PT: '.$memberName.$trainerLabel,
                 'start' => $booking->booked_date->toDateString().'T'.substr($booking->start_time, 0, 5),
                 'end' => $booking->booked_date->toDateString().'T'.substr($booking->end_time, 0, 5),
                 'color' => '#3b82f6',
@@ -137,7 +140,7 @@ class TrainerCalendar extends Component
 
         // Corsi collettivi — colore arancione ambra
         $classes = GroupClass::with('trainer')
-            ->where('trainer_id', $this->selectedTrainerId)
+            ->when(! $showAll, fn ($q) => $q->where('trainer_id', $this->selectedTrainerId))
             ->whereBetween('scheduled_at', [
                 $start->toDateString().' 00:00:00',
                 $end->toDateString().' 23:59:59',
@@ -147,10 +150,11 @@ class TrainerCalendar extends Component
 
         foreach ($classes as $class) {
             $classEnd = $class->scheduled_at->copy()->addMinutes($class->duration_minutes);
+            $classTrainerLabel = $showAll && $class->trainer ? ' ('.$class->trainer->name.')' : '';
 
             $events[] = [
                 'id' => 'class_'.$class->id,
-                'title' => $class->name,
+                'title' => $class->name.$classTrainerLabel,
                 'start' => $class->scheduled_at->format('Y-m-d\TH:i'),
                 'end' => $classEnd->format('Y-m-d\TH:i'),
                 'color' => '#f59e0b',
@@ -178,6 +182,12 @@ class TrainerCalendar extends Component
      */
     public function createBooking(): void
     {
+        if ($this->selectedTrainerId === 0) {
+            $this->addError('bookingStart', 'Seleziona un trainer specifico per creare la prenotazione.');
+
+            return;
+        }
+
         $this->validate([
             'bookingMemberId' => 'required|integer|exists:members,id',
             'selectedDate' => 'required|date',

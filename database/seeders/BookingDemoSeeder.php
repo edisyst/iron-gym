@@ -129,7 +129,7 @@ class BookingDemoSeeder extends Seeder
                 'start_time' => $start,
                 'end_time' => $end,
                 'status' => $status,
-                'cancelled_by' => $status === 'cancelled' ? 'member' : null,
+                'cancelled_by' => null,
                 'cancellation_reason' => $status === 'cancelled' ? 'Impegno personale' : null,
                 'cancellation_deadline' => $date->copy()->subDay()->setTime(20, 0),
                 'notes' => null,

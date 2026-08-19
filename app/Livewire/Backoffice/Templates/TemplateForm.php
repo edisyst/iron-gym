@@ -51,6 +51,11 @@ class TemplateForm extends Component
         $this->redirect(route('backoffice.templates.builder', $template), navigate: false);
     }
 
+    public function mount(): void
+    {
+        abort_unless(auth()->user()?->hasAnyRole(['gestore', 'trainer']), 403);
+    }
+
     public function render(): View
     {
         return view('livewire.backoffice.templates.template-form')

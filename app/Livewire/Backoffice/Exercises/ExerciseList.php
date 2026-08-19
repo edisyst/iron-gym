@@ -52,6 +52,11 @@ class ExerciseList extends Component
         $this->resetPage();
     }
 
+    public function mount(): void
+    {
+        abort_unless(auth()->user()?->hasAnyRole(['gestore', 'trainer']), 403);
+    }
+
     public function updatingEquipmentFilter(): void
     {
         $this->resetPage();

@@ -349,21 +349,24 @@ return [
             'url' => 'backoffice/access-logs',
             'icon' => 'fas fa-door-open',
         ],
-        ['header' => 'TRAINING'],
+        ['header' => 'TRAINING', 'can' => 'access-training-section'],
         [
             'text' => 'Esercizi',
             'url' => 'backoffice/exercises',
             'icon' => 'fas fa-dumbbell',
+            'can' => 'access-training-section',
         ],
         [
             'text' => 'Schede template',
             'url' => 'backoffice/templates',
             'icon' => 'fas fa-clipboard-list',
+            'can' => 'access-training-section',
         ],
         [
             'text' => 'Mesocicli',
             'url' => 'backoffice/mesocycles',
             'icon' => 'fas fa-calendar-alt',
+            'can' => 'access-training-section',
         ],
         [
             'text' => 'Report allenamento',
@@ -394,18 +397,19 @@ return [
             'icon' => 'fas fa-users',
             'can' => 'view-group-classes',
         ],
-        ['header' => 'COMUNICAZIONE'],
+        ['header' => 'COMUNICAZIONE', 'can' => 'send-campaigns'],
         [
             'text' => 'Campagne',
             'url' => 'backoffice/communications/campaign',
             'icon' => 'fas fa-bullhorn',
             'can' => 'send-campaigns',
         ],
-        ['header' => 'ADMIN'],
+        ['header' => 'ADMIN', 'can' => 'access-admin-section'],
         [
             'text' => 'Inventario Dischi',
             'url' => 'backoffice/admin/plate-inventory',
             'icon' => 'fas fa-dumbbell',
+            'can' => 'access-admin-section',
         ],
     ],
 

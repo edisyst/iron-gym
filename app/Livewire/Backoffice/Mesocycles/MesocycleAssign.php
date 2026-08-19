@@ -36,6 +36,8 @@ class MesocycleAssign extends Component
 
     public function mount(): void
     {
+        abort_unless(auth()->user()?->hasAnyRole(['gestore', 'trainer']), 403);
+
         $this->startDate = now()->format('Y-m-d');
     }
 

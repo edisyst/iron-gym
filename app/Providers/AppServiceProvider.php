@@ -70,6 +70,10 @@ class AppServiceProvider extends ServiceProvider
         // Gate usati da AdminLTE sidebar per voci riservate a trainer/gestore
         Gate::define('manage-trainer-availability', fn (User $user) => $user->hasAnyRole(['gestore', 'trainer']));
         Gate::define('send-campaigns', fn (User $user) => $user->hasAnyRole(['gestore', 'trainer']));
+
+        // Gate per sezioni TRAINING e ADMIN: esclusi receptionist e atleta
+        Gate::define('access-training-section', fn (User $user) => $user->hasAnyRole(['gestore', 'trainer']));
+        Gate::define('access-admin-section', fn (User $user) => $user->hasRole('gestore'));
     }
 
     private function configureFlare(): void

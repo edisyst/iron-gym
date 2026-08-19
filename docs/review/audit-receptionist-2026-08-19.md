@@ -272,4 +272,22 @@ Alternativa a lungo termine: full-text search con `MATCH ... AGAINST`.
 
 ---
 
-*Generato: 2026-08-19. Chiuso: 2026-08-19.*
+---
+
+## Aggiornamento post-audit — 2026-08-19 (sezione TRAINING e ADMIN)
+
+**Richiesta:** rendere inaccessibili ed invisibili a receptionist le sezioni TRAINING (Esercizi, Schede template, Mesocicli) e ADMIN (Inventario Dischi) del backoffice.
+
+**Fix applicati:**
+
+| Componente | Fix |
+|---|---|
+| `ExerciseList`, `ExerciseForm`, `ExerciseDetail` | `abort_unless(hasAnyRole(['gestore','trainer']), 403)` in `mount()` |
+| `TemplateList`, `TemplateForm`, `TemplateBuilder` | idem |
+| `MesocycleList`, `MesocycleAssign` | idem (`MesocycleDetail` già protetto) |
+| `PlateInventoryManager` | `abort_unless(hasRole('gestore'), 403)` in `mount()` |
+| `adminlte.php` sidebar | `can => 'access-training-section'` su header TRAINING e 3 voci; `can => 'access-admin-section'` su header ADMIN e Inventario Dischi |
+| `AppServiceProvider` | gate `access-training-section` (gestore\|trainer), `access-admin-section` (gestore) |
+| `ReceptionistCheckinTest` | 7 nuovi test (32/32 ✓) |
+
+*Aggiornamento: 2026-08-19.*

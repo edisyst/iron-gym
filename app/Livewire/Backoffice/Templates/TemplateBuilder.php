@@ -26,6 +26,8 @@ class TemplateBuilder extends Component
 
     public function mount(WorkoutTemplate $template): void
     {
+        abort_unless(auth()->user()?->hasAnyRole(['gestore', 'trainer']), 403);
+
         $this->template = $template;
     }
 

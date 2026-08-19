@@ -12,6 +12,8 @@ class ExerciseDetail extends Component
 
     public function mount(Exercise $exercise): void
     {
+        abort_unless(auth()->user()?->hasAnyRole(['gestore', 'trainer']), 403);
+
         // Carica relazioni per evitare N+1 nella view
         $this->exercise = $exercise->load([
             'muscles',

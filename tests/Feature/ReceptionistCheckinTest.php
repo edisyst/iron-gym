@@ -2,10 +2,14 @@
 
 use App\Livewire\Athlete\Dashboard as AthleteDashboard;
 use App\Livewire\Backoffice\Access\AccessLogList;
+use App\Livewire\Backoffice\Admin\PlateInventoryManager;
 use App\Livewire\Backoffice\Calendar\BookingList;
 use App\Livewire\Backoffice\Calendar\GroupClassManager;
 use App\Livewire\Backoffice\Calendar\TrainerCalendar;
+use App\Livewire\Backoffice\Exercises\ExerciseList;
 use App\Livewire\Backoffice\Members\MemberList;
+use App\Livewire\Backoffice\Mesocycles\MesocycleList;
+use App\Livewire\Backoffice\Templates\TemplateList;
 use App\Models\ClassBooking;
 use App\Models\GroupClass;
 use App\Models\Member;
@@ -419,4 +423,50 @@ it('receptionist può rimuovere partecipante da corso (operazione front-desk)', 
         ->assertHasNoErrors();
 
     expect($booking->fresh()->status)->toBe('cancelled');
+});
+
+// ---------------------------------------------------------------------------
+// 9. Sezioni TRAINING e ADMIN — receptionist riceve 403
+// ---------------------------------------------------------------------------
+
+it('receptionist ottiene 403 su ExerciseList', function () {
+    Livewire::actingAs($this->receptionist)
+        ->test(ExerciseList::class)
+        ->assertForbidden();
+});
+
+it('receptionist ottiene 403 su TemplateList', function () {
+    Livewire::actingAs($this->receptionist)
+        ->test(TemplateList::class)
+        ->assertForbidden();
+});
+
+it('receptionist ottiene 403 su MesocycleList', function () {
+    Livewire::actingAs($this->receptionist)
+        ->test(MesocycleList::class)
+        ->assertForbidden();
+});
+
+it('receptionist ottiene 403 su PlateInventoryManager', function () {
+    Livewire::actingAs($this->receptionist)
+        ->test(PlateInventoryManager::class)
+        ->assertForbidden();
+});
+
+it('gestore accede a ExerciseList senza 403', function () {
+    Livewire::actingAs($this->gestore)
+        ->test(ExerciseList::class)
+        ->assertOk();
+});
+
+it('trainer accede a TemplateList senza 403', function () {
+    Livewire::actingAs($this->trainer)
+        ->test(TemplateList::class)
+        ->assertOk();
+});
+
+it('trainer non accede a PlateInventoryManager', function () {
+    Livewire::actingAs($this->trainer)
+        ->test(PlateInventoryManager::class)
+        ->assertForbidden();
 });

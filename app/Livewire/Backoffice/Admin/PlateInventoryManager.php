@@ -54,6 +54,11 @@ class PlateInventoryManager extends Component
         unset($this->editing[$id]);
     }
 
+    public function mount(): void
+    {
+        abort_unless(auth()->user()?->hasRole('gestore'), 403);
+    }
+
     public function render(): View
     {
         $plates = PlateInventory::orderByDesc('weight_kg')->paginate(20);

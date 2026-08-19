@@ -77,6 +77,8 @@ class ExerciseForm extends Component
 
     public function mount(?Exercise $exercise = null): void
     {
+        abort_unless(auth()->user()?->hasAnyRole(['gestore', 'trainer']), 403);
+
         // Carica tutti i muscoli per popolare muscleData
         $muscles = Muscle::orderBy('muscle_group')->orderBy('display_order')->get();
 

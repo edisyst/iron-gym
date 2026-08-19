@@ -1,13 +1,7 @@
 ﻿<div>
     <div class="card">
         <div class="card-header">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <input
-                    type="text"
-                    wire:model.live.debounce.300ms="search"
-                    placeholder="Cerca per nome o email..."
-                    class="form-control form-control-sm filter-w-lg"
-                >
+            <div class="d-flex justify-content-end">
                 <a href="{{ route('backoffice.members.create') }}" class="btn btn-primary btn-sm">
                     <i class="fas fa-plus"></i> Nuovo tesserato
                 </a>

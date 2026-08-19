@@ -100,8 +100,8 @@ class AccessLogList extends Component
             'checked_in_by' => auth()->id(),
         ]);
 
-        $this->showModal = false;
         session()->flash('success', 'Accesso registrato con successo.');
+        $this->redirect('/backoffice/access-logs', navigate: false);
     }
 
     public function render(): View

@@ -242,6 +242,8 @@ UX07 Scala UI maggiorata completata (2026-07-18): touch-target 48→56px, touch-
 
 Audit funzionale PWA atleta completato (2026-08-18): 11 finding identificati, 8 chiusi nel branch feature/audit-funzionale-atleta-2026-08-18. Fix principali: storico include sessioni `skipped`; null-guard member in cancel booking; tab Corsi gated su feature flag; set time-based visibili nel dettaglio; N+1 eliminato in WeeklyVolume mount; push subscribe idempotente con getSubscription(); translate-y-full in safelist Tailwind; componente History orfano rimosso. Suite: 189/195 (6 skip pre-esistenti invariati), PHPStan 0 errori, Pint OK. Report: docs/reviews/ui-atleta-funzionale-2026-08-18.md.
 
+Verifica E2E receptionist completata (2026-08-19): 23 test in ReceptionistCheckinTest — flusso check-in completo, blocchi certificato/abbonamento, 403 su route e metodi Livewire protetti, ownership cancelBooking, banner cert. atleta Dashboard. Fix: HasFactory su Subscription e PtBooking, PtBookingFactory end_time. Suite: 212/218 (6 skip invariati), PHPStan 0, Pint OK.
+
 Audit receptionist completato (2026-08-19): 11 fix applicati in 6 commit — 2 P0 di autorizzazione (CommunicationCampaign e AvailabilityManager tolte dal perimetro receptionist), 3 P1 auth (abort_unless in BookingList/GroupClassManager/TrainerCalendar), blocco check-in su certificato medico scaduto, banner avviso cert. nella home atleta, correzioni UX (link nascosti per receptionist, badge stato abbonamento in italiano, wire:loading modale check-in), indice composito last_name/first_name su members. Suite: 189/195 (6 skip invariati), PHPStan 0, Pint OK. Report: docs/review/audit-receptionist-2026-08-19.md.
 
 Prossima attività: raccogliere feedback dai primi atleti pilota dopo prima sessione.

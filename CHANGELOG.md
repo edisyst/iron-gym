@@ -2,6 +2,24 @@
 
 ---
 
+## Audit receptionist — E2E test (2026-08-19)
+
+**Branch:** `develop` — commit `3c40ee4`
+
+23 test in `tests/Feature/ReceptionistCheckinTest.php`:
+- Check-in flusso positivo (cert. valida + abb. attivo) + incremento `accesses_used`
+- Blocco check-in: cert. scaduta, cert. assente, nessun abbonamento, accessi esauriti, nessun tesserato selezionato
+- 403 receptionist su route `communications.campaign` e `calendar.availability`
+- 403 receptionist su `GroupClassManager.save/deleteClass`, `BookingList.confirm/cancel`, `TrainerCalendar.cancelBooking`
+- Ownership `cancelBooking`: trainer proprio booking OK, gestore booking altrui OK
+- Dashboard atleta: `certWarningLevel` danger/warning/vuoto in base a scadenza
+
+Fix contestuali: `HasFactory` su `Subscription` e `PtBooking`; `PtBookingFactory.end_time` valorizzato.
+
+Suite: 212/218 (6 skip pre-esistenti invariati) — PHPStan 0 errori — Pint OK.
+
+---
+
 ## Audit receptionist — fix (2026-08-19)
 
 **Branch:** `develop`  

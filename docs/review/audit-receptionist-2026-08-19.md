@@ -38,7 +38,9 @@ Perimetro: ruolo `receptionist` — anagrafica tesserati, certificati medici, ab
 
 **Impatto:** Gestione non autorizzata del calendario corsi collettivi (creazione, modifica, cancellazione). La cancellazione di un corso con partecipanti imposta `status=cancelled` e blocca definitivamente il corso.
 
-**Fix proposto:** Limitare `save()` e `deleteClass()` a `gestore|trainer` con `abort_unless`. `removeParticipant()` è ambiguo — potrebbe essere consentito al receptionist per gestione front-desk. Discutere con dominio prima di applicare.
+**Fix applicato:** `save()` e `deleteClass()` limitati a `gestore|trainer` con `abort_unless` (commit `3f3d79e`).
+
+**Decisione dominio (2026-08-19):** `removeParticipant()` intenzionalmente accessibile a receptionist — gestione iscrizioni ai corsi è operazione front-desk.
 
 ---
 
@@ -255,7 +257,19 @@ Alternativa a lungo termine: full-text search con `MATCH ... AGAINST`.
 | 14 | P3 | UI | SubscriptionList: badge status in inglese |
 | 15 | P3 | Performance | SubscriptionForm: get() di tutti i tesserati attivi |
 | 16 | P3 | Arch | Nessun Form Request per operazioni receptionist |
+| 17 | P3 | UI | AccessLogList: colonna "Cert." mancante nel registro accessi |
+
+### Stato finale (post Fase 2-3)
+
+| # | Stato | Note |
+|---|---|---|
+| 1-2 | ✅ applicato | route + gate sidebar |
+| 3 | ✅ applicato | `save()` + `deleteClass()` — `removeParticipant()` intenzionalmente lasciato al receptionist (front-desk) |
+| 4-7 | ✅ applicato | ownership/role check |
+| 6 | ✅ applicato | confermato dall'utente come bloccante |
+| 8-11, 13-14 | ✅ applicato | UI + perf |
+| 12, 15-17 | ⏳ backlog | nuova feature / refactor / cosmético |
 
 ---
 
-*Generato: 2026-08-19 — da verificare con il team prima di Fase 2.*
+*Generato: 2026-08-19. Chiuso: 2026-08-19.*

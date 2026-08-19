@@ -6,6 +6,7 @@ use App\Livewire\Backoffice\Calendar\BookingList;
 use App\Livewire\Backoffice\Calendar\GroupClassManager;
 use App\Livewire\Backoffice\Calendar\TrainerCalendar;
 use App\Livewire\Backoffice\Members\MemberList;
+use App\Models\ClassBooking;
 use App\Models\GroupClass;
 use App\Models\Member;
 use App\Models\PtBooking;
@@ -398,4 +399,24 @@ it('gestore vede link Modifica e Profilo allenamento in MemberList', function ()
         ->test(MemberList::class)
         ->assertSee(route('backoffice.members.edit', $member))
         ->assertSee('Profilo allenamento');
+});
+
+// ---------------------------------------------------------------------------
+// 8. GroupClassManager.removeParticipant() — consentito al receptionist
+// ---------------------------------------------------------------------------
+
+it('receptionist può rimuovere partecipante da corso (operazione front-desk)', function () {
+    $class = GroupClass::factory()->create(['trainer_id' => $this->trainer->id]);
+    $booking = ClassBooking::factory()->create([
+        'class_id' => $class->id,
+        'member_id' => $this->memberOk->id,
+        'status' => 'confirmed',
+    ]);
+
+    Livewire::actingAs($this->receptionist)
+        ->test(GroupClassManager::class)
+        ->call('removeParticipant', $booking->id)
+        ->assertHasNoErrors();
+
+    expect($booking->fresh()->status)->toBe('cancelled');
 });

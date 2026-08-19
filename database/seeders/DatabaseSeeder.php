@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
                 TrainingHistorySeeder::class,
                 ActiveMesocycleSeeder::class,
                 ProgressDemoSeeder::class,
+                BookingDemoSeeder::class,
             ]);
         }
     }

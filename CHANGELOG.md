@@ -2,6 +2,41 @@
 
 ---
 
+## Audit receptionist — fix (2026-08-19)
+
+**Branch:** `develop`  
+**Commits:** `fd070f2` → `184e499` (6 commit)
+
+### Fix applicati
+
+| ID | Priorità | Area | Descrizione |
+|---|---|---|---|
+| R-AUTH-01 | P0 | Auth | `CommunicationCampaign` spostata in gruppo `role:gestore\|trainer`; gate sidebar `send-campaigns` |
+| R-AUTH-02 | P0 | Auth | `AvailabilityManager` spostata in gruppo `role:gestore\|trainer`; gate sidebar `manage-trainer-availability` |
+| R-AUTH-03 | P1 | Auth | `GroupClassManager.save()` e `deleteClass()`: `abort_unless` gestore\|trainer |
+| R-AUTH-04 | P1 | Auth | `TrainerCalendar.cancelBooking()`: ownership check `trainer_id === Auth::id()` o gestore |
+| R-AUTH-05 | P1 | Auth | `BookingList.confirm()` e `cancel()`: `abort_unless` gestore\|trainer |
+| R-DOM-01 | P1 | Dominio | Check-in blocca se `medical_cert_expiry` null o passata |
+| R-ATH-01 | P1 | Atleta | Dashboard atleta mostra banner danger/warning per cert. scaduto o in scadenza ≤30gg |
+| R-UI-01 | P2 | UI | `MemberList`: link Modifica e Profilo allenamento nascosti per receptionist |
+| R-UI-02 | P3 | UI | `SubscriptionList`: badge stato abbonamento tradotti in italiano |
+| R-UI-03 | P2 | UI | `AccessLogList`: wire:loading sul pulsante apertura modale check-in |
+| R-PERF-01 | P2 | Perf | Migration `2026_08_19_000001`: indice composito `last_name`/`first_name` su `members` |
+
+### Finding aperti (non applicati in questa fase)
+
+| ID | Priorità | Area | Motivo rinvio |
+|---|---|---|---|
+| R-DOM-02 | P2 | UX | `SubscriptionList` senza ricerca per nome — nuova feature, fuori scope fix |
+| R-PERF-02 | P3 | Perf | `SubscriptionForm` carica tutti i tesserati in memoria — refactor typeahead separato |
+| R-ARCH-01 | P3 | Arch | Nessun Form Request per operazioni receptionist — refactor architetturale separato |
+
+### Verifica
+
+Suite: 189/195 (6 skip pre-esistenti invariati) — PHPStan 0 errori — Pint OK.
+
+---
+
 ## Audit funzionale PWA atleta — fix (2026-08-18)
 
 **Branch:** `feature/audit-funzionale-atleta-2026-08-18`

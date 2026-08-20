@@ -1,15 +1,6 @@
 <div>
-    {{-- Breadcrumb --}}
-    <ol class="breadcrumb float-sm-right">
-        <li class="breadcrumb-item"><a href="{{ route('backoffice.dashboard') }}">Dashboard</a></li>
-        <li class="breadcrumb-item"><a href="{{ route('backoffice.exercises.index') }}">Esercizi</a></li>
-        <li class="breadcrumb-item active">{{ $exercise->name_it }}</li>
-    </ol>
-    <div class="clearfix mb-3"></div>
-
     {{-- Azioni header --}}
-    <div class="mb-3 d-flex align-items-center justify-content-between">
-        <h4 class="mb-0">{{ $exercise->name_it }}</h4>
+    <div class="mb-3 d-flex align-items-center justify-content-end">
         <div>
             <a href="{{ route('backoffice.exercises.index') }}" class="btn btn-default btn-sm">
                 <i class="fas fa-arrow-left"></i> Lista

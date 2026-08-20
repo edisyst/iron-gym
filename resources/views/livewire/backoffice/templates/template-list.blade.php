@@ -2,14 +2,14 @@
     <div class="card">
         <div class="card-header">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <div class="d-flex flex-wrap gap-2">
+                <div class="d-flex flex-wrap">
                     <input
                         type="text"
                         wire:model.live.debounce.300ms="search"
                         placeholder="Cerca template..."
                         class="form-control form-control-sm filter-w-md"
                     >
-                    <select wire:model.live="goal" class="form-control form-control-sm filter-w-xs">
+                    <select wire:model.live="goal" class="form-control form-control-sm filter-w-xs ml-2">
                         <option value="">Tutti gli obiettivi</option>
                         <option value="hypertrophy">Ipertrofia</option>
                         <option value="strength">Forza</option>
@@ -18,7 +18,7 @@
                         <option value="peaking">Peaking</option>
                         <option value="general">Generale</option>
                     </select>
-                    <select wire:model.live="active" class="form-control form-control-sm filter-w-xs">
+                    <select wire:model.live="active" class="form-control form-control-sm filter-w-xs ml-2">
                         <option value="">Tutti</option>
                         <option value="1">Attivi</option>
                         <option value="0">Archiviati</option>

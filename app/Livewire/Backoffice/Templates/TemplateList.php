@@ -21,13 +21,6 @@ class TemplateList extends Component
 
     public string $active = '';
 
-    /** @var array<string, array<string, string>> */
-    protected $queryString = [
-        'search' => ['except' => ''],
-        'goal' => ['except' => ''],
-        'active' => ['except' => ''],
-    ];
-
     public function updatingSearch(): void
     {
         $this->resetPage();

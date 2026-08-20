@@ -255,7 +255,12 @@ class ExerciseForm extends Component
                 if (! is_dir($dir)) {
                     mkdir($dir, 0775, true);
                 }
-                $this->imageFile->move($dir, $exercise->slug.'.'.$ext);
+                $destination = $dir.DIRECTORY_SEPARATOR.$exercise->slug.'.'.$ext;
+                if (file_exists($destination)) {
+                    unlink($destination);
+                }
+                copy($this->imageFile->getRealPath(), $destination);
+                @unlink($this->imageFile->getRealPath());
             }
 
             // Sync attrezzatura

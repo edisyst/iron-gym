@@ -1,4 +1,4 @@
-﻿<div>
+<div>
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h3 class="card-title">Elenco mesocicli</h3>

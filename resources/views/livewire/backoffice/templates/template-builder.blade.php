@@ -1,4 +1,4 @@
-﻿<div>
+<div>
     {{-- Tab settimane + copia settimana --}}
     <div class="d-flex align-items-center justify-content-between flex-wrap mb-3">
         <ul class="nav nav-tabs mb-0">

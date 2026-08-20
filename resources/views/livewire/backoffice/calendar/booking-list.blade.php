@@ -1,4 +1,4 @@
-﻿{{-- Lista prenotazioni PT con filtri e azioni --}}
+{{-- Lista prenotazioni PT con filtri e azioni --}}
 <div>
     {{-- Filtri --}}
     <div class="card card-outline card-primary">

@@ -24,14 +24,6 @@ class ExerciseList extends Component
     /** @var array<int> */
     public array $equipmentFilter = [];
 
-    /** @var array<string, array<string, string>> */
-    protected $queryString = [
-        'search' => ['except' => ''],
-        'muscleGroup' => ['except' => ''],
-        'mechanic' => ['except' => ''],
-        'skillLevel' => ['except' => ''],
-    ];
-
     public function updatingSearch(): void
     {
         $this->resetPage();

@@ -1,4 +1,4 @@
-﻿<div>
+<div>
     {{-- Filtri --}}
     <div class="card card-outline card-primary mb-3">
         <div class="card-body py-2">

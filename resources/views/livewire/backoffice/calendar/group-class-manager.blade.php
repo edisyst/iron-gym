@@ -1,4 +1,4 @@
-﻿{{-- Gestione corsi collettivi: CRUD e pannello iscritti --}}
+{{-- Gestione corsi collettivi: CRUD e pannello iscritti --}}
 <div>
     <div class="row">
         {{-- Colonna lista corsi --}}

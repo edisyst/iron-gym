@@ -2,12 +2,20 @@
     <div class="card">
         <div class="card-header">
             <div class="d-flex justify-content-between align-items-center">
-                <input
-                    type="text"
-                    wire:model.live.debounce.300ms="search"
-                    placeholder="Cerca per nome o email..."
-                    class="form-control form-control-sm filter-w-lg"
-                >
+                <div class="d-flex">
+                    <input
+                        type="text"
+                        wire:model.live.debounce.300ms="search"
+                        placeholder="Cerca per nome o email..."
+                        class="form-control form-control-sm filter-w-lg mr-2"
+                    >
+                    <select wire:model.live="certFilter" class="form-control form-control-sm filter-w-sm">
+                        <option value="">Cert. medico: tutti</option>
+                        <option value="missing">Mancante</option>
+                        <option value="expired">Scaduto</option>
+                        <option value="expiring_soon">In scadenza (30gg)</option>
+                    </select>
+                </div>
                 <a href="{{ route('backoffice.members.create') }}" class="btn btn-primary btn-sm">
                     <i class="fas fa-plus"></i> Nuovo tesserato
                 </a>

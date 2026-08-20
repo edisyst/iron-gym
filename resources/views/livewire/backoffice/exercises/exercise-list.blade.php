@@ -122,10 +122,25 @@
                                     <span class="badge badge-danger">Avanzato</span>
                                 @endif
                             </td>
-                            <td>
-                                <a href="{{ route('backoffice.exercises.show', $exercise) }}" class="btn btn-sm btn-default" aria-label="Dettaglio {{ $exercise->name_it }}">
-                                    Dettaglio
+                            <td class="table-actions">
+                                <a href="{{ route('backoffice.exercises.show', $exercise) }}" class="btn btn-sm btn-primary" aria-label="Dettaglio {{ $exercise->name_it }}" title="Dettaglio">
+                                    <i class="fas fa-eye"></i>
                                 </a>
+                                @role('gestore')
+                                    <a href="{{ route('backoffice.exercises.edit', $exercise) }}" class="btn btn-sm btn-primary" aria-label="Modifica {{ $exercise->name_it }}" title="Modifica">
+                                        <i class="fas fa-pen"></i>
+                                    </a>
+                                    <button
+                                        type="button"
+                                        wire:click="deleteExercise({{ $exercise->id }})"
+                                        wire:confirm="Eliminare l'esercizio '{{ $exercise->name_it }}'?"
+                                        class="btn btn-sm btn-primary"
+                                        aria-label="Elimina {{ $exercise->name_it }}"
+                                        title="Elimina"
+                                    >
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                @endrole
                             </td>
                         </tr>
                     @empty

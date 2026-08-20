@@ -54,6 +54,15 @@ class ExerciseList extends Component
         $this->resetPage();
     }
 
+    public function deleteExercise(int $exerciseId): void
+    {
+        abort_unless(auth()->user()?->hasRole('gestore'), 403);
+
+        Exercise::findOrFail($exerciseId)->delete();
+
+        session()->flash('status', 'Esercizio eliminato.');
+    }
+
     public function render(): View
     {
         $filters = [

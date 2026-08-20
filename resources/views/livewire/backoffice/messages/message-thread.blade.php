@@ -1,4 +1,4 @@
-<div wire:poll.3s="refresh">
+<div wire:poll.3s.visible="refresh">
     <div class="card card-primary card-outline" style="height: 65vh; display: flex; flex-direction: column;">
         <div class="card-header">
             <h3 class="card-title">

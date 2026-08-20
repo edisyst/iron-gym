@@ -29,7 +29,7 @@ class AthleteSessionHistory extends Component
         $this->athleteId = $athleteId;
     }
 
-    public function updatingMesocycleId(): void
+    public function updatedMesocycleId(): void
     {
         $this->resetPage();
         $this->selectedSessionId = null;

@@ -2,14 +2,14 @@
     <div class="card">
         <div class="card-header">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <div class="d-flex flex-wrap gap-2">
+                <div class="d-flex flex-wrap">
                     <input
                         type="text"
                         wire:model.live.debounce.300ms="search"
                         placeholder="Cerca esercizio..."
                         class="form-control form-control-sm filter-w-md"
                     >
-                    <select wire:model.live="muscleGroup" class="form-control form-control-sm filter-w-xs">
+                    <select wire:model.live="muscleGroup" class="form-control form-control-sm filter-w-xs ml-2">
                         <option value="">Tutti i gruppi</option>
                         <option value="chest">Petto</option>
                         <option value="back">Schiena</option>
@@ -18,18 +18,18 @@
                         <option value="legs">Gambe</option>
                         <option value="core">Core</option>
                     </select>
-                    <select wire:model.live="mechanic" class="form-control form-control-sm filter-w-xs">
+                    <select wire:model.live="mechanic" class="form-control form-control-sm filter-w-xs ml-2">
                         <option value="">Meccanica</option>
                         <option value="compound">Compound</option>
                         <option value="isolation">Isolamento</option>
                     </select>
-                    <select wire:model.live="skillLevel" class="form-control form-control-sm filter-w-xs">
+                    <select wire:model.live="skillLevel" class="form-control form-control-sm filter-w-xs ml-2">
                         <option value="">Livello</option>
                         <option value="beginner">Principiante</option>
                         <option value="intermediate">Intermedio</option>
                         <option value="advanced">Avanzato</option>
                     </select>
-                    <select wire:model.live="equipmentFilter" multiple size="1" class="form-control form-control-sm filter-w-xs" style="height: auto">
+                    <select wire:model.live="equipmentFilter" multiple size="1" class="form-control form-control-sm filter-w-sm ml-2" style="height: auto">
                         @foreach ($allEquipment as $eq)
                             <option value="{{ $eq['id'] }}">{{ $eq['name_it'] }}</option>
                         @endforeach

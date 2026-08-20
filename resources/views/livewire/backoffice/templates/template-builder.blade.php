@@ -46,7 +46,7 @@
         {{-- Colonna sessioni --}}
         <div class="col-md-9">
             @forelse ($sessions as $session)
-                <div class="card mb-3">
+                <div class="card mb-3 ig-session-card">
                     <div class="card-header d-flex align-items-center justify-content-between">
                         {{-- Nome sessione editabile inline --}}
                         <input type="text"
@@ -64,7 +64,7 @@
                     <div class="card-body p-2">
 
                         {{-- Lista esercizi ordinabile con SortableJS --}}
-                        <ul id="sortable-{{ $session->id }}" class="list-unstyled mb-0" style="min-height: 40px">
+                        <ul id="sortable-{{ $session->id }}" class="list-unstyled mb-0 ig-exercise-list" style="min-height: 40px">
                             @foreach ($session->templateExercises as $ex)
                                 @php
                                     $primaryMuscle = $ex->exercise->muscles
@@ -73,8 +73,7 @@
                                         ->first();
                                 @endphp
                                 <li data-id="{{ $ex->id }}"
-                                    class="mb-2 border rounded p-2 bg-white"
-                                    style="{{ $ex->group_key ? 'border-left: 4px solid #007bff !important;' : '' }}">
+                                    class="mb-2 border rounded p-2 ig-exercise-row {{ $ex->group_key ? 'ig-grouped' : '' }}">
 
                                     {{-- Handle + nome esercizio --}}
                                     <div class="d-flex align-items-center justify-content-between mb-2">

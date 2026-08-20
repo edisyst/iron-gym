@@ -29,3 +29,18 @@
     top: 0;
     color: #fff;
 }
+
+/* ---- Template builder: leggibilita sessioni/esercizi ---------------------- */
+.ig-session-card > .card-header {
+    background-color: #FCE3CC;
+    border-bottom: 2px solid var(--ig-primary, #E85D04);
+}
+.ig-exercise-list > li.ig-exercise-row {
+    background-color: #fff;
+}
+.ig-exercise-list > li.ig-exercise-row:nth-child(even) {
+    background-color: #F4F5F7;
+}
+.ig-exercise-list > li.ig-exercise-row.ig-grouped {
+    border-left: 4px solid var(--ig-primary, #E85D04) !important;
+}

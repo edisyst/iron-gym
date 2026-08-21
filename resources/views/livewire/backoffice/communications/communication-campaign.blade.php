@@ -46,59 +46,64 @@
 
                 {{-- Messaggio --}}
                 <div class="col-md-8">
-                    <div class="form-group">
-                        <label>Template (opzionale)</label>
-                        <select wire:model.live="templateId" class="form-control">
-                            <option value="">— Testo libero —</option>
-                            @foreach ($templates as $tpl)
-                                <option value="{{ $tpl->id }}">{{ $tpl->name }} ({{ $tpl->channel }})</option>
-                            @endforeach
-                        </select>
-                    </div>
+                    <div class="card card-secondary card-outline">
+                        <div class="card-header"><h3 class="card-title">Messaggio</h3></div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label>Template (opzionale)</label>
+                                <select wire:model.live="templateId" class="form-control">
+                                    <option value="">— Testo libero —</option>
+                                    @foreach ($templates as $tpl)
+                                        <option value="{{ $tpl->id }}">{{ $tpl->name }} ({{ $tpl->channel }})</option>
+                                    @endforeach
+                                </select>
+                            </div>
 
-                    <div class="form-group">
-                        <label>Canale</label>
-                        <select wire:model="channel" class="form-control">
-                            <option value="email">Email</option>
-                            <option value="sms">SMS</option>
-                        </select>
-                    </div>
+                            <div class="form-group">
+                                <label>Canale</label>
+                                <select wire:model="channel" class="form-control">
+                                    <option value="email">Email</option>
+                                    <option value="sms">SMS</option>
+                                </select>
+                            </div>
 
-                    <div class="form-group">
-                        <label>Oggetto (solo email)</label>
-                        <input
-                            wire:model="subject"
-                            type="text"
-                            class="form-control @error('subject') is-invalid @enderror"
-                            placeholder="Oggetto email..."
-                        >
-                        @error('subject')<span class="invalid-feedback">{{ $message }}</span>@enderror
-                    </div>
+                            <div class="form-group">
+                                <label>Oggetto (solo email)</label>
+                                <input
+                                    wire:model="subject"
+                                    type="text"
+                                    class="form-control @error('subject') is-invalid @enderror"
+                                    placeholder="Oggetto email..."
+                                >
+                                @error('subject')<span class="invalid-feedback">{{ $message }}</span>@enderror
+                            </div>
 
-                    <div class="form-group">
-                        <label>Corpo del messaggio</label>
-                        <small class="text-muted d-block mb-1">
-                            Variabili disponibili: <code>@{{nome}}</code> <code>@{{cognome}}</code>
-                            <code>@{{scadenza_abbonamento}}</code> <code>@{{scadenza_certificato}}</code>
-                        </small>
-                        <textarea
-                            wire:model="body"
-                            class="form-control @error('body') is-invalid @enderror"
-                            rows="6"
-                            placeholder="Ciao @{{nome}}, ..."
-                        ></textarea>
-                        @error('body')<span class="invalid-feedback">{{ $message }}</span>@enderror
-                    </div>
+                            <div class="form-group">
+                                <label>Corpo del messaggio</label>
+                                <small class="text-muted d-block mb-1">
+                                    Variabili disponibili: <code>@{{nome}}</code> <code>@{{cognome}}</code>
+                                    <code>@{{scadenza_abbonamento}}</code> <code>@{{scadenza_certificato}}</code>
+                                </small>
+                                <textarea
+                                    wire:model="body"
+                                    class="form-control @error('body') is-invalid @enderror"
+                                    rows="6"
+                                    placeholder="Ciao @{{nome}}, ..."
+                                ></textarea>
+                                @error('body')<span class="invalid-feedback">{{ $message }}</span>@enderror
+                            </div>
 
-                    <button
-                        wire:click="send"
-                        wire:confirm="Inviare la campagna a {{ $this->recipientsCount }} destinatari?"
-                        class="btn btn-primary"
-                        @if ($this->recipientsCount === 0) disabled @endif
-                    >
-                        <i class="fas fa-paper-plane mr-1"></i>
-                        Invia campagna
-                    </button>
+                            <button
+                                wire:click="send"
+                                wire:confirm="Inviare la campagna a {{ $this->recipientsCount }} destinatari?"
+                                class="btn btn-primary"
+                                @if ($this->recipientsCount === 0) disabled @endif
+                            >
+                                <i class="fas fa-paper-plane mr-1"></i>
+                                Invia campagna
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

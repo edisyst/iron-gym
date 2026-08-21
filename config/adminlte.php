@@ -311,7 +311,10 @@ return [
         // Navbar: ricerca e fullscreen
         [
             'type' => 'navbar-search',
-            'text' => 'search',
+            'text' => 'Cerca...',
+            'url' => 'backoffice/search',
+            'method' => 'get',
+            'input_name' => 'q',
             'topnav_right' => true,
         ],
         [

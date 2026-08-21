@@ -12,6 +12,7 @@ Prefisso `/backoffice`, middleware `auth + role:gestore|trainer|receptionist`.
 | Route name | URL | Componente Livewire | Ruoli aggiuntivi |
 |---|---|---|---|
 | `backoffice.dashboard` | `/backoffice/dashboard` | `Backoffice\Dashboard` | |
+| `backoffice.search` | `/backoffice/search` | `Backoffice\Search\GlobalSearch` | |
 | `backoffice.members.index` | `/backoffice/members` | `Backoffice\Members\MemberList` | |
 | `backoffice.members.create` | `/backoffice/members/create` | `Backoffice\Members\MemberForm` | |
 | `backoffice.members.edit` | `/backoffice/members/{member}/edit` | `Backoffice\Members\MemberForm` | |
@@ -103,6 +104,7 @@ Tutti in `app/Livewire/Backoffice/`. Layout: `->layout('layouts.backoffice')`.
 | `Mesocycles` | `MesocycleAssign` | Assegnazione template a atleta con data inizio e numero settimane |
 | `Mesocycles` | `VolumeLandmarkManager` | CRUD MEV/MAV/MRV per atleta-muscolo |
 | `PlateInventory` | `PlateInventoryManager` | CRUD inline dischi (weight_kg, quantity_pairs, color, is_active). Solo gestore. |
+| `Search` | `GlobalSearch` | Ricerca globale: atleti, PT, template schede, mesocicli. Risultati per sezione. |
 | `Messages` | `MessageThread` | Chat real-time trainer↔atleta (polling ogni 3s) |
 | `Reports` | `ManagerDashboard` | KPI gestore: info-box, grafici Chart.js fatturato/piano/occupancy, churn. Solo gestore. |
 | `Reports` | `FinancialReport` | Report mensile/trimestrale/annuale, export CSV e PDF. Solo gestore. |

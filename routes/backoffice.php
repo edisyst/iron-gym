@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Backoffice\Access\AccessLogList;
+use App\Livewire\Backoffice\Search\GlobalSearch;
 use App\Livewire\Backoffice\Admin\FeatureFlagManager;
 use App\Livewire\Backoffice\Admin\FeedbackList;
 use App\Livewire\Backoffice\Admin\PlateInventoryManager;
@@ -39,6 +40,7 @@ Route::prefix('backoffice')
     ->name('backoffice.')
     ->group(function () {
         Route::get('/dashboard', Dashboard::class)->name('dashboard');
+        Route::get('/search', GlobalSearch::class)->name('search');
 
         Route::get('/members', MemberList::class)->name('members.index');
         Route::get('/members/create', MemberForm::class)->name('members.create');

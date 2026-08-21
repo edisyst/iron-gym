@@ -55,6 +55,9 @@
                     <i class="fas fa-bed mr-1"></i> Forza deload
                 </button>
             </div>
+            <a href="{{ route('backoffice.mesocycles.index') }}" class="btn btn-sm btn-outline-secondary ml-auto" aria-label="Torna all'elenco mesocicli">
+                <i class="fas fa-arrow-left mr-1"></i> Elenco mesocicli
+            </a>
         </div>
 
         {{-- Legenda lettura sezione volume --}}

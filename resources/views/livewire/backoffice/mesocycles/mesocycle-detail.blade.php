@@ -25,8 +25,7 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div>
-                <h3 class="card-title mb-0">{{ $mesocycle->name }}</h3>
-                <small class="text-muted">{{ $mesocycle->athlete->name }} — Trainer: {{ $mesocycle->trainer->name }}</small>
+                <h5 class="mb-0 font-weight-bold">Atleta: {{ $mesocycle->athlete->name }} — Trainer: {{ $mesocycle->trainer->name }}</h5>
                 <div class="mt-1">
                     <a href="{{ route('backoffice.athletes.profile', ['athleteId' => $mesocycle->athlete_id]) }}"
                        class="btn btn-sm btn-outline-secondary">

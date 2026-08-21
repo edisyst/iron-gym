@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             ExerciseSeeder::class,
             ExerciseDescriptionSeeder::class,
             PlateInventorySeeder::class,
+            DumbbellInventorySeeder::class,
             OpeningHoursSeeder::class,
             CommunicationTemplateSeeder::class,
         ]);

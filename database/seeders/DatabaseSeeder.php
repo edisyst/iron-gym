@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             ExerciseSeeder::class,
             ExerciseDescriptionSeeder::class,
             PlateInventorySeeder::class,
+            OpeningHoursSeeder::class,
         ]);
 
         // Seeder solo in ambiente locale

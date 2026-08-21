@@ -397,6 +397,11 @@ return [
             'icon' => 'fas fa-users',
             'can' => 'view-group-classes',
         ],
+        [
+            'text' => 'Orari di apertura',
+            'url'  => 'backoffice/settings/opening-hours',
+            'icon' => 'fas fa-door-open',
+        ],
         ['header' => 'COMUNICAZIONE', 'can' => 'send-campaigns'],
         [
             'text' => 'Campagne',

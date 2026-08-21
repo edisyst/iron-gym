@@ -8,6 +8,7 @@ use App\Livewire\Backoffice\Athletes\AthleteAnalytics;
 use App\Livewire\Backoffice\Athletes\AthleteProfile;
 use App\Livewire\Backoffice\Athletes\BodyMeasurementForm;
 use App\Livewire\Backoffice\Calendar\AvailabilityManager;
+use App\Livewire\Backoffice\Settings\OpeningHoursManager;
 use App\Livewire\Backoffice\Calendar\BookingList;
 use App\Livewire\Backoffice\Calendar\GroupClassManager;
 use App\Livewire\Backoffice\Calendar\TrainerCalendar;
@@ -57,6 +58,9 @@ Route::prefix('backoffice')
 
         // Mesocicli — lista: visibile anche al receptionist
         Route::get('/mesocycles', MesocycleList::class)->name('mesocycles.index');
+
+        // Orari di apertura — visibile a tutti i ruoli backoffice, modificabile da gestore e receptionist
+        Route::get('/settings/opening-hours', OpeningHoursManager::class)->name('settings.opening-hours');
 
         // Step 6 — prenotazioni e calendario
         Route::get('/calendar', TrainerCalendar::class)->name('calendar.index');

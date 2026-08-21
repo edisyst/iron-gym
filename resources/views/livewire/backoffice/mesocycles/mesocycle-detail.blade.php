@@ -33,7 +33,7 @@
                     </a>
                 </div>
             </div>
-            <div class="d-flex align-items-center gap-2">
+            <div class="d-flex align-items-center flex-wrap" style="gap:0.75rem">
                 <select wire:model.live="selectedWeekNumber" wire:change="loadVolume" class="form-control form-control-sm" style="width:auto">
                     @foreach ($mesocycle->weeks->sortBy('week_number') as $week)
                         <option value="{{ $week->week_number }}">

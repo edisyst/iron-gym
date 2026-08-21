@@ -56,7 +56,14 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @php $separatorInserted = false; $today = \Carbon\Carbon::today(); @endphp
                         @forelse($bookings as $booking)
+                        @if(!$separatorInserted && $booking->booked_date->lt($today))
+                            @php $separatorInserted = true; @endphp
+                            <tr>
+                                <td colspan="7" style="padding:0;border-top:3px solid #dee2e6;"></td>
+                            </tr>
+                        @endif
                         <tr>
                             <td>{{ $booking->booked_date->format('d/m/Y') }}</td>
                             <td>{{ substr($booking->start_time, 0, 5) }} &ndash; {{ substr($booking->end_time, 0, 5) }}</td>

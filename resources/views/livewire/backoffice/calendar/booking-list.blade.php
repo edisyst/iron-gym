@@ -109,6 +109,12 @@
                                         <i class="fas fa-times" aria-hidden="true"></i>
                                     </button>
                                 @endif
+                                @if($booking->status === 'cancelled')
+                                    <button wire:click="restore({{ $booking->id }})"
+                                            class="btn btn-sm btn-warning" title="Ripristina" aria-label="Ripristina prenotazione">
+                                        <i class="fas fa-undo" aria-hidden="true"></i>
+                                    </button>
+                                @endif
                             </td>
                         </tr>
                         @empty

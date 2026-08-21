@@ -75,6 +75,30 @@ class BookingList extends Component
     }
 
     /**
+     * Ripristina una prenotazione annullata riportandola in stato pending.
+     */
+    public function restore(int $bookingId): void
+    {
+        $user = Auth::user();
+
+        abort_unless($user->hasAnyRole(['gestore', 'trainer']), 403);
+
+        $query = PtBooking::where('id', $bookingId)->where('status', 'cancelled');
+
+        if (! $user->hasRole('gestore')) {
+            $query->where('trainer_id', $user->id);
+        }
+
+        $query->update([
+            'status' => 'pending',
+            'cancelled_by' => null,
+            'cancellation_reason' => null,
+        ]);
+
+        session()->flash('success', 'Prenotazione ripristinata.');
+    }
+
+    /**
      * Apre la modale di conferma annullamento.
      */
     public function openCancelModal(int $id): void

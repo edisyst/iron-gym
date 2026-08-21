@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Pagination\Paginator;
 use Laravel\Pennant\Feature;
 use Spatie\LaravelFlare\Facades\Flare;
 
@@ -30,6 +31,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Paginator::useBootstrap();
+
         Exercise::observe(ExerciseObserver::class);
         Subscription::observe(SubscriptionObserver::class);
         TrainingSession::observe(TrainingSessionObserver::class);

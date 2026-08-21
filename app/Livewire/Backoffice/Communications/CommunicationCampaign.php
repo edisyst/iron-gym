@@ -24,6 +24,13 @@ class CommunicationCampaign extends Component
 
     public bool $sent = false;
 
+    public bool $showRecipientsModal = false;
+
+    public function openRecipientsModal(): void
+    {
+        $this->showRecipientsModal = true;
+    }
+
     public function updatedTemplateId(): void
     {
         if ($this->templateId) {
@@ -78,6 +85,16 @@ class CommunicationCampaign extends Component
     public function getRecipientsCountProperty(): int
     {
         return $this->filteredMembers()->count();
+    }
+
+    /** @return array<int, array{id: int, name: string}> */
+    public function getRecipientsListProperty(): array
+    {
+        return $this->filteredMembers()
+            ->map(fn (Member $m) => ['id' => $m->id, 'name' => trim($m->last_name.' '.$m->first_name)])
+            ->sortBy('name')
+            ->values()
+            ->all();
     }
 
     public function render(): View

@@ -41,6 +41,13 @@
 .ig-exercise-list > li.ig-exercise-row:nth-child(even) {
     background-color: #E8EDF5;
 }
+.ig-exercise-list > li.ig-exercise-row {
+    transition: box-shadow 0.15s ease, background-color 0.15s ease;
+}
+.ig-exercise-list > li.ig-exercise-row:hover {
+    background-color: #EEF4FF !important;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.18);
+}
 .ig-exercise-list > li.ig-exercise-row.ig-grouped {
     border-left: 4px solid var(--ig-primary, #E85D04) !important;
 }

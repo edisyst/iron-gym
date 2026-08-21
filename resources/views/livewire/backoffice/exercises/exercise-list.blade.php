@@ -1,16 +1,19 @@
 <div>
-    <div class="card">
+    {{-- Filtri --}}
+    <div class="card card-outline card-primary">
         <div class="card-header">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <div class="d-flex flex-wrap">
-                    <input
-                        type="text"
-                        wire:model.live.debounce.300ms="search"
-                        placeholder="Cerca esercizio..."
-                        class="form-control form-control-sm filter-w-md"
-                    >
-                    <select wire:model.live="muscleGroup" class="form-control form-control-sm filter-w-xs ml-2">
-                        <option value="">Tutti i gruppi</option>
+            <h3 class="card-title">Filtri</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <label class="small">Cerca</label>
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cerca esercizio..." class="form-control form-control-sm">
+                </div>
+                <div class="col-md-2">
+                    <label class="small">Gruppo muscolare</label>
+                    <select wire:model.live="muscleGroup" class="form-control form-control-sm">
+                        <option value="">Tutti</option>
                         <option value="chest">Petto</option>
                         <option value="back">Schiena</option>
                         <option value="shoulders">Spalle</option>
@@ -18,23 +21,40 @@
                         <option value="legs">Gambe</option>
                         <option value="core">Core</option>
                     </select>
-                    <select wire:model.live="mechanic" class="form-control form-control-sm filter-w-xs ml-2">
-                        <option value="">Meccanica</option>
+                </div>
+                <div class="col-md-2">
+                    <label class="small">Meccanica</label>
+                    <select wire:model.live="mechanic" class="form-control form-control-sm">
+                        <option value="">Tutti</option>
                         <option value="compound">Compound</option>
                         <option value="isolation">Isolamento</option>
                     </select>
-                    <select wire:model.live="skillLevel" class="form-control form-control-sm filter-w-xs ml-2">
-                        <option value="">Livello</option>
+                </div>
+                <div class="col-md-2">
+                    <label class="small">Livello</label>
+                    <select wire:model.live="skillLevel" class="form-control form-control-sm">
+                        <option value="">Tutti</option>
                         <option value="beginner">Principiante</option>
                         <option value="intermediate">Intermedio</option>
                         <option value="advanced">Avanzato</option>
                     </select>
-                    <select wire:model.live="equipmentFilter" multiple size="1" class="form-control form-control-sm filter-w-sm ml-2" style="height: auto">
+                </div>
+                <div class="col-md-2">
+                    <label class="small">Attrezzi</label>
+                    <select wire:model.live="equipmentFilter" multiple size="1" class="form-control form-control-sm" style="height: auto">
                         @foreach ($allEquipment as $eq)
                             <option value="{{ $eq['id'] }}">{{ $eq['name_it'] }}</option>
                         @endforeach
                     </select>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Esercizi</h3>
+            <div class="card-tools">
                 <a href="{{ route('backoffice.exercises.create') }}" class="btn btn-primary btn-sm">
                     <i class="fas fa-plus"></i> Nuovo esercizio
                 </a>

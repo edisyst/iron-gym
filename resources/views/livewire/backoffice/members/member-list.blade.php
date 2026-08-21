@@ -1,21 +1,32 @@
 <div>
-    <div class="card">
+    {{-- Filtri --}}
+    <div class="card card-outline card-primary">
         <div class="card-header">
-            <div class="d-flex justify-content-between align-items-center">
-                <div class="d-flex">
-                    <input
-                        type="text"
-                        wire:model.live.debounce.300ms="search"
-                        placeholder="Cerca per nome o email..."
-                        class="form-control form-control-sm filter-w-lg mr-2"
-                    >
-                    <select wire:model.live="certFilter" class="form-control form-control-sm filter-w-sm">
-                        <option value="">Cert. medico: tutti</option>
+            <h3 class="card-title">Filtri</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <label class="small">Cerca</label>
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cerca per nome o email..." class="form-control form-control-sm">
+                </div>
+                <div class="col-md-6">
+                    <label class="small">Certificato medico</label>
+                    <select wire:model.live="certFilter" class="form-control form-control-sm">
+                        <option value="">Tutti</option>
                         <option value="missing">Mancante</option>
                         <option value="expired">Scaduto</option>
                         <option value="expiring_soon">In scadenza (30gg)</option>
                     </select>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Tesserati</h3>
+            <div class="card-tools">
                 <a href="{{ route('backoffice.members.create') }}" class="btn btn-primary btn-sm">
                     <i class="fas fa-plus"></i> Nuovo tesserato
                 </a>

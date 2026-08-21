@@ -1,48 +1,54 @@
 <div>
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h3 class="card-title">Elenco mesocicli</h3>
-            <a href="{{ route('backoffice.mesocycles.assign') }}" class="btn btn-primary btn-sm">
-                <i class="fas fa-plus mr-1"></i> Assegna mesociclo
-            </a>
+    {{-- Filtri --}}
+    <div class="card card-outline card-primary">
+        <div class="card-header">
+            <h3 class="card-title">Filtri</h3>
         </div>
-
-        {{-- Filtri --}}
-        <div class="card-body border-bottom">
+        <div class="card-body">
             <div class="row">
-                <div class="col-md-4 mb-2">
-                    <input
-                        type="text"
-                        wire:model.live.debounce.300ms="search"
-                        class="form-control form-control-sm"
-                        placeholder="Cerca per nome..."
-                    >
+                <div class="col-md-4">
+                    <label class="small">Cerca</label>
+                    <input type="text" wire:model.live.debounce.300ms="search" class="form-control form-control-sm" placeholder="Cerca per nome...">
                 </div>
-                <div class="col-md-2 mb-2">
+                <div class="col-md-2">
+                    <label class="small">Status</label>
                     <select wire:model.live="statusFilter" class="form-control form-control-sm">
-                        <option value="">Tutti gli status</option>
+                        <option value="">Tutti</option>
                         <option value="draft">Bozza</option>
                         <option value="active">Attivo</option>
                         <option value="completed">Completato</option>
                         <option value="aborted">Interrotto</option>
                     </select>
                 </div>
-                <div class="col-md-3 mb-2">
+                <div class="col-md-3">
+                    <label class="small">Trainer</label>
                     <select wire:model.live="trainerFilter" class="form-control form-control-sm">
-                        <option value="">Tutti i trainer</option>
+                        <option value="">Tutti</option>
                         @foreach ($trainers as $trainer)
                             <option value="{{ $trainer->id }}">{{ $trainer->name }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-3 mb-2">
+                <div class="col-md-3">
+                    <label class="small">Atleta</label>
                     <select wire:model.live="athleteFilter" class="form-control form-control-sm">
-                        <option value="">Tutti gli atleti</option>
+                        <option value="">Tutti</option>
                         @foreach ($athletes as $athlete)
                             <option value="{{ $athlete->id }}">{{ $athlete->name }}</option>
                         @endforeach
                     </select>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Elenco mesocicli</h3>
+            <div class="card-tools">
+                <a href="{{ route('backoffice.mesocycles.assign') }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus mr-1"></i> Assegna mesociclo
+                </a>
             </div>
         </div>
 

@@ -1,16 +1,19 @@
 <div>
-    <div class="card">
+    {{-- Filtri --}}
+    <div class="card card-outline card-primary">
         <div class="card-header">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <div class="d-flex flex-wrap">
-                    <input
-                        type="text"
-                        wire:model.live.debounce.300ms="search"
-                        placeholder="Cerca template..."
-                        class="form-control form-control-sm filter-w-md"
-                    >
-                    <select wire:model.live="goal" class="form-control form-control-sm filter-w-xs ml-2">
-                        <option value="">Tutti gli obiettivi</option>
+            <h3 class="card-title">Filtri</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-5">
+                    <label class="small">Cerca</label>
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cerca template..." class="form-control form-control-sm">
+                </div>
+                <div class="col-md-4">
+                    <label class="small">Obiettivo</label>
+                    <select wire:model.live="goal" class="form-control form-control-sm">
+                        <option value="">Tutti</option>
                         <option value="hypertrophy">Ipertrofia</option>
                         <option value="strength">Forza</option>
                         <option value="cut">Definizione</option>
@@ -18,12 +21,23 @@
                         <option value="peaking">Peaking</option>
                         <option value="general">Generale</option>
                     </select>
-                    <select wire:model.live="active" class="form-control form-control-sm filter-w-xs ml-2">
+                </div>
+                <div class="col-md-3">
+                    <label class="small">Stato</label>
+                    <select wire:model.live="active" class="form-control form-control-sm">
                         <option value="">Tutti</option>
                         <option value="1">Attivi</option>
                         <option value="0">Archiviati</option>
                     </select>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Schede template</h3>
+            <div class="card-tools">
                 <a href="{{ route('backoffice.templates.create') }}" class="btn btn-primary btn-sm">
                     <i class="fas fa-plus"></i> Nuovo template
                 </a>

@@ -32,14 +32,14 @@
 
 /* ---- Template builder: leggibilita sessioni/esercizi ---------------------- */
 .ig-session-card > .card-header {
-    background-color: #FCE3CC;
-    border-bottom: 2px solid var(--ig-primary, #E85D04);
+    background-color: #DBEAFE;
+    border-bottom: 2px solid #3B82F6;
 }
 .ig-exercise-list > li.ig-exercise-row {
     background-color: #fff;
 }
 .ig-exercise-list > li.ig-exercise-row:nth-child(even) {
-    background-color: #F4F5F7;
+    background-color: #E8EDF5;
 }
 .ig-exercise-list > li.ig-exercise-row.ig-grouped {
     border-left: 4px solid var(--ig-primary, #E85D04) !important;

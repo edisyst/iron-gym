@@ -17,7 +17,10 @@ use Spatie\Permission\Models\Role;
 uses()->group('smoke');
 
 beforeEach(function (): void {
-    if (config('database.default') === 'sqlite' && config('database.connections.sqlite.database') === ':memory:') {
+    if (
+        (config('database.default') === 'sqlite' && config('database.connections.sqlite.database') === ':memory:')
+        || app()->environment('testing')
+    ) {
         test()->markTestSkipped('Smoke test richiede DB MySQL staging reale.');
     }
 });

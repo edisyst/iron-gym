@@ -3,6 +3,7 @@
 use App\Models\ExerciseSet;
 use App\Models\Mesocycle;
 use App\Models\MicrocycleWeek;
+use App\Models\MovementPattern;
 use App\Models\Muscle;
 use App\Models\PersonalRecord;
 use App\Models\SessionExercise;
@@ -43,10 +44,15 @@ function makeSession(?string $startedAt = null, ?string $completedAt = null): ar
 }
 
 /**
- * Crea un exercise_id di comodo inserendo direttamente la riga (SQLite non impone CHECK XOR).
+ * Crea un exercise_id di comodo rispettando il CHECK XOR su compound_pattern_id / joint_action_id.
  */
 function insertExercise(string $slug = 'test-exercise'): int
 {
+    $patternId = MovementPattern::firstOrCreate(
+        ['slug' => 'test_compound_pattern'],
+        ['name_it' => 'Compound Pattern', 'category' => 'compound_pattern', 'display_order' => 99]
+    )->id;
+
     return DB::table('exercises')->insertGetId([
         'slug' => $slug,
         'name_it' => 'Esercizio '.$slug,
@@ -55,6 +61,8 @@ function insertExercise(string $slug = 'test-exercise'): int
         'laterality' => 'bilateral',
         'skill_level' => 'beginner',
         'measurement_type' => 'reps_weight',
+        'compound_pattern_id' => $patternId,
+        'joint_action_id' => null,
         'created_at' => now(),
         'updated_at' => now(),
     ]);

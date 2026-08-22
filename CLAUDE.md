@@ -248,6 +248,8 @@ Restrizione sezioni TRAINING e ADMIN per receptionist completata (2026-08-19): a
 
 Prossima attività: raccogliere feedback dai primi atleti pilota dopo prima sessione.
 
+HK01 Housekeeping completato (2026-08-22): audit codice morto, view/componenti orfani, dipendenze Composer, documentazione. Rimossi: `sessionStatusClass/Label` in Dashboard, componente `Athlete\Progress` + view orfane, stub `dashboard.blade.php`, `config/barbell.php`. Dipendenze: `ext-gd`/`ext-mbstring` aggiunti a require, `laravel/tinker` spostato in require-dev, `TelescopeServiceProvider` protetto con `class_exists` guard. Docs corretti: tabella `training_sessions` (era `sessions` in 2 doc), attribuzione e1RM a `E1rmCalculator` (non `WeeklyVolumeCalculator`), URL session history. Suite: 220/226 (6 skip pre-esistenti invariati), PHPStan 0 errori, Pint conforme. Report: docs/audit/hk01-report.md.
+
 ## Setup pilota — dati e procedure
 
 ### Seeder pilota (idempotenti)

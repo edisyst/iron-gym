@@ -4,6 +4,34 @@
 
 ---
 
+## HK01 — Housekeeping (2026-08-22)
+
+**Branch:** `release/hk01-housekeeping`
+
+Audit completo codice morto, dipendenze orfane e documentazione. Report: `docs/audit/hk01-report.md`.
+
+**Codice morto PHP:**
+- `Athlete\Dashboard`: rimossi `sessionStatusClass()` e `sessionStatusLabel()` (mai usati in Blade)
+- `config/barbell.php`: eliminato (zero occorrenze di `config('barbell.')`)
+
+**View / componenti orfani:**
+- `app/Livewire/Athlete/Progress.php` + `resources/views/livewire/athlete/progress.blade.php`: rimossi (route `athlete.progress` è redirect)
+- `resources/views/dashboard.blade.php`: rimosso (stub Breeze non renderizzato)
+
+**Dipendenze Composer:**
+- `ext-gd`, `ext-mbstring` aggiunti a `require` (shadow: usate ma non dichiarate)
+- `laravel/tinker` spostato da `require` a `require-dev`
+- `TelescopeServiceProvider`: aggiunto `class_exists` guard in `register()`/`boot()` per sicurezza `--no-dev`
+
+**Documentazione:**
+- `docs/domain/glossary.md`, `docs/domain/step-0-discovery.md`: `sessions` → `training_sessions`
+- `CHANGELOG.md`, `docs/architecture/component-map.md`: e1RM Epley attribuita a `E1rmCalculator::epley()` (non `WeeklyVolumeCalculator`)
+- `docs/test/01-gestore.md`: URL session history corretto a `/backoffice/athletes/{athleteId}/profile`
+
+Suite: 220/226 (6 skip pre-esistenti invariati) — PHPStan 0 errori — Pint OK.
+
+---
+
 ## Audit receptionist — chiusura (2026-08-19)
 
 **Branch:** `develop` — commit `db0dd0a`

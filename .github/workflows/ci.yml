@@ -51,6 +51,12 @@ jobs:
           sed -i 's/QUEUE_CONNECTION=.*/QUEUE_CONNECTION=sync/' .env.testing
           php artisan key:generate --env=testing
 
+      - name: Create Vite manifest stub
+        run: |
+          mkdir -p public/build/assets
+          echo '{"resources/css/app.css":{"file":"assets/app.css","src":"resources/css/app.css"},"resources/js/app.js":{"file":"assets/app.js","src":"resources/js/app.js","isEntry":true}}' > public/build/manifest.json
+          touch public/build/assets/app.css public/build/assets/app.js
+
       - name: Run migrations and seed
         run: php artisan migrate:fresh --seed --env=testing
         env:

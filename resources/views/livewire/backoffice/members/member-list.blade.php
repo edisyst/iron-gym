@@ -1,20 +1,32 @@
-﻿<div>
-    <div class="card">
+<div>
+    {{-- Filtri --}}
+    <div class="card card-outline card-primary">
         <div class="card-header">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <div class="d-flex flex-wrap gap-2">
-                    <input
-                        type="text"
-                        wire:model.live.debounce.300ms="search"
-                        placeholder="Cerca per nome o email..."
-                        class="form-control form-control-sm filter-w-lg"
-                    >
-                    <select wire:model.live="filter" class="form-control form-control-sm filter-w-md">
-                        <option value="all">Tutti</option>
-                        <option value="active">Solo attivi</option>
-                        <option value="cert_issues">Certificato scaduto</option>
+            <h3 class="card-title">Filtri</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <label class="small">Cerca</label>
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cerca per nome o email..." class="form-control form-control-sm">
+                </div>
+                <div class="col-md-6">
+                    <label class="small">Certificato medico</label>
+                    <select wire:model.live="certFilter" class="form-control form-control-sm">
+                        <option value="">Tutti</option>
+                        <option value="missing">Mancante</option>
+                        <option value="expired">Scaduto</option>
+                        <option value="expiring_soon">In scadenza (30gg)</option>
                     </select>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Tesserati</h3>
+            <div class="card-tools">
                 <a href="{{ route('backoffice.members.create') }}" class="btn btn-primary btn-sm">
                     <i class="fas fa-plus"></i> Nuovo tesserato
                 </a>
@@ -69,14 +81,16 @@
                                 @endif
                             </td>
                             <td>
-                                <a href="{{ route('backoffice.members.edit', $member) }}" class="btn btn-sm btn-default" aria-label="Modifica {{ $member->full_name }}">
-                                    <i class="fas fa-edit" aria-hidden="true"></i>
-                                </a>
-                                @if ($member->user_id)
-                                    <a href="{{ route('backoffice.athletes.profile', ['athleteId' => $member->user_id]) }}"
-                                       class="btn btn-sm btn-outline-info ml-1">
-                                        <i class="fas fa-dumbbell"></i> Profilo allenamento
+                                @if (auth()->user()->hasAnyRole(['gestore', 'trainer']))
+                                    <a href="{{ route('backoffice.members.edit', $member) }}" class="btn btn-sm btn-default" aria-label="Modifica {{ $member->full_name }}">
+                                        <i class="fas fa-edit" aria-hidden="true"></i>
                                     </a>
+                                    @if ($member->user_id)
+                                        <a href="{{ route('backoffice.athletes.profile', ['athleteId' => $member->user_id]) }}"
+                                           class="btn btn-sm btn-outline-info ml-1">
+                                            <i class="fas fa-dumbbell"></i> Profilo allenamento
+                                        </a>
+                                    @endif
                                 @endif
                             </td>
                         </tr>

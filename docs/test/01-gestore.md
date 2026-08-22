@@ -149,7 +149,7 @@ URL: `/backoffice/athletes/{id}/analytics`
 - [ ] Volume landmarks visibili (se configurati)
 - [ ] Misurazioni corporee visibili (se presenti)
 
-URL: `/backoffice/athletes/{id}/sessions`
+URL: `/backoffice/athletes/{athleteId}/profile` (storico sessioni embedded in AthleteProfile)
 
 - [ ] Storico sessioni atleta visibile
 - [ ] Score readiness visibile per sessioni con check (R07)

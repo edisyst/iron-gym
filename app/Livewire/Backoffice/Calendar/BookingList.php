@@ -61,6 +61,8 @@ class BookingList extends Component
     {
         $user = Auth::user();
 
+        abort_unless($user->hasAnyRole(['gestore', 'trainer']), 403);
+
         $query = PtBooking::where('id', $bookingId)->where('status', 'pending');
 
         if (! $user->hasRole('gestore')) {
@@ -70,6 +72,30 @@ class BookingList extends Component
         $query->update(['status' => 'confirmed']);
 
         session()->flash('success', 'Prenotazione confermata.');
+    }
+
+    /**
+     * Ripristina una prenotazione annullata riportandola in stato pending.
+     */
+    public function restore(int $bookingId): void
+    {
+        $user = Auth::user();
+
+        abort_unless($user->hasAnyRole(['gestore', 'trainer']), 403);
+
+        $query = PtBooking::where('id', $bookingId)->where('status', 'cancelled');
+
+        if (! $user->hasRole('gestore')) {
+            $query->where('trainer_id', $user->id);
+        }
+
+        $query->update([
+            'status' => 'pending',
+            'cancelled_by' => null,
+            'cancellation_reason' => null,
+        ]);
+
+        session()->flash('success', 'Prenotazione ripristinata.');
     }
 
     /**
@@ -87,6 +113,8 @@ class BookingList extends Component
      */
     public function cancel(): void
     {
+        abort_unless(Auth::user()->hasAnyRole(['gestore', 'trainer']), 403);
+
         $this->validate([
             'cancelReason' => 'required|string|min:5|max:500',
         ], [

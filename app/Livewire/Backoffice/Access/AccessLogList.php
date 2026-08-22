@@ -64,6 +64,14 @@ class AccessLogList extends Component
             return;
         }
 
+        $member = Member::findOrFail($this->checkinMemberId);
+
+        if (! $member->has_medical_cert_valid) {
+            $this->checkinError = 'Certificato medico scaduto o mancante. Rinnovarlo prima di accedere alla struttura.';
+
+            return;
+        }
+
         $subscription = Subscription::where('member_id', $this->checkinMemberId)
             ->active()
             ->first();
@@ -92,8 +100,8 @@ class AccessLogList extends Component
             'checked_in_by' => auth()->id(),
         ]);
 
-        $this->showModal = false;
         session()->flash('success', 'Accesso registrato con successo.');
+        $this->redirect('/backoffice/access-logs', navigate: false);
     }
 
     public function render(): View

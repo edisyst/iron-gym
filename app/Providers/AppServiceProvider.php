@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Pagination\Paginator;
 use Laravel\Pennant\Feature;
 use Spatie\LaravelFlare\Facades\Flare;
 
@@ -30,6 +31,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Paginator::useBootstrap();
+
         Exercise::observe(ExerciseObserver::class);
         Subscription::observe(SubscriptionObserver::class);
         TrainingSession::observe(TrainingSessionObserver::class);
@@ -63,6 +66,17 @@ class AppServiceProvider extends ServiceProvider
     {
         // Gate usato da AdminLTE sidebar per la voce "Corsi collettivi"
         Gate::define('view-group-classes', fn () => Feature::active('group_classes'));
+
+        // Gate usato da AdminLTE sidebar per la voce "Report allenamento"
+        Gate::define('view-training-reports', fn (User $user) => ! $user->hasRole('receptionist'));
+
+        // Gate usati da AdminLTE sidebar per voci riservate a trainer/gestore
+        Gate::define('manage-trainer-availability', fn (User $user) => $user->hasAnyRole(['gestore', 'trainer']));
+        Gate::define('send-campaigns', fn (User $user) => $user->hasAnyRole(['gestore', 'trainer']));
+
+        // Gate per sezioni TRAINING e ADMIN: esclusi receptionist e atleta
+        Gate::define('access-training-section', fn (User $user) => $user->hasAnyRole(['gestore', 'trainer']));
+        Gate::define('access-admin-section', fn (User $user) => $user->hasRole('gestore'));
     }
 
     private function configureFlare(): void

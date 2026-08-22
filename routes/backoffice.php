@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Backoffice\Access\AccessLogList;
+use App\Livewire\Backoffice\Search\GlobalSearch;
 use App\Livewire\Backoffice\Admin\FeatureFlagManager;
 use App\Livewire\Backoffice\Admin\FeedbackList;
 use App\Livewire\Backoffice\Admin\PlateInventoryManager;
@@ -8,6 +9,7 @@ use App\Livewire\Backoffice\Athletes\AthleteAnalytics;
 use App\Livewire\Backoffice\Athletes\AthleteProfile;
 use App\Livewire\Backoffice\Athletes\BodyMeasurementForm;
 use App\Livewire\Backoffice\Calendar\AvailabilityManager;
+use App\Livewire\Backoffice\Settings\OpeningHoursManager;
 use App\Livewire\Backoffice\Calendar\BookingList;
 use App\Livewire\Backoffice\Calendar\GroupClassManager;
 use App\Livewire\Backoffice\Calendar\TrainerCalendar;
@@ -38,6 +40,7 @@ Route::prefix('backoffice')
     ->name('backoffice.')
     ->group(function () {
         Route::get('/dashboard', Dashboard::class)->name('dashboard');
+        Route::get('/search', GlobalSearch::class)->name('search');
 
         Route::get('/members', MemberList::class)->name('members.index');
         Route::get('/members/create', MemberForm::class)->name('members.create');
@@ -58,9 +61,11 @@ Route::prefix('backoffice')
         // Mesocicli — lista: visibile anche al receptionist
         Route::get('/mesocycles', MesocycleList::class)->name('mesocycles.index');
 
-        // Step 6 — prenotazioni e calendario (receptionist gestisce queste)
+        // Orari di apertura — visibile a tutti i ruoli backoffice, modificabile da gestore e receptionist
+        Route::get('/settings/opening-hours', OpeningHoursManager::class)->name('settings.opening-hours');
+
+        // Step 6 — prenotazioni e calendario
         Route::get('/calendar', TrainerCalendar::class)->name('calendar.index');
-        Route::get('/calendar/availability', AvailabilityManager::class)->name('calendar.availability');
         Route::get('/bookings', BookingList::class)->name('bookings.index');
         Route::get('/group-classes', GroupClassManager::class)->name('group-classes.index');
 
@@ -69,6 +74,10 @@ Route::prefix('backoffice')
             // Libreria esercizi — creazione e modifica
             Route::get('/exercises/create', ExerciseForm::class)->name('exercises.create');
             Route::get('/exercises/{exercise:slug}/edit', ExerciseForm::class)->name('exercises.edit');
+
+            // Gestione disponibilità trainer e campagne comunicazione
+            Route::get('/calendar/availability', AvailabilityManager::class)->name('calendar.availability');
+            Route::get('/communications/campaign', CommunicationCampaign::class)->name('communications.campaign');
 
             // Template schede — creazione e builder
             Route::get('/templates/create', TemplateForm::class)->name('templates.create');
@@ -84,9 +93,8 @@ Route::prefix('backoffice')
             Route::get('/athletes/{athleteId}/analytics', AthleteAnalytics::class)->name('athletes.analytics');
             Route::get('/athletes/{athleteId}/profile', AthleteProfile::class)->name('athletes.profile');
 
-            // Step 7 — messaggistica e comunicazione con atleti
+            // Step 7 — messaggistica con atleti
             Route::get('/athletes/{athleteId}/messages', MessageThread::class)->name('athletes.messages');
-            Route::get('/communications/campaign', CommunicationCampaign::class)->name('communications.campaign');
         });
 
         // Step 8 — reportistica gestore

@@ -1,15 +1,32 @@
 <div>
+    {{-- Filtri --}}
+    <div class="card card-outline card-primary">
+        <div class="card-header">
+            <h3 class="card-title">Filtri</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <label class="small">Stato</label>
+                    <select wire:model.live="filter" class="form-control form-control-sm">
+                        <option value="all">Tutti</option>
+                        <option value="active">Attivi</option>
+                        <option value="expiring">In scadenza (30gg)</option>
+                        <option value="expired">Scaduti</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <select wire:model.live="filter" class="form-control form-control-sm filter-w-md">
-                <option value="all">Tutti</option>
-                <option value="active">Attivi</option>
-                <option value="expiring">In scadenza (30gg)</option>
-                <option value="expired">Scaduti</option>
-            </select>
-            <a href="{{ route('backoffice.subscriptions.create') }}" class="btn btn-primary btn-sm">
-                <i class="fas fa-plus"></i> Nuovo abbonamento
-            </a>
+        <div class="card-header">
+            <h3 class="card-title">Abbonamenti</h3>
+            <div class="card-tools">
+                <a href="{{ route('backoffice.subscriptions.create') }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> Nuovo abbonamento
+                </a>
+            </div>
         </div>
         <div class="card-body p-0">
             <table class="table table-hover mb-0">
@@ -40,15 +57,15 @@
                             </td>
                             <td>
                                 @php
-                                    $badge = match($sub->status) {
-                                        'active'    => 'success',
-                                        'expired'   => 'danger',
-                                        'suspended' => 'warning',
-                                        'cancelled' => 'secondary',
-                                        default     => 'secondary',
+                                    [$badge, $label] = match($sub->status) {
+                                        'active'    => ['success',   'Attivo'],
+                                        'expired'   => ['danger',    'Scaduto'],
+                                        'suspended' => ['warning',   'Sospeso'],
+                                        'cancelled' => ['secondary', 'Cancellato'],
+                                        default     => ['secondary', ucfirst($sub->status)],
                                     };
                                 @endphp
-                                <span class="badge badge-{{ $badge }}">{{ ucfirst($sub->status) }}</span>
+                                <span class="badge badge-{{ $badge }}">{{ $label }}</span>
                             </td>
                         </tr>
                     @empty

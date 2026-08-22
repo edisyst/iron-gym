@@ -1,4 +1,4 @@
-﻿<div>
+<div>
 @feature('financial_reports')
     {{-- Selettore date --}}
     <div class="card card-outline card-primary mb-3">

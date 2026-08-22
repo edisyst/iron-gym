@@ -1,4 +1,4 @@
-﻿{{-- Gestione disponibilità trainer: slot ricorrenti e override puntuali --}}
+{{-- Gestione disponibilità trainer: slot ricorrenti e override puntuali --}}
 <div>
     {{-- ============================================================ --}}
     {{-- Slot ricorrenti settimanali --}}

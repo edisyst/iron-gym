@@ -2,11 +2,16 @@
 
 namespace App\Models;
 
+use Database\Factories\ClassBookingFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ClassBooking extends Model
 {
+    /** @use HasFactory<ClassBookingFactory> */
+    use HasFactory;
+
     // Nessun updated_at: le prenotazioni corso non vengono aggiornate parzialmente
     public const UPDATED_AT = null;
 

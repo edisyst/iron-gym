@@ -6,6 +6,7 @@ use App\Exceptions\BookingException;
 use App\Models\ClassBooking;
 use App\Models\GroupClass;
 use App\Models\Member;
+use App\Models\Mesocycle;
 use App\Models\PtBooking;
 use App\Models\TrainerAvailability;
 use App\Models\User;
@@ -15,6 +16,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Laravel\Pennant\Feature;
 use Livewire\Component;
 
 class Booking extends Component
@@ -143,8 +145,14 @@ class Booking extends Component
      */
     public function cancelPtBooking(int $bookingId): void
     {
-        /** @var Member $member */
+        /** @var Member|null $member */
         $member = Auth::user()->member;
+
+        if ($member === null) {
+            session()->flash('error', 'Profilo membro non trovato.');
+
+            return;
+        }
 
         $booking = PtBooking::where('id', $bookingId)
             ->where('member_id', $member->id)
@@ -172,6 +180,8 @@ class Booking extends Component
      */
     public function enrollClass(int $classId): void
     {
+        abort_unless(Feature::active('group_classes'), 403);
+
         $member = Auth::user()->member;
 
         if ($member === null) {
@@ -200,8 +210,16 @@ class Booking extends Component
      */
     public function cancelClassBooking(int $bookingId): void
     {
-        /** @var Member $member */
+        abort_unless(Feature::active('group_classes'), 403);
+
+        /** @var Member|null $member */
         $member = Auth::user()->member;
+
+        if ($member === null) {
+            session()->flash('error', 'Profilo membro non trovato.');
+
+            return;
+        }
 
         $booking = ClassBooking::where('id', $bookingId)
             ->where('member_id', $member->id)
@@ -219,6 +237,25 @@ class Booking extends Component
     {
         /** @var Member|null $member */
         $member = Auth::user()->member;
+
+        // Trainer del mesociclo attivo/più recente dell'atleta
+        $assignedTrainer = null;
+        if ($member) {
+            $activeMesocycle = Mesocycle::with('trainer')
+                ->where('athlete_id', Auth::id())
+                ->whereIn('status', ['active', 'in_progress'])
+                ->latest('start_date')
+                ->first();
+
+            if ($activeMesocycle === null) {
+                $activeMesocycle = Mesocycle::with('trainer')
+                    ->where('athlete_id', Auth::id())
+                    ->latest('start_date')
+                    ->first();
+            }
+
+            $assignedTrainer = $activeMesocycle?->trainer;
+        }
 
         // Trainer disponibili per la prenotazione PT
         $trainers = User::role(['trainer', 'gestore'])->orderBy('name')->get();
@@ -261,6 +298,7 @@ class Booking extends Component
             'myClassBookings',
             'myEnrolledClassIds',
             'member',
+            'assignedTrainer',
         ))->layout('layouts.athlete');
     }
 }

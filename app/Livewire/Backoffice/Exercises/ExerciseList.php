@@ -24,14 +24,6 @@ class ExerciseList extends Component
     /** @var array<int> */
     public array $equipmentFilter = [];
 
-    /** @var array<string, array<string, string>> */
-    protected $queryString = [
-        'search' => ['except' => ''],
-        'muscleGroup' => ['except' => ''],
-        'mechanic' => ['except' => ''],
-        'skillLevel' => ['except' => ''],
-    ];
-
     public function updatingSearch(): void
     {
         $this->resetPage();
@@ -52,9 +44,23 @@ class ExerciseList extends Component
         $this->resetPage();
     }
 
+    public function mount(): void
+    {
+        abort_unless(auth()->user()?->hasAnyRole(['gestore', 'trainer']), 403);
+    }
+
     public function updatingEquipmentFilter(): void
     {
         $this->resetPage();
+    }
+
+    public function deleteExercise(int $exerciseId): void
+    {
+        abort_unless(auth()->user()?->hasRole('gestore'), 403);
+
+        Exercise::findOrFail($exerciseId)->delete();
+
+        session()->flash('status', 'Esercizio eliminato.');
     }
 
     public function render(): View

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Athlete;
 
+use App\Models\Member;
 use App\Models\Mesocycle;
 use App\Models\MicrocycleWeek;
 use App\Models\TrainingSession;
@@ -15,6 +16,9 @@ use Livewire\Component;
 #[Title('Il mio allenamento')]
 class Dashboard extends Component
 {
+    /** 'danger' = scaduto/mancante, 'warning' = in scadenza ≤30gg, '' = valido */
+    public string $certWarningLevel = '';
+
     public ?Mesocycle $activeMesocycle = null;
 
     public ?MicrocycleWeek $currentWeek = null;
@@ -33,6 +37,17 @@ class Dashboard extends Component
     public function mount(): void
     {
         $this->weekSessions = collect();
+
+        // Avviso certificato medico
+        $member = Member::where('user_id', auth()->id())->first();
+        if ($member) {
+            $expiry = $member->medical_cert_expiry;
+            if ($expiry === null || $expiry->isPast()) {
+                $this->certWarningLevel = 'danger';
+            } elseif ($expiry->lte(now()->addDays(30))) {
+                $this->certWarningLevel = 'warning';
+            }
+        }
 
         // Cerca il mesociclo attivo dell'atleta con le settimane e sessioni
         $this->activeMesocycle = Mesocycle::where('athlete_id', auth()->id())
@@ -121,34 +136,6 @@ class Dashboard extends Component
                 ->whereNotNull('es.completed_at')
                 ->count();
         }
-    }
-
-    /**
-     * Icona e classe CSS per lo status di una sessione
-     */
-    public function sessionStatusClass(string $status): string
-    {
-        return match ($status) {
-            'planned' => 'status-planned',
-            'in_progress' => 'status-in_progress',
-            'completed' => 'status-completed',
-            'skipped' => 'status-skipped',
-            default => 'status-planned',
-        };
-    }
-
-    /**
-     * Label italiana per lo status sessione
-     */
-    public function sessionStatusLabel(string $status): string
-    {
-        return match ($status) {
-            'planned' => 'Pianificata',
-            'in_progress' => 'In corso',
-            'completed' => 'Completata',
-            'skipped' => 'Saltata',
-            default => $status,
-        };
     }
 
     /**

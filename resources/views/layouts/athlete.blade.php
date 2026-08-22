@@ -53,14 +53,23 @@
                 Home
             </a>
             <a href="{{ route('athlete.history') }}"
-               class="{{ request()->routeIs('athlete.history', 'athlete.progress', 'athlete.session', 'athlete.session.recap') ? 'active' : '' }}"
-               aria-current="{{ request()->routeIs('athlete.history', 'athlete.progress', 'athlete.session', 'athlete.session.recap') ? 'page' : 'false' }}">
+               class="{{ request()->routeIs('athlete.history', 'athlete.progress', 'athlete.session', 'athlete.session.recap', 'athlete.exercises*') ? 'active' : '' }}"
+               aria-current="{{ request()->routeIs('athlete.history', 'athlete.progress', 'athlete.session', 'athlete.session.recap', 'athlete.exercises*') ? 'page' : 'false' }}">
                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round"
                           d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2
                              M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                 </svg>
                 Allenamento
+            </a>
+            <a href="{{ route('athlete.exercises.index') }}"
+               class="{{ request()->routeIs('athlete.exercises*') ? 'active' : '' }}"
+               aria-current="{{ request()->routeIs('athlete.exercises*') ? 'page' : 'false' }}"
+               style="padding-left:2.5rem;">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                </svg>
+                Esercizi
             </a>
             <a href="{{ route('athlete.volume') }}"
                class="{{ request()->routeIs('athlete.volume', 'athlete.records', 'athlete.measurements', 'athlete.photos.*') ? 'active' : '' }}"
@@ -82,27 +91,35 @@
                 </svg>
                 Record
             </a>
-            <a href="{{ route('athlete.exercises.index') }}"
-               class="{{ request()->routeIs('athlete.exercises*') ? 'active' : '' }}"
-               aria-current="{{ request()->routeIs('athlete.exercises*') ? 'page' : 'false' }}"
-               style="padding-left:2.5rem;">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
-                </svg>
-                Esercizi
-            </a>
             <a href="{{ route('athlete.profile') }}"
-               class="{{ request()->routeIs('athlete.profile', 'athlete.messages', 'athlete.bookings') ? 'active' : '' }}"
-               aria-current="{{ request()->routeIs('athlete.profile', 'athlete.messages', 'athlete.bookings') ? 'page' : 'false' }}">
+               class="{{ request()->routeIs('athlete.profile', 'athlete.bookings*', 'athlete.messages*') ? 'active' : '' }}"
+               aria-current="{{ request()->routeIs('athlete.profile', 'athlete.bookings*', 'athlete.messages*') ? 'page' : 'false' }}">
                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round"
                           d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
                 </svg>
                 Profilo
+            </a>
+            <a href="{{ route('athlete.bookings') }}"
+               class="{{ request()->routeIs('athlete.bookings*') ? 'active' : '' }}"
+               aria-current="{{ request()->routeIs('athlete.bookings*') ? 'page' : 'false' }}"
+               style="padding-left:2.5rem;">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                Prenota
+            </a>
+            <a href="{{ route('athlete.messages') }}"
+               class="{{ request()->routeIs('athlete.messages*') ? 'active' : '' }}"
+               aria-current="{{ request()->routeIs('athlete.messages*') ? 'page' : 'false' }}"
+               style="padding-left:2.5rem;">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                </svg>
+                Messaggi
                 <span x-show="$store.messages.unread > 0"
                       x-text="$store.messages.unread > 9 ? '9+' : $store.messages.unread"
-                      class="nav-unread-badge sidenav-badge"
-                      aria-live="polite"></span>
+                      class="ig-badge ig-badge--danger" style="margin-left:auto;" aria-live="polite"></span>
             </a>
         </nav>
         <div class="sidenav-footer">
@@ -272,17 +289,21 @@
                     const vapidPublicKey = '{{ config("services.vapid.public_key") }}';
                     if (!vapidPublicKey) return;
 
-                    registration.pushManager.subscribe({
-                        userVisibleOnly: true,
-                        applicationServerKey: vapidPublicKey,
-                    }).then(function (subscription) {
-                        fetch('{{ route("athlete.push-subscribe") }}', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            },
-                            body: JSON.stringify(subscription.toJSON()),
+                    registration.pushManager.getSubscription().then(function (existing) {
+                        if (existing) return;
+
+                        registration.pushManager.subscribe({
+                            userVisibleOnly: true,
+                            applicationServerKey: vapidPublicKey,
+                        }).then(function (subscription) {
+                            fetch('{{ route("athlete.push-subscribe") }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                },
+                                body: JSON.stringify(subscription.toJSON()),
+                            });
                         });
                     });
                 });

@@ -250,7 +250,7 @@ Alcune cose le ho lasciate fuori volontariamente perché non bloccanti per lo St
 
 **Multi-palestra.** Decisione presa: single-tenant, una sola palestra. Niente `gym_id` ovunque. Se in futuro il software venisse riproposto a un'altra palestra, sarà una nuova installazione con un nuovo DB.
 
-**Soft delete su quali tabelle.** Per ora l'ho messo su `exercises`, `workout_templates`, `mesocycles`. Su `sessions` e tabelle figlie no: una sessione cancellata sparisce. Da rivedere se emerge un requisito di audit.
+**Soft delete su quali tabelle.** Per ora l'ho messo su `exercises`, `workout_templates`, `mesocycles`. Su `training_sessions` e tabelle figlie no: una sessione cancellata sparisce. Da rivedere se emerge un requisito di audit.
 
 ---
 

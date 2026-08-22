@@ -128,18 +128,18 @@ class TrainingReport extends Component
         $athleteName = DB::table('users')->where('id', $athleteId)->value('name') ?? '';
 
         // Sessioni per settimana negli ultimi 8 mesocicli
+        $lastMesoIds = DB::table('mesocycles')
+            ->where('athlete_id', $athleteId)
+            ->orderByDesc('start_date')
+            ->limit(8)
+            ->pluck('id');
+
         $weeklySessions = DB::table('training_sessions as ts')
             ->join('microcycle_weeks as mw', 'mw.id', '=', 'ts.microcycle_week_id')
             ->join('mesocycles as mc', 'mc.id', '=', 'mw.mesocycle_id')
             ->where('mc.athlete_id', $athleteId)
             ->where('ts.status', 'completed')
-            ->whereIn('mc.id', function ($sub) use ($athleteId) {
-                $sub->select('id')
-                    ->from('mesocycles')
-                    ->where('athlete_id', $athleteId)
-                    ->orderByDesc('start_date')
-                    ->limit(8);
-            })
+            ->whereIn('mc.id', $lastMesoIds)
             ->select(
                 DB::raw("CONCAT(mc.name, ' — Sett. ', mw.week_number) as label"),
                 DB::raw('COUNT(ts.id) as session_count'),

@@ -89,6 +89,11 @@ class MesocycleList extends Component
         };
     }
 
+    public function mount(): void
+    {
+        abort_unless(auth()->user()?->hasAnyRole(['gestore', 'trainer']), 403);
+    }
+
     public function render(): View
     {
         $mesocycles = Mesocycle::with(['athlete', 'trainer', 'template'])

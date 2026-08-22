@@ -18,7 +18,7 @@ class PlateInventorySeeder extends Seeder
         }
 
         $plates = [
-            ['weight_kg' => 25.00, 'quantity_pairs' => 4, 'color' => 'rosso'],
+            ['weight_kg' => 25.00, 'quantity_pairs' => 0, 'color' => 'rosso'],
             ['weight_kg' => 20.00, 'quantity_pairs' => 4, 'color' => 'blu'],
             ['weight_kg' => 15.00, 'quantity_pairs' => 4, 'color' => 'giallo'],
             ['weight_kg' => 10.00, 'quantity_pairs' => 6, 'color' => 'verde'],

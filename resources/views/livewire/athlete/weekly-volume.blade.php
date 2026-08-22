@@ -39,6 +39,27 @@
             <span class="wv-legend-item"><span class="wv-dot intensity-5"></span>Oltre MRV</span>
         </div>
 
+        {{-- Guida lettura --}}
+        <div class="wv-guide">
+            <p class="wv-guide-title">Come leggere questa pagina</p>
+            <p class="wv-guide-text">
+                <strong>Mappa muscolare</strong> — ogni muscolo è colorato in base al volume accumulato questa settimana.
+                <strong>Grigio</strong>: nessun lavoro eseguito.
+                <strong>Giallo</strong>: sei sotto il MEV (Minimum Effective Volume), lo stimolo è insufficiente per progredire.
+                <strong>Verde</strong>: zona ottimale MAV (Maximum Adaptive Volume), il volume produce il massimo adattamento.
+                <strong>Arancio</strong>: ti avvicini al MRV, attenzione al recupero.
+                <strong>Rosso</strong>: superato il MRV (Maximum Recoverable Volume), rischio sovrallenamento.
+                Tocca un muscolo nella figura per scorrere alla sua barra di dettaglio.
+            </p>
+            <p class="wv-guide-text wv-guide-text--mt">
+                <strong>Barre per muscolo</strong> — mostrano le <strong>serie dure</strong> eseguite sul muscolo, pesate per la contribuzione percentuale dell'esercizio.
+                Il marcatore <strong>MEV</strong> indica il minimo per ottenere progressi.
+                La <strong>banda verde</strong> è la finestra MAV ottimale.
+                Il marcatore <strong>MRV</strong> è il tetto del volume recuperabile.
+                Se non compaiono i marcatori, il trainer non ha ancora impostato i landmark per quel muscolo.
+            </p>
+        </div>
+
         {{-- Barre per muscolo --}}
         @if (empty($volumeData))
             <p class="wv-no-data">Nessuna sessione completata in questa settimana.</p>

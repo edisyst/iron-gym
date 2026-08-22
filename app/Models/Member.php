@@ -48,12 +48,6 @@ class Member extends Model
         return $this->hasMany(Subscription::class);
     }
 
-    /** @return HasMany<AccessLog, $this> */
-    public function accessLogs(): HasMany
-    {
-        return $this->hasMany(AccessLog::class);
-    }
-
     /** @return HasOne<Subscription, $this> */
     public function activeSubscription(): HasOne
     {

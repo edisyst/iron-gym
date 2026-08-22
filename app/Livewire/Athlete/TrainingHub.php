@@ -315,7 +315,7 @@ class TrainingHub extends Component
             fn ($q) => $q->where('athlete_id', auth()->id())
                 ->when($this->mesocycleId !== '', fn ($q2) => $q2->where('id', $this->mesocycleId))
         )
-            ->where('status', 'completed')
+            ->whereIn('status', ['completed', 'skipped'])
             ->with(['week.mesocycle', 'sessionExercises.sets'])
             ->orderByDesc('completed_at')
             ->paginate(20);

@@ -19,15 +19,20 @@ class DatabaseSeeder extends Seeder
             ExerciseSeeder::class,
             ExerciseDescriptionSeeder::class,
             PlateInventorySeeder::class,
+            DumbbellInventorySeeder::class,
+            OpeningHoursSeeder::class,
+            CommunicationTemplateSeeder::class,
         ]);
 
         // Seeder solo in ambiente locale
         if (app()->isLocal()) {
             $this->call([
                 DemoSeeder::class,
+                DemoTemplatesSeeder::class,
                 TrainingHistorySeeder::class,
                 ActiveMesocycleSeeder::class,
                 ProgressDemoSeeder::class,
+                BookingDemoSeeder::class,
             ]);
         }
     }

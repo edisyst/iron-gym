@@ -311,7 +311,10 @@ return [
         // Navbar: ricerca e fullscreen
         [
             'type' => 'navbar-search',
-            'text' => 'search',
+            'text' => 'Cerca...',
+            'url' => 'backoffice/search',
+            'method' => 'get',
+            'input_name' => 'q',
             'topnav_right' => true,
         ],
         [
@@ -349,31 +352,30 @@ return [
             'url' => 'backoffice/access-logs',
             'icon' => 'fas fa-door-open',
         ],
-        ['header' => 'TRAINING'],
+        ['header' => 'TRAINING', 'can' => 'access-training-section'],
         [
             'text' => 'Esercizi',
             'url' => 'backoffice/exercises',
             'icon' => 'fas fa-dumbbell',
+            'can' => 'access-training-section',
         ],
         [
             'text' => 'Schede template',
             'url' => 'backoffice/templates',
             'icon' => 'fas fa-clipboard-list',
+            'can' => 'access-training-section',
         ],
         [
             'text' => 'Mesocicli',
             'url' => 'backoffice/mesocycles',
             'icon' => 'fas fa-calendar-alt',
+            'can' => 'access-training-section',
         ],
         [
             'text' => 'Report allenamento',
             'url' => 'backoffice/reports/training',
             'icon' => 'fas fa-chart-bar',
-        ],
-        [
-            'text' => 'Storico atleti',
-            'url' => 'backoffice/members',
-            'icon' => 'fas fa-history',
+            'can' => 'view-training-reports',
         ],
         ['header' => 'CALENDARIO'],
         [
@@ -385,6 +387,7 @@ return [
             'text' => 'Disponibilità',
             'url' => 'backoffice/calendar/availability',
             'icon' => 'fas fa-clock',
+            'can' => 'manage-trainer-availability',
         ],
         [
             'text' => 'Prenotazioni PT',
@@ -397,17 +400,24 @@ return [
             'icon' => 'fas fa-users',
             'can' => 'view-group-classes',
         ],
-        ['header' => 'COMUNICAZIONE'],
+        [
+            'text' => 'Orari di apertura',
+            'url'  => 'backoffice/settings/opening-hours',
+            'icon' => 'fas fa-door-open',
+        ],
+        ['header' => 'COMUNICAZIONE', 'can' => 'send-campaigns'],
         [
             'text' => 'Campagne',
             'url' => 'backoffice/communications/campaign',
             'icon' => 'fas fa-bullhorn',
+            'can' => 'send-campaigns',
         ],
-        ['header' => 'ADMIN'],
+        ['header' => 'ADMIN', 'can' => 'access-admin-section'],
         [
             'text' => 'Inventario Dischi',
             'url' => 'backoffice/admin/plate-inventory',
             'icon' => 'fas fa-dumbbell',
+            'can' => 'access-admin-section',
         ],
     ],
 

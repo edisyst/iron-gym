@@ -8,6 +8,7 @@
                 {{-- Selezione trainer (solo gestore vedrà altri trainer; trainer vede solo se stesso) --}}
                 @if(count($trainers) > 1)
                     <select wire:model.live="selectedTrainerId" class="form-control form-control-sm mr-2 filter-w-md">
+                        <option value="0">Tutti</option>
                         @foreach($trainers as $trainer)
                             <option value="{{ $trainer->id }}">{{ $trainer->name }}</option>
                         @endforeach

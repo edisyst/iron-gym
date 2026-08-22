@@ -1,5 +1,187 @@
 # Changelog — iron-gym
 
+> Nota: questo file usa schemi di numerazione misti (Step 0N, Release 0N, UX0N, voci libere). La normalizzazione è pianificata post-HK01.
+
+---
+
+## HK01 — Housekeeping (2026-08-22)
+
+**Branch:** `release/hk01-housekeeping`
+
+Audit completo codice morto, dipendenze orfane e documentazione. Report: `docs/audit/hk01-report.md`.
+
+**Codice morto PHP:**
+- `Athlete\Dashboard`: rimossi `sessionStatusClass()` e `sessionStatusLabel()` (mai usati in Blade)
+- `config/barbell.php`: eliminato (zero occorrenze di `config('barbell.')`)
+
+**View / componenti orfani:**
+- `app/Livewire/Athlete/Progress.php` + `resources/views/livewire/athlete/progress.blade.php`: rimossi (route `athlete.progress` è redirect)
+- `resources/views/dashboard.blade.php`: rimosso (stub Breeze non renderizzato)
+
+**Dipendenze Composer:**
+- `ext-gd`, `ext-mbstring` aggiunti a `require` (shadow: usate ma non dichiarate)
+- `laravel/tinker` spostato da `require` a `require-dev`
+- `TelescopeServiceProvider`: aggiunto `class_exists` guard in `register()`/`boot()` per sicurezza `--no-dev`
+
+**Documentazione:**
+- `docs/domain/glossary.md`, `docs/domain/step-0-discovery.md`: `sessions` → `training_sessions`
+- `CHANGELOG.md`, `docs/architecture/component-map.md`: e1RM Epley attribuita a `E1rmCalculator::epley()` (non `WeeklyVolumeCalculator`)
+- `docs/test/01-gestore.md`: URL session history corretto a `/backoffice/athletes/{athleteId}/profile`
+
+Suite: 220/226 (6 skip pre-esistenti invariati) — PHPStan 0 errori — Pint OK.
+
+---
+
+## Audit receptionist — chiusura (2026-08-19)
+
+**Branch:** `develop` — commit `db0dd0a`
+
+Decisione dominio: `GroupClassManager.removeParticipant()` intenzionalmente accessibile al receptionist (gestione iscrizioni ai corsi = operazione front-desk).
+
+- `ClassBooking`: aggiunto `HasFactory` trait
+- `ReceptionistCheckinTest`: test #24 — receptionist chiama `removeParticipant()` con successo
+- `docs/review/audit-receptionist-2026-08-19.md`: finding #17 (colonna cert. in AccessLogList — backlog P3), tabella stato finale
+
+Suite: 24/24 `ReceptionistCheckinTest` — PHPStan 0 errori — Pint OK.
+
+---
+
+## Audit receptionist — E2E test (2026-08-19)
+
+**Branch:** `develop` — commit `3c40ee4`
+
+24 test in `tests/Feature/ReceptionistCheckinTest.php`:
+- Check-in flusso positivo (cert. valida + abb. attivo) + incremento `accesses_used`
+- Blocco check-in: cert. scaduta, cert. assente, nessun abbonamento, accessi esauriti, nessun tesserato selezionato
+- 403 receptionist su route `communications.campaign` e `calendar.availability`
+- 403 receptionist su `GroupClassManager.save/deleteClass`, `BookingList.confirm/cancel`, `TrainerCalendar.cancelBooking`
+- Ownership `cancelBooking`: trainer proprio booking OK, gestore booking altrui OK
+- Dashboard atleta: `certWarningLevel` danger/warning/vuoto in base a scadenza
+
+Fix contestuali: `HasFactory` su `Subscription` e `PtBooking`; `PtBookingFactory.end_time` valorizzato.
+
+Suite: 212/218 (6 skip pre-esistenti invariati) — PHPStan 0 errori — Pint OK.
+
+---
+
+## Audit receptionist — fix (2026-08-19)
+
+**Branch:** `develop`  
+**Commits:** `fd070f2` → `184e499` (6 commit)
+
+### Fix applicati
+
+| ID | Priorità | Area | Descrizione |
+|---|---|---|---|
+| R-AUTH-01 | P0 | Auth | `CommunicationCampaign` spostata in gruppo `role:gestore\|trainer`; gate sidebar `send-campaigns` |
+| R-AUTH-02 | P0 | Auth | `AvailabilityManager` spostata in gruppo `role:gestore\|trainer`; gate sidebar `manage-trainer-availability` |
+| R-AUTH-03 | P1 | Auth | `GroupClassManager.save()` e `deleteClass()`: `abort_unless` gestore\|trainer |
+| R-AUTH-04 | P1 | Auth | `TrainerCalendar.cancelBooking()`: ownership check `trainer_id === Auth::id()` o gestore |
+| R-AUTH-05 | P1 | Auth | `BookingList.confirm()` e `cancel()`: `abort_unless` gestore\|trainer |
+| R-DOM-01 | P1 | Dominio | Check-in blocca se `medical_cert_expiry` null o passata |
+| R-ATH-01 | P1 | Atleta | Dashboard atleta mostra banner danger/warning per cert. scaduto o in scadenza ≤30gg |
+| R-UI-01 | P2 | UI | `MemberList`: link Modifica e Profilo allenamento nascosti per receptionist |
+| R-UI-02 | P3 | UI | `SubscriptionList`: badge stato abbonamento tradotti in italiano |
+| R-UI-03 | P2 | UI | `AccessLogList`: wire:loading sul pulsante apertura modale check-in |
+| R-PERF-01 | P2 | Perf | Migration `2026_08_19_000001`: indice composito `last_name`/`first_name` su `members` |
+
+### Finding aperti (non applicati in questa fase)
+
+| ID | Priorità | Area | Motivo rinvio |
+|---|---|---|---|
+| R-DOM-02 | P2 | UX | `SubscriptionList` senza ricerca per nome — nuova feature, fuori scope fix |
+| R-PERF-02 | P3 | Perf | `SubscriptionForm` carica tutti i tesserati in memoria — refactor typeahead separato |
+| R-ARCH-01 | P3 | Arch | Nessun Form Request per operazioni receptionist — refactor architetturale separato |
+
+### Verifica
+
+Suite: 189/195 (6 skip pre-esistenti invariati) — PHPStan 0 errori — Pint OK.
+
+---
+
+## Audit funzionale PWA atleta — fix (2026-08-18)
+
+**Branch:** `feature/audit-funzionale-atleta-2026-08-18`
+
+### Fix chiusi
+
+| ID | Area | Descrizione |
+|---|---|---|
+| F-HUB-01 | Storico | Sessioni `skipped` ora visibili nello storico con badge "saltata" |
+| F-HUB-02 | Storico | Set time-based filtrati per `completed_at`; durata mostrata al posto di reps |
+| F-BOOK-01 | Prenotazioni | Null-guard su `$member` in `cancelPtBooking` e `cancelClassBooking` |
+| F-BOOK-02 | Prenotazioni | Tab Corsi e azioni classe gated su feature flag `group_classes` |
+| F-VOLUME-01 | Volume | N+1 eliminato in `WeeklyVolume::mount()` — eager-load `weeks.sessions` |
+| F-PUSH-01 | Push | `getSubscription()` check prima di `subscribe()` — subscribe idempotente |
+| F-LAY-01 | Layout/CSS | `translate-y-full`/`translate-y-0` in safelist Tailwind JIT |
+| F-HIST-01 | Cleanup | Componente `History.php` e view orfani rimossi |
+
+### Rinviati / No fix
+
+| ID | Decisione |
+|---|---|
+| F-SESSION-01 | No fix — comportamento intenzionale, `wire:confirm` presente |
+| F-SESSION-02 | Rinviato — refactor sync offline complesso |
+| F-EMPTY-01 | No fix — stato vuoto già implementato nella view |
+
+**Suite:** 189/195 (6 skip pre-esistenti invariati). PHPStan 0 errori. Pint OK.
+
+---
+
+## UX07 — Scala UI maggiorata per schermi piccoli (2026-07-18)
+
+**Obiettivo:** alzare la scala dell'interfaccia atleta oltre il minimo WCAG per uso in palestra con una mano sola.
+
+### B1 — Token di scala
+
+Aggiornati in `public/css/athlete.css`:
+
+| Token | Prima | Dopo |
+|---|---|---|
+| `--ig-text-md` | 18px | 22px |
+| `--ig-text-lg` | 22px | 26px |
+| `--ig-text-xl` | 28px | 34px |
+| `--ig-text-display` | 42px | 48px |
+| `--ig-touch-target` | 48px | 56px |
+
+Nuovi token introdotti: `--ig-touch-target-sm` (40px), `--ig-touch-target-xl` (64px),
+`--ig-bottom-nav-h` (72px), `--ig-nav-icon` (26px).
+
+### B2 — Tokenizzazione valori hardcoded
+
+- `.ig-btn--sm` min-height: 36px → `var(--ig-touch-target-sm)`
+- `.ig-num-input__step` font-size: 22px → `var(--ig-text-lg)`
+- `.metric-options label` width/height: 44px → `var(--ig-touch-target)`
+- `.ig-form-input` padding: `12px 14px` → `var(--ig-sp-3) var(--ig-sp-4)`
+- `.ig-tab` padding: `9px` → `var(--ig-sp-2)`
+- `.home-hero-cta .ig-btn--lg` min-height: 56px → `var(--ig-touch-target-xl)`
+- `.bottom-nav` min-height, svg size → token
+- `ws-muscle-chip`, `ws-meta-chip`, `ws-warmup-badge`, `body-map-label` font-size → `var(--ig-text-xs)`
+- `ws-muscle-chip`, `ws-meta-chip` padding → token
+- `ws-icon-btn` padding 10px hardcoded → `var(--ig-sp-3)`
+
+### B3 — Bottone FATTO
+
+Inline style rimossa da `workout-session.blade.php`. Nuova classe CSS `ws-action-done-btn`
+(64px min-height, font-size `--ig-text-md`, usa tutti i token). Override `min-height:48px` rimossi
+dai bottoni delle modali readiness e modulazione.
+
+### B4 — Riquadri numerici
+
+`ig-stat__value` aggiunto `white-space: nowrap; overflow: hidden; text-overflow: ellipsis`
+per proteggere da overflow su valori lunghi (tonnellaggio 5 cifre, e1RM con decimale).
+
+### B5 — Fix casi a rischio
+
+Action zone 3-stepper: `.ws-action-inputs .ig-num-input__step` → `min-width: 44px` (non cresce con
+`--ig-touch-target`), `min-height: var(--ig-touch-target-xl)` (64px — area tap più grande in verticale,
+senza spezzare il layout orizzontale su iPhone SE). Plate button in session-exercise: inline style
+`min-height:32px` rimossa (la classe `ws-icon-btn` ora fornisce il touch target corretto).
+
+### Verifica finale
+
+Suite: 189/195 (6 skip pre-esistenti invariati). PHPStan 0 errori. Pint conforme.
+
 ---
 
 ## UX06 — Toggle tema dark/light e toggle viewport mobile/desktop (2026-07-17)
@@ -152,7 +334,7 @@ Tutto il lavoro notevole per versione/step. Ordine cronologico crescente.
 - `MesocycleDetail`: tabella volume per muscolo con barre di progressione (colore per status), bottoni "Applica progressione" e "Forza deload".
 - `MesocycleAssign`: assegna template a un atleta scegliendo data inizio e numero settimane; crea mesociclo + microcycle_weeks (ultima = deload).
 - Value objects: `ProgressionResult` (action, note), `DeloadSignal` (isDeloadNeeded, activeTriggers, notes).
-- e1RM calcolato da `WeeklyVolumeCalculator` con formula Epley (`w * (1 + r/30)`).
+- e1RM calcolato da `E1rmCalculator::epley()` con formula Epley (`w * (1 + r/30)`). `WeeklyVolumeCalculator` calcola hard set settimanali per muscolo, non e1RM.
 
 ---
 

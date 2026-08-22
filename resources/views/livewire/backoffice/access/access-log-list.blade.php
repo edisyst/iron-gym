@@ -55,24 +55,35 @@
         <div class="modal-backdrop fade show"></div>
     @endif
 
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <div class="d-flex flex-wrap gap-2">
-                <input
-                    type="date"
-                    wire:model.live="dateFilter"
-                    class="form-control form-control-sm filter-w-sm"
-                >
-                <input
-                    type="text"
-                    wire:model.live.debounce.300ms="search"
-                    placeholder="Cerca tesserato..."
-                    class="form-control form-control-sm filter-w-lg"
-                >
+    {{-- Filtri --}}
+    <div class="card card-outline card-primary">
+        <div class="card-header">
+            <h3 class="card-title">Filtri</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <label class="small">Data</label>
+                    <input type="date" wire:model.live="dateFilter" class="form-control form-control-sm">
+                </div>
+                <div class="col-md-5">
+                    <label class="small">Cerca tesserato</label>
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Nome o cognome..." class="form-control form-control-sm">
+                </div>
             </div>
-            <button class="btn btn-primary btn-sm" wire:click="openModal">
-                <i class="fas fa-sign-in-alt"></i> Registra accesso
-            </button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Registro accessi</h3>
+            <div class="card-tools">
+                <button class="btn btn-primary btn-sm" wire:click="openModal" wire:loading.attr="disabled">
+                    <span wire:loading wire:target="openModal" class="spinner-border spinner-border-sm mr-1"></span>
+                    <i class="fas fa-sign-in-alt" wire:loading.remove wire:target="openModal"></i>
+                    Registra accesso
+                </button>
+            </div>
         </div>
         <div class="card-body p-0">
             <table class="table table-hover mb-0">

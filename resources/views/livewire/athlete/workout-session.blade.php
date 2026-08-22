@@ -305,17 +305,32 @@
 
     {{-- Zona azione fissa in basso --}}
     @php
-        $actionSet  = null;
-        $actionSe   = null;
-        foreach ($currentGroup as $se) {
-            $firstIncomplete = $se->sets->where('is_warmup', false)->whereNull('completed_at')->sortBy('set_index')->first();
-            if ($firstIncomplete) {
-                $actionSet = $firstIncomplete;
-                $actionSe  = $se;
-                break;
+        // Trova il set selezionato e il suo session_exercise
+        $selectedSet = null;
+        $selectedSe  = null;
+        if ($selectedSetId !== null) {
+            foreach ($groupedExercises as $grp) {
+                foreach (collect($grp) as $se) {
+                    $found = $se->sets->firstWhere('id', $selectedSetId);
+                    if ($found) {
+                        $selectedSet = $found;
+                        $selectedSe  = $se;
+                        break 2;
+                    }
+                }
             }
         }
-        $currentGroupAllDone = $actionSet === null;
+
+        // Verifica se tutti i set del gruppo corrente sono completati E nessun set è selezionato
+        $currentGroupAllDone = $selectedSet === null;
+        if ($currentGroupAllDone) {
+            foreach ($currentGroup as $se) {
+                if ($se->sets->where('is_warmup', false)->whereNull('completed_at')->isNotEmpty()) {
+                    $currentGroupAllDone = false;
+                    break;
+                }
+            }
+        }
 
         // Verifica se tutti i gruppi sono completati
         $allGroupsDone = true;
@@ -328,24 +343,24 @@
             }
         }
 
-        if ($actionSe) {
-            $actionRestSec    = $actionSe->technique_type === 'cluster'
-                                ? ($actionSe->intra_cluster_rest_sec ?? $actionSe->planned_rest_sec)
-                                : $actionSe->planned_rest_sec;
-            $actionRestSecJs  = $actionRestSec !== null ? (int) $actionRestSec : 'null';
-            $actionMeasure    = $actionSe->exercise->measurement_type ?? 'reps_weight';
-            $actionWorkingSets = $actionSe->sets->where('is_warmup', false)->sortBy('set_index')->values();
-            $actionSetIndex   = $actionWorkingSets->search(fn($s) => $s->id === $actionSet->id) + 1;
-            $actionSetTotal   = $actionWorkingSets->count();
-            $actionPrevPerf   = $previousPerformance[$actionSe->exercise_id][$actionSet->set_index] ?? null;
+        if ($selectedSe) {
+            $selRestSec    = $selectedSe->technique_type === 'cluster'
+                             ? ($selectedSe->intra_cluster_rest_sec ?? $selectedSe->planned_rest_sec)
+                             : $selectedSe->planned_rest_sec;
+            $selRestSecJs  = $selRestSec !== null ? (int) $selRestSec : 'null';
+            $selMeasure    = $selectedSe->exercise->measurement_type ?? 'reps_weight';
+            $selWorkingSets = $selectedSe->sets->where('is_warmup', false)->sortBy('set_index')->values();
+            $selSetIndex   = $selWorkingSets->search(fn ($s) => $s->id === $selectedSet->id) + 1;
+            $selSetTotal   = $selWorkingSets->count();
+            $selPrevPerf   = $previousPerformance[$selectedSe->exercise_id][$selectedSet->set_index] ?? null;
+            $selIsCompleted = $selectedSet->completed_at !== null;
         }
     @endphp
 
-    <div x-data="{ pending: false }" class="ws-action-zone">
+    <div x-data="{ pending: false }" class="ws-action-zone" @if($showFeedback) style="display:none;" @endif>
 
         {{-- Rest timer (integrato nella zona azione) --}}
         <div x-data x-show="$store.restTimer.running" x-cloak class="ws-action-timer">
-            {{-- SR: annuncia il conto alla rovescia ogni 10s circa (polite, non interrompe) --}}
             <span class="sr-only" aria-live="polite" aria-atomic="true"
                   x-text="$store.restTimer.running ? $store.restTimer.fmt($store.restTimer.seconds) + ' al recupero' : ''"></span>
             <div>
@@ -361,13 +376,13 @@
         </div>
 
         @if ($currentGroupAllDone)
-            {{-- Tutti i set del gruppo completati --}}
+            {{-- Tutti i set del gruppo completati, nessun set selezionato --}}
             <div class="ws-action-done">
                 <div class="ws-action-done-msg">
                     <svg style="width:20px;height:20px;color:var(--ig-success);display:inline;vertical-align:middle;margin-right:4px;" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                         <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                     </svg>
-                    {{ $currentGroup->map(fn($e) => $e->exercise->name_it)->implode(' + ') }} completato
+                    {{ $currentGroup->map(fn ($e) => $e->exercise->name_it)->implode(' + ') }} completato
                 </div>
                 @if ($allGroupsDone)
                     <x-athlete.button variant="primary" :full="true" wire:click="completeSession"
@@ -385,172 +400,150 @@
                 @endif
             </div>
 
-        @elseif ($actionSet)
-            {{-- Input per il set corrente --}}
+        @elseif ($selectedSet)
+            {{-- Set selezionato (attivo, completato o extra) --}}
             <div class="ws-action-info">
                 <span class="ws-action-set-label">
-                    {{ $actionSe->exercise->name_it }} &bull; Set {{ $actionSetIndex }}/{{ $actionSetTotal }}
+                    @if ($selIsCompleted) Modifica &bull; @endif
+                    {{ $selectedSe->exercise->name_it }} &bull; Set {{ $selSetIndex }}/{{ $selSetTotal }}
                 </span>
-                @if ($actionPrevPerf && ($actionPrevPerf['reps'] !== null || $actionPrevPerf['weight'] !== null))
+                @if (! $selIsCompleted && $selPrevPerf && ($selPrevPerf['reps'] !== null || $selPrevPerf['weight'] !== null))
                     <span class="ws-action-prev">
                         prec:
-                        @if ($actionPrevPerf['weight'] !== null) {{ $actionPrevPerf['weight'] }}kg @endif
-                        @if ($actionPrevPerf['reps'] !== null) &times; {{ $actionPrevPerf['reps'] }} @endif
-                        @if ($actionPrevPerf['rir'] !== null) RIR{{ $actionPrevPerf['rir'] }} @endif
+                        @if ($selPrevPerf['weight'] !== null) {{ $selPrevPerf['weight'] }}kg @endif
+                        @if ($selPrevPerf['reps'] !== null) &times; {{ $selPrevPerf['reps'] }} @endif
+                        @if ($selPrevPerf['rir'] !== null) RIR{{ $selPrevPerf['rir'] }} @endif
                     </span>
                 @endif
             </div>
 
             <div class="ws-action-inputs">
-                @if (in_array($actionMeasure, ['reps_weight', 'reps_only', 'time_weight']))
+                @if (in_array($selMeasure, ['reps_weight', 'reps_only', 'time_weight']))
                     <div class="ws-action-input-group">
                         <span class="ws-action-input-label" aria-hidden="true">Reps</span>
                         <x-athlete.input-number
-                            wire:model="setData.{{ $actionSet->id }}.reps"
+                            wire:model="setData.{{ $selectedSet->id }}.reps"
                             mode="numeric"
                             min="0"
                             step="1"
                             :stepper="true"
-                            placeholder="{{ $actionSet->planned_reps ?? '0' }}"
                             aria-label="Ripetizioni"
                         />
                     </div>
                 @endif
-                @if (in_array($actionMeasure, ['reps_weight', 'time_weight']))
+                @if (in_array($selMeasure, ['reps_weight', 'time_weight']))
                     <div class="ws-action-input-group ws-action-input-group--kg">
                         <span class="ws-action-input-label" aria-hidden="true">Kg</span>
                         <x-athlete.input-number
-                            wire:model="setData.{{ $actionSet->id }}.weight"
+                            wire:model="setData.{{ $selectedSet->id }}.weight"
                             mode="decimal"
                             min="0"
                             step="2.5"
                             :stepper="true"
-                            placeholder="{{ $actionSet->planned_weight_kg ?? '0' }}"
                             aria-label="Peso in kg"
                         />
                     </div>
                 @endif
-                @if (in_array($actionMeasure, ['time', 'isometric_hold']))
+                @if (in_array($selMeasure, ['time', 'isometric_hold']))
                     <div class="ws-action-input-group" style="flex:2;">
                         <span class="ws-action-input-label" aria-hidden="true">Secondi</span>
                         <x-athlete.input-number
-                            wire:model="setData.{{ $actionSet->id }}.duration"
+                            wire:model="setData.{{ $selectedSet->id }}.duration"
                             mode="numeric"
                             min="0"
                             step="5"
                             :stepper="true"
-                            placeholder="{{ $actionSet->planned_duration_sec ?? '0' }}"
                             aria-label="Durata in secondi"
                         />
                     </div>
                 @endif
-                @if (in_array($actionMeasure, ['reps_weight', 'reps_only', 'time_weight']))
+                @if (in_array($selMeasure, ['reps_weight', 'reps_only', 'time_weight']))
                     <div class="ws-action-input-group">
                         <span class="ws-action-input-label" aria-hidden="true">RIR</span>
                         <x-athlete.input-number
-                            wire:model="setData.{{ $actionSet->id }}.rir"
+                            wire:model="setData.{{ $selectedSet->id }}.rir"
                             mode="numeric"
                             min="0"
                             max="10"
                             step="1"
                             :stepper="true"
-                            placeholder="{{ $actionSet->planned_rir ?? '—' }}"
                             aria-label="Reps in riserva"
                         />
                     </div>
                 @endif
             </div>
 
-            <div class="ws-action-btn">
-                <button @click="
-                            const setId = {{ $actionSet->id }};
-                            const restSec = {{ $actionRestSecJs }};
-                            pending = true;
-                            if (!navigator.onLine) {
-                                const d = $wire.__instance?.snapshot?.memo?.data ?? {};
-                                const sd = (d.setData ?? {})[setId] ?? {};
-                                $store.syncQueue.enqueue('complete_set', {
-                                    set_id: setId,
-                                    reps: sd.reps !== '' ? parseInt(sd.reps) : null,
-                                    weight: sd.weight !== '' ? parseFloat(sd.weight) : null,
-                                    rir: sd.rir !== '' ? parseInt(sd.rir) : null,
-                                    duration: sd.duration !== '' ? parseInt(sd.duration) : null,
-                                });
-                                pending = false;
-                                if (restSec) { $store.restTimer.start(restSec); }
-                            } else {
-                                $wire.completeSet(setId).then(() => {
+            <div class="ws-action-btn" style="display:flex;gap:var(--ig-sp-2);">
+                @if (! $selIsCompleted)
+                    {{-- Prima completamento: pulsante unico con offline sync + rest timer --}}
+                    <button @click="
+                                const setId = {{ $selectedSet->id }};
+                                const restSec = {{ $selRestSecJs }};
+                                pending = true;
+                                if (!navigator.onLine) {
+                                    const d = $wire.__instance?.snapshot?.memo?.data ?? {};
+                                    const sd = (d.setData ?? {})[setId] ?? {};
+                                    $store.syncQueue.enqueue('complete_set', {
+                                        set_id: setId,
+                                        reps: sd.reps !== '' ? parseInt(sd.reps) : null,
+                                        weight: sd.weight !== '' ? parseFloat(sd.weight) : null,
+                                        rir: sd.rir !== '' ? parseInt(sd.rir) : null,
+                                        duration: sd.duration !== '' ? parseInt(sd.duration) : null,
+                                    });
                                     pending = false;
                                     if (restSec) { $store.restTimer.start(restSec); }
-                                });
-                            }
-                        "
-                        :disabled="pending"
-                        style="width:100%;background:var(--ig-accent);border:none;border-radius:var(--ig-radius);
-                               min-height:56px;font-size:var(--ig-text-md);font-weight:700;color:#fff;
-                               cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:8px;"
-                        :style="pending ? 'opacity:.7;cursor:not-allowed' : ''">
-                    <span x-show="!pending">
+                                } else {
+                                    $wire.completeSet(setId).then(() => {
+                                        pending = false;
+                                        if (restSec) { $store.restTimer.start(restSec); }
+                                    });
+                                }
+                            "
+                            :disabled="pending"
+                            class="ws-action-done-btn"
+                            style="flex:1;">
+                        <span x-show="!pending">
+                            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"
+                                 style="display:inline;vertical-align:middle;margin-right:6px;" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Fatto
+                        </span>
+                        <span x-show="pending" x-cloak>
+                            <span class="ig-spinner"></span>
+                        </span>
+                    </button>
+                @else
+                    {{-- Re-edit set già completato: Salva / Annulla / Elimina --}}
+                    <button wire:click="completeSet({{ $selectedSet->id }})"
+                            class="ws-action-done-btn"
+                            style="flex:1;"
+                            aria-label="Salva modifiche set">
                         <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"
                              style="display:inline;vertical-align:middle;margin-right:6px;" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
                         </svg>
-                        Fatto
-                    </span>
-                    <span x-show="pending" x-cloak>
-                        <span class="ig-spinner"></span>
-                    </span>
+                        Salva
+                    </button>
+                @endif
+                <button wire:click="cancelSelection"
+                        class="ws-action-done-btn"
+                        style="flex:1;background:var(--ig-surface-raised);color:var(--ig-text-1);"
+                        aria-label="Annulla selezione">
+                    Annulla
+                </button>
+                <button wire:click="deleteSelectedSet"
+                        wire:confirm="Eliminare questo set?"
+                        class="ws-action-done-btn"
+                        style="flex:1;background:var(--ig-danger);color:#fff;"
+                        aria-label="Elimina set">
+                    Elimina
                 </button>
             </div>
 
         @endif
     </div>
 
-    {{-- Drawer dettaglio esercizio --}}
-    @if ($exerciseDetailId !== null && $this->exerciseDetail !== null)
-        @php $ex = $this->exerciseDetail; @endphp
-        <div style="position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.85);display:flex;align-items:flex-end;">
-            <div style="background:#1A1A1A;border-radius:16px 16px 0 0;width:100%;max-height:90vh;overflow-y:auto;
-                        padding:20px 20px calc(24px + env(safe-area-inset-bottom));"
-                 @click.stop>
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-                    <h3 style="margin:0;font-size:18px;font-weight:700;">{{ $ex->name_it }}</h3>
-                    <button wire:click="$set('exerciseDetailId', null)"
-                            style="background:none;border:none;color:#666;font-size:22px;cursor:pointer;line-height:1;min-width:var(--ig-touch-target);min-height:var(--ig-touch-target);display:flex;align-items:center;justify-content:center;"
-                            aria-label="Chiudi">&times;</button>
-                </div>
-
-                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;">
-                    @foreach ($ex->muscles->where('pivot.role', 'primary') as $m)
-                        <span style="background:#2A1A00;color:#FF6B00;font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;">
-                            {{ $m->name_it }}
-                        </span>
-                    @endforeach
-                    @foreach ($ex->muscles->where('pivot.role', 'secondary') as $m)
-                        <span style="background:#222;color:#666;font-size:10px;padding:3px 9px;border-radius:999px;">
-                            {{ $m->name_it }}
-                        </span>
-                    @endforeach
-                </div>
-
-                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
-                    @if ($ex->mechanic)
-                        <span style="font-size:11px;color:#888;background:#222;padding:3px 8px;border-radius:6px;">{{ $ex->mechanic }}</span>
-                    @endif
-                    @if ($ex->skill_level)
-                        <span style="font-size:11px;color:#888;background:#222;padding:3px 8px;border-radius:6px;">{{ $ex->skill_level }}</span>
-                    @endif
-                    @foreach ($ex->equipment as $eq)
-                        <span style="font-size:11px;color:#888;background:#222;padding:3px 8px;border-radius:6px;">{{ $eq->slug }}</span>
-                    @endforeach
-                </div>
-
-                @if ($ex->execution_description)
-                    <p style="font-size:13px;color:#ccc;line-height:1.6;margin:0;">{{ $ex->execution_description }}</p>
-                @endif
-            </div>
-        </div>
-    @endif
 
     {{-- Modale storico esercizio --}}
     @if ($exerciseHistoryId !== null)
@@ -589,73 +582,13 @@
         </div>
     @endif
 
-    {{-- Modale plate calculator --}}
-    @if ($plateModalSetId !== null)
-        <div style="position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.85);display:flex;align-items:flex-end;"
-             wire:click="closePlateModal">
-            <div style="background:#1A1A1A;border-radius:16px 16px 0 0;width:100%;max-height:90vh;overflow-y:auto;
-                        padding:20px 20px calc(24px + env(safe-area-inset-bottom));"
-                 @click.stop>
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-                    <h3 style="margin:0;font-size:16px;font-weight:700;">Calcola dischi</h3>
-                    <button wire:click="closePlateModal"
-                            style="background:none;border:none;color:#666;font-size:22px;cursor:pointer;line-height:1;min-width:var(--ig-touch-target);min-height:var(--ig-touch-target);display:flex;align-items:center;justify-content:center;"
-                            aria-label="Chiudi">&times;</button>
-                </div>
-
-                <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
-                    <label style="font-size:13px;color:#aaa;">Peso bilanciere (kg)</label>
-                    <input type="number" step="0.5" min="0" inputmode="decimal"
-                           wire:model.live="plateBarWeight"
-                           style="background:#2A2A2A;border:1px solid #3A3A3A;border-radius:8px;
-                                  color:#fff;padding:6px 10px;width:80px;font-size:16px;text-align:center;">
-                    <button wire:click="calculatePlates" class="btn-accent" style="padding:8px 16px;font-size:13px;">
-                        Calcola
-                    </button>
-                </div>
-
-                @if ($plateLoadout !== null)
-                    <div style="margin-bottom:12px;">
-                        <p style="font-size:12px;color:#666;margin-bottom:8px;">
-                            Obiettivo: <strong style="color:#fff;">{{ $plateLoadout['target_kg'] }} kg</strong>
-                            &bull;
-                            Caricato: <strong style="color:{{ $plateLoadout['delta_kg'] == 0 ? '#22c55e' : '#f59e0b' }};">
-                                {{ $plateLoadout['loaded_kg'] }} kg
-                            </strong>
-                            @if ($plateLoadout['delta_kg'] != 0)
-                                <span style="color:#f59e0b;">({{ $plateLoadout['delta_kg'] > 0 ? '+' : '' }}{{ $plateLoadout['delta_kg'] }} kg)</span>
-                            @endif
-                        </p>
-
-                        @if (count($plateLoadout['plates']) > 0)
-                            <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
-                                @foreach ($plateLoadout['plates'] as $plate)
-                                    @for ($pi = 0; $pi < $plate['count']; $pi++)
-                                        <div style="background:{{ $plate['color'] ?? '#555' }};width:40px;height:40px;
-                                                    border-radius:50%;display:flex;align-items:center;justify-content:center;
-                                                    font-size:10px;font-weight:700;color:#fff;border:2px solid rgba(255,255,255,.2);">
-                                            {{ $plate['weight_kg'] }}
-                                        </div>
-                                    @endfor
-                                @endforeach
-                            </div>
-                            <p style="font-size:11px;color:#666;">Per lato del bilanciere</p>
-                        @else
-                            <p style="color:#666;font-size:13px;">Solo bilanciere nudo ({{ $plateLoadout['bar_kg'] }} kg).</p>
-                        @endif
-                    </div>
-                @endif
-            </div>
-        </div>
-    @endif
-
     {{-- Modale sostituzione esercizio --}}
     @if ($substitutingSeId !== null)
-        <div x-data="{ open: true }" x-show="open"
-             style="position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.85);display:flex;align-items:flex-end;"
+        <div x-data="{ open: true }"
+             style="position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;"
              role="dialog" aria-modal="true" aria-labelledby="modal-sost-title">
-            <div style="background:#1A1A1A;border-radius:16px 16px 0 0;width:100%;max-height:90vh;overflow-y:auto;
-                        padding:20px 20px calc(24px + env(safe-area-inset-bottom));"
+            <div style="background:#1A1A1A;border-radius:16px;width:min(90%,480px);max-height:90vh;overflow-y:auto;
+                        padding:20px;"
                  @click.stop>
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
                     <h3 id="modal-sost-title" style="margin:0;font-size:16px;font-weight:700;">Sostituisci esercizio</h3>
@@ -702,6 +635,12 @@
                         Nessuna alternativa trovata con lo stesso pattern e tipo di misurazione.
                     </p>
                 @endif
+                <button wire:click="closeSubstitutionModal"
+                        style="width:100%;margin-top:12px;background:none;border:1px solid #333;border-radius:8px;
+                               padding:9px;font-size:13px;font-weight:600;color:#888;cursor:pointer;
+                               min-height:var(--ig-touch-target);">
+                    Annulla
+                </button>
             </div>
         </div>
     @endif
@@ -744,10 +683,10 @@
                 <div style="display:flex;gap:8px;">
                     @foreach ([0,1,2,3] as $v)
                     <button @click="{{ $field['key'] }} = {{ $v }}"
-                            x-bind:style="{{ $field['key'] }} === {{ $v }} ? 'background:' + colorFor({{ $v }}) + ';color:#000;border-color:transparent;' : ''"
+                            x-bind:style="{{ $field['key'] }} === {{ $v }} ? 'background:' + colorFor({{ $v }}) + ';color:#000;border-color:transparent;border-radius:999px;padding:10px 14px;flex:unset;' : ''"
                             style="flex:1;padding:10px 4px;border-radius:10px;border:1px solid #333;
-                                   background:#262626;color:#ccc;font-size:11px;font-weight:700;cursor:pointer;
-                                   transition:background .15s;min-height:48px;">
+                                   background:#262626;color:#ccc;font-size:13px;font-weight:700;cursor:pointer;
+                                   transition:background .15s,border-radius .15s,padding .15s;min-height:var(--ig-touch-target);">
                         <span x-text="labels.{{ $field['key'] }}[{{ $v }}]"></span>
                     </button>
                     @endforeach
@@ -766,12 +705,12 @@
                 <button @click="$wire.submitReadiness(sleep, stress, soreness, joint, note)"
                         wire:loading.attr="disabled"
                         class="btn-accent"
-                        style="flex:1;min-height:48px;">
+                        style="flex:1;">
                     Inizia allenamento
                 </button>
                 <button @click="$wire.skipReadiness()"
                         style="background:transparent;border:1px solid #333;color:#666;
-                               padding:12px 16px;border-radius:10px;font-size:13px;cursor:pointer;white-space:nowrap;min-height:48px;">
+                               padding:12px 16px;border-radius:10px;font-size:13px;cursor:pointer;white-space:nowrap;min-height:var(--ig-touch-target);">
                     Salta il check
                 </button>
             </div>
@@ -846,12 +785,12 @@
                 <button wire:click="acceptModulation"
                         wire:loading.attr="disabled"
                         class="btn-accent"
-                        style="flex:1;min-height:48px;">
+                        style="flex:1;">
                     Applica modifiche
                 </button>
                 <button wire:click="rejectModulation"
                         style="background:transparent;border:1px solid #333;color:#aaa;
-                               padding:12px 16px;border-radius:10px;font-size:13px;cursor:pointer;white-space:nowrap;min-height:48px;">
+                               padding:12px 16px;border-radius:10px;font-size:13px;cursor:pointer;white-space:nowrap;min-height:var(--ig-touch-target);">
                     Allena al piano
                 </button>
             </div>
@@ -860,13 +799,11 @@
     @endif
 
     {{-- Form feedback --}}
-    <div x-data="{ open: {{ $showFeedback ? 'true' : 'false' }} }"
-         @open-feedback.window="open = true">
-        <div x-show="open" x-transition style="position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.7);display:flex;align-items:flex-end;">
-            <div x-show="open" @click.outside="open = false"
-                 style="background:#1E1E1E;border-radius:16px 16px 0 0;padding:24px 20px;width:100%;max-height:90vh;overflow-y:auto;">
-                <livewire:athlete.session-feedback-form :session="$session" />
-            </div>
+    @if ($showFeedback)
+    <div style="position:fixed;inset:0;z-index:1050;background:rgba(0,0,0,.7);display:flex;align-items:flex-end;">
+        <div style="background:#1E1E1E;border-radius:16px 16px 0 0;padding:24px 20px 32px;width:100%;max-height:90vh;overflow-y:auto;box-sizing:border-box;">
+            <livewire:athlete.session-feedback-form :session="$session" />
         </div>
     </div>
+    @endif
 </div>

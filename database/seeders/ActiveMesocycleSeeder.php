@@ -6,6 +6,7 @@ use App\Models\Exercise;
 use App\Models\ExerciseSet;
 use App\Models\Mesocycle;
 use App\Models\MicrocycleWeek;
+use App\Models\Muscle;
 use App\Models\SessionExercise;
 use App\Models\TrainingSession;
 use App\Models\User;
@@ -55,6 +56,8 @@ class ActiveMesocycleSeeder extends Seeder
                 ->get()
                 ->each(fn ($m) => $m->delete());
 
+            DB::table('athlete_volume_landmarks')->where('athlete_id', $athlete->id)->delete();
+
             $trainer = $trainers[$i % $trainers->count()];
             $mult = self::WEIGHT_MULTIPLIERS[$i % count(self::WEIGHT_MULTIPLIERS)];
 
@@ -92,6 +95,8 @@ class ActiveMesocycleSeeder extends Seeder
                     $this->seedLegsSession($week, $weekNum, $weekStart->copy()->addDays(4), $isPastWeek, $exercises, $mult);
                 }
             });
+
+            $this->seedVolumeLandmarks($athlete->id);
 
             $this->command->info("ActiveMesocycleSeeder: mesociclo PPL attivo creato per {$athlete->email} (trainer: {$trainer->name})");
         }
@@ -318,5 +323,58 @@ class ActiveMesocycleSeeder extends Seeder
             ['warmup' => false, 'reps' => $reps,     'weight' => null, 'rir' => 2],
             ['warmup' => false, 'reps' => $reps - 1, 'weight' => null, 'rir' => 1],
         ];
+    }
+
+    /**
+     * Semina landmark personalizzati calibrati sui volumi reali del PPL demo (settimana 1, 3 working set).
+     * Produce tutti e 5 gli stati visibili nella pagina dettaglio mesociclo:
+     *   over_mrv       → latissimus_dorsi    (~3.45 set reali, MRV=3)
+     *   approaching_mrv → hamstrings         (~4.8 set reali, MAV_MAX=5, MRV=7)
+     *   in_mav         → deltoid_lateral     (~3.3 set reali, MAV_MIN=3, MAV_MAX=5)
+     *   in_mav         → biceps_brachii      (~3.3 set reali, MAV_MIN=3, MAV_MAX=5)
+     *   below_mev      → triceps_brachii     (~1.65 set reali, MEV=3)
+     *   no_landmark    → brachioradialis     (~0.15 set reali, assente da config e da questa tabella)
+     */
+    private function seedVolumeLandmarks(int $athleteId): void
+    {
+        // [slug => [mev, mav_min, mav_max, mrv]]
+        $landmarks = [
+            'latissimus_dorsi' => [2, 2, 3, 3],  // over_mrv: volume reale ~3.45 > MRV=3
+            'hamstrings' => [3, 4, 5, 7],   // approaching_mrv: ~4.8 >= 5*0.85=4.25
+            'deltoid_lateral' => [2, 3, 5, 7],   // in_mav: ~3.3 >= MAV_MIN=3
+            'biceps_brachii' => [2, 3, 5, 7],   // in_mav: ~3.3 >= MAV_MIN=3
+            'triceps_brachii' => [3, 4, 6, 8],   // below_mev: ~1.65 < MAV_MIN=4
+            'deltoid_anterior' => [3, 4, 7, 9],   // below_mev: ~3.15 < MAV_MIN=4
+            'quadriceps' => [4, 5, 8, 10],  // below_mev: ~3.15 < MAV_MIN=5
+            'gluteus_maximus' => [2, 3, 5, 7],   // below_mev: ~2.25 < MAV_MIN=3
+            'pectoralis_major_sternal' => [3, 4, 6, 8],  // below_mev: ~2.4
+            'pectoralis_major_clavicular' => [3, 4, 6, 8], // below_mev: ~2.25
+        ];
+
+        $muscleIds = Muscle::whereIn('slug', array_keys($landmarks))
+            ->pluck('id', 'slug');
+
+        $now = now();
+        $rows = [];
+        foreach ($landmarks as $slug => [$mev, $mavMin, $mavMax, $mrv]) {
+            $muscleId = $muscleIds[$slug] ?? null;
+            if ($muscleId === null) {
+                continue;
+            }
+            $rows[] = [
+                'athlete_id' => $athleteId,
+                'muscle_id' => $muscleId,
+                'mev' => $mev,
+                'mav_min' => $mavMin,
+                'mav_max' => $mavMax,
+                'mrv' => $mrv,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }
+
+        if (! empty($rows)) {
+            DB::table('athlete_volume_landmarks')->insert($rows);
+        }
     }
 }

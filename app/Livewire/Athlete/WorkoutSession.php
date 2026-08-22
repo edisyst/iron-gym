@@ -9,7 +9,6 @@ use App\Models\SessionReadinessCheck;
 use App\Models\TrainingSession;
 use App\Services\ExerciseSubstitutionFinder;
 use App\Services\PersonalRecordDetector;
-use App\Services\PlateLoadoutCalculator;
 use App\Services\ReadinessEvaluator;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
@@ -47,8 +46,6 @@ class WorkoutSession extends Component
 
     public string $exerciseHistoryName = '';
 
-    public ?int $exerciseDetailId = null;
-
     public bool $showReadinessModal = false;
 
     public bool $showModulationProposal = false;
@@ -63,31 +60,21 @@ class WorkoutSession extends Component
      */
     public array $modulationProposal = [];
 
-    public ?int $plateModalSetId = null;
-
-    public float $plateBarWeight = 20.0;
-
-    /**
-     * Risultato del calcolo dischi per lato
-     *
-     * @var array{plates: array<array{weight_kg: float, count: int, color: string|null}>, loaded_kg: float, delta_kg: float, bar_kg: float, target_kg: float}|null
-     */
-    public ?array $plateLoadout = null;
-
     public int $currentGroupIndex = 0;
+
+    public ?int $selectedSetId = null;
 
     public function mount(TrainingSession $session): void
     {
         $session->load([
             'sessionExercises' => fn ($q) => $q->orderBy('order_in_session'),
             'sessionExercises.exercise',
+            'sessionExercises.exercise.muscles',
             'sessionExercises.exercise.equipment',
             'sessionExercises.sets' => fn ($q) => $q->orderBy('set_index'),
             'sessionExercises.group',
             'week.mesocycle',
         ]);
-
-        $this->plateBarWeight = (float) config('barbell.default_weight_kg', 20);
 
         if ($session->week->mesocycle->athlete_id !== auth()->id()) {
             abort(403, 'Non autorizzato.');
@@ -124,6 +111,8 @@ class WorkoutSession extends Component
         }
 
         $this->loadPreviousPerformance();
+
+        $this->selectedSetId = $this->findFirstIncompleteSetId();
 
         if (request()->query('feedback') == '1') {
             $this->showFeedback = true;
@@ -168,21 +157,6 @@ class WorkoutSession extends Component
         }
 
         $this->previousPerformance = $result;
-    }
-
-    public function showExerciseDetail(int $exerciseId): void
-    {
-        $this->exerciseDetailId = ($this->exerciseDetailId === $exerciseId) ? null : $exerciseId;
-    }
-
-    public function getExerciseDetailProperty(): ?Exercise
-    {
-        if ($this->exerciseDetailId === null) {
-            return null;
-        }
-
-        return Exercise::with(['muscles', 'equipment', 'compoundPattern', 'jointAction'])
-            ->find($this->exerciseDetailId);
     }
 
     public function showExerciseHistory(int $exerciseId, string $name): void
@@ -308,7 +282,100 @@ class WorkoutSession extends Component
         }
 
         $this->reloadSets();
-        $this->dispatch('set-completed', setId: $setId);
+
+        if ($this->selectedSetId === $setId) {
+            $this->selectedSetId = $this->findFirstIncompleteSetIdInCurrentGroup();
+            $this->reloadSetDataForSelected();
+        } else {
+            $this->dispatch('set-completed', setId: $setId);
+        }
+    }
+
+    public function selectSet(int $setId): void
+    {
+        ExerciseSet::whereHas('sessionExercise', fn ($q) => $q->where('session_id', $this->session->id))
+            ->findOrFail($setId);
+
+        $this->selectedSetId = $setId;
+        $this->reloadSetDataForSelected();
+    }
+
+    public function cancelSelection(): void
+    {
+        $this->selectedSetId = null;
+        $this->reloadSetDataForSelected();
+    }
+
+    public function deleteSelectedSet(): void
+    {
+        if ($this->selectedSetId === null) {
+            return;
+        }
+
+        ExerciseSet::whereHas('sessionExercise', fn ($q) => $q->where('session_id', $this->session->id))
+            ->findOrFail($this->selectedSetId)
+            ->delete();
+
+        unset($this->setData[$this->selectedSetId]);
+        $this->reloadSets();
+        $this->selectedSetId = $this->findFirstIncompleteSetId();
+        $this->reloadSetDataForSelected();
+    }
+
+    private function findFirstIncompleteSetId(): ?int
+    {
+        foreach ($this->session->sessionExercises as $se) {
+            $first = $se->sets->where('is_warmup', false)->whereNull('completed_at')->sortBy('set_index')->first();
+            if ($first) {
+                return $first->id;
+            }
+        }
+
+        return null;
+    }
+
+    private function findFirstIncompleteSetIdInCurrentGroup(): ?int
+    {
+        $grouped = $this->buildGroupedExercises();
+        $group = collect($grouped[$this->currentGroupIndex] ?? []);
+        foreach ($group as $se) {
+            $first = $se->sets->where('is_warmup', false)->whereNull('completed_at')->sortBy('set_index')->first();
+            if ($first) {
+                return $first->id;
+            }
+        }
+
+        return null;
+    }
+
+    private function reloadSetDataForSelected(): void
+    {
+        if ($this->selectedSetId === null) {
+            return;
+        }
+
+        foreach ($this->session->sessionExercises as $se) {
+            $set = $se->sets->firstWhere('id', $this->selectedSetId);
+            if (! $set) {
+                continue;
+            }
+
+            $this->setData[$this->selectedSetId] = [
+                'reps' => $set->actual_reps !== null
+                    ? (string) $set->actual_reps
+                    : ($set->planned_reps !== null ? (string) $set->planned_reps : ''),
+                'weight' => $set->actual_weight_kg !== null
+                    ? (string) $set->actual_weight_kg
+                    : ($set->planned_weight_kg !== null ? (string) $set->planned_weight_kg : ''),
+                'rir' => $set->actual_rir !== null
+                    ? (string) $set->actual_rir
+                    : ($set->planned_rir !== null ? (string) $set->planned_rir : ''),
+                'duration' => $set->actual_duration_sec !== null
+                    ? (string) $set->actual_duration_sec
+                    : ($set->planned_duration_sec !== null ? (string) $set->planned_duration_sec : ''),
+            ];
+            break;
+        }
     }
 
     /**
@@ -386,17 +453,39 @@ class WorkoutSession extends Component
     /**
      * Salta (elimina) un working set non ancora completato.
      */
-    public function skipSet(int $setId): void
+    /**
+     * Aggiunge un set working extra clonando l'ultimo set pianificato dell'esercizio.
+     */
+    public function addExtraSet(int $sessionExerciseId): void
     {
-        $set = ExerciseSet::whereHas('sessionExercise', fn ($q) => $q->where('session_id', $this->session->id))
-            ->where('is_warmup', false)
-            ->whereNull('completed_at')
-            ->findOrFail($setId);
+        $se = SessionExercise::where('session_id', $this->session->id)
+            ->findOrFail($sessionExerciseId);
 
-        $set->delete();
-        unset($this->setData[$setId]);
+        $lastSet = ExerciseSet::where('session_exercise_id', $se->id)
+            ->where('is_warmup', false)
+            ->orderByDesc('set_index')
+            ->first();
+
+        $new = ExerciseSet::create([
+            'session_exercise_id' => $se->id,
+            'set_index' => $lastSet ? $lastSet->set_index + 1 : 1,
+            'is_warmup' => false,
+            'planned_reps' => $lastSet?->planned_reps,
+            'planned_weight_kg' => $lastSet?->planned_weight_kg,
+            'planned_rir' => $lastSet?->planned_rir,
+            'planned_duration_sec' => $lastSet?->planned_duration_sec,
+            'set_subtype' => $lastSet?->set_subtype,
+        ]);
+
+        $this->setData[$new->id] = [
+            'weight' => $new->planned_weight_kg !== null ? (string) $new->planned_weight_kg : '',
+            'reps' => $new->planned_reps !== null ? (string) $new->planned_reps : '',
+            'rir' => $new->planned_rir !== null ? (string) $new->planned_rir : '',
+            'duration' => $new->planned_duration_sec !== null ? (string) $new->planned_duration_sec : '',
+        ];
 
         $this->reloadSets();
+        $this->selectedSetId = $new->id;
     }
 
     public function canCompleteSession(): bool
@@ -607,47 +696,6 @@ class WorkoutSession extends Component
     }
 
     /**
-     * Apre la modale plate calculator per il set specificato.
-     * Verifica ownership tramite session_id prima di procedere.
-     */
-    public function openPlateModal(int $setId): void
-    {
-        $set = ExerciseSet::whereHas('sessionExercise', fn ($q) => $q->where('session_id', $this->session->id))
-            ->findOrFail($setId);
-
-        $this->plateModalSetId = $setId;
-        $this->recalculatePlates((float) $set->planned_weight_kg);
-        $this->dispatch('open-plate-modal');
-    }
-
-    /**
-     * Aggiorna il peso barra selezionato e ricalcola i dischi.
-     */
-    public function updatePlateBar(float $barWeight): void
-    {
-        $this->plateBarWeight = $barWeight;
-
-        if ($this->plateModalSetId === null) {
-            return;
-        }
-
-        $set = ExerciseSet::find($this->plateModalSetId);
-
-        if ($set) {
-            $this->recalculatePlates((float) $set->planned_weight_kg);
-        }
-    }
-
-    /**
-     * Calcola i dischi per lato e salva il risultato in $plateLoadout.
-     */
-    protected function recalculatePlates(float $targetKg): void
-    {
-        $calculator = app(PlateLoadoutCalculator::class);
-        $this->plateLoadout = $calculator->calculate($targetKg, $this->plateBarWeight);
-    }
-
-    /**
      * Apre la modale di sostituzione per un session_exercise.
      * Bloccato se almeno un set working è già completato.
      */
@@ -731,32 +779,6 @@ class WorkoutSession extends Component
             'sessionExercises.sets' => fn ($q) => $q->orderBy('set_index'),
             'sessionExercises.group',
         ]);
-    }
-
-    /**
-     * Chiude la modale e azzera lo stato del plate calculator.
-     */
-    public function closePlateModal(): void
-    {
-        $this->plateModalSetId = null;
-        $this->plateLoadout = null;
-    }
-
-    /**
-     * Restituisce true se l'esercizio del SessionExercise dato usa bilanciere o smith machine.
-     * Utilizza la collection gia' caricata in eager loading — nessuna query aggiuntiva.
-     */
-    public function exerciseUsesBarbell(int $sessionExerciseId): bool
-    {
-        $se = $this->session->sessionExercises->firstWhere('id', $sessionExerciseId);
-
-        if (! $se) {
-            return false;
-        }
-
-        return $se->exercise->equipment->contains(
-            fn ($eq) => in_array($eq->slug, ['barbell', 'smith_machine'])
-        );
     }
 
     /** @return list<Collection<int, SessionExercise>> */

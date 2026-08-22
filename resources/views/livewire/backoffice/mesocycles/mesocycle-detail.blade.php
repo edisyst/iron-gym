@@ -1,4 +1,4 @@
-﻿<div>
+<div>
     @if (session('success'))
         <div class="alert alert-success alert-dismissible">
             <button type="button" class="close" data-dismiss="alert">&times;</button>
@@ -25,8 +25,7 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div>
-                <h3 class="card-title mb-0">{{ $mesocycle->name }}</h3>
-                <small class="text-muted">{{ $mesocycle->athlete->name }} — Trainer: {{ $mesocycle->trainer->name }}</small>
+                <h5 class="mb-0 font-weight-bold">Atleta: {{ $mesocycle->athlete->name }} — Trainer: {{ $mesocycle->trainer->name }}</h5>
                 <div class="mt-1">
                     <a href="{{ route('backoffice.athletes.profile', ['athleteId' => $mesocycle->athlete_id]) }}"
                        class="btn btn-sm btn-outline-secondary">
@@ -34,7 +33,7 @@
                     </a>
                 </div>
             </div>
-            <div class="d-flex align-items-center gap-2">
+            <div class="d-flex align-items-center flex-wrap" style="gap:0.75rem">
                 <select wire:model.live="selectedWeekNumber" wire:change="loadVolume" class="form-control form-control-sm" style="width:auto">
                     @foreach ($mesocycle->weeks->sortBy('week_number') as $week)
                         <option value="{{ $week->week_number }}">
@@ -56,6 +55,22 @@
                     <i class="fas fa-bed mr-1"></i> Forza deload
                 </button>
             </div>
+            <a href="{{ route('backoffice.mesocycles.index') }}" class="btn btn-sm btn-outline-secondary ml-auto" aria-label="Torna all'elenco mesocicli">
+                <i class="fas fa-arrow-left mr-1"></i> Elenco mesocicli
+            </a>
+        </div>
+
+        {{-- Legenda lettura sezione volume --}}
+        <div class="card-body border-bottom py-2 bg-light">
+            <small class="text-muted">
+                <strong>Come leggere:</strong>
+                La tabella mostra i hard set settimanali per muscolo rispetto ai tuoi landmark di volume personalizzati.
+                <span class="text-secondary font-weight-bold">Sotto MEV</span> = volume insufficiente per stimolo;
+                <span class="text-success font-weight-bold">In MAV</span> = zona ottimale;
+                <span class="text-warning font-weight-bold">Vicino MRV</span> = prossimo al massimo recuperabile;
+                <span class="text-danger font-weight-bold">Over MRV</span> = volume eccessivo.
+                <em>Nessun landmark</em> = landmark non ancora configurati per quel muscolo.
+            </small>
         </div>
 
         {{-- Risultato ultima progressione --}}
@@ -97,11 +112,11 @@
                         @foreach ($volumeData as $slug => $data)
                             @php
                                 $barClass = match($data['status']) {
-                                    'in_mav'         => 'bg-success',
+                                    'in_mav'          => 'bg-success',
                                     'approaching_mrv' => 'bg-warning',
-                                    'over_mrv'       => 'bg-danger',
-                                    'below_mev'      => 'bg-secondary',
-                                    default          => 'bg-light',
+                                    'over_mrv'        => 'bg-danger',
+                                    'below_mev'       => 'bg-secondary',
+                                    default           => 'bg-light border',
                                 };
                                 $pct = $data['mrv'] ? min(100, round(($data['hard_sets'] / $data['mrv']) * 100)) : 0;
                                 $muscleName = \App\Models\Muscle::where('slug', $slug)->value('name_it') ?? $slug;
@@ -119,16 +134,21 @@
                                 </td>
                                 <td class="text-center align-middle text-muted">{{ $data['mrv'] ?? '—' }}</td>
                                 <td class="align-middle">
-                                    <div class="progress" style="height:16px">
-                                        <div class="progress-bar {{ $barClass }}" style="width:{{ $pct }}%">
-                                            <small>{{ match($data['status']) {
-                                                'in_mav'         => 'In MAV',
-                                                'approaching_mrv' => 'Vicino MRV',
-                                                'over_mrv'       => 'Over MRV',
-                                                'below_mev'      => 'Sotto MEV',
-                                                default          => $data['status'],
-                                            } }}</small>
+                                    @php
+                                        $statusLabel = match($data['status']) {
+                                            'in_mav'          => 'In MAV',
+                                            'approaching_mrv' => 'Vicino MRV',
+                                            'over_mrv'        => 'Over MRV',
+                                            'below_mev'       => 'Sotto MEV',
+                                            'no_landmark'     => 'Nessun landmark',
+                                            default           => $data['status'],
+                                        };
+                                    @endphp
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div class="progress flex-grow-1" style="height:16px">
+                                            <div class="progress-bar {{ $barClass }}" style="width:{{ $pct }}%"></div>
                                         </div>
+                                        <small class="text-dark text-nowrap" style="min-width:70px;text-align:right">{{ $statusLabel }}</small>
                                     </div>
                                 </td>
                             </tr>

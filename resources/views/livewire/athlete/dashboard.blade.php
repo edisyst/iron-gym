@@ -1,4 +1,49 @@
 <div>
+    @if ($certWarningLevel !== '')
+        @php
+            $certIsDanger  = $certWarningLevel === 'danger';
+            $certBgVar     = $certIsDanger ? 'var(--ig-danger-subtle)' : 'var(--ig-warning-subtle)';
+            $certBorderVar = $certIsDanger ? 'var(--ig-danger)' : 'var(--ig-warning)';
+            $certIconPath  = $certIsDanger
+                ? 'M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z'
+                : 'M12 9v3.75m9.303 3.376c.866 1.5-.217 3.374-1.948 3.374H2.645c-1.73 0-2.813-1.874-1.948-3.374L10.051 3.378c.866-1.5 3.032-1.5 3.898 0L21.303 16.126ZM12 15.75h.007v.008H12v-.008Z';
+        @endphp
+        <div
+            role="alert"
+            style="
+                background: {{ $certBgVar }};
+                border-left: 4px solid {{ $certBorderVar }};
+                border-radius: var(--ig-radius-sm);
+                padding: var(--ig-sp-3) var(--ig-sp-4);
+                margin-bottom: var(--ig-sp-4);
+                display: flex;
+                align-items: flex-start;
+                gap: var(--ig-sp-3);
+            "
+        >
+            <svg style="width:24px;height:24px;flex-shrink:0;color:{{ $certBorderVar }};margin-top:2px;"
+                 fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="{{ $certIconPath }}"/>
+            </svg>
+            <div>
+                <p style="font-size:var(--ig-text-base);font-weight:600;color:var(--ig-text-1);margin:0 0 2px;">
+                    @if ($certIsDanger)
+                        Certificato medico scaduto o mancante
+                    @else
+                        Certificato medico in scadenza
+                    @endif
+                </p>
+                <p style="font-size:var(--ig-text-sm);color:var(--ig-text-2);margin:0;">
+                    @if ($certIsDanger)
+                        L'accesso alla struttura potrebbe essere bloccato. Rivolgiti alla reception per rinnovarlo.
+                    @else
+                        Scade entro 30 giorni. Portalo in reception prima che scada per non interrompere l'accesso.
+                    @endif
+                </p>
+            </div>
+        </div>
+    @endif
+
     @if ($activeMesocycle === null)
         {{-- Nessun mesociclo attivo --}}
         <div class="home-empty">

@@ -238,7 +238,17 @@ Audit ergonomia UX05-B completato (2026-07-06): fix safe-area topbar (padding sh
 
 UX06 Toggle tema e viewport completata (2026-07-17): aria-pressed + label testuale sul toggle tema esistente; toggle viewport (solo local) via meta[name=viewport] riscritta da script inline head + sezione devtools in /athlete/profile + badge fisso "Vista desktop". 5 test ThemeToggleTest verdi. Suite: 189/195 (6 skip pre-esistenti invariati), PHPStan 0 errori, Pint conforme.
 
+UX07 Scala UI maggiorata completata (2026-07-18): touch-target 48→56px, touch-target-xl 64px (nuovo, CTA sessione + step height), text-xl 28→34px, text-lg 22→26px, text-md 18→22px, text-display 42→48px. Token ig-touch-target-sm/xl/ig-bottom-nav-h/ig-nav-icon introdotti. Tokenizzati tutti i valori hardcoded principali: ig-btn--sm, ig-num-input__step font-size, metric-options label, ig-form-input padding, ig-tab padding, bottom-nav min-height, svg nav icon, ws-muscle-chip/ws-meta-chip, body-map-label, ws-warmup-badge, ws-icon-btn padding. Bottone FATTO: rimossa inline style, nuova classe ws-action-done-btn (64px). Step buttons action zone: min-width 44px, min-height 64px (non bloccano layout orizzontale su SE). Override min-height:48px rimossi da modali readiness e modulazione. Suite: 189/195 (6 skip invariati), PHPStan 0 errori, Pint conforme.
+
+Audit funzionale PWA atleta completato (2026-08-18): 11 finding identificati, 8 chiusi nel branch feature/audit-funzionale-atleta-2026-08-18. Fix principali: storico include sessioni `skipped`; null-guard member in cancel booking; tab Corsi gated su feature flag; set time-based visibili nel dettaglio; N+1 eliminato in WeeklyVolume mount; push subscribe idempotente con getSubscription(); translate-y-full in safelist Tailwind; componente History orfano rimosso. Suite: 189/195 (6 skip pre-esistenti invariati), PHPStan 0 errori, Pint OK. Report: docs/reviews/ui-atleta-funzionale-2026-08-18.md.
+
+Audit receptionist completato (2026-08-19): 17 finding (P0-P3), 11 fix applicati in 6 commit, E2E suite 24 test. Fix principali: 2 P0 autorizzazione (CommunicationCampaign e AvailabilityManager tolte dal perimetro receptionist), 3 P1 auth (abort_unless in BookingList/GroupClassManager/TrainerCalendar), blocco check-in su certificato medico scaduto, banner avviso cert. nella home atleta, correzioni UX (link nascosti per receptionist, badge stato abbonamento in italiano, wire:loading modale check-in), indice composito last_name/first_name su members. Decisione dominio: GroupClassManager.removeParticipant() intenzionalmente accessibile al receptionist (operazione front-desk). Fix contestuali: HasFactory su Subscription, PtBooking, ClassBooking; PtBookingFactory end_time valorizzato. Finding aperti in backlog: ricerca per nome in SubscriptionList (P2), colonna cert. in AccessLogList (P3), SubscriptionForm typeahead (P3), Form Request refactor (P3). Suite: 24/24 ReceptionistCheckinTest, PHPStan 0, Pint OK. Report: docs/review/audit-receptionist-2026-08-19.md.
+
+Restrizione sezioni TRAINING e ADMIN per receptionist completata (2026-08-19): abort_unless (gestore|trainer) aggiunto in mount() di ExerciseList/Form/Detail, TemplateList/Form/Builder, MesocycleList, MesocycleAssign; abort_unless (gestore) in PlateInventoryManager. Gate access-training-section e access-admin-section definiti in AppServiceProvider. Header TRAINING, Esercizi, Schede template, Mesocicli e header ADMIN, Inventario Dischi gated nella sidebar adminlte.php con can. 7 nuovi test. Suite: 32/32 ReceptionistCheckinTest, PHPStan 0, Pint OK.
+
 Prossima attività: raccogliere feedback dai primi atleti pilota dopo prima sessione.
+
+HK01 Housekeeping completato (2026-08-22): audit codice morto, view/componenti orfani, dipendenze Composer, documentazione. Rimossi: `sessionStatusClass/Label` in Dashboard, componente `Athlete\Progress` + view orfane, stub `dashboard.blade.php`, `config/barbell.php`. Dipendenze: `ext-gd`/`ext-mbstring` aggiunti a require, `laravel/tinker` spostato in require-dev, `TelescopeServiceProvider` protetto con `class_exists` guard. Docs corretti: tabella `training_sessions` (era `sessions` in 2 doc), attribuzione e1RM a `E1rmCalculator` (non `WeeklyVolumeCalculator`), URL session history. Suite: 220/226 (6 skip pre-esistenti invariati), PHPStan 0 errori, Pint conforme. Report: docs/audit/hk01-report.md.
 
 ## Setup pilota — dati e procedure
 
@@ -318,8 +328,11 @@ Struttura: design tokens → base → navigazione → componenti legacy → comp
 
 **Design tokens:** CSS custom properties su `:root` (dark default) e `[data-theme="light"]`.
 Token principali: `--ig-bg`, `--ig-surface`, `--ig-surface-raised`, `--ig-border`, `--ig-text-1/2/3`,
-`--ig-accent`, `--ig-success/warning/danger` + varianti `-subtle`, `--ig-touch-target` (48px),
-`--ig-font-sans`, `--ig-text-xs/sm/base/md/lg/xl/display`, `--ig-sp-1..10`, `--ig-radius-sm/lg/full`.
+`--ig-accent`, `--ig-success/warning/danger` + varianti `-subtle`,
+`--ig-touch-target` (56px), `--ig-touch-target-sm` (40px), `--ig-touch-target-xl` (64px — CTA sessione),
+`--ig-bottom-nav-h` (72px), `--ig-nav-icon` (26px),
+`--ig-font-sans`, `--ig-text-xs` (11px) `/sm` (13px) `/base` (16px) `/md` (22px) `/lg` (26px) `/xl` (34px) `/display` (48px),
+`--ig-sp-1..10`, `--ig-radius-sm/lg/full`.
 
 **Componenti Blade (namespace `x-athlete.*`):**
 Path: `resources/views/components/athlete/`
@@ -371,6 +384,7 @@ Layer CSS isolato e disattivabile sopra AdminLTE 3.x — nessun fork del tema.
 - Non introdurre multi-tenancy.
 - Non aggiungere colonne o tabelle senza discuterne prima.
 - Non usare emoji nel codice o nei commenti.
+- Non creare model Eloquent chiamati `Workout` o `WorkoutExercise`. `app/Livewire/Athlete/WorkoutSession.php` è un componente Livewire per il logging live della sessione, non un Model Eloquent: il nome simile non viola questo divieto.
 
 ## Comandi utili
 

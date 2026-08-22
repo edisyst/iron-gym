@@ -34,7 +34,6 @@
                               && $warmupSets->isEmpty();
         $hasCompletedSets   = $workingSets->whereNotNull('completed_at')->isNotEmpty();
         $canSubstitute      = ! $hasCompletedSets;
-        $usesBell           = $this->exerciseUsesBarbell($exercise->id);
         $firstIncompleteId  = $workingSets->whereNull('completed_at')->first()?->id;
         $restSec            = $exercise->technique_type === 'cluster'
                               ? ($exercise->intra_cluster_rest_sec ?? $exercise->planned_rest_sec)
@@ -76,15 +75,7 @@
                 {{ $exercise->exercise->name_it }}
             </button>
             <div class="ws-exercise-btns">
-                <button wire:click="showExerciseDetail({{ $exercise->exercise_id }})"
-                        class="ws-icon-btn" aria-label="Dettagli {{ $exercise->exercise->name_it }}">
-                    <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                        <circle cx="12" cy="12" r="10"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 16v-4M12 8h.01"/>
-                    </svg>
-                    Info
-                </button>
-                @if ($canSubstitute)
+@if ($canSubstitute)
                     <button wire:click="openSubstitutionModal({{ $exercise->id }})"
                             class="ws-icon-btn" aria-label="Sostituisci {{ $exercise->exercise->name_it }}">
                         <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -96,7 +87,7 @@
             </div>
         </div>
 
-        {{-- Immagine esercizio --}}
+        {{-- Immagine esercizio con toggle --}}
         @php
             $exSlug = $exercise->exercise->slug;
             $imgFile = public_path('images/exercises/' . $exSlug . '.png');
@@ -104,23 +95,69 @@
                 ? asset('images/exercises/' . $exSlug . '.png')
                 : asset('images/exercises/no-image.svg');
         @endphp
-        <div class="ws-exercise-img-wrap">
-            <img src="{{ $imgSrc }}"
-                 alt="{{ $exercise->exercise->name_it }}"
-                 class="ws-exercise-img">
+        <div x-data="{ imgVisible: true }">
+            <button type="button"
+                    @click="imgVisible = !imgVisible"
+                    class="ws-img-toggle-btn"
+                    :aria-pressed="imgVisible.toString()">
+                <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <template x-if="imgVisible">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-5 0-9-4-9-7s4-7 9-7a10.05 10.05 0 011.875.175M15 12a3 3 0 11-6 0 3 3 0 016 0zm6.364-3.364l-1.414-1.414M3 3l18 18"/>
+                    </template>
+                    <template x-if="!imgVisible">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </template>
+                </svg>
+                <span x-text="imgVisible ? 'Nascondi foto' : 'Mostra foto'" style="font-size:var(--ig-text-xs);"></span>
+            </button>
+            <div x-show="imgVisible" x-cloak class="ws-exercise-img-wrap">
+                <img src="{{ $imgSrc }}"
+                     alt="{{ $exercise->exercise->name_it }}"
+                     class="ws-exercise-img">
+            </div>
         </div>
 
-        {{-- Esecuzione (collassabile) --}}
-        @if ($exercise->exercise->execution_description)
+        {{-- Esecuzione collassabile (include muscoli, attrezzatura e descrizione) --}}
+        @if ($exercise->exercise->execution_description || $exercise->exercise->muscles->isNotEmpty() || $exercise->exercise->equipment->isNotEmpty())
             <div x-data="{ open: false }" class="ws-exec-toggle">
                 <button type="button" @click="open = !open" class="ws-exec-btn">
                     <svg :style="open ? 'transform:rotate(90deg)' : ''"
                          style="width:10px;height:10px;transition:transform .2s;fill:currentColor;" viewBox="0 0 20 20" aria-hidden="true">
                         <path d="M7 5l6 5-6 5V5z"/>
                     </svg>
-                    <span x-text="open ? 'Nascondi esecuzione' : 'Come eseguire'"></span>
+                    <span x-text="open ? 'Nascondi' : 'Come eseguire'"></span>
                 </button>
-                <p x-show="open" x-cloak class="ws-exec-text">{{ $exercise->exercise->execution_description }}</p>
+                <div x-show="open" x-cloak>
+                    {{-- Muscoli primari --}}
+                    @if ($exercise->exercise->muscles->where('pivot.role', 'primary')->isNotEmpty())
+                        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:var(--ig-sp-2);">
+                            @foreach ($exercise->exercise->muscles->where('pivot.role', 'primary') as $m)
+                                <span class="ws-muscle-chip ws-muscle-chip--primary">{{ $m->name_it }}</span>
+                            @endforeach
+                            @foreach ($exercise->exercise->muscles->where('pivot.role', 'secondary') as $m)
+                                <span class="ws-muscle-chip ws-muscle-chip--secondary">{{ $m->name_it }}</span>
+                            @endforeach
+                        </div>
+                    @endif
+                    {{-- Meccanica, livello, attrezzatura --}}
+                    @if ($exercise->exercise->mechanic || $exercise->exercise->skill_level || $exercise->exercise->equipment->isNotEmpty())
+                        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:var(--ig-sp-2);">
+                            @if ($exercise->exercise->mechanic)
+                                <span class="ws-meta-chip">{{ $exercise->exercise->mechanic }}</span>
+                            @endif
+                            @if ($exercise->exercise->skill_level)
+                                <span class="ws-meta-chip">{{ $exercise->exercise->skill_level }}</span>
+                            @endif
+                            @foreach ($exercise->exercise->equipment as $eq)
+                                <span class="ws-meta-chip">{{ $eq->slug }}</span>
+                            @endforeach
+                        </div>
+                    @endif
+                    {{-- Descrizione esecuzione --}}
+                    @if ($exercise->exercise->execution_description)
+                        <p class="ws-exec-text" style="margin-top:0;">{{ $exercise->exercise->execution_description }}</p>
+                    @endif
+                </div>
             </div>
         @endif
 
@@ -164,8 +201,8 @@
                         <div class="ws-warmup-info">
                             <span class="ws-warmup-badge">W</span>
                             <span class="ws-warmup-plan">
-                                @if ($wset->planned_reps) {{ $wset->planned_reps }}r @endif
-                                @if ($wset->planned_weight_kg) {{ $wset->planned_weight_kg }}kg @endif
+                                @if ($wset->planned_reps) {{ $wset->planned_reps }} reps @endif
+                                @if ($wset->planned_weight_kg) &times; {{ $wset->planned_weight_kg }} kg @endif
                             </span>
                             <template x-if="pending">
                                 <span style="font-size:10px;color:var(--ig-warning);" title="In attesa di sync">⏳</span>
@@ -231,7 +268,9 @@
                     $prevPerf  = $previousPerformance[$exercise->exercise_id][$set->set_index] ?? null;
                 @endphp
 
-                <div class="ws-set-row {{ $isDone ? 'ws-set-row--done' : ($isActive ? 'ws-set-row--active' : '') }}">
+                <div wire:click="selectSet({{ $set->id }})"
+                     class="ws-set-row {{ $isDone ? 'ws-set-row--done' : ($isActive ? 'ws-set-row--active' : '') }} {{ $selectedSetId === $set->id ? 'ws-set-row--selected' : '' }}"
+                     style="cursor:pointer;{{ $isDone ? 'flex-wrap:wrap;' : '' }}">
 
                     {{-- Indicatore stato --}}
                     <div style="width:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
@@ -248,10 +287,10 @@
 
                     {{-- Piano --}}
                     <div class="ws-set-plan">
-                        @if ($set->planned_reps) {{ $set->planned_reps }}r @endif
-                        @if ($set->planned_weight_kg) &times; {{ $set->planned_weight_kg }}kg @endif
-                        @if ($set->planned_rir !== null) RIR{{ $set->planned_rir }} @endif
-                        @if ($set->planned_duration_sec) {{ $set->planned_duration_sec }}s @endif
+                        @if ($set->planned_reps) {{ $set->planned_reps }} reps @endif
+                        @if ($set->planned_weight_kg) &times; {{ $set->planned_weight_kg }} kg @endif
+                        @if ($set->planned_rir !== null) - RIR {{ $set->planned_rir }} @endif
+                        @if ($set->planned_duration_sec) {{ $set->planned_duration_sec }} s @endif
                         @if ($set->is_warmup === false && $set->set_subtype)
                             <span style="font-size:10px;color:var(--ig-text-3);">({{ $set->set_subtype }})</span>
                         @endif
@@ -260,38 +299,15 @@
                     {{-- Eseguito (se completato) --}}
                     @if ($isDone)
                         <div class="ws-set-actual">
-                            @if ($set->actual_reps) {{ $set->actual_reps }}r @endif
-                            @if ($set->actual_weight_kg) &times; {{ $set->actual_weight_kg }}kg @endif
-                            @if ($set->actual_rir !== null) RIR{{ $set->actual_rir }} @endif
-                            @if ($set->actual_duration_sec) {{ $set->actual_duration_sec }}s @endif
+                            @if ($set->actual_reps) {{ $set->actual_reps }} reps @endif
+                            @if ($set->actual_weight_kg) &times; {{ $set->actual_weight_kg }} kg @endif
+                            @if ($set->actual_rir !== null) - RIR {{ $set->actual_rir }} @endif
+                            @if ($set->actual_duration_sec) {{ $set->actual_duration_sec }} s @endif
                         </div>
-                        @if ($usesBell && $set->planned_weight_kg)
-                            <button wire:click="openPlateModal({{ $set->id }})"
-                                    aria-label="Calcola dischi"
-                                    class="ws-icon-btn" style="padding:4px 8px;min-height:32px;">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                    <rect x="2" y="10" width="4" height="4" rx="1"/>
-                                    <rect x="18" y="10" width="4" height="4" rx="1"/>
-                                    <rect x="6" y="8" width="3" height="8" rx="1"/>
-                                    <rect x="15" y="8" width="3" height="8" rx="1"/>
-                                    <line x1="9" y1="12" x2="15" y2="12"/>
-                                </svg>
-                            </button>
-                        @endif
                     @elseif ($isActive)
                         <span style="font-size:var(--ig-text-xs);color:var(--ig-accent);font-weight:700;white-space:nowrap;">set {{ $loop->iteration }}</span>
                     @endif
 
-                    @if (! $isDone)
-                        <button wire:click="skipSet({{ $set->id }})"
-                                wire:confirm="Saltare questo set?"
-                                class="ws-skip-set-btn"
-                                aria-label="Salta set {{ $set->set_index }}">
-                            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
-                        </button>
-                    @endif
                 </div>
 
                 {{-- Performance precedente sotto set attivo --}}
@@ -304,6 +320,20 @@
                     </div>
                 @endif
             @endforeach
+        </div>
+
+        {{-- Aggiungi set extra --}}
+        <div style="padding:var(--ig-sp-2) 0 var(--ig-sp-1);display:flex;justify-content:center;">
+            <button wire:click="addExtraSet({{ $exercise->id }})"
+                    wire:loading.attr="disabled"
+                    class="ws-warmup-gen-btn"
+                    style="gap:var(--ig-sp-2);"
+                    aria-label="Aggiungi set extra">
+                <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                </svg>
+                Aggiungi set
+            </button>
         </div>
 
     </div>{{-- /ws-exercise-focus --}}

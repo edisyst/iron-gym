@@ -21,13 +21,6 @@ class TemplateList extends Component
 
     public string $active = '';
 
-    /** @var array<string, array<string, string>> */
-    protected $queryString = [
-        'search' => ['except' => ''],
-        'goal' => ['except' => ''],
-        'active' => ['except' => ''],
-    ];
-
     public function updatingSearch(): void
     {
         $this->resetPage();
@@ -100,6 +93,11 @@ class TemplateList extends Component
         });
 
         $this->redirect(route('backoffice.templates.builder', $copy));
+    }
+
+    public function mount(): void
+    {
+        abort_unless(auth()->user()?->hasAnyRole(['gestore', 'trainer']), 403);
     }
 
     public function render(): View

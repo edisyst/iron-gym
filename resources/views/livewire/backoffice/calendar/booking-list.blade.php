@@ -1,4 +1,4 @@
-﻿{{-- Lista prenotazioni PT con filtri e azioni --}}
+{{-- Lista prenotazioni PT con filtri e azioni --}}
 <div>
     {{-- Filtri --}}
     <div class="card card-outline card-primary">
@@ -56,7 +56,14 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @php $separatorInserted = false; $today = \Carbon\Carbon::today(); @endphp
                         @forelse($bookings as $booking)
+                        @if(!$separatorInserted && $booking->booked_date->lt($today))
+                            @php $separatorInserted = true; @endphp
+                            <tr>
+                                <td colspan="7" style="padding:0;border-top:3px solid #dee2e6;"></td>
+                            </tr>
+                        @endif
                         <tr>
                             <td>{{ $booking->booked_date->format('d/m/Y') }}</td>
                             <td>{{ substr($booking->start_time, 0, 5) }} &ndash; {{ substr($booking->end_time, 0, 5) }}</td>
@@ -100,6 +107,12 @@
                                     <button wire:click="openCancelModal({{ $booking->id }})"
                                             class="btn btn-sm btn-danger" title="Annulla" aria-label="Annulla prenotazione">
                                         <i class="fas fa-times" aria-hidden="true"></i>
+                                    </button>
+                                @endif
+                                @if($booking->status === 'cancelled')
+                                    <button wire:click="restore({{ $booking->id }})"
+                                            class="btn btn-sm btn-warning" title="Ripristina" aria-label="Ripristina prenotazione">
+                                        <i class="fas fa-undo" aria-hidden="true"></i>
                                     </button>
                                 @endif
                             </td>

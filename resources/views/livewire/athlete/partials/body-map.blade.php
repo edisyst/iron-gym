@@ -24,7 +24,7 @@
     $cls = fn(string $slug) => $im[$slug] ?? 'intensity-0';
 @endphp
 
-<svg class="body-map-svg" viewBox="0 0 400 520" xmlns="http://www.w3.org/2000/svg"
+<svg class="body-map-svg" viewBox="0 0 400 348" xmlns="http://www.w3.org/2000/svg"
      role="img" aria-label="Body map muscolare fronte e retro"
      x-data="bodyMapAlpine()"
      @highlight-muscle.window="highlightSlug($event.detail.slug)">

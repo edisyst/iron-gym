@@ -12,6 +12,7 @@ Prefisso `/backoffice`, middleware `auth + role:gestore|trainer|receptionist`.
 | Route name | URL | Componente Livewire | Ruoli aggiuntivi |
 |---|---|---|---|
 | `backoffice.dashboard` | `/backoffice/dashboard` | `Backoffice\Dashboard` | |
+| `backoffice.search` | `/backoffice/search` | `Backoffice\Search\GlobalSearch` | |
 | `backoffice.members.index` | `/backoffice/members` | `Backoffice\Members\MemberList` | |
 | `backoffice.members.create` | `/backoffice/members/create` | `Backoffice\Members\MemberForm` | |
 | `backoffice.members.edit` | `/backoffice/members/{member}/edit` | `Backoffice\Members\MemberForm` | |
@@ -103,6 +104,7 @@ Tutti in `app/Livewire/Backoffice/`. Layout: `->layout('layouts.backoffice')`.
 | `Mesocycles` | `MesocycleAssign` | Assegnazione template a atleta con data inizio e numero settimane |
 | `Mesocycles` | `VolumeLandmarkManager` | CRUD MEV/MAV/MRV per atleta-muscolo |
 | `PlateInventory` | `PlateInventoryManager` | CRUD inline dischi (weight_kg, quantity_pairs, color, is_active). Solo gestore. |
+| `Search` | `GlobalSearch` | Ricerca globale: atleti, PT, template schede, mesocicli. Risultati per sezione. |
 | `Messages` | `MessageThread` | Chat real-time trainer↔atleta (polling ogni 3s) |
 | `Reports` | `ManagerDashboard` | KPI gestore: info-box, grafici Chart.js fatturato/piano/occupancy, churn. Solo gestore. |
 | `Reports` | `FinancialReport` | Report mensile/trimestrale/annuale, export CSV e PDF. Solo gestore. |
@@ -129,8 +131,7 @@ Tutti in `app/Livewire/Athlete/`. Layout: `layouts.athlete` (dark, mobile-first,
 | `Dashboard` | Hero card sessione prossima/in-corso, striscia settimana mesociclo, recap ultimo allenamento, empty state contestuali |
 | `WorkoutSession` | Logging live un-esercizio-alla-volta (nav prev/next/jump-drawer); readiness check pre-sessione; modulazione carichi; quick-log; previous performance inline; sostituzione esercizio guidata; rest timer Alpine; warmup generator; export sessione completata |
 | `SessionFeedbackForm` | Feedback post-sessione (pump, soreness, effort, joint pain, performance) scala 0-3 |
-| `TrainingHub` | Hub storico: tab History + Progress + Measurements |
-| `History` | Storico sessioni completate (embedded in TrainingHub) |
+| `TrainingHub` | Hub storico: tab Storico (sessioni completate e saltate) + Progressi + Misurazioni |
 | `Progress` | Grafici Chart.js peso e BF% nel tempo (embedded in TrainingHub) |
 | `BodyMeasurementForm` | Form misurazioni con storico tabellare |
 | `ProgressPhotoUpload` | Upload foto progressi con preview |
@@ -173,7 +174,7 @@ Tutti in `app/Services/`.
 | Servizio | Funzione |
 |---|---|
 | `MesocycleInstantiationService` | Crea gerarchia completa (mesocycle → weeks → sessions → exercises → sets) da template |
-| `WeeklyVolumeCalculator` | Calcola hard set settimanali per muscolo pesati per `contribution_pct`. Restituisce status `below_mev/in_mav/approaching_mrv/over_mrv`. Calcola e1RM (Epley). |
+| `WeeklyVolumeCalculator` | Calcola hard set settimanali per muscolo pesati per `contribution_pct`. Restituisce status `below_mev/in_mav/approaching_mrv/over_mrv`. |
 | `WeeklyProgressionService` | Applica progressione MEV→MRV settimana per settimana. Su deload: volume -50%, carico -10%. |
 | `DeloadEvaluator` | Aggrega feedback ultime 2 settimane; trigger: joint_pain ≥ 2 per 2 settimane, MRV raggiunto, RIR drift, fine mesociclo. |
 | `KpiService` | Metriche aggregate: revenue per periodo/piano/trainer, occupancy, nuovi tesserati, retention, churn. Cache Redis tag `kpi` TTL 1h. |

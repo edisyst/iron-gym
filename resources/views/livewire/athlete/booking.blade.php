@@ -1,5 +1,16 @@
 {{-- Prenotazioni atleta: sessioni PT e corsi collettivi --}}
 <div>
+    {{-- Trainer assegnato --}}
+    @if($assignedTrainer)
+    <div style="display:flex;align-items:center;gap:10px;background:var(--ig-surface);border:1px solid var(--ig-border);border-radius:10px;padding:12px 16px;margin-bottom:16px;">
+        <span style="font-size:20px;">🏋️</span>
+        <div>
+            <span style="color:var(--ig-text-2);font-size:12px;display:block;">Il tuo Personal Trainer</span>
+            <span style="color:var(--ig-text-1);font-weight:600;font-size:15px;">{{ $assignedTrainer->name }}</span>
+        </div>
+    </div>
+    @endif
+
     {{-- Flash messages --}}
     @if(session('success'))
     <div style="background:#22c55e;color:#fff;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:14px;">
@@ -18,10 +29,12 @@
                 class="ig-tab {{ $activeTab === 'pt' ? 'ig-tab--active' : '' }}">
             Sessione PT
         </button>
+        @feature('group_classes')
         <button wire:click="$set('activeTab','classes')"
                 class="ig-tab {{ $activeTab === 'classes' ? 'ig-tab--active' : '' }}">
             Corsi
         </button>
+        @endfeature
     </div>
 
     {{-- ============================================================ --}}
@@ -128,6 +141,7 @@
     {{-- ============================================================ --}}
     {{-- Tab Corsi --}}
     {{-- ============================================================ --}}
+    @feature('group_classes')
     @if($activeTab === 'classes')
     <div>
         <p class="section-title">Corsi disponibili</p>
@@ -217,4 +231,5 @@
         @endif
     </div>
     @endif
+    @endfeature
 </div>

@@ -77,6 +77,8 @@ class ExerciseForm extends Component
 
     public function mount(?Exercise $exercise = null): void
     {
+        abort_unless(auth()->user()?->hasAnyRole(['gestore', 'trainer']), 403);
+
         // Carica tutti i muscoli per popolare muscleData
         $muscles = Muscle::orderBy('muscle_group')->orderBy('display_order')->get();
 
@@ -253,7 +255,12 @@ class ExerciseForm extends Component
                 if (! is_dir($dir)) {
                     mkdir($dir, 0775, true);
                 }
-                $this->imageFile->move($dir, $exercise->slug.'.'.$ext);
+                $destination = $dir.DIRECTORY_SEPARATOR.$exercise->slug.'.'.$ext;
+                if (file_exists($destination)) {
+                    unlink($destination);
+                }
+                copy($this->imageFile->getRealPath(), $destination);
+                @unlink($this->imageFile->getRealPath());
             }
 
             // Sync attrezzatura

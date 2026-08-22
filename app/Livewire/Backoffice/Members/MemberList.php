@@ -13,27 +13,20 @@ class MemberList extends Component
 
     public string $search = '';
 
-    public string $filter = 'all';
-
-    /** @var array<string, array<string, string>> */
-    protected $queryString = [
-        'search' => ['except' => ''],
-        'filter' => ['except' => 'all'],
-    ];
+    public string $certFilter = '';
 
     public function updatingSearch(): void
     {
         $this->resetPage();
     }
 
-    public function updatingFilter(): void
+    public function updatingCertFilter(): void
     {
         $this->resetPage();
     }
 
     public function render(): View
     {
-        // Eager loading per evitare N+1 su activeSubscription e piano
         $query = Member::with(['activeSubscription.plan'])
             ->when($this->search, function ($q) {
                 $q->where(function ($q2) {
@@ -42,12 +35,14 @@ class MemberList extends Component
                         ->orWhere('email', 'like', "%{$this->search}%");
                 });
             })
-            ->when($this->filter === 'active', fn ($q) => $q->where('is_active', true))
-            ->when($this->filter === 'cert_issues', function ($q) {
-                $q->where(function ($q2) {
-                    $q2->whereNull('medical_cert_expiry')
-                        ->orWhere('medical_cert_expiry', '<=', now()->addDays(30)->toDateString());
-                });
+            ->when($this->certFilter, function ($q) {
+                match ($this->certFilter) {
+                    'missing' => $q->whereNull('medical_cert_expiry'),
+                    'expired' => $q->whereNotNull('medical_cert_expiry')->where('medical_cert_expiry', '<', now()),
+                    'expiring_soon' => $q->whereNotNull('medical_cert_expiry')
+                        ->whereBetween('medical_cert_expiry', [now(), now()->addDays(30)]),
+                    default => null,
+                };
             })
             ->orderBy('last_name')
             ->orderBy('first_name');

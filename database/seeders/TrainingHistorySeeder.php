@@ -7,6 +7,7 @@ use App\Models\ExerciseSet;
 use App\Models\Mesocycle;
 use App\Models\MicrocycleWeek;
 use App\Models\SessionExercise;
+use App\Models\SessionFeedback;
 use App\Models\TrainingSession;
 use App\Models\User;
 use Carbon\Carbon;
@@ -88,14 +89,14 @@ class TrainingHistorySeeder extends Seeder
                         ['exercise' => $exercises['bench'],   'sets' => $this->pushSets($weekNum, 80.0, 2.5, $mult)],
                         ['exercise' => $exercises['ohp'],     'sets' => $this->pushSets($weekNum, 50.0, 2.5, $mult)],
                         ['exercise' => $exercises['incline'], 'sets' => $this->pushSets($weekNum, 60.0, 2.5, $mult)],
-                    ]);
+                    ], $weekNum);
 
                     $pullAt = $weekStart->copy()->addDays(2)->setHour(18)->setMinute(0);
                     $this->seedSession($week, 'Pull B', 2, $pullAt, [
                         ['exercise' => $exercises['deadlift'], 'sets' => $this->pullSets($weekNum, 120.0, 5.0, $mult)],
                         ['exercise' => $exercises['pullup'],   'sets' => $this->bwSets($weekNum)],
                         ['exercise' => $exercises['curl'],     'sets' => $this->pushSets($weekNum, 30.0, 1.25, $mult)],
-                    ]);
+                    ], $weekNum);
                 }
             });
 
@@ -134,7 +135,8 @@ class TrainingHistorySeeder extends Seeder
         string $name,
         int $order,
         Carbon $completedAt,
-        array $exercisePlan
+        array $exercisePlan,
+        int $weekNum = 1
     ): void {
         $startedAt = $completedAt->copy()->subMinutes(65);
 
@@ -179,6 +181,21 @@ class TrainingHistorySeeder extends Seeder
                 ]);
             }
         }
+
+        // Feedback scala 0-3: settimane avanzate → pump/sforzo più alti, W4 deload → più bassi
+        $isDeload = ($weekNum === 4);
+        SessionFeedback::create([
+            'session_id'       => $session->id,
+            'pump'             => $isDeload ? 1 : min(3, $weekNum),
+            'soreness_prev'    => $weekNum === 1 ? 0 : min(3, $weekNum - 1),
+            'perceived_effort' => $isDeload ? 1 : min(3, $weekNum),
+            'joint_pain'       => $weekNum === 3 ? 1 : 0,
+            'performance'      => $isDeload ? 3 : max(1, 3 - ($weekNum - 1)),
+            'sleep_hours'      => 7.0 + ($order % 2 === 0 ? 0.5 : 0.0),
+            'stress_level'     => $weekNum === 3 ? 2 : 1,
+            'note'             => null,
+            'created_at'       => $completedAt,
+        ]);
     }
 
     /** @return list<array<string, mixed>> */

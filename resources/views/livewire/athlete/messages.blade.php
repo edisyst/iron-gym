@@ -1,15 +1,59 @@
 <div wire:poll.3s="refresh" class="athlete-card" style="display: flex; flex-direction: column; height: calc(100vh - 160px);">
 
-    @if ($trainer === null)
+    @if ($contacts->isEmpty())
         <div style="color: #888; text-align: center; margin: auto;">
             <p>Nessun trainer assegnato.</p>
             <p style="font-size: 13px;">Contatta la palestra per attivare un mesociclo.</p>
         </div>
     @else
+        {{-- Tabs contatti --}}
+        @if ($contacts->count() > 1)
+            <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; margin-bottom: 12px; border-bottom: 1px solid #2A2A2A;">
+                @foreach ($contacts as $c)
+                    <button
+                        type="button"
+                        wire:click="selectContact({{ $c->id }})"
+                        style="
+                            flex: 0 0 auto;
+                            position: relative;
+                            padding: 8px 14px;
+                            border-radius: 20px;
+                            border: 1px solid {{ $contact && $contact->id === $c->id ? '#FF6B00' : '#2A2A2A' }};
+                            background-color: {{ $contact && $contact->id === $c->id ? '#FF6B00' : 'transparent' }};
+                            color: {{ $contact && $contact->id === $c->id ? '#fff' : '#ccc' }};
+                            font-size: 13px;
+                            white-space: nowrap;
+                        "
+                    >
+                        {{ $c->name }}
+                        <span style="opacity: 0.7;">({{ $c->roleLabel }})</span>
+                        @if ($c->unreadCount > 0)
+                            <span style="
+                                position: absolute;
+                                top: -4px;
+                                right: -4px;
+                                background-color: #E85D04;
+                                color: #fff;
+                                border-radius: 50%;
+                                min-width: 16px;
+                                height: 16px;
+                                font-size: 10px;
+                                line-height: 16px;
+                                text-align: center;
+                                padding: 0 3px;
+                            ">{{ $c->unreadCount }}</span>
+                        @endif
+                    </button>
+                @endforeach
+            </div>
+        @endif
+
         {{-- Header --}}
         <div style="padding-bottom: 12px; border-bottom: 1px solid #2A2A2A; margin-bottom: 12px;">
-            <div style="font-weight: 600;">{{ $trainer->name }}</div>
-            <div style="font-size: 12px; color: #888;">Il tuo trainer</div>
+            <div style="font-weight: 600;">{{ $contact->name }}</div>
+            <div style="font-size: 12px; color: #888;">
+                {{ $contacts->firstWhere('id', $contact->id)?->roleLabel }}
+            </div>
         </div>
 
         {{-- Area messaggi --}}
@@ -47,7 +91,7 @@
                 </div>
             @empty
                 <x-athlete.empty-state title="Nessun messaggio"
-                    body="Scrivi il primo messaggio al tuo trainer." />
+                    body="Scrivi il primo messaggio a {{ $contact->name }}." />
             @endforelse
         </div>
 

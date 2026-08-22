@@ -1,19 +1,23 @@
-﻿<div>
+<div>
     {{-- Filtri --}}
-    <div class="card card-outline card-primary mb-3">
-        <div class="card-body py-2">
-            <div class="row align-items-center">
-                <div class="col-auto">
-                    <label class="mb-0 mr-1">Dal</label>
-                    <input type="date" class="form-control form-control-sm d-inline-block w-auto" wire:model.live="dateFrom">
+    <div class="card card-outline card-primary">
+        <div class="card-header">
+            <h3 class="card-title">Filtri</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <label class="small">Dal</label>
+                    <input type="date" class="form-control form-control-sm" wire:model.live="dateFrom">
                 </div>
-                <div class="col-auto">
-                    <label class="mb-0 mr-1">Al</label>
-                    <input type="date" class="form-control form-control-sm d-inline-block w-auto" wire:model.live="dateTo">
+                <div class="col-md-3">
+                    <label class="small">Al</label>
+                    <input type="date" class="form-control form-control-sm" wire:model.live="dateTo">
                 </div>
-                <div class="col-auto">
+                <div class="col-md-3">
+                    <label class="small">Stato mesociclo</label>
                     <select class="form-control form-control-sm" wire:model.live="mesoStatus">
-                        <option value="all">Tutti i mesocicli</option>
+                        <option value="all">Tutti</option>
                         <option value="active">Solo attivi</option>
                         <option value="completed">Solo completati</option>
                     </select>

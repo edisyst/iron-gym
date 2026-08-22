@@ -1,4 +1,4 @@
-﻿<div
+<div
     x-data="{ open: false }"
     class="d-inline-block"
     wire:poll.10s

@@ -25,7 +25,7 @@
 | **MRV** | Maximum Recoverable Volume. Soglia massima oltre la quale si entra in over-reaching e si compromette il recupero. |
 | **Mesocycle** | Ciclo di allenamento di 4-6 settimane con progressione coerente. Unità massima di programmazione nel sistema (tabella `mesocycles`). |
 | **Microcycle** | Singola settimana del mesociclo (tabella `microcycle_weeks`). |
-| **Session** | Singola sessione di allenamento (giorno), appartiene a un microciclo (tabella `sessions`). |
+| **Session** | Singola sessione di allenamento (giorno), appartiene a un microciclo (tabella `training_sessions`). |
 | **Deload** | Settimana di scarico programmata, tipicamente l'ultima del mesociclo: volume ridotto del ~50% e intensità del ~10% (`is_deload = 1`). |
 | **Autoregulation** | Aggiustamento dei parametri prescritti sulla base del feedback dell'atleta (fatica, dolori articolari, performance). |
 | **Tempo** | Cadenza del movimento espressa come `eccentrica-pausa_bassa-concentrica-pausa_alta` (es. `3-1-1-0`). Campo `tempo VARCHAR(7)`. |

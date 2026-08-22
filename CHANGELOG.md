@@ -1,5 +1,7 @@
 # Changelog — iron-gym
 
+> Nota: questo file usa schemi di numerazione misti (Step 0N, Release 0N, UX0N, voci libere). La normalizzazione è pianificata post-HK01.
+
 ---
 
 ## Audit receptionist — chiusura (2026-08-19)
@@ -304,7 +306,7 @@ Tutto il lavoro notevole per versione/step. Ordine cronologico crescente.
 - `MesocycleDetail`: tabella volume per muscolo con barre di progressione (colore per status), bottoni "Applica progressione" e "Forza deload".
 - `MesocycleAssign`: assegna template a un atleta scegliendo data inizio e numero settimane; crea mesociclo + microcycle_weeks (ultima = deload).
 - Value objects: `ProgressionResult` (action, note), `DeloadSignal` (isDeloadNeeded, activeTriggers, notes).
-- e1RM calcolato da `WeeklyVolumeCalculator` con formula Epley (`w * (1 + r/30)`).
+- e1RM calcolato da `E1rmCalculator::epley()` con formula Epley (`w * (1 + r/30)`). `WeeklyVolumeCalculator` calcola hard set settimanali per muscolo, non e1RM.
 
 ---
 

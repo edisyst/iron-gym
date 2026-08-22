@@ -174,7 +174,7 @@ Tutti in `app/Services/`.
 | Servizio | Funzione |
 |---|---|
 | `MesocycleInstantiationService` | Crea gerarchia completa (mesocycle → weeks → sessions → exercises → sets) da template |
-| `WeeklyVolumeCalculator` | Calcola hard set settimanali per muscolo pesati per `contribution_pct`. Restituisce status `below_mev/in_mav/approaching_mrv/over_mrv`. Calcola e1RM (Epley). |
+| `WeeklyVolumeCalculator` | Calcola hard set settimanali per muscolo pesati per `contribution_pct`. Restituisce status `below_mev/in_mav/approaching_mrv/over_mrv`. |
 | `WeeklyProgressionService` | Applica progressione MEV→MRV settimana per settimana. Su deload: volume -50%, carico -10%. |
 | `DeloadEvaluator` | Aggrega feedback ultime 2 settimane; trigger: joint_pain ≥ 2 per 2 settimane, MRV raggiunto, RIR drift, fine mesociclo. |
 | `KpiService` | Metriche aggregate: revenue per periodo/piano/trainer, occupancy, nuovi tesserati, retention, churn. Cache Redis tag `kpi` TTL 1h. |

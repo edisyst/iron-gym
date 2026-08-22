@@ -250,6 +250,8 @@ Prossima attività: raccogliere feedback dai primi atleti pilota dopo prima sess
 
 HK01 Housekeeping completato (2026-08-22): audit codice morto, view/componenti orfani, dipendenze Composer, documentazione. Rimossi: `sessionStatusClass/Label` in Dashboard, componente `Athlete\Progress` + view orfane, stub `dashboard.blade.php`, `config/barbell.php`. Dipendenze: `ext-gd`/`ext-mbstring` aggiunti a require, `laravel/tinker` spostato in require-dev, `TelescopeServiceProvider` protetto con `class_exists` guard. Docs corretti: tabella `training_sessions` (era `sessions` in 2 doc), attribuzione e1RM a `E1rmCalculator` (non `WeeklyVolumeCalculator`), URL session history. Suite: 220/226 (6 skip pre-esistenti invariati), PHPStan 0 errori, Pint conforme. Report: docs/audit/hk01-report.md.
 
+HK01 Audit v2 completato (2026-08-22): ri-verifica manuale sezioni 1 (codice morto) e 3 (componenti orfani) con evidenza file-per-file. Corrette tre voci fabricate nel report v1 (scope inesistenti su DumbbellInventory e PtBooking). Tutti i 12 scope Eloquent verificati come utilizzati. Rimosso `partials/exercise-card.blade.php` (partial orfano pre-UX02, superato da session-exercise.blade.php). Suite: 220/226 (6 skip pre-esistenti invariati), PHPStan 0 errori. Report: docs/audit/hk01-report-v2.md.
+
 ## Setup pilota — dati e procedure
 
 ### Seeder pilota (idempotenti)

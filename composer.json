@@ -10,6 +10,7 @@
         "ext-gd": "*",
         "ext-mbstring": "*",
         "jeroennoten/laravel-adminlte": "^3.16",
+        "nesbot/carbon": "^3.0",
         "laravel/framework": "^13.8",
         "laravel/pennant": "^1.23",
         "league/csv": "^9.28",

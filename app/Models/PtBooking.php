@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use Database\Factories\PtBookingFactory;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -67,32 +66,6 @@ class PtBooking extends Model
     public function cancelledBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'cancelled_by');
-    }
-
-    // -------------------------------------------------------------------------
-    // Scope
-    // -------------------------------------------------------------------------
-
-    /**
-     * Prenotazioni in stato attivo (pending o confirmed).
-     *
-     * @param  Builder<PtBooking>  $query
-     * @return Builder<PtBooking>
-     */
-    public function scopeActive(Builder $query): Builder
-    {
-        return $query->whereIn('status', ['pending', 'confirmed']);
-    }
-
-    /**
-     * Prenotazioni per una data specifica.
-     *
-     * @param  Builder<PtBooking>  $query
-     * @return Builder<PtBooking>
-     */
-    public function scopeForDate(Builder $query, Carbon $date): Builder
-    {
-        return $query->where('booked_date', $date->toDateString());
     }
 
     // -------------------------------------------------------------------------

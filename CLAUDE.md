@@ -384,6 +384,7 @@ Layer CSS isolato e disattivabile sopra AdminLTE 3.x — nessun fork del tema.
 - Non introdurre multi-tenancy.
 - Non aggiungere colonne o tabelle senza discuterne prima.
 - Non usare emoji nel codice o nei commenti.
+- Non creare model Eloquent chiamati `Workout` o `WorkoutExercise`. `app/Livewire/Athlete/WorkoutSession.php` è un componente Livewire per il logging live della sessione, non un Model Eloquent: il nome simile non viola questo divieto.
 
 ## Comandi utili
 

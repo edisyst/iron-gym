@@ -185,16 +185,16 @@ class TrainingHistorySeeder extends Seeder
         // Feedback scala 0-3: settimane avanzate → pump/sforzo più alti, W4 deload → più bassi
         $isDeload = ($weekNum === 4);
         SessionFeedback::create([
-            'session_id'       => $session->id,
-            'pump'             => $isDeload ? 1 : min(3, $weekNum),
-            'soreness_prev'    => $weekNum === 1 ? 0 : min(3, $weekNum - 1),
+            'session_id' => $session->id,
+            'pump' => $isDeload ? 1 : min(3, $weekNum),
+            'soreness_prev' => $weekNum === 1 ? 0 : min(3, $weekNum - 1),
             'perceived_effort' => $isDeload ? 1 : min(3, $weekNum),
-            'joint_pain'       => $weekNum === 3 ? 1 : 0,
-            'performance'      => $isDeload ? 3 : max(1, 3 - ($weekNum - 1)),
-            'sleep_hours'      => 7.0 + ($order % 2 === 0 ? 0.5 : 0.0),
-            'stress_level'     => $weekNum === 3 ? 2 : 1,
-            'note'             => null,
-            'created_at'       => $completedAt,
+            'joint_pain' => $weekNum === 3 ? 1 : 0,
+            'performance' => $isDeload ? 3 : max(1, 3 - ($weekNum - 1)),
+            'sleep_hours' => 7.0 + ($order % 2 === 0 ? 0.5 : 0.0),
+            'stress_level' => $weekNum === 3 ? 2 : 1,
+            'note' => null,
+            'created_at' => $completedAt,
         ]);
     }
 

@@ -33,6 +33,4 @@ class DumbbellInventory extends Model
             'is_active' => 'boolean',
         ];
     }
-
-
 }

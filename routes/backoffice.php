@@ -1,7 +1,6 @@
 <?php
 
 use App\Livewire\Backoffice\Access\AccessLogList;
-use App\Livewire\Backoffice\Search\GlobalSearch;
 use App\Livewire\Backoffice\Admin\FeatureFlagManager;
 use App\Livewire\Backoffice\Admin\FeedbackList;
 use App\Livewire\Backoffice\Admin\PlateInventoryManager;
@@ -9,7 +8,6 @@ use App\Livewire\Backoffice\Athletes\AthleteAnalytics;
 use App\Livewire\Backoffice\Athletes\AthleteProfile;
 use App\Livewire\Backoffice\Athletes\BodyMeasurementForm;
 use App\Livewire\Backoffice\Calendar\AvailabilityManager;
-use App\Livewire\Backoffice\Settings\OpeningHoursManager;
 use App\Livewire\Backoffice\Calendar\BookingList;
 use App\Livewire\Backoffice\Calendar\GroupClassManager;
 use App\Livewire\Backoffice\Calendar\TrainerCalendar;
@@ -28,6 +26,8 @@ use App\Livewire\Backoffice\Messages\MessageThread;
 use App\Livewire\Backoffice\Reports\FinancialReport;
 use App\Livewire\Backoffice\Reports\ManagerDashboard;
 use App\Livewire\Backoffice\Reports\TrainingReport;
+use App\Livewire\Backoffice\Search\GlobalSearch;
+use App\Livewire\Backoffice\Settings\OpeningHoursManager;
 use App\Livewire\Backoffice\Subscriptions\SubscriptionForm;
 use App\Livewire\Backoffice\Subscriptions\SubscriptionList;
 use App\Livewire\Backoffice\Templates\TemplateBuilder;

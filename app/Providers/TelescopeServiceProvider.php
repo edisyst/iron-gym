@@ -15,7 +15,7 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
      */
     public function register(): void
     {
-        if (! class_exists(\Laravel\Telescope\TelescopeApplicationServiceProvider::class)) {
+        if (! class_exists(TelescopeApplicationServiceProvider::class)) {
             return;
         }
 

@@ -14,11 +14,11 @@ use App\Observers\PtBookingObserver;
 use App\Observers\SubscriptionObserver;
 use App\Observers\TrainerAvailabilityObserver;
 use App\Observers\TrainingSessionObserver;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Pagination\Paginator;
 use Laravel\Pennant\Feature;
 use Spatie\LaravelFlare\Facades\Flare;
 

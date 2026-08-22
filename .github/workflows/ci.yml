@@ -93,31 +93,28 @@ jobs:
       - name: Code style
         run: ./vendor/bin/pint --test
 
-  deploy-staging:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop'
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Deploy to staging
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.STAGING_HOST }}
-          username: ${{ secrets.STAGING_USER }}
-          key: ${{ secrets.STAGING_KEY }}
-          script: |
-            cd /var/www/iron-gym-staging
-            git pull origin develop
-            composer install --no-dev --optimize-autoloader
-            php artisan migrate --force
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
-            php artisan queue:restart
-
-      - name: Health check post-deploy
-        run: |
-          sleep 15
-          curl -f https://staging.iron-gym.test/health || exit 1
+  # deploy-staging:
+  #   needs: test
+  #   runs-on: ubuntu-latest
+  #   if: github.ref == 'refs/heads/develop'
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Deploy to staging
+  #       uses: appleboy/ssh-action@v1
+  #       with:
+  #         host: ${{ secrets.STAGING_HOST }}
+  #         username: ${{ secrets.STAGING_USER }}
+  #         key: ${{ secrets.STAGING_KEY }}
+  #         script: |
+  #           cd /var/www/iron-gym-staging
+  #           git pull origin develop
+  #           composer install --no-dev --optimize-autoloader
+  #           php artisan migrate --force
+  #           php artisan config:cache
+  #           php artisan route:cache
+  #           php artisan view:cache
+  #           php artisan queue:restart
+  #     - name: Health check post-deploy
+  #       run: |
+  #         sleep 15
+  #         curl -f https://staging.iron-gym.test/health || exit 1

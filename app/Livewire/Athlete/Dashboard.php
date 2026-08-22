@@ -139,34 +139,6 @@ class Dashboard extends Component
     }
 
     /**
-     * Icona e classe CSS per lo status di una sessione
-     */
-    public function sessionStatusClass(string $status): string
-    {
-        return match ($status) {
-            'planned' => 'status-planned',
-            'in_progress' => 'status-in_progress',
-            'completed' => 'status-completed',
-            'skipped' => 'status-skipped',
-            default => 'status-planned',
-        };
-    }
-
-    /**
-     * Label italiana per lo status sessione
-     */
-    public function sessionStatusLabel(string $status): string
-    {
-        return match ($status) {
-            'planned' => 'Pianificata',
-            'in_progress' => 'In corso',
-            'completed' => 'Completata',
-            'skipped' => 'Saltata',
-            default => $status,
-        };
-    }
-
-    /**
      * Label italiana per l'obiettivo
      */
     public function goalLabel(string $goal): string

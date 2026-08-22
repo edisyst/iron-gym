@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -35,12 +34,5 @@ class DumbbellInventory extends Model
         ];
     }
 
-    /**
-     * @param  Builder<DumbbellInventory>  $query
-     * @return Builder<DumbbellInventory>
-     */
-    public function scopeActive(Builder $query): Builder
-    {
-        return $query->where('is_active', true)->orderBy('weight_kg');
-    }
+
 }

@@ -83,6 +83,7 @@ Dopo il seed sono disponibili questi utenti:
 | Gestore | admin@admin.admin | admin |
 | Trainer | trainer@trainer.trainer | trainer |
 | Receptionist | receptionist@receptionist.receptionist | receptionist |
+| Atleta (con mesociclo attivo) | alessia.colombo@example.com | atleta |
 
 ## Verifica installazione
 

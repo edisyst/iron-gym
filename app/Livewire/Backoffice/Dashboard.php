@@ -24,7 +24,9 @@ class Dashboard extends Component
 
         $this->expiringSoonCount = Subscription::expiringSoon(30)->count();
 
-        $this->accessesTodayCount = AccessLog::whereDate('checked_in_at', today())->count();
+        if (auth()->user()->can('view-access-logs')) {
+            $this->accessesTodayCount = AccessLog::whereDate('checked_in_at', today())->count();
+        }
 
         // Tesserati attivi senza certificato o con cert in scadenza entro 30 giorni
         $this->medicalCertIssuesCount = Member::where('is_active', true)

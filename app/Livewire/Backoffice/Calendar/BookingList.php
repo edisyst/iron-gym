@@ -124,6 +124,10 @@ class BookingList extends Component
 
         $booking = PtBooking::findOrFail($this->cancelBookingId);
 
+        if (! Auth::user()->hasRole('gestore')) {
+            abort_unless($booking->trainer_id === Auth::id(), 403);
+        }
+
         try {
             app(PtBookingService::class)->cancel(
                 booking: $booking,

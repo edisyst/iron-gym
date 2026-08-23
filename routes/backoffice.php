@@ -43,13 +43,15 @@ Route::prefix('backoffice')
         Route::get('/search', GlobalSearch::class)->name('search');
 
         Route::get('/members', MemberList::class)->name('members.index');
-        Route::get('/members/create', MemberForm::class)->name('members.create');
-        Route::get('/members/{member}/edit', MemberForm::class)->name('members.edit');
-
         Route::get('/subscriptions', SubscriptionList::class)->name('subscriptions.index');
-        Route::get('/subscriptions/create', SubscriptionForm::class)->name('subscriptions.create');
 
-        Route::get('/access-logs', AccessLogList::class)->name('access-logs.index');
+        // Tesserati e abbonamenti — scrittura riservata a gestore e receptionist
+        Route::middleware('role:gestore|receptionist')->group(function () {
+            Route::get('/members/create', MemberForm::class)->name('members.create');
+            Route::get('/members/{member}/edit', MemberForm::class)->name('members.edit');
+            Route::get('/subscriptions/create', SubscriptionForm::class)->name('subscriptions.create');
+            Route::get('/access-logs', AccessLogList::class)->name('access-logs.index');
+        });
 
         // Libreria esercizi — lista e dettaglio: visibili anche al receptionist
         Route::get('/exercises', ExerciseList::class)->name('exercises.index');
@@ -75,9 +77,8 @@ Route::prefix('backoffice')
             Route::get('/exercises/create', ExerciseForm::class)->name('exercises.create');
             Route::get('/exercises/{exercise:slug}/edit', ExerciseForm::class)->name('exercises.edit');
 
-            // Gestione disponibilità trainer e campagne comunicazione
+            // Gestione disponibilità trainer
             Route::get('/calendar/availability', AvailabilityManager::class)->name('calendar.availability');
-            Route::get('/communications/campaign', CommunicationCampaign::class)->name('communications.campaign');
 
             // Template schede — creazione e builder
             Route::get('/templates/create', TemplateForm::class)->name('templates.create');
@@ -110,11 +111,12 @@ Route::prefix('backoffice')
             ->middleware('role:gestore|trainer')
             ->name('reports.training');
 
-        // Step 10 — admin tools (solo gestore)
+        // Step 10 — admin tools e campagne comunicazione (solo gestore)
         Route::middleware('role:gestore')->group(function () {
             Route::get('/admin/feature-flags', FeatureFlagManager::class)->name('admin.feature-flags');
             Route::get('/admin/feedback', FeedbackList::class)->name('admin.feedback');
             Route::get('/admin/plate-inventory', PlateInventoryManager::class)->name('admin.plate-inventory');
+            Route::get('/communications/campaign', CommunicationCampaign::class)->name('communications.campaign');
         });
 
         Route::get('/reports/download/{file}', function (string $file) {

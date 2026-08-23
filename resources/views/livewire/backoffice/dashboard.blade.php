@@ -24,6 +24,7 @@
                 </a>
             </div>
         </div>
+        @can('view-access-logs')
         <div class="col-lg-3 col-6">
             <div class="small-box bg-success">
                 <div class="inner">
@@ -36,6 +37,7 @@
                 </a>
             </div>
         </div>
+        @endcan
         <div class="col-lg-3 col-6">
             <div class="small-box bg-danger">
                 <div class="inner">

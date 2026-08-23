@@ -351,6 +351,7 @@ return [
             'text' => 'Accessi',
             'url' => 'backoffice/access-logs',
             'icon' => 'fas fa-door-open',
+            'can' => 'view-access-logs',
         ],
         ['header' => 'TRAINING', 'can' => 'access-training-section'],
         [

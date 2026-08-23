@@ -27,9 +27,11 @@
         <div class="card-header">
             <h3 class="card-title">Tesserati</h3>
             <div class="card-tools">
+                @can('manage-members')
                 <a href="{{ route('backoffice.members.create') }}" class="btn btn-primary btn-sm">
                     <i class="fas fa-plus"></i> Nuovo tesserato
                 </a>
+                @endcan
             </div>
         </div>
         <div class="card-body p-0">
@@ -81,17 +83,19 @@
                                 @endif
                             </td>
                             <td>
-                                @if (auth()->user()->hasAnyRole(['gestore', 'trainer']))
+                                @if (auth()->user()->hasRole('gestore'))
                                     <a href="{{ route('backoffice.members.edit', $member) }}" class="btn btn-sm btn-default" aria-label="Modifica {{ $member->full_name }}">
                                         <i class="fas fa-edit" aria-hidden="true"></i>
                                     </a>
+                                @endif
+                                @can('access-training-section')
                                     @if ($member->user_id)
                                         <a href="{{ route('backoffice.athletes.profile', ['athleteId' => $member->user_id]) }}"
                                            class="btn btn-sm btn-outline-info ml-1">
                                             <i class="fas fa-dumbbell"></i> Profilo allenamento
                                         </a>
                                     @endif
-                                @endif
+                                @endcan
                             </td>
                         </tr>
                     @empty

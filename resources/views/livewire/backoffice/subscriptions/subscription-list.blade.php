@@ -23,9 +23,11 @@
         <div class="card-header">
             <h3 class="card-title">Abbonamenti</h3>
             <div class="card-tools">
+                @can('manage-subscriptions')
                 <a href="{{ route('backoffice.subscriptions.create') }}" class="btn btn-primary btn-sm">
                     <i class="fas fa-plus"></i> Nuovo abbonamento
                 </a>
+                @endcan
             </div>
         </div>
         <div class="card-body p-0">

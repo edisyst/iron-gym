@@ -97,23 +97,25 @@
                                 @endif
                             </td>
                             <td class="text-right">
-                                @if($booking->status === 'pending')
-                                    <button wire:click="confirm({{ $booking->id }})"
-                                            class="btn btn-sm btn-success mr-1" title="Conferma" aria-label="Conferma prenotazione">
-                                        <i class="fas fa-check" aria-hidden="true"></i>
-                                    </button>
-                                @endif
-                                @if(in_array($booking->status, ['pending', 'confirmed']))
-                                    <button wire:click="openCancelModal({{ $booking->id }})"
-                                            class="btn btn-sm btn-danger" title="Annulla" aria-label="Annulla prenotazione">
-                                        <i class="fas fa-times" aria-hidden="true"></i>
-                                    </button>
-                                @endif
-                                @if($booking->status === 'cancelled')
-                                    <button wire:click="restore({{ $booking->id }})"
-                                            class="btn btn-sm btn-warning" title="Ripristina" aria-label="Ripristina prenotazione">
-                                        <i class="fas fa-undo" aria-hidden="true"></i>
-                                    </button>
+                                @if(auth()->user()->hasRole('gestore') || auth()->id() === $booking->trainer_id)
+                                    @if($booking->status === 'pending')
+                                        <button wire:click="confirm({{ $booking->id }})"
+                                                class="btn btn-sm btn-success mr-1" title="Conferma" aria-label="Conferma prenotazione">
+                                            <i class="fas fa-check" aria-hidden="true"></i>
+                                        </button>
+                                    @endif
+                                    @if(in_array($booking->status, ['pending', 'confirmed']))
+                                        <button wire:click="openCancelModal({{ $booking->id }})"
+                                                class="btn btn-sm btn-danger" title="Annulla" aria-label="Annulla prenotazione">
+                                            <i class="fas fa-times" aria-hidden="true"></i>
+                                        </button>
+                                    @endif
+                                    @if($booking->status === 'cancelled')
+                                        <button wire:click="restore({{ $booking->id }})"
+                                                class="btn btn-sm btn-warning" title="Ripristina" aria-label="Ripristina prenotazione">
+                                            <i class="fas fa-undo" aria-hidden="true"></i>
+                                        </button>
+                                    @endif
                                 @endif
                             </td>
                         </tr>

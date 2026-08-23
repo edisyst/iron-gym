@@ -28,7 +28,7 @@ Prefisso `/backoffice`, middleware `auth + role:gestore|trainer|receptionist`.
 | `backoffice.templates.builder` | `/backoffice/templates/{template}/builder` | `Backoffice\Templates\TemplateBuilder` | |
 | `backoffice.mesocycles.index` | `/backoffice/mesocycles` | `Backoffice\Mesocycles\MesocycleList` | |
 | `backoffice.mesocycles.assign` | `/backoffice/mesocycles/assign` | `Backoffice\Mesocycles\MesocycleAssign` | |
-| `backoffice.mesocycles.show` | `/backoffice/mesocycles/{mesocycle}` | `Backoffice\Mesocycles\MesocycleDetail` | |
+| `backoffice.mesocycles.show` | `/backoffice/mesocycles/{mesocycleId}` | `Backoffice\Mesocycles\MesocycleDetail` | |
 | `backoffice.athletes.volume-landmarks` | `/backoffice/athletes/{athleteId}/volume-landmarks` | `Backoffice\Mesocycles\VolumeLandmarkManager` | |
 | `backoffice.athletes.measurements` | `/backoffice/athletes/{athleteId}/measurements` | `Backoffice\Athletes\BodyMeasurementForm` | |
 | `backoffice.athletes.analytics` | `/backoffice/athletes/{athleteId}/analytics` | `Backoffice\Athletes\AthleteAnalytics` | |
@@ -103,7 +103,7 @@ Tutti in `app/Livewire/Backoffice/`. Layout: `->layout('layouts.backoffice')`.
 | `Mesocycles` | `MesocycleDetail` | Tabella volume per muscolo, progressione, forza deload; gated su `periodization_engine` |
 | `Mesocycles` | `MesocycleAssign` | Assegnazione template a atleta con data inizio e numero settimane |
 | `Mesocycles` | `VolumeLandmarkManager` | CRUD MEV/MAV/MRV per atleta-muscolo |
-| `PlateInventory` | `PlateInventoryManager` | CRUD inline dischi (weight_kg, quantity_pairs, color, is_active). Solo gestore. |
+| `Admin` | `PlateInventoryManager` | CRUD inline dischi (`PlateInventory`) e manubri (`DumbbellInventory`). Solo gestore. |
 | `Search` | `GlobalSearch` | Ricerca globale: atleti, PT, template schede, mesocicli. Risultati per sezione. |
 | `Messages` | `MessageThread` | Chat real-time trainer↔atleta (polling ogni 3s) |
 | `Reports` | `ManagerDashboard` | KPI gestore: info-box, grafici Chart.js fatturato/piano/occupancy, churn. Solo gestore. |
@@ -132,7 +132,6 @@ Tutti in `app/Livewire/Athlete/`. Layout: `layouts.athlete` (dark, mobile-first,
 | `WorkoutSession` | Logging live un-esercizio-alla-volta (nav prev/next/jump-drawer); readiness check pre-sessione; modulazione carichi; quick-log; previous performance inline; sostituzione esercizio guidata; rest timer Alpine; warmup generator; export sessione completata |
 | `SessionFeedbackForm` | Feedback post-sessione (pump, soreness, effort, joint pain, performance) scala 0-3 |
 | `TrainingHub` | Hub storico: tab Storico (sessioni completate e saltate) + Progressi + Misurazioni |
-| `Progress` | Grafici Chart.js peso e BF% nel tempo (embedded in TrainingHub) |
 | `BodyMeasurementForm` | Form misurazioni con storico tabellare |
 | `ProgressPhotoUpload` | Upload foto progressi con preview |
 | `ExerciseCatalog` | Catalogo esercizi in sola lettura per atleta |
@@ -210,6 +209,9 @@ Tutti in `app/Services/`.
 | `PilotSeeder` | via `pilot:init` | Piani abbonamento reali + account gestore da env |
 | `PlateInventorySeeder` | `db:seed` | Dischi reali: 20/15/10/5/2.5/1.25 kg per lato |
 | `PilotTemplateSeeder` | manuale | Template PPL Ipertrofia Intermediato (4 sett.) con 3 sessioni/sett. e progressione automatica |
+| `ExerciseDescriptionSeeder` | `db:seed` | Popola `execution_description` su tutti e 83 esercizi |
+| `CommunicationTemplateSeeder` | `db:seed` | Template messaggi automatici (scadenza abbonamento, certificato medico, promemoria sessione) |
+| `OpeningHoursSeeder` | `db:seed` | Orari apertura default lun–ven 06:30–22:30, sab 08:00–18:00, dom 10:00–14:00 |
 
 ---
 

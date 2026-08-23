@@ -5,13 +5,12 @@ esplicitamente quando servono per non saturare il contesto.
 
 ## docs/domain/
 
-Documentazione di dominio. Sono copie sincronizzate di `docs/domain/` mantenute
-qui per caricamento diretto da Claude Code.
+Documentazione di dominio. Questa cartella è la **fonte autoritativa**: `docs/domain/` ne è la copia pubblica sincronizzata.
 
 | File | Contenuto | Quando caricarlo |
 |---|---|---|
 | `step-0-discovery.md` | ERD completo, schema SQL, regole progressione MEV→MRV, personas | Prima di toccare schema DB, servizi di progressione, logica allenamento |
-| `exercises-catalog.md` | 83 esercizi con tassonomia, contribution_pct, descrizioni esecuzione | Prima di modificare seed, catalogo, ExerciseObserver, WeeklyVolumeCalculator |
+| `exercises-catalog.md` | 83 esercizi con tassonomia, contribution_pct, descrizioni esecuzione, sezione SQLite | Prima di modificare seed, catalogo, ExerciseObserver, WeeklyVolumeCalculator |
 | `glossary.md` | Terminologia BB, tecniche speciali, tassonomia esercizi | Riferimento rapido; corto, OK caricarlo sempre |
 
 ## agents/
@@ -27,6 +26,6 @@ un agente con le sue competenze e i tool disponibili.
 
 ## Note di sincronizzazione
 
-`docs/domain/` (cartella pubblica) e `.claude/docs/domain/` (questa cartella) devono
-restare allineate. Ultima sincronizzazione: 2026-06-25. Se modifichi un file in una
-delle due posizioni, aggiorna anche l'altra e registra la data qui.
+`.claude/docs/domain/` è la fonte autoritativa; `docs/domain/` è la copia pubblica.
+Se modifichi un file qui, aggiorna anche `docs/domain/` e registra la data.
+Ultima sincronizzazione verificata: 2026-08-23 (DOC01 — tutti e tre i file allineati).

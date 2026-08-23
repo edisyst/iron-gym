@@ -1,6 +1,6 @@
 # Test per tipologia utente — iron-gym
 
-Suite: **177 test** (171 pass + 6 skip) in 45+ file. Organizzati per ruolo/contesto di esecuzione.
+Suite: **226 test** (220 pass + 6 skip) in 45 file. Organizzati per ruolo/contesto di esecuzione.
 
 ---
 
@@ -75,6 +75,37 @@ Suite: **177 test** (171 pass + 6 skip) in 45+ file. Organizzati per ruolo/conte
 | `MesocycleInstantiationTest` | l'istanziamento crea le sessioni con la scheduled_date corretta |
 | `MesocycleInstantiationTest` | l'istanziamento crea i set con i parametri planned corretti |
 | `TrainingFlowTest` | flusso training completo: instantiate → log → volume → progressione |
+| `WorkoutSessionNavigationTest` | navigazione avanti incrementa currentGroupIndex |
+| `WorkoutSessionNavigationTest` | navigazione indietro decrementa currentGroupIndex |
+| `WorkoutSessionNavigationTest` | prevGroup non scende sotto zero |
+| `WorkoutSessionNavigationTest` | nextGroup non supera il totale dei gruppi |
+| `WorkoutSessionNavigationTest` | jumpToGroup salta al gruppo specificato |
+| `WorkoutSessionNavigationTest` | jumpToGroup ignora indici fuori range |
+| `WorkoutSessionNavigationTest` | setData è pre-compilato con valori pianificati per set non completati |
+| `WorkoutSessionUxTest` | quickLog copia planned reps/weight/rir su set reps_weight |
+| `WorkoutSessionUxTest` | quickLog su reps_only non copia weight |
+| `WorkoutSessionUxTest` | quickLog su isometric_hold copia solo duration |
+| `WorkoutSessionUxTest` | quickLog non resetta completed_at se già valorizzato |
+| `WorkoutSessionUxTest` | completeSet non resetta completed_at se già valorizzato |
+| `WorkoutSessionUxTest` | previousPerformance viene popolato dalla sessione precedente |
+| `WorkoutSessionUxTest` | previousPerformance è vuoto senza sessioni precedenti |
+| `WorkoutSessionUxTest` | previousPerformance esclude i warm-up dalla sessione precedente |
+| `WorkoutSessionUxTest` | generateWarmup crea 3 set per target ≥ 40 kg |
+| `WorkoutSessionUxTest` | generateWarmup crea solo 1 set per target < 40 kg |
+| `WorkoutSessionUxTest` | generateWarmup arrotonda a 2.5 kg |
+| `WorkoutSessionUxTest` | generateWarmup è idempotente |
+| `WorkoutSessionUxTest` | generateWarmup non genera set se planned_weight_kg è null |
+| `WorkoutSessionUxTest` | deleteWarmupSet rimuove il set warmup |
+| `WorkoutSessionUxTest` | deleteWarmupSet rifiuta di cancellare un working set |
+| `ThemeToggleTest` | la pagina profilo atleta renderizza senza errori |
+| `ThemeToggleTest` | il layout atleta contiene il toggle tema con aria-pressed |
+| `ThemeToggleTest` | il layout atleta contiene script anti-FOUC prima del CSS |
+| `ThemeToggleTest` | il toggle viewport è visibile in ambiente local |
+| `ThemeToggleTest` | il toggle viewport è assente in ambiente production |
+| `ReceptionistCheckinTest` | athlete Dashboard mostra banner danger se cert. scaduto |
+| `ReceptionistCheckinTest` | athlete Dashboard mostra banner warning se cert. scade entro 30gg |
+| `ReceptionistCheckinTest` | athlete Dashboard non mostra banner se cert. valido |
+| `ReceptionistCheckinTest` | athlete Dashboard mostra banner danger se cert. è null |
 
 ---
 
@@ -96,6 +127,9 @@ Suite: **177 test** (171 pass + 6 skip) in 45+ file. Organizzati per ruolo/conte
 | `WorkoutBuilderTest` | due esercizi possono essere raggruppati in superset |
 | `MemberFormTest` | il trainer può aggiornare un tesserato |
 | `TrainingFlowTest` | flusso training completo: instantiate → log → volume → progressione |
+| `ReceptionistCheckinTest` | trainer accede a backoffice/calendar/availability |
+| `ReceptionistCheckinTest` | trainer cancella il proprio booking da TrainerCalendar |
+| `ReceptionistCheckinTest` | trainer non accede a PlateInventoryManager |
 
 ---
 
@@ -114,6 +148,9 @@ Suite: **177 test** (171 pass + 6 skip) in 45+ file. Organizzati per ruolo/conte
 | `MemberFormTest` | first_name e last_name sono obbligatori |
 | `MemberFormTest` | update non crea account anche se create_account era true |
 | `AuthenticationTest` | test_navigation_menu_can_be_rendered |
+| `ReceptionistCheckinTest` | gestore vede link Modifica e Profilo allenamento in MemberList |
+| `ReceptionistCheckinTest` | gestore cancella il booking di un altro trainer da TrainerCalendar |
+| `ReceptionistCheckinTest` | gestore accede a ExerciseList senza 403 |
 
 ---
 
@@ -122,6 +159,27 @@ Suite: **177 test** (171 pass + 6 skip) in 45+ file. Organizzati per ruolo/conte
 | File | Test |
 |---|---|
 | `MemberFormTest` | il receptionist non può aggiornare un tesserato |
+| `ReceptionistCheckinTest` | receptionist registra accesso per tesserato con cert. valido e abbonamento attivo |
+| `ReceptionistCheckinTest` | check-in incrementa accesses_used sull'abbonamento |
+| `ReceptionistCheckinTest` | check-in bloccato se certificato medico è scaduto |
+| `ReceptionistCheckinTest` | check-in bloccato se certificato medico è assente |
+| `ReceptionistCheckinTest` | check-in bloccato se il tesserato non ha abbonamento attivo |
+| `ReceptionistCheckinTest` | check-in bloccato se gli accessi residui sono esauriti |
+| `ReceptionistCheckinTest` | check-in bloccato se nessun tesserato selezionato |
+| `ReceptionistCheckinTest` | receptionist riceve 403 su backoffice/communications/campaign |
+| `ReceptionistCheckinTest` | receptionist riceve 403 su backoffice/calendar/availability |
+| `ReceptionistCheckinTest` | GroupClassManager.save() lancia 403 per receptionist |
+| `ReceptionistCheckinTest` | GroupClassManager.deleteClass() lancia 403 per receptionist |
+| `ReceptionistCheckinTest` | BookingList.confirm() lancia 403 per receptionist |
+| `ReceptionistCheckinTest` | BookingList.cancel() lancia 403 per receptionist |
+| `ReceptionistCheckinTest` | TrainerCalendar.cancelBooking() lancia 403 per receptionist (nessuna ownership) |
+| `ReceptionistCheckinTest` | receptionist non vede link Modifica e Profilo allenamento in MemberList |
+| `ReceptionistCheckinTest` | receptionist può rimuovere partecipante da corso (operazione front-desk) |
+| `ReceptionistCheckinTest` | receptionist ottiene 403 su ExerciseList |
+| `ReceptionistCheckinTest` | receptionist ottiene 403 su TemplateList |
+| `ReceptionistCheckinTest` | receptionist ottiene 403 su MesocycleList |
+| `ReceptionistCheckinTest` | receptionist ottiene 403 su PlateInventoryManager |
+| `ReceptionistCheckinTest` | trainer accede a TemplateList senza 403 |
 
 ---
 
@@ -243,14 +301,14 @@ Suite: **177 test** (171 pass + 6 skip) in 45+ file. Organizzati per ruolo/conte
 
 | Ruolo / contesto | Test |
 |---|---:|
-| Atleta | 66 |
-| Trainer | 14 |
-| Gestore | 11 |
-| Receptionist | 1 |
+| Atleta | 97 |
+| Trainer | 17 |
+| Gestore | 14 |
+| Receptionist | 22 |
 | Guest | 13 |
 | Autenticato (ruolo generico) | 12 |
 | Email non verificata | 3 |
 | Unit / Service | 57 |
-| **Totale** | **177** |
+| **Totale tabella** | **235** |
 
-> Nota: alcuni test compaiono in più ruoli (es. TrainingFlowTest usa sia trainer che atleta, MesocycleInstantiation idem, ReadinessEvaluatorTest copre sia logica unit che integrazione WorkoutSession) — il totale della tabella può superare i 177 effettivi per questo motivo.
+> Nota: alcuni test compaiono in più ruoli — il totale tabella può superare i 226 effettivi della suite. Suite reale: **226 test** (220 pass + 6 skip). Ultima verifica: 2026-08-23. Test aggiunti rispetto alla revisione precedente (2026-07-04): WorkoutSessionNavigationTest (7), WorkoutSessionUxTest (15), ThemeToggleTest (5), ReceptionistCheckinTest (32). WorkoutSessionUxTest copre casi già presenti in WorkoutSessionTest con implementazione separata.

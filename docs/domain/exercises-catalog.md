@@ -1008,3 +1008,26 @@ Classificazione completa: vedi sezione 4 dello step-0-discovery.md. Riassunto: 1
 | Addome | 8 | 4 | 4 |
 | **Totale** | **83** | **43** | **40** |
 
+---
+## Dati di riferimento (SQLite)
+
+I dati completi (lookup, esercizi, pivot muscle/equipment, descrizioni esecuzione) sono in `database/database.sqlite`. Tabelle: `movement_patterns` (27), `muscles` (26), `equipment` (14), `exercises` (83 + `execution_description`), `exercise_muscle` (259), `exercise_equipment` (108).
+
+Query di esempio:
+```sql
+-- Tutti gli esercizi con muscoli primari
+SELECT e.slug, e.name_it, m.slug AS muscle, em.contribution_pct
+FROM exercises e
+JOIN exercise_muscle em ON em.exercise_id = e.id
+JOIN muscles m ON m.id = em.muscle_id
+WHERE em.role = 'primary'
+ORDER BY e.name_it;
+```
+
+Il file SQLite è generato dallo script `.claude/scripts/build_exercises_sqlite.py` (stdlib Python, nessuna dipendenza extra) leggendo `database/seeders/sql/exercises_seed.sql` come unica sorgente.
+
+---
+## Note storiche Seed SQL
+
+Il seed usa `INSERT ... SELECT` con JOIN su slug per evitare id hardcodati. Le `execution_description` sono incluse come blocco `UPDATE` in fondo a `exercises_seed.sql` (unica fonte di verità per tutto il catalogo). Il seeder PHP `ExerciseDescriptionSeeder` applica gli stessi testi al DB MySQL via `DB::table()->update()`.
+

@@ -3,22 +3,23 @@
 **Credenziali:** trainer@trainer.trainer / trainer  
 **URL base:** http://iron-gym.test/backoffice
 
+Il trainer ha accesso alle stesse aree di gestionale (membri, abbonamenti, accessi) ma non
+agli strumenti admin (inventario dischi, feature flags, report finanziario). Vede solo gli
+atleti a lui assegnati per analytics e profilo (ownership check nei componenti).
+
 ---
 
 ## 1. Auth
 
 - [ ] Login → redirect a `/backoffice/dashboard`
 - [ ] Logout → redirect a `/login`
-- [ ] Accesso a `/backoffice/members` (area gestore/receptionist) → permesso o 403?
-
-> Annotare quali voci del menu sono visibili vs nascoste rispetto al gestore.
+- [ ] `/backoffice/members` accessibile (gestore|trainer|receptionist): OK, nessun 403
 
 ---
 
 ## 2. Dashboard
 
 - [ ] Dashboard si carica senza errori
-- [ ] KPI visibili (o area limitata rispetto al gestore?)
 
 ---
 
@@ -49,24 +50,33 @@ URL: `/backoffice/mesocycles/assign`
 URL: `/backoffice/mesocycles`
 
 - [ ] Lista visibile con mesocicli assegnati
-- [ ] Dettaglio mesociclo accessibile
+- [ ] Dettaglio mesociclo accessibile (`/backoffice/mesocycles/{id}`)
 
 ---
 
 ## 6. Atleti
 
-- [ ] Lista atleti accessibile
-- [ ] Pagina analytics atleta (`/backoffice/athletes/{id}/analytics`) si carica
+> **Nota:** non esiste route `/backoffice/athletes` (lista atleti). Gli atleti si raggiungono
+> tramite i link nel dettaglio mesociclo o nelle voci di menu. Il trainer vede solo gli atleti
+> a lui assegnati (ownership check nei componenti — 403 se tenta accesso ad atleta di un altro trainer).
+
+URL: `/backoffice/athletes/{athleteId}/analytics`
+
+- [ ] Pagina analytics atleta assegnato si carica
 - [ ] Volume landmarks dell'atleta visibili/modificabili
-- [ ] Storico sessioni atleta: score readiness visibile per sessioni con check (R07)
-- [ ] Storico sessioni atleta: badge "sost. da [originale]" per esercizi sostituiti (R06)
-- [ ] Trainer ottiene 403 su atleta non assegnato
+- [ ] Accesso ad atleta NON assegnato → 403
+
+URL: `/backoffice/athletes/{athleteId}/profile` (storico sessioni embedded)
+
+- [ ] Storico sessioni atleta visibile
+- [ ] Score readiness visibile per sessioni con check (R07)
+- [ ] Badge "sost. da [originale]" per esercizi sostituiti (R06)
 
 ---
 
 ## 7. Messaggistica con atleti
 
-URL: `/backoffice/athletes/{id}/messages`
+URL: `/backoffice/athletes/{athleteId}/messages`
 
 - [ ] Thread messaggi si carica
 - [ ] Invio messaggio funziona
@@ -76,10 +86,52 @@ URL: `/backoffice/athletes/{id}/messages`
 
 ## 8. Disponibilità PT
 
-URL: `/backoffice/trainer-availability` (se esiste nel menu)
+URL: `/backoffice/calendar/availability`
 
 - [ ] Configurazione disponibilità settimanale accessibile
 - [ ] Salvataggio disponibilità funziona
+
+---
+
+## 9. Prenotazioni PT e calendario
+
+URL: `/backoffice/calendar`
+
+- [ ] Calendario si carica
+- [ ] Slot prenotati visibili
+
+URL: `/backoffice/bookings`
+
+- [ ] Lista prenotazioni si carica
+- [ ] Filtro per stato funziona
+
+---
+
+## 10. Report allenamento
+
+URL: `/backoffice/reports/training`
+
+- [ ] Pagina accessibile al trainer (non è riservata al solo gestore)
+- [ ] Dati allenamento atleti visibili
+
+---
+
+## 11. Campagne comunicazione
+
+URL: `/backoffice/communications/campaign`
+
+- [ ] Pagina accessibile al trainer
+- [ ] Invio campagna funziona
+
+---
+
+## 12. 403 attesi (aree riservate al gestore)
+
+- [ ] `/backoffice/reports/manager` → 403
+- [ ] `/backoffice/reports/financial` → 403
+- [ ] `/backoffice/admin/feature-flags` → 403
+- [ ] `/backoffice/admin/feedback` → 403
+- [ ] `/backoffice/admin/plate-inventory` → 403
 
 ---
 

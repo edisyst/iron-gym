@@ -3,22 +3,25 @@
 **Credenziali:** receptionist@receptionist.receptionist / receptionist  
 **URL base:** http://iron-gym.test/backoffice
 
+Il receptionist copre le operazioni front-desk: anagrafica, abbonamenti, accessi, prenotazioni.
+Non ha accesso alle aree training (esercizi, template, mesocicli, analytics atleta) né a
+comunicazioni, feature flags o inventario dischi.
+
 ---
 
 ## 1. Auth
 
 - [ ] Login → redirect a `/backoffice/dashboard`
 - [ ] Logout → redirect a `/login`
-- [ ] Accesso a `/backoffice/templates` (area trainer/gestore) → permesso o 403?
-
-> Annotare quali voci del menu sono visibili vs nascoste rispetto agli altri ruoli.
+- [ ] `/backoffice/templates` → **403** (TemplateList.mount() abort_unless gestore|trainer)
+- [ ] `/backoffice/exercises` → **403** (ExerciseList.mount() abort_unless gestore|trainer)
+- [ ] `/backoffice/mesocycles` → **403** (MesocycleList.mount() abort_unless gestore|trainer)
 
 ---
 
 ## 2. Dashboard
 
 - [ ] Dashboard si carica senza errori
-- [ ] KPI visibili (o area limitata?)
 
 ---
 
@@ -28,9 +31,12 @@ URL: `/backoffice/members`
 
 - [ ] Lista membri si carica
 - [ ] Ricerca per nome funziona
-- [ ] Crea nuovo membro → salva
-- [ ] Modifica membro esistente → salva
+- [ ] Paginazione funziona
+- [ ] **Crea nuovo membro** → form aperto → salva → membro creato (receptionist può creare)
+- [ ] **Apri membro esistente in modifica** → form aperto
+- [ ] **Salva modifica** a membro esistente → **403** (MemberForm.save() abort_unless gestore|trainer per update)
 - [ ] Badge scadenza certificato medico visibile
+- [ ] Banner avviso certificato scaduto visibile nella home atleta (controllo receptionist al check-in)
 
 ---
 
@@ -56,13 +62,14 @@ URL: `/backoffice/access-logs`
 - [ ] Filtro per data funziona
 - [ ] Filtro per membro funziona
 - [ ] Registra accesso manuale → appare in lista con timestamp
+- [ ] Tentativo check-in con certificato medico scaduto → blocco con messaggio di avviso
 - [ ] Accesso registrato aggiorna contatore ingressi dell'abbonamento (se a ingressi)
 
 ---
 
 ## 6. Prenotazioni PT
 
-URL: `/backoffice/pt-bookings`
+URL: `/backoffice/bookings`
 
 - [ ] Lista prenotazioni si carica
 - [ ] Filtro per stato (pending/confirmed/cancelled) funziona
@@ -75,9 +82,41 @@ URL: `/backoffice/pt-bookings`
 
 URL: `/backoffice/group-classes`
 
-- [ ] Lista corsi si carica
+> **Nota:** la voce di menu "Corsi collettivi" è visibile solo se feature flag `group_classes` = ON
+> (gate `view-group-classes`). Con flag OFF la voce è nascosta nella sidebar ma la route è
+> tecnicamente accessibile navigando direttamente.
+
+- [ ] Lista corsi si carica (se flag ON)
 - [ ] Iscrizioni a corso visibili
 - [ ] Gestione waitlist (se corso pieno)
+- [ ] Rimozione partecipante da corso → operazione consentita per il receptionist (front-desk)
+
+---
+
+## 8. Orari di apertura
+
+URL: `/backoffice/settings/opening-hours`
+
+- [ ] Pagina si carica (receptionist può modificare gli orari)
+- [ ] Modifica orario → salva
+
+---
+
+## 9. 403 attesi (aree non accessibili al receptionist)
+
+- [ ] `/backoffice/exercises` → 403
+- [ ] `/backoffice/exercises/{slug}` → 403
+- [ ] `/backoffice/templates` → 403
+- [ ] `/backoffice/mesocycles` → 403
+- [ ] `/backoffice/athletes/{id}/analytics` → 403
+- [ ] `/backoffice/athletes/{id}/profile` → 403
+- [ ] `/backoffice/calendar/availability` → 403
+- [ ] `/backoffice/communications/campaign` → 403
+- [ ] `/backoffice/reports/training` → 403
+- [ ] `/backoffice/reports/manager` → 403
+- [ ] `/backoffice/reports/financial` → 403
+- [ ] `/backoffice/admin/feature-flags` → 403
+- [ ] `/backoffice/admin/plate-inventory` → 403
 
 ---
 

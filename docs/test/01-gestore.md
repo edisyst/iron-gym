@@ -52,19 +52,13 @@ URL: `/backoffice/subscriptions`
 - [ ] Data scadenza calcolata automaticamente dal piano scelto
 - [ ] Abbonamento appare in lista con stato corretto
 
----
-
-## 5. Piani abbonamento
-
-URL: `/backoffice/subscription-plans`
-
-- [ ] Lista piani si carica (Mensile, Trimestrale dal seeder)
-- [ ] Crea nuovo piano con nome, prezzo, durata → salva
-- [ ] Modifica piano esistente → aggiornato
+> **Nota:** Non esiste una pagina di gestione piani abbonamento nel backoffice.
+> I piani (Mensile, Trimestrale, ecc.) sono creati via `php artisan pilot:init`
+> o direttamente tramite seeder/DB. Modifiche ai piani richiedono accesso diretto al DB.
 
 ---
 
-## 6. Accessi
+## 5. Accessi
 
 URL: `/backoffice/access-logs`
 
@@ -74,7 +68,7 @@ URL: `/backoffice/access-logs`
 
 ---
 
-## 7. Esercizi
+## 6. Esercizi
 
 URL: `/backoffice/exercises`
 
@@ -91,7 +85,7 @@ URL: `/backoffice/exercises`
 
 ---
 
-## 8. Template schede
+## 7. Template schede
 
 URL: `/backoffice/templates`
 
@@ -122,7 +116,7 @@ URL: `/backoffice/templates/{id}/builder`
 
 ---
 
-## 9. Mesocicli
+## 8. Mesocicli
 
 URL: `/backoffice/mesocycles`
 
@@ -141,9 +135,9 @@ URL: `/backoffice/mesocycles`
 
 ---
 
-## 10. Atleti (backoffice)
+## 9. Atleti (backoffice)
 
-URL: `/backoffice/athletes/{id}/analytics`
+URL: `/backoffice/athletes/{athleteId}/analytics`
 
 - [ ] Pagina analytics atleta si carica
 - [ ] Volume landmarks visibili (se configurati)
@@ -158,9 +152,9 @@ URL: `/backoffice/athletes/{athleteId}/profile` (storico sessioni embedded in At
 
 ---
 
-## 11. Plate inventory (R02)
+## 10. Inventario dischi (R02)
 
-URL: `/backoffice/plate-inventory`
+URL: `/backoffice/admin/plate-inventory`
 
 - [ ] Pagina si carica senza errori
 - [ ] Lista dischi con peso, quantità paia, colore, stato attivo/inattivo
@@ -171,25 +165,102 @@ URL: `/backoffice/plate-inventory`
 
 ---
 
+## 11. Report allenamento
+
+URL: `/backoffice/reports/training`
+
+- [ ] Pagina si carica senza errori
+- [ ] Dati per atleta visibili (sessioni, volume, progressione)
+- [ ] Filtri funzionano (per atleta, periodo)
+
+---
+
+## 12. Report manager e finanziario
+
+URL: `/backoffice/reports/manager`
+
+- [ ] Dashboard manager si carica con KPI aggregati
+- [ ] Grafici e metriche visibili
+
+URL: `/backoffice/reports/financial`
+
+> **Nota:** accessibile solo se feature flag `financial_reports` = ON (attivabile da Admin → Feature Flags).
+
+- [ ] Con flag ON: pagina si carica con dati fatturato/abbonamenti
+- [ ] Con flag OFF: pagina vuota o messaggio feature non attiva
+
+---
+
 ## 13. Prenotazioni PT
 
-URL: `/backoffice/pt-bookings`
+URL: `/backoffice/bookings`
 
 - [ ] Lista prenotazioni si carica
 - [ ] Filtro per stato funziona
 
 ---
 
-## 14. Corsi
+## 14. Corsi collettivi
 
 URL: `/backoffice/group-classes`
+
+> **Nota:** visibile nel menu solo se feature flag `group_classes` = ON (gate `view-group-classes`).
+> Con flag OFF la voce di menu è nascosta; la route rimane tecnicamente accessibile navigando direttamente.
 
 - [ ] Lista corsi si carica
 - [ ] Crea nuovo corso → salva
 
 ---
 
-## 15. Messaggi
+## 15. Calendario e disponibilità
+
+URL: `/backoffice/calendar`
+
+- [ ] Calendario prenotazioni PT si carica
+- [ ] Slot visibili per i trainer
+
+URL: `/backoffice/calendar/availability`
+
+- [ ] Configurazione disponibilità settimanale trainer accessibile
+- [ ] Salvataggio disponibilità funziona
+
+---
+
+## 16. Campagne comunicazione
+
+URL: `/backoffice/communications/campaign`
+
+- [ ] Pagina si carica senza errori
+- [ ] Crea campagna → seleziona destinatari, messaggio → invia
+- [ ] Log invii visibile
+
+---
+
+## 17. Orari di apertura
+
+URL: `/backoffice/settings/opening-hours`
+
+- [ ] Pagina si carica senza errori
+- [ ] Orari per giorno visibili
+- [ ] Modifica orario → salva
+
+---
+
+## 18. Feature flags e feedback
+
+URL: `/backoffice/admin/feature-flags`
+
+- [ ] Pagina si carica (solo gestore)
+- [ ] Toggle flag ON/OFF funziona
+- [ ] Cambiamento flag riflesso immediatamente nell'UI (es. gruppo classi nel menu)
+
+URL: `/backoffice/admin/feedback`
+
+- [ ] Lista feedback in-app utenti visibile
+
+---
+
+## 19. Messaggi
 
 URL: `/backoffice/athletes/{id}/messages`
 

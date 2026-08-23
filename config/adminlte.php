@@ -402,7 +402,7 @@ return [
         ],
         [
             'text' => 'Orari di apertura',
-            'url'  => 'backoffice/settings/opening-hours',
+            'url' => 'backoffice/settings/opening-hours',
             'icon' => 'fas fa-door-open',
         ],
         ['header' => 'COMUNICAZIONE', 'can' => 'send-campaigns'],

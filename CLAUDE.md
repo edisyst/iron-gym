@@ -33,6 +33,7 @@ Gestionale palestra bodybuilding/fitness. Copre: anagrafica tesserati, abbonamen
 - SubscriptionPlan: tipologia abbonamento (durata, prezzo, ingressi)
 - Subscription: abbonamento attivo di un Member
 - AccessLog: registro accessi in struttura
+- DumbbellInventory: inventario manubri (peso_kg, quantity_pairs, is_active); usato da PlateInventoryManager (`/backoffice/admin/plate-inventory`)
 
 **Training core:**
 - MovementPattern: lookup pattern motori (compound_pattern / joint_action)
@@ -154,40 +155,15 @@ Exercise model usa `getRouteKeyName() = 'slug'` (route binding su slug).
 
 ## Stato sviluppo
 
-Step 1-10 tutti implementati. Sistema in verifica funzionale e test pre-pilota.
+Step 1-10 implementati. Release 01-08 completate. UX01-UX07 completate. Tag v0.9.0 (2026-07-05).
+Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01 completati.
 
-Bug risolti in verifica:
-- Cache equipment in ExerciseList: Eloquent Collection serializzata su file cache produceva `__PHP_Incomplete_Class` al deserialize. Fix: cache come array plain.
-- CACHE_STORE era `file`: portato a `redis` per supportare `Cache::tags()` usato in ExerciseObserver e per coerenza con QUEUE_CONNECTION=redis.
-- APP_URL era `localhost:8000`: corretto a `iron-gym.test` (Laragon).
+**Suite corrente:** 220/226 (6 skip pre-esistenti: Vite manifest + Volt auth — non legati a codice app).
+**PHPStan:** livello 6, 0 errori. **Pint:** conforme.
 
-Test E2E flusso training core verificati (2026-06-22): AthleteHistoryTest 4/4, suite 90/96, PHPStan 0 errori, Pint conforme.
+Storico completo release e audit: **`CHANGELOG.md`**.
 
-ExerciseDetailPage implementata (2026-06-25): ExerciseDetailPageTest 4/4, PHPStan 0 errori, Pint conforme.
-
-Revisione codice staged completata (2026-06-27): security (IDOR SessionFeedbackForm/TemplateBuilder, middleware backoffice, FK mesocycles, MessageThread), performance (cache lookup statici, deload signal fuori da render, RIR drift subquery SQL, index exercise_sets.completed_at), test DeloadEvaluator 5/5, 6 factory mancanti. Suite: 96/102, PHPStan 0 errori, Pint conforme.
-
-Setup pilota avviato (2026-06-28): PilotSeeder eseguito (4 piani reali, account gestore@iron-gym.test), feature flags impostati (financial_reports ON, altri OFF), PilotTemplateSeeder aggiunto.
-
-Flusso assegnazione verificato (2026-06-28): mesociclo PPL assegnato ad Atleta Test (ID=9, 4 settimane, 12 sessioni, 200 set). Dashboard atleta mostra Push/Pull/Legs pianificate. Receptionist bloccato con 403 su /assign. Bug fix: route `{mesocycle}` → `{mesocycleId}` (mismatch con mount() causava 500 su ogni dettaglio mesociclo).
-
-Registrazione atleta pilota completata (2026-06-28): Marco Rossi registrato (Member ID=7, User ID=11, Mensile, PPL attivo). MemberForm potenziato con sezione "Crea account accesso app" — crea User+ruolo atleta+user_id in un unico submit. Procedura registrazione ora 100% via UI backoffice.
-
-Verifica E2E pilota completata (2026-06-28): Marco Rossi login → dashboard atleta mostra PPL Settimana 1 di 4 con Push/Pull/Legs pianificate → sessione Push aperta con esercizi e set editabili. Flusso registrazione-abbonamento-mesociclo-sessione verificato end-to-end. Bug fix: `email_verified_at` non in `#[Fillable]` di User — ora impostata via assegnazione diretta dopo `User::create()`.
-
-Audit sicurezza v2 completato (2026-06-28): 15 fix applicati — ownership check trainer→atleta su 5 componenti backoffice (AthleteProfile, AthleteAnalytics, BodyMeasurementForm, VolumeLandmarkManager, MesocycleDetail), TrainingReport drilldown filtrato per trainer, MemberForm update bloccato per receptionist, BookingList.confirm() con trainer_id filter, MesocycleAssign verifica ruolo atleta, SessionFeedbackForm ownership in mount(), path traversal fix in ProgressPhotoController, bug overcounting sessions_count in AthleteAnalytics risolto, paginazione messaggi (limit 100). PHPStan 0 errori, Pint OK, suite 96/102. Report: docs/review/audit-codice.md.
-
-Fix residui LOW completati (2026-06-28): WeeklyProgressionService.applyDeload() usa ultima sessione per scheduled_date invece di MAX (baseline deload corretta); progressWeek() invalida cache WeeklyVolumeCalculator dopo progressione; MesocycleInstantiationService aggiunge parametro deload_last_week (default true); ProgressPhotoUpload usa Str::uuid() + elimina vecchio file prima di sovrascrivere; TemplateBuilder.removeExercise()/toggleGroup() filtrano per template_id su query group_key; VolumeLandmarkManager.render() singola query Muscle; PilotSeeder imposta email_verified_at. PHPStan 0 errori, Pint OK, suite 96/102. Audit completo — zero finding aperti.
-
-Revisione grafica backoffice completata (2026-06-28): audit UI + Fase 1 coerenza + Fase 2 brand identity. 9 commit. Dettagli: docs/review/audit-grafica.md. Suite 106/106, PHPStan 0, Pint OK.
-
-Fix responsive athlete completato (2026-06-28): H4 chiuso — CSS estratto in public/css/athlete.css, sidebar nav desktop (≥1024px), breakpoints tablet (768px)/desktop (1024px)/large (1280px). Suite 106/106, PHPStan 0, Pint OK. Tutti finding HIGH/MED dell'audit grafici chiusi.
-
-Release 01 UX sessione completata (2026-07-03): quick-log one-tap, previous performance inline, rest timer globale, warm-up generator. 15 nuovi test verde. PHPStan 0 errori, Pint OK. Suite 121/129 (8 fallimenti pre-esistenti: Vite manifest mancante + Volt auth pages, non legati a questa release).
-
-Release 02 Plate Calculator completata (2026-07-03): PlateInventory model+migration+seeder, PlateLoadoutCalculator service (greedy decrescente), PlateInventoryManager backoffice (CRUD inline gestore), modale atleta con stack grafico dischi e selettore peso barra. 4 test Unit PlateLoadoutCalculatorTest.
-
-Release 03 Offline-first sync completata (2026-07-03): IndexedDB queue client-side (Alpine store `syncQueue`, vanilla IDB), intercettori offline su quickLog/completeSet/generateWarmup/deleteWarmup in exercise-card, badge ⏳ su set pending, flush FIFO con backoff esponenziale al ripristino connettività. Endpoint `POST /athlete/session/sync` (SyncBatchController + SyncBatchRequest), idempotenza via `sync_operations` table (client_uuid UNIQUE), last-write-wins su completed_at vs client_timestamp. SW aggiornato a v2: stale-while-revalidate statici, network-first con cache fallback per pagine sessione (app shell offline). Meta CSRF aggiunta a layout athlete. 4 test SyncBatchTest verde. Suite 125/135 (10 fallimenti pre-esistenti: Vite manifest + Volt auth), PHPStan 0 errori, Pint conforme.
+Prossima attività: raccogliere feedback dai primi atleti pilota dopo prima sessione.
 
 ## Architettura offline
 
@@ -211,46 +187,6 @@ Release 03 Offline-first sync completata (2026-07-03): IndexedDB queue client-si
 - Statici: stale-while-revalidate (ritorna cache, aggiorna in background)
 - `/athlete/session/*`: network-first con fallback cache (pagina navigabile offline per tutta la sessione)
 - Livewire e pagine dinamiche: network-only, nessuna cache
-
-Release 04 Volume visuale completata (2026-07-03): body map SVG fronte/retro inline (25 path muscoli, `data-muscle="{slug}"`), colorazione intensity-0..5 via `intensityMap` Livewire → CSS, barre orizzontali con marker MEV/banda MAV/marker MRV per ogni muscolo, selettore settimana, interazione tap muscolo → scroll barra via Alpine `$dispatch`. Componente `WeeklyVolume` (`/athlete/volume`), voce "Volume" in nav desktop e bottom nav mobile (sostituisce Prenota nel bottom nav). 8 test WeeklyVolumeComponentTest verde. Suite 129/143 (8 pre-esistenti: Vite manifest + Volt auth), PHPStan 0 errori, Pint conforme.
-
-Release 05 PR detection completata (2026-07-03): tabella `personal_records` (athlete_id, exercise_id, exercise_set_id, record_type ENUM, value, achieved_at), model PersonalRecord, config/pr.php (max_reps_epley=12, min_sessions_before_pr=3). PersonalRecordDetector agganciato in WorkoutSession (quickLog + completeSet) e SyncBatchController (applyQuickLog + applyCompleteSet) — copre sia path online che offline. Toast Alpine auto-dismiss 4s su evento `pr-achieved`. Componente PersonalRecords (`/athlete/records`) con lista paginata e1RM per esercizio. Voce "Record" aggiunta in nav desktop e bottom nav. 6 test PersonalRecordDetectorTest verde. Suite 143/149 (6 skip pre-esistenti: Vite manifest + Volt auth), PHPStan 0 errori, Pint conforme.
-
-Release 06 Sostituzione esercizio completata (2026-07-03): colonna `substituted_from_exercise_id` nullable su `session_exercises` (FK ON DELETE SET NULL). Service `ExerciseSubstitutionFinder` (overlap su contribution_pct, max 5 candidati, stesso pattern XOR + measurement_type). Bottone "Sostituisci" in exercise-card (bloccato se set completati), bottom sheet modale con candidati e equipment slug. Badge audit "sost. da [originale]" in backoffice AthleteSessionHistory. `Exercise::primaryMuscles()` relation aggiunta. 14 test (ExerciseSubstitutionFinderTest 9 + WorkoutSessionSubstitutionTest 5) verdi. Suite 163/163 (6 skip pre-esistenti invariati), PHPStan 0 errori, Pint conforme.
-
-Release 07 Readiness check pre-sessione completata (2026-07-03): tabella `session_readiness_checks` (UNIQUE su training_session_id, campi 0-3). `ReadinessEvaluator` service con soglie configurabili. `WorkoutSession` intercetta sessioni `planned` senza check → modale 4 bottoni per campo (Alpine locale, zero round-trip) → proposta modulazione carichi (-5%/-10% arrotondato 2.5 kg, opzionale rimozione set). Trainer vede score/modulazione in AthleteSessionHistory. Fix pre-esistente: migration `personal_records` FK tipo incompatibile con `exercises.id` (UNSIGNED INT). 14 test ReadinessEvaluatorTest verdi. Suite 177/177 (171 pass + 6 skip invariati), PHPStan 0 errori, Pint conforme, `migrate:fresh --seed` OK.
-
-Release 08 Recap sessione condivisibile completata (2026-07-03): `SessionRecapBuilder` service (durata, tonnellaggio, set ratio, PR nel range, top 3 muscoli per SUM contribution_pct). `SessionRecap` Livewire (`/athlete/session/{session}/recap`). Card HTML+CSS standalone (1080x1350-friendly, no AdminLTE dep). Export PNG lato client via html-to-image + Web Share API con fallback download. Integrazione flusso: `SessionFeedbackForm::save()` e `skip()` → recap invece di dashboard. Storico: bottone share su sessioni completate. 6 test SessionRecapBuilderTest verdi. Suite 183/183 (177 pass + 6 skip invariati), PHPStan 0 errori, Pint conforme.
-
-UX01 Design foundation completata (2026-07-05): token CSS dark/light in athlete.css, 5 componenti Blade `x-athlete.*` (button, card, stat, badge, input-number), migrazione personal-records a ig-*, doc `docs/architecture/ui-atleta.md`.
-
-UX02 Redesign schermata sessione completata (2026-07-05): layout un-esercizio-alla-volta con navigazione prev/next/jump-drawer (bottom sheet Alpine). `WorkoutSession` esteso con `currentGroupIndex`, `nextGroup/prevGroup/jumpToGroup`. `setData` pre-compilato con planned_* se actual_* assente (input pre-filled). Zona azione fissa in basso: stepper `x-athlete.input-number` (reps/kg/RIR) + bottone FATTO 56px; rest timer integrato. `partials/session-exercise.blade.php` nuovo partial (set senza input inline; prev-performance color var(--ig-text-2)); feedback form selettori da 36px → 48px. Tap count invariato (1 tap set uguale al piano), migliorato per valori diversi (stepper vs tastiera). 7 test navigazione verdi. Suite: 190/190 (184 pass + 6 skip), PHPStan 0 errori, Pint conforme.
-
-UX03 Navigazione 4-tab e home action-oriented completata (2026-07-05): bottom nav consolidato a 4 tab (Home/Allenamento/Progressi/Profilo). `x-athlete.bottom-nav` componente Blade. Dashboard riscritta: hero card sessione prossima/in-corso, striscia settimana mesociclo, recap ultimo allenamento, empty state contestuali. Alpine.store('messages') inizializzato una volta nel layout (elimina doppio fetch badge). Safe-area iOS (env(safe-area-inset-top/bottom) + viewport-fit=cover). `--topbar-h` CSS token. manifest.json fix (scope/orientation/maskable). PHPStan 0, Pint OK.
-
-UX04 Stati, feedback e micro-interazioni completata (2026-07-05): `x-athlete.toast` (coda Alpine, auto-dismiss, ascolta `toast`+`set-completed`); `x-athlete.skeleton` (shimmer, prefers-reduced-motion); `x-athlete.empty-state` applicato a 7 punti census. `wire:loading.attr="disabled"` su tutti i bottoni azione. `livewire:request-failed` → toast "Connessione assente". `@error` → `.ig-field-error` token. `--ig-transition 180ms` + `prefers-reduced-motion`. Suite: 190/190, PHPStan 0, Pint OK.
-
-UX05 Coerenza visiva e de-inlining CSS completata (2026-07-05): `--ig-intensity-0..5` CSS custom props (unica fonte per body-map SVG e wv-dot legenda). `.ig-tab-group/.ig-tab/.ig-tab--active` estratti da 5 view (booking, profile, progress, training-hub×2); Alpine usa `:class` invece di `:style`. `.ig-form-input/.ig-form-label/.is-invalid` campi form semantici. `.metric-options label:has(input:checked)` active state radio via CSS puro, zero PHP conditional inline. profile.blade.php completamente migrato a classi ig-*. Suite: 190/190, PHPStan 0, Pint OK.
-
-**Tag v0.9.0** (2026-07-05): UX01–UX05 completate — design foundation PWA atleta. Git flow inizializzato (develop da master). Prossime release su branch `feature/*` via git flow.
-
-Audit ergonomia UX05-B completato (2026-07-06): fix safe-area topbar (padding shorthand override), contrasto WCAG AA (accent light #C05000, text-3 dark #888888 / light #767676), 13 touch target sotto 48px portati a token, font-size 14px→16px nel plate modal, aria-label su input-number zona azione, autocomplete su form profilo. Fase C aperta: tokenizzare colori modali dark-only, action zone a 360px, translate-y-full in Tailwind safelist. Suite: 190/190, PHPStan 0, Pint OK. Report: docs/reviews/ui-atleta-ergonomia-2026-07-06.md.
-
-UX06 Toggle tema e viewport completata (2026-07-17): aria-pressed + label testuale sul toggle tema esistente; toggle viewport (solo local) via meta[name=viewport] riscritta da script inline head + sezione devtools in /athlete/profile + badge fisso "Vista desktop". 5 test ThemeToggleTest verdi. Suite: 189/195 (6 skip pre-esistenti invariati), PHPStan 0 errori, Pint conforme.
-
-UX07 Scala UI maggiorata completata (2026-07-18): touch-target 48→56px, touch-target-xl 64px (nuovo, CTA sessione + step height), text-xl 28→34px, text-lg 22→26px, text-md 18→22px, text-display 42→48px. Token ig-touch-target-sm/xl/ig-bottom-nav-h/ig-nav-icon introdotti. Tokenizzati tutti i valori hardcoded principali: ig-btn--sm, ig-num-input__step font-size, metric-options label, ig-form-input padding, ig-tab padding, bottom-nav min-height, svg nav icon, ws-muscle-chip/ws-meta-chip, body-map-label, ws-warmup-badge, ws-icon-btn padding. Bottone FATTO: rimossa inline style, nuova classe ws-action-done-btn (64px). Step buttons action zone: min-width 44px, min-height 64px (non bloccano layout orizzontale su SE). Override min-height:48px rimossi da modali readiness e modulazione. Suite: 189/195 (6 skip invariati), PHPStan 0 errori, Pint conforme.
-
-Audit funzionale PWA atleta completato (2026-08-18): 11 finding identificati, 8 chiusi nel branch feature/audit-funzionale-atleta-2026-08-18. Fix principali: storico include sessioni `skipped`; null-guard member in cancel booking; tab Corsi gated su feature flag; set time-based visibili nel dettaglio; N+1 eliminato in WeeklyVolume mount; push subscribe idempotente con getSubscription(); translate-y-full in safelist Tailwind; componente History orfano rimosso. Suite: 189/195 (6 skip pre-esistenti invariati), PHPStan 0 errori, Pint OK. Report: docs/reviews/ui-atleta-funzionale-2026-08-18.md.
-
-Audit receptionist completato (2026-08-19): 17 finding (P0-P3), 11 fix applicati in 6 commit, E2E suite 24 test. Fix principali: 2 P0 autorizzazione (CommunicationCampaign e AvailabilityManager tolte dal perimetro receptionist), 3 P1 auth (abort_unless in BookingList/GroupClassManager/TrainerCalendar), blocco check-in su certificato medico scaduto, banner avviso cert. nella home atleta, correzioni UX (link nascosti per receptionist, badge stato abbonamento in italiano, wire:loading modale check-in), indice composito last_name/first_name su members. Decisione dominio: GroupClassManager.removeParticipant() intenzionalmente accessibile al receptionist (operazione front-desk). Fix contestuali: HasFactory su Subscription, PtBooking, ClassBooking; PtBookingFactory end_time valorizzato. Finding aperti in backlog: ricerca per nome in SubscriptionList (P2), colonna cert. in AccessLogList (P3), SubscriptionForm typeahead (P3), Form Request refactor (P3). Suite: 24/24 ReceptionistCheckinTest, PHPStan 0, Pint OK. Report: docs/review/audit-receptionist-2026-08-19.md.
-
-Restrizione sezioni TRAINING e ADMIN per receptionist completata (2026-08-19): abort_unless (gestore|trainer) aggiunto in mount() di ExerciseList/Form/Detail, TemplateList/Form/Builder, MesocycleList, MesocycleAssign; abort_unless (gestore) in PlateInventoryManager. Gate access-training-section e access-admin-section definiti in AppServiceProvider. Header TRAINING, Esercizi, Schede template, Mesocicli e header ADMIN, Inventario Dischi gated nella sidebar adminlte.php con can. 7 nuovi test. Suite: 32/32 ReceptionistCheckinTest, PHPStan 0, Pint OK.
-
-Prossima attività: raccogliere feedback dai primi atleti pilota dopo prima sessione.
-
-HK01 Housekeeping completato (2026-08-22): audit codice morto, view/componenti orfani, dipendenze Composer, documentazione. Rimossi: `sessionStatusClass/Label` in Dashboard, componente `Athlete\Progress` + view orfane, stub `dashboard.blade.php`, `config/barbell.php`. Dipendenze: `ext-gd`/`ext-mbstring` aggiunti a require, `laravel/tinker` spostato in require-dev, `TelescopeServiceProvider` protetto con `class_exists` guard. Docs corretti: tabella `training_sessions` (era `sessions` in 2 doc), attribuzione e1RM a `E1rmCalculator` (non `WeeklyVolumeCalculator`), URL session history. Suite: 220/226 (6 skip pre-esistenti invariati), PHPStan 0 errori, Pint conforme. Report: docs/audit/hk01-report.md.
-
-HK01 Audit v2 completato (2026-08-22): ri-verifica manuale sezioni 1 (codice morto) e 3 (componenti orfani) con evidenza file-per-file. Corrette tre voci fabricate nel report v1 (scope inesistenti su DumbbellInventory e PtBooking). Tutti i 12 scope Eloquent verificati come utilizzati. Rimosso `partials/exercise-card.blade.php` (partial orfano pre-UX02, superato da session-exercise.blade.php). Suite: 220/226 (6 skip pre-esistenti invariati), PHPStan 0 errori. Report: docs/audit/hk01-report-v2.md.
 
 ## Setup pilota — dati e procedure
 

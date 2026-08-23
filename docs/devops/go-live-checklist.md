@@ -4,7 +4,8 @@
 - [ ] Server produzione provisionato (OS, PHP 8.3, MySQL 8, Redis 7, Nginx)
 - [ ] Certificato SSL installato (Let's Encrypt)
 - [ ] Variabili .env produzione configurate (DB, Redis, mail, Flare, VAPID, backup)
-- [ ] GitHub Secrets configurati (STAGING_HOST, STAGING_USER, STAGING_KEY, PROD_HOST, ecc.)
+- [ ] GitHub Secrets configurati (PROD_HOST, PROD_USER, PROD_KEY, ecc.)
+  > Nota: deploy staging non ancora configurato (pipeline CI commentata); i secret STAGING_* non sono necessari.
 
 ## Database
 - [ ] `php artisan migrate --force` eseguito su produzione
@@ -29,7 +30,8 @@
 - [ ] SMTP produzione configurato e verificato
 
 ## Roll-out graduale
+- [ ] Feature flag `financial_reports` ON (attivare da subito per il gestore)
 - [ ] Feature flag `periodization_engine` OFF (attivare dopo 2 settimane di test manuale)
-- [ ] Feature flag `push_notifications` OFF (attivare dopo verifica service worker)
-- [ ] Feature flag `group_classes` OFF (attivare se la palestra li usa)
+- [ ] Feature flag `push_notifications` OFF (attivare dopo verifica service worker su dispositivo reale)
+- [ ] Feature flag `group_classes` OFF (attivare se la palestra usa corsi collettivi)
 - [ ] Primo gruppo pilota: 3-5 atleti + 1 trainer

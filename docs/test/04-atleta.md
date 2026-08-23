@@ -31,8 +31,8 @@ URL: `/athlete`
 - [ ] Lista sessioni della settimana corrente visibile
 - [ ] Status sessioni mostrato con icona/colore (planned / in_progress / completed / skipped)
 - [ ] Prossima sessione evidenziata o con CTA
-- [ ] Nav desktop visibile (≥1024px): Oggi, Storico, Volume, Record, Esercizi, Prenota, Messaggi, Profilo
-- [ ] Bottom nav visibile (mobile): Oggi, Storico, Volume, Record, Profilo
+- [ ] Nav desktop visibile (≥1024px): Home, Allenamento (+ Esercizi sub), Progressi (+ Record sub), Profilo (+ Prenota sub, + Messaggi sub)
+- [ ] Bottom nav visibile (mobile): 4 tab — Home, Allenamento, Progressi, Profilo
 
 ---
 
@@ -118,9 +118,13 @@ URL: `/athlete/session/{id}`
 
 ## 6. Feedback post-sessione
 
-URL: `/athlete/session/{id}/feedback`
+> **Nota:** non esiste un URL separato per il feedback. Dopo `completeSession()` il componente
+> WorkoutSession mostra il form di feedback embedded nella stessa pagina (`$showFeedback=true`);
+> l'URL rimane `/athlete/session/{id}`. Il redirect a `/recap` avviene solo dopo save o skip feedback.
 
-- [ ] Form feedback si carica dopo completamento sessione
+URL: `/athlete/session/{id}` (con form feedback embedded)
+
+- [ ] Form feedback si carica dopo completamento sessione (stesso URL, form embedded)
 - [ ] Campi visibili: pump, sforzo percepito, dolori articolari, performance, ore sonno, stress
 - [ ] Scala 0-3 funziona (click su ogni valore)
 - [ ] Campo note opzionale
@@ -234,7 +238,7 @@ URL: `/athlete/messages`
 
 ## 15. Profilo
 
-URL: `/profile`
+URL: `/athlete/profile`
 
 - [ ] Pagina profilo si carica
 - [ ] Modifica nome/email → salva

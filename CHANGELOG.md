@@ -223,6 +223,103 @@ Suite: 189/195 (6 skip pre-esistenti invariati). PHPStan 0 errori. Pint conforme
 
 ---
 
+## DOC01 — Audit documentazione (2026-08-23)
+
+**Branch:** `develop`
+
+Audit completo dei 40 file `.md` del progetto in 6 fasi: inventario, snapshot codebase, diff doc vs codice, applicazione correzioni, riscrittura docs/test/, chiusura.
+
+**Findings risolti:** 2 CRITICO (nome tabella `sessions`→`training_sessions` in glossary, direzione sync .claude/ vs docs/domain/), 4 MEDIO (URL inesistenti in docs/test/, feedback URL atleta), 7 BASSO (URL sbagliati, sezioni mancanti, nav labels). 6 file archiviati (dated reports — non aggiornati per design).
+
+**File modificati (Fase 4 — domini e architettura):**
+- `docs/architecture/component-map.md`: route fix `{mesocycle}→{mesocycleId}`, namespace PlateInventoryManager, rimosso componente Progress orfano, aggiunti 3 seeder
+- `.claude/docs/domain/glossary.md`: `tabella sessions` → `tabella training_sessions`
+- `docs/domain/exercises-catalog.md`: allineato a `.claude/` (aggiunta sezione SQLite e note storiche)
+- `.claude/docs/README.md`: direzione sync corretta (fonte autoritativa è `.claude/`, non docs/)
+- `docs/installation.md`: aggiunto account atleta `alessia.colombo@example.com`
+- `docs/devops/go-live-checklist.md`: flag `financial_reports` in roll-out, nota staging non configurato
+- `docs/review/test-per-ruolo.md`: 177→226 test, 31 nuove voci, tabella ruoli aggiornata
+- `docs/README.md`: aggiunti 5 link mancanti (audit, reviews)
+
+**File modificati (Fase 5 — docs/test/):**
+- `docs/test/01-gestore.md`: rimossa sezione subscription-plans inesistente, URL corretti, 9+ sezioni mancanti aggiunte
+- `docs/test/02-trainer.md`: sezione lista atleti corretta, URL disponibilità corretti, sezioni mancanti aggiunte, 403 attesi documentati
+- `docs/test/03-receptionist.md`: comportamento update membro chiarito, URL corretti, gate group_classes documentato, lista 403 aggiunta
+- `docs/test/04-atleta.md`: feedback URL inesistente rimosso, URL profilo corretto, nav labels corretti (4 tab bottom nav)
+
+Suite: 220/226 (6 skip pre-esistenti invariati). PHPStan 0 errori. Pint conforme.
+
+---
+
+## Tag v0.9.0 (2026-07-05)
+
+UX01–UX05 completate — design foundation PWA atleta stabile. Git flow inizializzato (branch `develop` da `master`). Prossime release su branch `feature/*` via git flow.
+
+Suite: 190/190 (184 pass + 6 skip). PHPStan 0, Pint OK.
+
+---
+
+## UX05 — Coerenza visiva e de-inlining CSS (2026-07-05)
+
+**Obiettivo:** unica fonte di verità per i token di intensità, classi tab/form semantiche, zero conditional PHP inline.
+
+- `--ig-intensity-0..5`: CSS custom properties unica fonte per body-map SVG e legenda `wv-dot`; Alpine usa `:class` anziché `:style`.
+- `.ig-tab-group / .ig-tab / .ig-tab--active`: estratte da 5 view (booking, profile, progress, training-hub×2).
+- `.ig-form-input / .ig-form-label / .is-invalid`: campi form semantici uniformi.
+- `.metric-options label:has(input:checked)`: active state radio via CSS puro — zero classe PHP condizionale inline.
+- `profile.blade.php`: completamente migrata a classi `ig-*`.
+
+Suite: 190/190, PHPStan 0, Pint OK.
+
+---
+
+## UX04 — Stati, feedback e micro-interazioni (2026-07-05)
+
+**Obiettivo:** feedback visivo istantaneo, stati di caricamento, animazioni accessibili.
+
+- `x-athlete.toast`: coda Alpine, auto-dismiss, ascolta eventi `toast` e `set-completed`.
+- `x-athlete.skeleton`: shimmer animato con `prefers-reduced-motion` rispettato.
+- `x-athlete.empty-state`: applicato in 7 punti (dashboard, storico, record, volume, misurazioni, prenotazioni, messaggi).
+- `wire:loading.attr="disabled"` su tutti i bottoni azione Livewire.
+- `livewire:request-failed` → toast "Connessione assente".
+- `@error` → `.ig-field-error` token semantico.
+- `--ig-transition: 180ms` + `prefers-reduced-motion: reduce` override globale.
+
+Suite: 190/190, PHPStan 0, Pint OK.
+
+---
+
+## UX03 — Navigazione 4-tab e home action-oriented (2026-07-05)
+
+**Obiettivo:** architettura informativa chiara; home come punto di partenza per l'azione immediata.
+
+- Bottom nav consolidata a 4 tab: **Home / Allenamento / Progressi / Profilo**. Componente `x-athlete.bottom-nav`.
+- Dashboard riscritta: hero card sessione prossima/in-corso, striscia settimana mesociclo, recap ultimo allenamento, empty state contestuali.
+- `Alpine.store('messages')` inizializzato una volta nel layout atleta (elimina doppio fetch badge).
+- Safe-area iOS: `env(safe-area-inset-top/bottom)` + `viewport-fit=cover` nel meta viewport.
+- `--topbar-h` CSS token per calcoli layout.
+- `manifest.json`: fix `scope`, `orientation`, icona maskable.
+
+Suite: 190/190, PHPStan 0, Pint OK.
+
+---
+
+## UX02 — Redesign schermata sessione (2026-07-05)
+
+**Obiettivo:** interfaccia sessione pensata per l'uso in palestra con una mano sola — un esercizio alla volta.
+
+- Layout un-esercizio-alla-volta con navigazione prev/next e jump-drawer (bottom sheet Alpine).
+- `WorkoutSession`: aggiunti `currentGroupIndex`, `nextGroup()`, `prevGroup()`, `jumpToGroup()`.
+- `setData`: pre-compilato con `planned_*` se `actual_*` assente (input pre-filled).
+- Zona azione fissa in basso: stepper `x-athlete.input-number` (reps/kg/RIR) + bottone FATTO 56px; rest timer integrato.
+- Nuovo partial `partials/session-exercise.blade.php` (sostituisce `exercise-card.blade.php` rimosso in HK01).
+- Feedback form: selettori da 36px → 48px.
+- 7 test navigazione verdi (`WorkoutSessionNavigationTest`).
+
+Suite: 190/190 (184 pass + 6 skip), PHPStan 0, Pint conforme.
+
+---
+
 ## UX01 — Design foundation PWA atleta (2026-07-05)
 
 **Obiettivo:** design system condiviso (token CSS, componenti Blade) come base per UX02–UX05.

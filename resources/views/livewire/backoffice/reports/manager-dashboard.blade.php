@@ -159,6 +159,33 @@
         </div>
     </div>
 
+    {{-- Tabella sessioni PT per trainer --}}
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Sessioni PT completate per trainer</h3>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-sm table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th>Trainer</th>
+                        <th>Sessioni completate</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($ptSessionsPerTrainer as $row)
+                        <tr>
+                            <td>{{ $row->trainer }}</td>
+                            <td>{{ $row->sessions_count }}</td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="2" class="text-center text-muted">Nessuna sessione PT nel periodo.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     @push('js')
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
     <script>

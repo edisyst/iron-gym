@@ -89,6 +89,15 @@ class ManagerDashboard extends Component
             ->orderBy('s.expires_at')
             ->get();
 
+        $ptSessionsPerTrainer = DB::table('pt_bookings')
+            ->join('users', 'users.id', '=', 'pt_bookings.trainer_id')
+            ->whereBetween('pt_bookings.booked_date', [$from->toDateString(), $to->toDateString()])
+            ->where('pt_bookings.status', 'completed')
+            ->groupBy('pt_bookings.trainer_id', 'users.name')
+            ->select('users.name as trainer', DB::raw('COUNT(*) as sessions_count'))
+            ->orderByDesc('sessions_count')
+            ->get();
+
         return view('livewire.backoffice.reports.manager-dashboard', [
             'revenueEuro' => $revenueEuro,
             'newMembers' => $kpi->newMembersCount($from, $to),
@@ -99,6 +108,7 @@ class ManagerDashboard extends Component
             'trainerOccupancy' => $trainerOccupancy,
             'trainerRevenue' => $trainerRevenue,
             'atRiskMembers' => $atRiskMembers,
+            'ptSessionsPerTrainer' => $ptSessionsPerTrainer,
         ])->layout('layouts.backoffice')->layoutData(['page_title' => 'Dashboard gestore']);
     }
 }

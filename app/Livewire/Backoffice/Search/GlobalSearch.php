@@ -7,6 +7,7 @@ use App\Models\Mesocycle;
 use App\Models\User;
 use App\Models\WorkoutTemplate;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
@@ -35,7 +36,12 @@ class GlobalSearch extends Component
             $athletes = Member::where(function ($q) use ($term) {
                 $q->where('first_name', 'like', $term)
                     ->orWhere('last_name', 'like', $term)
-                    ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", [$term]);
+                    ->orWhereRaw(
+                        DB::connection()->getDriverName() === 'sqlite'
+                            ? "(first_name || ' ' || last_name) LIKE ?"
+                            : "CONCAT(first_name, ' ', last_name) LIKE ?",
+                        [$term]
+                    );
             })
                 ->whereHas('user', fn ($q) => $q->whereHas('roles', fn ($r) => $r->where('name', 'atleta')))
                 ->with('user')

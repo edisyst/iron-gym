@@ -173,7 +173,9 @@ Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01
 
 **R12** completato: `periodization_engine` attivato in PilotSeeder (`financial_reports` + `periodization_engine` on per default); test Livewire `MesocycleDetail` (applyProgression, forceDeload, role guards, 6 test); test Livewire `VolumeLandmarkManager` (save, resetToDefaults, auth trainer, 6 test).
 
-**Suite corrente:** 300 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
+**R13** completato: sezione "Abbonamento" nel profilo atleta (piano, scadenza, badge stato), fix cross-db `CONCAT→||` in `TrainingReport` e `GlobalSearch`, 14 nuovi test (`AthleteProfileSubscriptionTest` 4, `TrainingReportTest` 6, `GlobalSearchTest` 4).
+
+**Suite corrente:** 314 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
 
 Storico completo release e audit: **`CHANGELOG.md`**.
 

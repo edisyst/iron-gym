@@ -248,16 +248,18 @@ class Booking extends Component
                 ->get()
             : collect();
 
-        // Occorrenze future prenotabili
-        $futureClasses = ClassOccurrence::with(['groupClass', 'trainer', 'confirmedBookings'])
-            ->where('status', 'planned')
-            ->where('date', '>=', now()->toDateString())
-            ->orderBy('date')
-            ->orderBy('start_time')
-            ->get();
+        // Occorrenze future prenotabili (solo se feature attiva)
+        $futureClasses = Feature::active('group_classes')
+            ? ClassOccurrence::with(['groupClass', 'trainer', 'confirmedBookings'])
+                ->where('status', 'planned')
+                ->where('date', '>=', now()->toDateString())
+                ->orderBy('date')
+                ->orderBy('start_time')
+                ->get()
+            : collect();
 
-        // Iscrizioni attive dell'atleta a occorrenze future
-        $myClassBookings = $member
+        // Iscrizioni attive dell'atleta a occorrenze future (solo se feature attiva)
+        $myClassBookings = ($member && Feature::active('group_classes'))
             ? ClassBooking::with('occurrence.groupClass')
                 ->where('member_id', $member->id)
                 ->whereIn('status', ['confirmed', 'waitlisted'])

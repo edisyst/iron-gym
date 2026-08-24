@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Backoffice\Calendar;
 
+use App\Jobs\NotifyClassCancellation;
 use App\Models\ClassBooking;
 use App\Models\ClassOccurrence;
 use App\Models\GroupClass;
@@ -178,7 +179,8 @@ class GroupClassManager extends Component
                 'status' => 'cancelled',
                 'cancellation_reason' => 'Corso cancellato dal gestore.',
             ]);
-            session()->flash('success', 'Corso cancellato (aveva partecipanti iscritti).');
+            dispatch(new NotifyClassCancellation($occurrence))->afterResponse();
+            session()->flash('success', 'Corso cancellato — partecipanti notificati.');
         } else {
             $occurrence->delete();
             session()->flash('success', 'Corso eliminato.');
@@ -228,7 +230,7 @@ class GroupClassManager extends Component
 
     public function markAttended(int $bookingId): void
     {
-        abort_unless(Auth::user()->hasAnyRole(['gestore', 'trainer']), 403);
+        abort_unless(Auth::user()->hasAnyRole(['gestore', 'trainer', 'receptionist']), 403);
 
         $booking = ClassBooking::findOrFail($bookingId);
         $booking->update(['status' => 'confirmed', 'attended_at' => now()]);
@@ -236,7 +238,7 @@ class GroupClassManager extends Component
 
     public function markNoShow(int $bookingId): void
     {
-        abort_unless(Auth::user()->hasAnyRole(['gestore', 'trainer']), 403);
+        abort_unless(Auth::user()->hasAnyRole(['gestore', 'trainer', 'receptionist']), 403);
 
         $booking = ClassBooking::findOrFail($bookingId);
         $booking->update(['status' => 'no_show', 'attended_at' => null]);

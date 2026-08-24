@@ -2,6 +2,26 @@
 
 ---
 
+## R09 Step 4 — Notifica cancellazione, check-in receptionist, feature flag gate (2026-08-24)
+
+**Notifica cancellazione occorrenza:**
+- `ClassOccurrenceCancelledNotification` (mail + database + webpush): pattern identico a `WaitlistPromotionNotification`
+- `NotifyClassCancellation` job: itera `confirmedBookings()->with('member.user')`, salta senza account; dispatched `afterResponse` da `GroupClassManager::deleteClass()` quando `$hasConfirmed`
+- Flash message aggiornato: "Corso cancellato — partecipanti notificati."
+
+**Check-in receptionist:**
+- `GroupClassManager::markAttended` e `markNoShow`: aggiunto `'receptionist'` ai ruoli ammessi
+- `completeOccurrence` rimane riservato a gestore e trainer
+
+**Feature flag gate (`Athlete\Booking`):**
+- `render()`: `futureClasses` e `myClassBookings` caricati solo se `Feature::active('group_classes')`; in precedenza le query giravano sempre indipendentemente dal flag
+
+**Test (7):** dispatch job su deleteClass con confermati; no dispatch senza confermati; job notifica confermati con account; salta senza account; salta waitlist; receptionist markAttended; receptionist markNoShow
+
+Suite: 262 pass / 6 skipped. PHPStan 0 errori. Pint OK.
+
+---
+
 ## R09 Step 3 — ClassScheduleManager e attendance tracking (2026-08-24)
 
 **`ClassScheduleManager`** Livewire, route `/backoffice/group-classes/schedules`:

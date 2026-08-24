@@ -2,6 +2,23 @@
 
 ---
 
+## R26 — Tab "Accessi" nel profilo atleta (2026-08-24)
+
+**`Athlete\Profile` — tab "Accessi":**
+- Nuovo tab tra "Corsi" (o "Sessioni" se flag off) e "Messaggi"
+- Mostra gli ultimi 5 ingressi ordinati per `checked_in_at DESC`
+- Ogni riga: data, ora, nome piano abbonamento (se presente), badge "Entrata" verde
+- Stato vuoto "Nessun accesso registrato"
+- Isolamento: query filtrata su `member_id` del tesserato collegato all'atleta loggato
+
+**`Profile::render()`:** aggiunto `$recentAccessLogs` con `AccessLog::with('subscription.plan')->where('member_id', $member->id)->orderByDesc('checked_in_at')->limit(5)`.
+
+**Test (5):** tab visibile; ingresso con badge Entrata; piano abbonamento mostrato; stato vuoto; accessi di altri tesserati esclusi.
+
+Suite: 393 pass / 6 skipped. PHPStan 0 errori. Pint OK.
+
+---
+
 ## R25 — Rinnovo abbonamento rapido (2026-08-24)
 
 **`Backoffice\Subscriptions\SubscriptionList` — bottone "Rinnova":**

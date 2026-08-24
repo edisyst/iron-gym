@@ -199,7 +199,9 @@ Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01
 
 **R25** completato: Rinnovo abbonamento rapido — bottone "Rinnova" in `SubscriptionList` (gestore/receptionist); `SubscriptionForm::mount()` pre-popola `member_id` e `plan_id` da query string e calcola `expires_at` automaticamente. 5 nuovi test. R25 chiuso.
 
-**Suite corrente:** 388 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
+**R26** completato: tab "Accessi" nel profilo atleta (ultimi 5 ingressi con data, ora, piano, badge Entrata), 5 nuovi test. R26 chiuso.
+
+**Suite corrente:** 393 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
 
 Storico completo release e audit: **`CHANGELOG.md`**.
 

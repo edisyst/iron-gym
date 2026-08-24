@@ -34,6 +34,10 @@
             Corsi
         </button>
         @endif
+        <button type="button" wire:click="$set('activeSection','accessi')"
+                class="ig-tab {{ $activeSection === 'accessi' ? 'ig-tab--active' : '' }}">
+            Accessi
+        </button>
         <button type="button" wire:click="$set('activeSection','messaggi')"
                 class="ig-tab {{ $activeSection === 'messaggi' ? 'ig-tab--active' : '' }}">
             Messaggi
@@ -506,6 +510,43 @@
                 @endforeach
             </div>
         @endif
+    @endif
+
+    {{-- ===== SEZIONE ACCESSI ===== --}}
+    @if ($activeSection === 'accessi')
+        <div class="athlete-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                <div class="section-title">ULTIMI ACCESSI</div>
+            </div>
+
+            @forelse ($recentAccessLogs as $log)
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;
+                            padding:12px 0;border-bottom:1px solid var(--ig-border);">
+                    <div style="flex:1;">
+                        <div style="font-size:var(--ig-text-sm);font-weight:600;color:var(--ig-text-1);">
+                            {{ $log->checked_in_at->format('d/m/Y') }}
+                        </div>
+                        <div style="font-size:var(--ig-text-xs);color:var(--ig-text-3);margin-top:2px;">
+                            {{ $log->checked_in_at->format('H:i') }}
+                            @if ($log->subscription?->plan)
+                                · {{ $log->subscription->plan->name }}
+                            @endif
+                        </div>
+                    </div>
+                    <div>
+                        <span style="font-size:var(--ig-text-xs);font-weight:600;color:var(--ig-success);
+                                     background:var(--ig-success-subtle);border-radius:var(--ig-radius-sm);
+                                     padding:2px 8px;">
+                            Entrata
+                        </span>
+                    </div>
+                </div>
+            @empty
+                <div style="text-align:center;padding:var(--ig-sp-6) 0;color:var(--ig-text-3);">
+                    <p style="font-size:var(--ig-text-base);margin:0;">Nessun accesso registrato.</p>
+                </div>
+            @endforelse
+        </div>
     @endif
 
     {{-- ===== SEZIONE MESSAGGI ===== --}}

@@ -197,7 +197,9 @@ Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01
 
 **R24** completato: Check-in Rapido backoffice (`/backoffice/checkin`). Ricerca live tesserato, validazione cert+abbonamento+accessi, cronologia accessi odierni. Voce "Check-in" in sidebar. 7 nuovi test. R24 chiuso.
 
-**Suite corrente:** 383 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
+**R25** completato: Rinnovo abbonamento rapido — bottone "Rinnova" in `SubscriptionList` (gestore/receptionist); `SubscriptionForm::mount()` pre-popola `member_id` e `plan_id` da query string e calcola `expires_at` automaticamente. 5 nuovi test. R25 chiuso.
+
+**Suite corrente:** 388 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
 
 Storico completo release e audit: **`CHANGELOG.md`**.
 

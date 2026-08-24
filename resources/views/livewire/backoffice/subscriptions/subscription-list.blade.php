@@ -40,6 +40,7 @@
                         <th>Scadenza</th>
                         <th>Accessi</th>
                         <th>Stato</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -69,10 +70,22 @@
                                 @endphp
                                 <span class="badge badge-{{ $badge }}">{{ $label }}</span>
                             </td>
+                            <td class="text-right">
+                                @can('manage-subscriptions')
+                                <a
+                                    href="{{ route('backoffice.subscriptions.create', ['member_id' => $sub->member_id, 'plan_id' => $sub->plan_id]) }}"
+                                    class="btn btn-sm btn-outline-success"
+                                    aria-label="Rinnova abbonamento"
+                                    title="Rinnova"
+                                >
+                                    <i class="fas fa-redo"></i>
+                                </a>
+                                @endcan
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center text-muted py-4">Nessun abbonamento trovato.</td>
+                            <td colspan="7" class="text-center text-muted py-4">Nessun abbonamento trovato.</td>
                         </tr>
                     @endforelse
                 </tbody>

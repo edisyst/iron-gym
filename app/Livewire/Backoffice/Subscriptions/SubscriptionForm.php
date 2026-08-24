@@ -26,6 +26,15 @@ class SubscriptionForm extends Component
     public function mount(): void
     {
         $this->started_at = today()->format('Y-m-d');
+
+        if ($memberId = request()->query('member_id')) {
+            $this->member_id = (string) $memberId;
+        }
+
+        if ($planId = request()->query('plan_id')) {
+            $this->plan_id = (string) $planId;
+            $this->updatedPlanId();
+        }
     }
 
     public function updatedPlanId(): void

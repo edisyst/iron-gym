@@ -37,6 +37,8 @@ use App\Livewire\Backoffice\Subscriptions\SubscriptionList;
 use App\Livewire\Backoffice\Templates\TemplateBuilder;
 use App\Livewire\Backoffice\Templates\TemplateForm;
 use App\Livewire\Backoffice\Templates\TemplateList;
+use App\Models\Subscription;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('backoffice')
@@ -118,6 +120,41 @@ Route::prefix('backoffice')
         Route::get('/reports/training', TrainingReport::class)
             ->middleware('role:gestore|trainer')
             ->name('reports.training');
+
+        // Export CSV abbonamenti — solo gestore
+        Route::get('/subscriptions/export', function (Request $request) {
+            $filter = $request->query('filter', 'all');
+
+            $query = Subscription::with(['member', 'plan'])
+                ->when($filter === 'active', fn ($q) => $q->active())
+                ->when($filter === 'expired', fn ($q) => $q->where('status', 'expired'))
+                ->when($filter === 'expiring', fn ($q) => $q->expiringSoon(30))
+                ->when($filter === 'suspended', fn ($q) => $q->where('status', 'suspended'))
+                ->orderByDesc('created_at');
+
+            $subscriptions = $query->get();
+            $filename = 'abbonamenti-'.now()->format('Y-m-d').'.csv';
+
+            return response()->streamDownload(function () use ($subscriptions) {
+                $handle = fopen('php://output', 'w');
+                fwrite($handle, "\xEF\xBB\xBF"); // BOM per Excel
+                fputcsv($handle, ['Cognome', 'Nome', 'Email', 'Piano', 'Inizio', 'Scadenza', 'Stato'], ';');
+
+                foreach ($subscriptions as $sub) {
+                    fputcsv($handle, [
+                        $sub->member->last_name,
+                        $sub->member->first_name,
+                        $sub->member->email,
+                        $sub->plan->name,
+                        $sub->started_at->format('d/m/Y'),
+                        $sub->expires_at->format('d/m/Y'),
+                        $sub->status,
+                    ], ';');
+                }
+
+                fclose($handle);
+            }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
+        })->middleware('role:gestore')->name('subscriptions.export');
 
         // Step 10 — admin tools e campagne comunicazione (solo gestore)
         Route::middleware('role:gestore')->group(function () {

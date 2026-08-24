@@ -2,6 +2,24 @@
 
 ---
 
+## R29 — Export CSV abbonamenti (2026-08-24)
+
+**Route `GET /backoffice/subscriptions/export` (solo gestore):**
+- Rispetta il filtro corrente tramite query param `?filter=all|active|expired|expiring|suspended`
+- Output: CSV UTF-8 con BOM (compatibile Excel), separatore `;`
+- Colonne: Cognome, Nome, Email, Piano, Inizio, Scadenza, Stato
+- Nome file: `abbonamenti-YYYY-MM-DD.csv`
+
+**`SubscriptionList` view — bottone "Esporta CSV":**
+- Bottone `btn-outline-secondary` con icona `fa-file-csv` visibile solo a gestore (`@role('gestore')`)
+- Link `<a href>` che passa il filtro attivo corrente; nessuna azione Livewire necessaria
+
+**Test (4):** gestore scarica CSV (200 + Content-Type text/csv); CSV contiene nome tesserato e piano; receptionist ottiene 403; filtro `active` esclude abbonamenti scaduti dal CSV.
+
+Suite: 406 pass / 6 skipped. PHPStan 0 errori. Pint OK.
+
+---
+
 ## R28 — Note interne sul tesserato (2026-08-24)
 
 **`MemberForm` (già completo):** campo `notes` textarea presente in property, `mount()`, `rules()` e view — nessuna modifica necessaria.

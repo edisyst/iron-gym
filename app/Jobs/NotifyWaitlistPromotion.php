@@ -24,7 +24,7 @@ class NotifyWaitlistPromotion implements ShouldQueue
     {
         $member = $this->booking->member;
         if ($member?->user !== null) {
-            $member->user->notify(new WaitlistPromotionNotification($this->booking->groupClass));
+            $member->user->notify(new WaitlistPromotionNotification($this->booking->occurrence));
         }
     }
 }

@@ -1,7 +1,7 @@
 {{-- Gestione corsi collettivi: CRUD e pannello iscritti --}}
 <div>
     <div class="row">
-        {{-- Colonna lista corsi --}}
+        {{-- Colonna lista occorrenze --}}
         <div class="{{ $showDetail ? 'col-md-7' : 'col-md-12' }}">
             <div class="card card-outline card-warning">
                 <div class="card-header">
@@ -10,7 +10,7 @@
                         {{-- Filtro status --}}
                         <select wire:model.live="filterStatus" class="form-control form-control-sm mr-2 filter-w-xs">
                             <option value="">Tutti</option>
-                            <option value="scheduled">Programmati</option>
+                            <option value="planned">Programmati</option>
                             <option value="completed">Completati</option>
                             <option value="cancelled">Cancellati</option>
                         </select>
@@ -101,38 +101,39 @@
                         </thead>
                         <tbody>
                             @forelse($classes as $class)
+                            @php $occ = $class; @endphp
                             <tr>
-                                <td>{{ $class->name }}</td>
-                                <td>{{ $class->scheduled_at->format('d/m/Y H:i') }}</td>
-                                <td>{{ $class->trainer?->name }}</td>
+                                <td>{{ $occ->groupClass->name }}</td>
+                                <td>{{ $occ->date->format('d/m/Y') }} {{ substr($occ->start_time, 0, 5) }}</td>
+                                <td>{{ $occ->trainer?->name }}</td>
                                 <td>
-                                    <span class="{{ $class->is_full ? 'text-danger font-weight-bold' : '' }}">
-                                        {{ $class->confirmed_count }} / {{ $class->max_participants }}
+                                    <span class="{{ $occ->is_full ? 'text-danger font-weight-bold' : '' }}">
+                                        {{ $occ->confirmed_count }} / {{ $occ->capacity }}
                                     </span>
                                 </td>
                                 <td>
                                     @php
-                                        $cls = match($class->status) {
-                                            'scheduled' => 'success',
+                                        $cls = match($occ->status) {
+                                            'planned'   => 'success',
                                             'completed' => 'info',
                                             'cancelled' => 'danger',
                                             default     => 'secondary',
                                         };
                                     @endphp
-                                    <span class="badge badge-{{ $cls }}">{{ $class->status }}</span>
+                                    <span class="badge badge-{{ $cls }}">{{ $occ->status }}</span>
                                 </td>
                                 <td class="text-right table-actions">
-                                    <button wire:click="openDetail({{ $class->id }})"
-                                            class="btn btn-sm btn-info mr-1" title="Dettaglio iscritti" aria-label="Iscritti {{ $class->name }}">
+                                    <button wire:click="openDetail({{ $occ->id }})"
+                                            class="btn btn-sm btn-info mr-1" title="Dettaglio iscritti" aria-label="Iscritti {{ $occ->groupClass->name }}">
                                         <i class="fas fa-users" aria-hidden="true"></i>
                                     </button>
-                                    <button wire:click="openForm({{ $class->id }})"
-                                            class="btn btn-sm btn-primary mr-1" title="Modifica" aria-label="Modifica {{ $class->name }}">
+                                    <button wire:click="openForm({{ $occ->id }})"
+                                            class="btn btn-sm btn-primary mr-1" title="Modifica" aria-label="Modifica {{ $occ->groupClass->name }}">
                                         <i class="fas fa-edit" aria-hidden="true"></i>
                                     </button>
-                                    <button wire:click="deleteClass({{ $class->id }})"
+                                    <button wire:click="deleteClass({{ $occ->id }})"
                                             wire:confirm="Eliminare/cancellare questo corso?"
-                                            class="btn btn-sm btn-danger" title="Elimina" aria-label="Elimina {{ $class->name }}">
+                                            class="btn btn-sm btn-danger" title="Elimina" aria-label="Elimina {{ $occ->groupClass->name }}">
                                         <i class="fas fa-trash" aria-hidden="true"></i>
                                     </button>
                                 </td>
@@ -160,7 +161,7 @@
         <div class="col-md-5">
             <div class="card card-outline card-info">
                 <div class="card-header">
-                    <h3 class="card-title">{{ $selectedClass->name }}</h3>
+                    <h3 class="card-title">{{ $selectedClass->groupClass->name }}</h3>
                     <div class="card-tools">
                         <button wire:click="$set('showDetail', false)" class="btn btn-sm btn-secondary">
                             <i class="fas fa-times"></i>
@@ -170,12 +171,12 @@
                 <div class="card-body p-2">
                     <p class="text-muted small mb-1">
                         <i class="fas fa-calendar mr-1"></i>
-                        {{ $selectedClass->scheduled_at->format('d/m/Y H:i') }}
-                        &mdash; {{ $selectedClass->duration_minutes }} min
+                        {{ $selectedClass->date->format('d/m/Y') }} {{ substr($selectedClass->start_time, 0, 5) }}
+                        &mdash; {{ $selectedClass->groupClass->duration_minutes }} min
                     </p>
                     <p class="text-muted small mb-3">
                         <i class="fas fa-users mr-1"></i>
-                        {{ $selectedClass->confirmed_count }} / {{ $selectedClass->max_participants }} iscritti
+                        {{ $selectedClass->confirmed_count }} / {{ $selectedClass->capacity }} iscritti
                     </p>
 
                     {{-- Iscritti confermati --}}

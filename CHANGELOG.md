@@ -2,6 +2,26 @@
 
 ---
 
+## R20 — Messaggi nel profilo atleta (2026-08-24)
+
+**`Athlete\Profile` — tab "Messaggi":**
+- Nuovo tab tra "Sessioni" e "Password"
+- Badge contatore non letti sul tab (numero rosso inline)
+- Mostra gli ultimi 5 messaggi (inviati o ricevuti) ordinati per `created_at DESC`
+- Ogni riga: nome contatto (prefisso "Tu →" se inviato), anteprima corpo (60 char), data/ora, pallino rosso se non letto
+- Sezione titolo con conteggio "N non letti" se presenti
+- Link "Apri messaggi" → `/athlete/messages`; link "Vai ai messaggi →" in fondo se presenti
+- Stato vuoto con CTA "Scrivi al tuo trainer →"
+- Isolamento: query `sender_id = id OR receiver_id = id`
+
+**`Profile::render()`:** aggiunto `$recentMessages` e `$unreadMessagesCount` (via `Message::unread()`).
+
+**Test (5):** messaggio ricevuto visibile con mittente; messaggio inviato con prefisso Tu; badge non letti; stato vuoto; messaggi tra altri utenti non inclusi.
+
+Suite: 360 pass / 6 skipped. PHPStan 0 errori. Pint OK.
+
+---
+
 ## R19 — Storico sessioni nel profilo atleta (2026-08-24)
 
 **`Athlete\Profile` — tab "Sessioni":**

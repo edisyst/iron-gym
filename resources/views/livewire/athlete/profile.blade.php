@@ -28,6 +28,18 @@
                 class="ig-tab {{ $activeSection === 'sessioni' ? 'ig-tab--active' : '' }}">
             Sessioni
         </button>
+        <button type="button" wire:click="$set('activeSection','messaggi')"
+                class="ig-tab {{ $activeSection === 'messaggi' ? 'ig-tab--active' : '' }}">
+            Messaggi
+            @if ($unreadMessagesCount > 0)
+                <span style="display:inline-flex;align-items:center;justify-content:center;
+                             background:var(--ig-danger);color:#fff;font-size:10px;font-weight:700;
+                             border-radius:var(--ig-radius-full);min-width:16px;height:16px;
+                             padding:0 4px;margin-left:4px;">
+                    {{ $unreadMessagesCount }}
+                </span>
+            @endif
+        </button>
         <button type="button" wire:click="$set('activeSection','password')"
                 class="ig-tab {{ $activeSection === 'password' ? 'ig-tab--active' : '' }}">
             Password
@@ -394,6 +406,73 @@
                     <a href="{{ route('athlete.history') }}"
                        style="font-size:var(--ig-text-sm);color:var(--ig-accent);text-decoration:none;">
                         Storico completo →
+                    </a>
+                </div>
+            @endif
+        </div>
+    @endif
+
+    {{-- ===== SEZIONE MESSAGGI ===== --}}
+    @if ($activeSection === 'messaggi')
+        <div class="athlete-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                <div class="section-title">
+                    MESSAGGI RECENTI
+                    @if ($unreadMessagesCount > 0)
+                        <span style="font-size:var(--ig-text-xs);font-weight:700;color:var(--ig-danger);
+                                     margin-left:6px;">{{ $unreadMessagesCount }} non letti</span>
+                    @endif
+                </div>
+                <a href="{{ route('athlete.messages') }}"
+                   style="font-size:var(--ig-text-xs);font-weight:600;color:var(--ig-accent);text-decoration:none;">
+                    Apri messaggi
+                </a>
+            </div>
+
+            @forelse ($recentMessages as $msg)
+                @php
+                    $isSent = $msg->sender_id === auth()->id();
+                    $contact = $isSent ? $msg->receiver : $msg->sender;
+                    $isUnread = ! $isSent && $msg->read_at === null;
+                @endphp
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;
+                            padding:12px 0;border-bottom:1px solid var(--ig-border);">
+                    <div style="flex:1;min-width:0;">
+                        <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+                            <span style="font-size:var(--ig-text-sm);font-weight:{{ $isUnread ? '700' : '600' }};
+                                         color:{{ $isUnread ? 'var(--ig-text-1)' : 'var(--ig-text-2)' }};">
+                                {{ $isSent ? 'Tu → ' : '' }}{{ $contact?->name ?? '—' }}
+                            </span>
+                            @if ($isUnread)
+                                <span style="width:7px;height:7px;border-radius:50%;
+                                             background:var(--ig-danger);flex-shrink:0;"></span>
+                            @endif
+                        </div>
+                        <div style="font-size:var(--ig-text-xs);color:var(--ig-text-3);
+                                    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;">
+                            {{ Str::limit($msg->body, 60) }}
+                        </div>
+                    </div>
+                    <div style="font-size:var(--ig-text-xs);color:var(--ig-text-3);flex-shrink:0;">
+                        {{ $msg->created_at->format('d/m H:i') }}
+                    </div>
+                </div>
+            @empty
+                <div style="text-align:center;padding:var(--ig-sp-6) 0;color:var(--ig-text-3);">
+                    <p style="font-size:var(--ig-text-base);margin:0;">Nessun messaggio.</p>
+                    <a href="{{ route('athlete.messages') }}"
+                       style="font-size:var(--ig-text-sm);color:var(--ig-accent);text-decoration:none;
+                              display:inline-block;margin-top:8px;">
+                        Scrivi al tuo trainer →
+                    </a>
+                </div>
+            @endforelse
+
+            @if ($recentMessages->isNotEmpty())
+                <div style="text-align:center;margin-top:14px;">
+                    <a href="{{ route('athlete.messages') }}"
+                       style="font-size:var(--ig-text-sm);color:var(--ig-accent);text-decoration:none;">
+                        Vai ai messaggi →
                     </a>
                 </div>
             @endif

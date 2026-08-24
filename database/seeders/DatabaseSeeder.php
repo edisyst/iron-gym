@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
                 ActiveMesocycleSeeder::class,
                 ProgressDemoSeeder::class,
                 BookingDemoSeeder::class,
+                R09R31DemoSeeder::class,
             ]);
         }
     }

@@ -80,7 +80,9 @@ class ManagerDashboard extends Component
             ])
             ->select(
                 'm.id as member_id',
-                DB::raw("CONCAT(m.first_name, ' ', m.last_name) as nome"),
+                DB::raw(DB::connection()->getDriverName() === 'sqlite'
+                    ? "(m.first_name || ' ' || m.last_name) as nome"
+                    : "CONCAT(m.first_name, ' ', m.last_name) as nome"),
                 's.expires_at',
                 DB::raw('(SELECT MAX(checked_in_at) FROM access_logs WHERE member_id = m.id) as last_access'),
             )

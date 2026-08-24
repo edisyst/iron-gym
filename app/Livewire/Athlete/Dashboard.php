@@ -6,6 +6,7 @@ use App\Models\ClassBooking;
 use App\Models\Member;
 use App\Models\Mesocycle;
 use App\Models\MicrocycleWeek;
+use App\Models\PtBooking;
 use App\Models\TrainingSession;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -39,10 +40,14 @@ class Dashboard extends Component
     /** @var Collection<int, ClassBooking> */
     public Collection $upcomingClassBookings;
 
+    /** @var Collection<int, PtBooking> */
+    public Collection $upcomingPtBookings;
+
     public function mount(): void
     {
         $this->weekSessions = collect();
         $this->upcomingClassBookings = collect();
+        $this->upcomingPtBookings = collect();
 
         // Avviso certificato medico
         $member = Member::where('user_id', auth()->id())->first();
@@ -68,6 +73,15 @@ class Dashboard extends Component
                     ->limit(3)
                     ->get();
             }
+
+            $this->upcomingPtBookings = PtBooking::with('trainer')
+                ->where('member_id', $member->id)
+                ->whereIn('status', ['pending', 'confirmed'])
+                ->whereDate('booked_date', '>=', today())
+                ->orderBy('booked_date')
+                ->orderBy('start_time')
+                ->limit(3)
+                ->get();
         }
 
         // Cerca il mesociclo attivo dell'atleta con le settimane e sessioni

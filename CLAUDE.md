@@ -175,7 +175,9 @@ Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01
 
 **R13** completato: sezione "Abbonamento" nel profilo atleta (piano, scadenza, badge stato), fix cross-db `CONCAT→||` in `TrainingReport` e `GlobalSearch`, 14 nuovi test (`AthleteProfileSubscriptionTest` 4, `TrainingReportTest` 6, `GlobalSearchTest` 4).
 
-**Suite corrente:** 314 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
+**R14** completato: sessioni PT future nella dashboard atleta (`upcomingPtBookings`), fix `CONCAT→||` in `ManagerDashboard`, test `AthleteAnalytics` (auth isolation, 4 test), test `ManagerDashboard` (2 test), test `AthleteDashboardPtBooking` (4 test).
+
+**Suite corrente:** 324 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
 
 Storico completo release e audit: **`CHANGELOG.md`**.
 

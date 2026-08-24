@@ -159,6 +159,7 @@ Exercise model usa `getRouteKeyName() = 'slug'` (route binding su slug).
 ## Stato sviluppo
 
 Step 1-10 implementati. Release 01-08 completate. UX01-UX07 completate. Tag v0.9.0 (2026-07-05).
+**v1.2.3** (2026-08-24): fix Pint `binary_operator_spaces` in 4 file di test (AthleteProfileClassBookingsTest, AthleteProfileMessagesTest, AthleteProfilePersonalRecordsTest, AthleteProfileSessionsTest). Pipeline CI ripristinata.
 Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01 completati.
 **R09 Step 1** completato: schema GroupClass→ClassSchedule→ClassOccurrence, consumer adattati, test aggiornati.
 **R09 Step 2** completato: command `classes:generate-occurrences`, prerequisiti enroll (abbonamento+cert), overlap check atleta e trainer, 29 nuovi test.

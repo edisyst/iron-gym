@@ -5,6 +5,7 @@ namespace App\Livewire\Athlete;
 use App\Livewire\Actions\Logout;
 use App\Models\BodyMeasurement;
 use App\Models\Member;
+use App\Models\PersonalRecord;
 use App\Models\PtBooking;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -132,7 +133,14 @@ class Profile extends Component
             ->limit(5)
             ->get();
 
-        return view('livewire.athlete.profile', compact('subscription', 'upcomingPtBookings', 'pastPtBookings', 'recentMeasurements'))
+        $recentPrs = PersonalRecord::with('exercise')
+            ->where('athlete_id', Auth::id())
+            ->where('record_type', 'e1rm')
+            ->orderByDesc('achieved_at')
+            ->limit(5)
+            ->get();
+
+        return view('livewire.athlete.profile', compact('subscription', 'upcomingPtBookings', 'pastPtBookings', 'recentMeasurements', 'recentPrs'))
             ->layout('layouts.athlete');
     }
 }

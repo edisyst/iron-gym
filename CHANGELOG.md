@@ -2,6 +2,27 @@
 
 ---
 
+## R09 Step 3 — ClassScheduleManager e attendance tracking (2026-08-24)
+
+**`ClassScheduleManager`** Livewire, route `/backoffice/group-classes/schedules`:
+- CRUD per ClassSchedule (palinsesto ricorrente): group_class, weekday (select Lun–Dom), start_time, trainer, valid_from, valid_until, is_active
+- `toggleActive(id)`: switch on/off senza perdere le occorrenze già generate
+- `deleteSchedule(id)`: blocca se esistono occorrenze future pianificate (`whereDate('date', '>=', today())`)
+
+**Attendance tracking in `GroupClassManager`:**
+- `completeOccurrence(id)`: solo da `planned`; transitions → `completed`; `confirmedBookings()->update(['attended_at' => now()])` bulk (esclude no_show già segnati)
+- `markNoShow(bookingId)`: `status → no_show`, `attended_at → null`
+- `markAttended(bookingId)`: `status → confirmed`, `attended_at → now()` (ripristino no_show)
+- View: pulsante "Completa" in tabella e nel pannello dettaglio (visibile solo su planned); sezione no-show con ripristino; badge Presente su iscritti con attended_at; edit/completa nascosti su occorrenze completed/cancelled
+
+**Test (13 nuovi):**
+- `ClassScheduleManagerTest` (7 casi): lista, create, validazione, edit, toggle, delete con/senza occorrenze future
+- `AttendanceTest` (6 casi): complete bulk, idempotenza su già-completed, markNoShow, markAttended, ordine no-show→complete, ruolo trainer
+
+Suite: 255 pass / 6 skipped. PHPStan 0 errori. Pint OK.
+
+---
+
 ## R09 Step 2 — Command, prerequisiti e overlap corsi collettivi (2026-08-24)
 
 **Command `classes:generate-occurrences`:**

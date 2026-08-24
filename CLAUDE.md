@@ -162,8 +162,9 @@ Step 1-10 implementati. Release 01-08 completate. UX01-UX07 completate. Tag v0.9
 Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01 completati.
 **R09 Step 1** completato: schema GroupClass→ClassSchedule→ClassOccurrence, consumer adattati, test aggiornati.
 **R09 Step 2** completato: command `classes:generate-occurrences`, prerequisiti enroll (abbonamento+cert), overlap check atleta e trainer, 29 nuovi test.
+**R09 Step 3** completato: ClassScheduleManager (CRUD palinsesto), attendance tracking (completeOccurrence/markAttended/markNoShow), 13 nuovi test.
 
-**Suite corrente:** 241 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
+**Suite corrente:** 255 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
 
 Storico completo release e audit: **`CHANGELOG.md`**.
 

@@ -27,6 +27,13 @@
         <div class="card-header">
             <h3 class="card-title">Tesserati</h3>
             <div class="card-tools">
+                @role('gestore')
+                <a href="{{ route('backoffice.members.export', ['search' => $search, 'certFilter' => $certFilter]) }}"
+                   class="btn btn-sm btn-outline-secondary mr-1"
+                   title="Esporta CSV">
+                    <i class="fas fa-file-csv"></i> Esporta CSV
+                </a>
+                @endrole
                 @can('manage-members')
                 <a href="{{ route('backoffice.members.create') }}" class="btn btn-primary btn-sm">
                     <i class="fas fa-plus"></i> Nuovo tesserato

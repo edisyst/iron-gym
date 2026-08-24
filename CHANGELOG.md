@@ -2,6 +2,24 @@
 
 ---
 
+## R30 — Export CSV tesserati (2026-08-24)
+
+**Route `GET /backoffice/members/export` (solo gestore):**
+- Rispetta i filtri correnti tramite query params `?search=X&certFilter=Y` (stessi valori di `MemberList`)
+- Output: CSV UTF-8 con BOM, separatore `;`
+- Colonne: Cognome, Nome, Email, Telefono, Abbonamento, Scadenza abb., Cert. medico, Attivo
+- Nome file: `tesserati-YYYY-MM-DD.csv`
+
+**`MemberList` view — bottone "Esporta CSV":**
+- Bottone `btn-outline-secondary` con icona `fa-file-csv` visibile solo a gestore (`@role('gestore')`)
+- Link `<a href>` che passa i filtri attivi correnti (`$search`, `$certFilter`)
+
+**Test (4):** gestore scarica CSV (200 + Content-Type); CSV contiene cognome e nome; receptionist ottiene 403; filtro `certFilter=missing` esclude tesserati con cert valido.
+
+Suite: 410 pass / 6 skipped. PHPStan 0 errori. Pint OK.
+
+---
+
 ## R29 — Export CSV abbonamenti (2026-08-24)
 
 **Route `GET /backoffice/subscriptions/export` (solo gestore):**

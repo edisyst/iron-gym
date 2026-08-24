@@ -177,7 +177,9 @@ Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01
 
 **R14** completato: sessioni PT future nella dashboard atleta (`upcomingPtBookings`), fix `CONCAT→||` in `ManagerDashboard`, test `AthleteAnalytics` (auth isolation, 4 test), test `ManagerDashboard` (2 test), test `AthleteDashboardPtBooking` (4 test).
 
-**Suite corrente:** 324 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
+**R15** completato: test `BookingList` (7 test: confirm/cancel/restore con isolamento ruoli), test `CommunicationCampaign` (4 test: send job, validazione body, filtro active), `group_classes` attivato in `PilotSeeder`. R15 chiuso.
+
+**Suite corrente:** 335 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
 
 Storico completo release e audit: **`CHANGELOG.md`**.
 

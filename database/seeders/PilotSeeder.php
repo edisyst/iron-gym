@@ -61,7 +61,8 @@ class PilotSeeder extends Seeder
     {
         Feature::activateForEveryone('financial_reports');
         Feature::activateForEveryone('periodization_engine');
+        Feature::activateForEveryone('group_classes');
 
-        $this->command->info('Feature flags attivati: financial_reports, periodization_engine.');
+        $this->command->info('Feature flags attivati: financial_reports, periodization_engine, group_classes.');
     }
 }

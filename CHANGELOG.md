@@ -2,6 +2,35 @@
 
 ---
 
+## R09 Step 1 — Schema corsi collettivi (2026-08-24)
+
+Riscrittura semantica da modello monolitico a tre livelli: GroupClass (definizione) → ClassSchedule (palinsesto) → ClassOccurrence (istanza datata).
+
+**Migration (5 file):**
+- `create_class_trainer_table`: pivot abilitazione trainer-corso (PK composta, cascade/restrict)
+- `create_class_schedules_table`: palinsesto ricorrente; weekday 0=lun..6=dom (stessa convenzione TrainerAvailability)
+- `create_class_occurrences_table`: istanza datata; unique (class_schedule_id, date) per idempotenza command; NULL non coperto (corretto)
+- `transform_group_classes_table`: aggiunge slug/default_capacity/room/color/is_active; data migration con deduplica per name; crea class_trainer e class_occurrences da righe esistenti; rimuove trainer_id/scheduled_at/max_participants/status/cancellation_reason; down() best-effort
+- `transform_class_bookings_table`: aggiunge class_occurrence_id/attended_at/booked_by; popola via old_class_id helper; enum status → confirmed/waitlisted/cancelled_by_athlete/cancelled_by_gym/no_show; rimuove class_id; unique → (class_occurrence_id, member_id)
+
+**Model nuovi:** `ClassSchedule`, `ClassOccurrence` (con accessor confirmed_count/available_spots/is_full)
+
+**Model aggiornati:** `GroupClass` (relazioni trainers BelongsToMany, schedules/occurrences HasMany, scope active()), `ClassBooking` (relazione occurrence(), promuove su class_occurrence_id)
+
+**Service/Job/Notification aggiornati:** `ClassBookingService` (opera su ClassOccurrence; cancel → cancelled_by_athlete), `NotifyWaitlistPromotion` (usa booking->occurrence), `WaitlistPromotionNotification` (accetta ClassOccurrence)
+
+**Livewire:** `GroupClassManager` (lista/CRUD occorrenze, firstOrCreate GroupClass per slug), `TrainerCalendar` (occorrenze nel calendario), `Athlete\Booking` (enrollClass/cancelClass su occurrenceId)
+
+**Factory:** `ClassScheduleFactory`, `ClassOccurrenceFactory` (nuovi); `GroupClassFactory`, `ClassBookingFactory` (aggiornati al nuovo schema)
+
+**Seeder:** `GroupClassSeeder` (idempotente, 4 corsi con palinsesto + occorrenze 2 settimane, solo dev)
+
+**Config:** `config/classes.php` (booking_opens_days, booking_closes_minutes, free_cancel_hours, generation_horizon_days)
+
+**Test:** `BookingTest` adattato (ClassOccurrence, nuovi test relazioni/vincoli/null-schedule); `ReceptionistCheckinTest` adattato (ClassOccurrence factory, status cancelled_by_athlete)
+
+---
+
 ## DOC01 — Audit documentazione (2026-08-23)
 
 Audit completo dei 40 file `.md` in 6 fasi. Findings risolti: 2 CRITICO, 4 MEDIO, 7 BASSO. 6 file archiviati (dated reports).

@@ -5,6 +5,7 @@ namespace App\Livewire\Athlete;
 use App\Livewire\Actions\Logout;
 use App\Models\BodyMeasurement;
 use App\Models\Member;
+use App\Models\Message;
 use App\Models\PersonalRecord;
 use App\Models\PtBooking;
 use App\Models\TrainingSession;
@@ -150,7 +151,21 @@ class Profile extends Component
             ->limit(5)
             ->get();
 
-        return view('livewire.athlete.profile', compact('subscription', 'upcomingPtBookings', 'pastPtBookings', 'recentMeasurements', 'recentPrs', 'recentSessions'))
+        $userId = Auth::id();
+
+        $recentMessages = Message::with(['sender', 'receiver'])
+            ->where(fn ($q) => $q->where('sender_id', $userId)->orWhere('receiver_id', $userId))
+            ->orderByDesc('created_at')
+            ->limit(5)
+            ->get();
+
+        $unreadMessagesCount = Message::where('receiver_id', $userId)->unread()->count();
+
+        return view('livewire.athlete.profile', compact(
+            'subscription', 'upcomingPtBookings', 'pastPtBookings',
+            'recentMeasurements', 'recentPrs', 'recentSessions',
+            'recentMessages', 'unreadMessagesCount'
+        ))
             ->layout('layouts.athlete');
     }
 }

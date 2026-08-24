@@ -95,7 +95,9 @@ class TrainingReport extends Component
             })
             ->select(
                 'u.id as athlete_id',
-                DB::raw("CONCAT(m.first_name, ' ', m.last_name) as nome"),
+                DB::raw(DB::connection()->getDriverName() === 'sqlite'
+                    ? "(m.first_name || ' ' || m.last_name) as nome"
+                    : "CONCAT(m.first_name, ' ', m.last_name) as nome"),
                 'mc.name as mesociclo',
                 DB::raw('COUNT(DISTINCT ts_done.id) as sessioni_completate'),
                 DB::raw('COUNT(DISTINCT ts_skip.id) as sessioni_saltate'),
@@ -141,7 +143,9 @@ class TrainingReport extends Component
             ->where('ts.status', 'completed')
             ->whereIn('mc.id', $lastMesoIds)
             ->select(
-                DB::raw("CONCAT(mc.name, ' — Sett. ', mw.week_number) as label"),
+                DB::raw(DB::connection()->getDriverName() === 'sqlite'
+                    ? "(mc.name || ' — Sett. ' || mw.week_number) as label"
+                    : "CONCAT(mc.name, ' — Sett. ', mw.week_number) as label"),
                 DB::raw('COUNT(ts.id) as session_count'),
             )
             ->groupBy('mw.id', 'mc.name', 'mw.week_number')

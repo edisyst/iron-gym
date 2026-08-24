@@ -8,6 +8,10 @@
                 class="ig-tab {{ $activeSection === 'info' ? 'ig-tab--active' : '' }}">
             Dati
         </button>
+        <button type="button" wire:click="$set('activeSection','abbonamento')"
+                class="ig-tab {{ $activeSection === 'abbonamento' ? 'ig-tab--active' : '' }}">
+            Abbonamento
+        </button>
         <button type="button" wire:click="$set('activeSection','password')"
                 class="ig-tab {{ $activeSection === 'password' ? 'ig-tab--active' : '' }}">
             Password
@@ -62,6 +66,69 @@
                     <span class="athlete-badge badge-gray" style="text-transform:capitalize;">{{ $role }}</span>
                 @endforeach
             </div>
+        </div>
+    @endif
+
+    {{-- ===== SEZIONE ABBONAMENTO ===== --}}
+    @if ($activeSection === 'abbonamento')
+        <div class="athlete-card">
+            <div class="section-title" style="margin-bottom:16px;">ABBONAMENTO ATTIVO</div>
+            @if ($subscription)
+                @php
+                    $daysLeft = (int) now()->startOfDay()->diffInDays($subscription->expires_at, false);
+                    $isExpiringSoon = $daysLeft >= 0 && $daysLeft <= 14;
+                    $isExpired = $daysLeft < 0;
+                    $statusColor = $isExpired ? 'var(--ig-danger)' : ($isExpiringSoon ? 'var(--ig-warning)' : 'var(--ig-success)');
+                    $statusLabel = $isExpired ? 'Scaduto' : ($isExpiringSoon ? 'In scadenza' : 'Attivo');
+                @endphp
+
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                    <span style="font-size:var(--ig-text-md);font-weight:700;color:var(--ig-text-1);">
+                        {{ $subscription->plan?->name ?? 'Piano sconosciuto' }}
+                    </span>
+                    <span style="font-size:var(--ig-text-xs);font-weight:700;color:{{ $statusColor }};
+                                 background:color-mix(in srgb, {{ $statusColor }} 15%, transparent);
+                                 padding:3px 10px;border-radius:var(--ig-radius-full);">
+                        {{ $statusLabel }}
+                    </span>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+                    <div style="background:var(--ig-surface-raised);border-radius:var(--ig-radius-sm);padding:12px;">
+                        <div style="font-size:var(--ig-text-xs);color:var(--ig-text-3);margin-bottom:4px;">INIZIO</div>
+                        <div style="font-size:var(--ig-text-sm);font-weight:600;color:var(--ig-text-1);">
+                            {{ $subscription->started_at->format('d/m/Y') }}
+                        </div>
+                    </div>
+                    <div style="background:var(--ig-surface-raised);border-radius:var(--ig-radius-sm);padding:12px;">
+                        <div style="font-size:var(--ig-text-xs);color:var(--ig-text-3);margin-bottom:4px;">SCADENZA</div>
+                        <div style="font-size:var(--ig-text-sm);font-weight:600;color:{{ $statusColor }};">
+                            {{ $subscription->expires_at->format('d/m/Y') }}
+                        </div>
+                    </div>
+                </div>
+
+                @if (! $isExpired)
+                    <div style="font-size:var(--ig-text-sm);color:var(--ig-text-2);">
+                        @if ($daysLeft === 0)
+                            Scade oggi.
+                        @else
+                            {{ $daysLeft }} {{ $daysLeft === 1 ? 'giorno rimanente' : 'giorni rimanenti' }}.
+                        @endif
+                    </div>
+                @endif
+
+                @if ($subscription->accesses_remaining !== null)
+                    <div style="margin-top:12px;font-size:var(--ig-text-sm);color:var(--ig-text-2);">
+                        Accessi rimanenti: <strong style="color:var(--ig-text-1);">{{ $subscription->accesses_remaining }}</strong>
+                    </div>
+                @endif
+            @else
+                <div style="text-align:center;padding:var(--ig-sp-6) 0;color:var(--ig-text-3);">
+                    <p style="font-size:var(--ig-text-base);margin:0;">Nessun abbonamento attivo.</p>
+                    <p style="font-size:var(--ig-text-sm);margin:8px 0 0;">Rivolgiti alla reception per rinnovarlo.</p>
+                </div>
+            @endif
         </div>
     @endif
 

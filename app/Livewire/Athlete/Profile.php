@@ -3,6 +3,7 @@
 namespace App\Livewire\Athlete;
 
 use App\Livewire\Actions\Logout;
+use App\Models\Member;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -94,7 +95,14 @@ class Profile extends Component
 
     public function render(): View
     {
-        return view('livewire.athlete.profile')
+        $member = Member::where('user_id', Auth::id())->first();
+        $subscription = $member?->subscriptions()
+            ->with('plan')
+            ->where('status', 'active')
+            ->orderByDesc('expires_at')
+            ->first();
+
+        return view('livewire.athlete.profile', compact('subscription'))
             ->layout('layouts.athlete');
     }
 }

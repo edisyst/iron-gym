@@ -2,6 +2,20 @@
 
 ---
 
+## R31 — Statistiche PT in ManagerDashboard (2026-08-24)
+
+**`ManagerDashboard` — sezione "Sessioni PT completate per trainer":**
+- Query `pt_bookings JOIN users` filtrata per `booked_date` nel periodo selezionato e `status = completed`
+- Raggruppamento per `trainer_id`, ordinamento decrescente per conteggio
+- Tabella con colonne: Trainer, Sessioni completate
+- Messaggio "Nessuna sessione PT nel periodo" se risultato vuoto
+
+**Test (3):** tabella mostra conteggio corretto per trainer; sessioni non-completed escluse; sessioni fuori range di date escluse.
+
+Suite: 413 pass / 6 skipped. PHPStan 0 errori. Pint OK.
+
+---
+
 ## R30 — Export CSV tesserati (2026-08-24)
 
 **Route `GET /backoffice/members/export` (solo gestore):**

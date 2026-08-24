@@ -209,7 +209,9 @@ Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01
 
 **R30** completato: Export CSV tesserati (`/backoffice/members/export?search=X&certFilter=Y`), solo gestore. Colonne: Cognome, Nome, Email, Telefono, Abbonamento, Scadenza abb., Cert. medico, Attivo. Bottone in `MemberList`. 4 nuovi test. R30 chiuso.
 
-**Suite corrente:** 410 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
+**R31** completato: tabella "Sessioni PT completate per trainer" in `ManagerDashboard`; query `pt_bookings JOIN users` filtrata per periodo e `status=completed`, raggruppata per trainer. 3 nuovi test. R31 chiuso.
+
+**Suite corrente:** 413 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
 
 Storico completo release e audit: **`CHANGELOG.md`**.
 

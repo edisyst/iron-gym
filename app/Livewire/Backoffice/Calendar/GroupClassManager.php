@@ -205,8 +205,10 @@ class GroupClassManager extends Component
 
     public function removeParticipant(int $bookingId): void
     {
+        abort_unless(Auth::user()->hasAnyRole(['gestore', 'trainer', 'receptionist']), 403);
+
         $booking = ClassBooking::findOrFail($bookingId);
-        app(ClassBookingService::class)->cancel($booking);
+        app(ClassBookingService::class)->cancel($booking, byGym: true);
         session()->flash('success', 'Partecipante rimosso.');
     }
 

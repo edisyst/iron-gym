@@ -81,16 +81,18 @@ class ClassBookingService
     }
 
     /**
-     * Cancella l'iscrizione di un membro a un corso (cancellata dall'atleta).
-     * Se era confermata e l'occorrenza è in futuro, promuove automaticamente
-     * il primo in waitlist.
+     * Cancella l'iscrizione di un membro a un corso.
+     * $byGym=true: cancellazione da staff (status = cancelled_by_gym, nessuna restrizione di finestra).
+     * $byGym=false (default): cancellazione atleta (status = cancelled_by_athlete).
+     * La verifica della finestra di cancellazione gratuita è responsabilità del chiamante (Livewire).
+     * Se era confermata e l'occorrenza è in futuro, promuove automaticamente il primo in waitlist.
      */
-    public function cancel(ClassBooking $booking): void
+    public function cancel(ClassBooking $booking, bool $byGym = false): void
     {
-        DB::transaction(function () use ($booking) {
+        DB::transaction(function () use ($booking, $byGym) {
             $wasConfirmed = $booking->status === 'confirmed';
 
-            $booking->update(['status' => 'cancelled_by_athlete']);
+            $booking->update(['status' => $byGym ? 'cancelled_by_gym' : 'cancelled_by_athlete']);
 
             if ($wasConfirmed) {
                 $occurrence = $booking->occurrence;

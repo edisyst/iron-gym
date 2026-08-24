@@ -175,6 +175,24 @@ class Booking extends Component
 
         $occurrence = ClassOccurrence::findOrFail($occurrenceId);
 
+        // Finestra di prenotazione
+        $occurrenceStart = Carbon::parse($occurrence->date->toDateString().' '.substr($occurrence->start_time, 0, 8));
+        $opensAt = $occurrenceStart->copy()->subDays((int) config('classes.booking_opens_days', 7));
+        $closesAt = $occurrenceStart->copy()->subMinutes((int) config('classes.booking_closes_minutes', 30));
+
+        if (now()->lt($opensAt)) {
+            session()->flash('error', 'Le prenotazioni aprono il '.$opensAt->format('d/m/Y').'.');
+
+            return;
+        }
+
+        if (now()->gt($closesAt)) {
+            session()->flash('error', 'Prenotazioni chiuse (entro '.
+                config('classes.booking_closes_minutes', 30).' min dall\'inizio).');
+
+            return;
+        }
+
         try {
             $booking = app(ClassBookingService::class)->enroll($occurrence, $member);
 
@@ -204,6 +222,17 @@ class Booking extends Component
         $booking = ClassBooking::where('id', $bookingId)
             ->where('member_id', $member->id)
             ->firstOrFail();
+
+        $occurrence = $booking->occurrence;
+        $occurrenceStart = Carbon::parse($occurrence->date->toDateString().' '.substr($occurrence->start_time, 0, 8));
+        $freeCancelUntil = $occurrenceStart->copy()->subHours((int) config('classes.free_cancel_hours', 3));
+
+        if (now()->gt($freeCancelUntil)) {
+            session()->flash('error', 'Cancellazione non disponibile (entro '.
+                config('classes.free_cancel_hours', 3).' ore dall\'inizio).');
+
+            return;
+        }
 
         app(ClassBookingService::class)->cancel($booking);
         session()->flash('success', 'Iscrizione annullata.');

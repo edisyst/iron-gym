@@ -432,7 +432,7 @@ it('receptionist può rimuovere partecipante da corso (operazione front-desk)', 
         ->call('removeParticipant', $booking->id)
         ->assertHasNoErrors();
 
-    expect($booking->fresh()->status)->toBe('cancelled_by_athlete');
+    expect($booking->fresh()->status)->toBe('cancelled_by_gym');
 });
 
 // ---------------------------------------------------------------------------

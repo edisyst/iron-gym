@@ -2,6 +2,27 @@
 
 ---
 
+## R09 Step 6 — Finestre prenotazione e cancellazione (2026-08-24)
+
+**Finestra prenotazione (`Athlete\Booking::enrollClass`):**
+- Verifica `booking_opens_days` (default 7): blocca iscrizione se occorrenza è troppo lontana (finestra non ancora aperta)
+- Verifica `booking_closes_minutes` (default 30): blocca iscrizione se l'inizio è entro 30 min
+- Configurazione centralizzata in `config/classes.php`; la logica non è nel service per permettere bypass backoffice
+
+**Finestra cancellazione (`Athlete\Booking::cancelClassBooking`):**
+- Verifica `free_cancel_hours` (default 3): blocca cancellazione se inizio è entro 3 ore
+- Flash `session('error')` all'utente senza propagare eccezione
+
+**`ClassBookingService::cancel(bool $byGym = false)`:**
+- Parametro `$byGym`: se `true`, imposta `cancelled_by_gym` invece di `cancelled_by_athlete`; nessuna restrizione di finestra (già gestita dal chiamante)
+- `GroupClassManager::removeParticipant()` ora passa `byGym: true` (staff bypass) e include controllo ruolo receptionist
+
+**Test (5 `BookingWindowTest`):** enroll in finestra OK; enroll troppo presto bloccato; enroll troppo tardi bloccato; cancellazione entro finestra OK; cancellazione oltre free_cancel_hours bloccata
+
+Suite: 275 pass / 6 skipped. PHPStan 0 errori. Pint OK.
+
+---
+
 ## R09 Step 5 — GroupClassCatalog, sidebar submenu, dashboard atleta (2026-08-24)
 
 **`GroupClassCatalog`** Livewire, route `/backoffice/group-classes/catalog`:

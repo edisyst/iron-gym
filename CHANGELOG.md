@@ -2,6 +2,23 @@
 
 ---
 
+## R27 — Sospensione abbonamento (2026-08-24)
+
+**`Backoffice\Subscriptions\SubscriptionList` — azioni sospendi/riattiva:**
+- Metodo `suspend(int $id)`: solo gestore; richiede `status = active`; imposta `suspended`
+- Metodo `reactivate(int $id)`: solo gestore; richiede `status = suspended`; imposta `active`
+- Bottone `btn-outline-warning` con icona `fa-pause` e `wire:confirm` per abbonamenti attivi
+- Bottone `btn-outline-primary` con icona `fa-play` e `wire:confirm` per abbonamenti sospesi
+- Guard: `abort_unless(gestore, 403)` + `abort_if(status errato, 422)`
+- Filtro "Sospesi" aggiunto al select (`filter = 'suspended'`)
+- Query `render()` estesa con `->when('suspended', where status = suspended)`
+
+**Test (5):** gestore sospende attivo; gestore riattiva sospeso; receptionist non può sospendere (status invariato); filtro sospesi mostra badge Sospeso; doppia sospensione non cambia status.
+
+Suite: 398 pass / 6 skipped. PHPStan 0 errori. Pint OK.
+
+---
+
 ## R26 — Tab "Accessi" nel profilo atleta (2026-08-24)
 
 **`Athlete\Profile` — tab "Accessi":**

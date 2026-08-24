@@ -13,6 +13,7 @@
                         <option value="active">Attivi</option>
                         <option value="expiring">In scadenza (30gg)</option>
                         <option value="expired">Scaduti</option>
+                        <option value="suspended">Sospesi</option>
                     </select>
                 </div>
             </div>
@@ -70,16 +71,41 @@
                                 @endphp
                                 <span class="badge badge-{{ $badge }}">{{ $label }}</span>
                             </td>
-                            <td class="text-right">
+                            <td class="text-right" style="white-space:nowrap;">
                                 @can('manage-subscriptions')
                                 <a
                                     href="{{ route('backoffice.subscriptions.create', ['member_id' => $sub->member_id, 'plan_id' => $sub->plan_id]) }}"
-                                    class="btn btn-sm btn-outline-success"
+                                    class="btn btn-sm btn-outline-success mr-1"
                                     aria-label="Rinnova abbonamento"
                                     title="Rinnova"
                                 >
                                     <i class="fas fa-redo"></i>
                                 </a>
+                                @endcan
+                                @can('manage-subscriptions')
+                                @if ($sub->status === 'active')
+                                    <button
+                                        type="button"
+                                        wire:click="suspend({{ $sub->id }})"
+                                        wire:confirm="Sospendere questo abbonamento?"
+                                        class="btn btn-sm btn-outline-warning"
+                                        aria-label="Sospendi abbonamento"
+                                        title="Sospendi"
+                                    >
+                                        <i class="fas fa-pause"></i>
+                                    </button>
+                                @elseif ($sub->status === 'suspended')
+                                    <button
+                                        type="button"
+                                        wire:click="reactivate({{ $sub->id }})"
+                                        wire:confirm="Riattivare questo abbonamento?"
+                                        class="btn btn-sm btn-outline-primary"
+                                        aria-label="Riattiva abbonamento"
+                                        title="Riattiva"
+                                    >
+                                        <i class="fas fa-play"></i>
+                                    </button>
+                                @endif
                                 @endcan
                             </td>
                         </tr>

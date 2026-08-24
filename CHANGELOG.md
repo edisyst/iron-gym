@@ -2,6 +2,22 @@
 
 ---
 
+## R28 — Note interne sul tesserato (2026-08-24)
+
+**`MemberForm` (già completo):** campo `notes` textarea presente in property, `mount()`, `rules()` e view — nessuna modifica necessaria.
+
+**`MemberList` — indicatore visivo note:**
+- Icona `fa-sticky-note text-warning` accanto al nome del tesserato quando `notes` non è null/vuoto
+- Tooltip nativo (`title`) con anteprima fino a 100 caratteri della nota
+- `aria-label="Note interne presenti"` per accessibilità
+- Nessuna icona mostrata per tesserati senza note
+
+**Test (4):** form salva note interne; icona mostrata in lista con note presenti; icona assente senza note; form pre-carica note esistenti in modifica.
+
+Suite: 402 pass / 6 skipped. PHPStan 0 errori. Pint OK.
+
+---
+
 ## R27 — Sospensione abbonamento (2026-08-24)
 
 **`Backoffice\Subscriptions\SubscriptionList` — azioni sospendi/riattiva:**

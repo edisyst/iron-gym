@@ -55,7 +55,14 @@
                             $certSoon    = $certExpiry && $certExpiry->isFuture() && $certExpiry->lte(now()->addDays(30));
                         @endphp
                         <tr>
-                            <td>{{ $member->last_name }} {{ $member->first_name }}</td>
+                            <td>
+                                {{ $member->last_name }} {{ $member->first_name }}
+                                @if ($member->notes)
+                                    <i class="fas fa-sticky-note text-warning ml-1"
+                                       title="{{ Str::limit($member->notes, 100) }}"
+                                       aria-label="Note interne presenti"></i>
+                                @endif
+                            </td>
                             <td>{{ $member->email }}</td>
                             <td>
                                 @if ($sub)

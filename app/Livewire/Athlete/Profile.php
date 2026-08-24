@@ -3,6 +3,7 @@
 namespace App\Livewire\Athlete;
 
 use App\Livewire\Actions\Logout;
+use App\Models\AccessLog;
 use App\Models\BodyMeasurement;
 use App\Models\ClassBooking;
 use App\Models\Member;
@@ -180,6 +181,15 @@ class Profile extends Component
                 ->get();
         }
 
+        $recentAccessLogs = collect();
+        if ($member) {
+            $recentAccessLogs = AccessLog::with('subscription.plan')
+                ->where('member_id', $member->id)
+                ->orderByDesc('checked_in_at')
+                ->limit(5)
+                ->get();
+        }
+
         $userId = Auth::id();
 
         $recentMessages = Message::with(['sender', 'receiver'])
@@ -194,7 +204,8 @@ class Profile extends Component
             'subscription', 'upcomingPtBookings', 'pastPtBookings',
             'recentMeasurements', 'recentPrs', 'recentSessions',
             'recentMessages', 'unreadMessagesCount',
-            'groupClassesEnabled', 'upcomingClassBookings', 'pastClassBookings'
+            'groupClassesEnabled', 'upcomingClassBookings', 'pastClassBookings',
+            'recentAccessLogs'
         ))
             ->layout('layouts.athlete');
     }

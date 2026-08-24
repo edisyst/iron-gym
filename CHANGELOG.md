@@ -2,6 +2,24 @@
 
 ---
 
+## R25 — Rinnovo abbonamento rapido (2026-08-24)
+
+**`Backoffice\Subscriptions\SubscriptionList` — bottone "Rinnova":**
+- Nuova colonna azioni in tabella; bottone `btn-outline-success` con icona `fa-redo` e `aria-label`
+- Visibile solo con permesso `manage-subscriptions` (gestore e receptionist); nascosto a trainer
+- Link a `backoffice.subscriptions.create` con query params `?member_id=X&plan_id=Y`
+
+**`Backoffice\Subscriptions\SubscriptionForm` — pre-popolamento da query string:**
+- `mount()` legge `request()->query('member_id')` e `request()->query('plan_id')`
+- Se `plan_id` presente, chiama `updatedPlanId()` → calcola `expires_at` automaticamente a partire da oggi
+- Comportamento invariato se i params non sono presenti (form vuoto normale)
+
+**Test (5):** bottone Rinnova visibile a gestore; nascosto a trainer; `member_id` pre-popolato; `plan_id` + `expires_at` calcolata; nuovo abbonamento creato con save().
+
+Suite: 388 pass / 6 skipped. PHPStan 0 errori. Pint OK.
+
+---
+
 ## R24 — Check-in Rapido backoffice (2026-08-24)
 
 **Nuovo componente `Backoffice\Access\QuickCheckin` (`/backoffice/checkin`):**

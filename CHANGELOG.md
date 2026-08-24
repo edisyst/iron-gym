@@ -2,6 +2,27 @@
 
 ---
 
+## R18 — Personal Record nel profilo atleta (2026-08-24)
+
+**`Athlete\Profile` — tab "Record":**
+- Nuovo tab tra "Misurazioni" e "Password"
+- Mostra gli ultimi 5 PR di tipo `e1rm` ordinati per data decrescente
+- Ogni riga: nome esercizio (`name_it`), e1RM in kg (formattato con 1 decimale), data
+- Link "Vedi tutti" → `/athlete/records` (pagina `PersonalRecords` esistente)
+- Stato vuoto con spiegazione "I PR vengono rilevati automaticamente durante le sessioni"
+- "Vedi tutti i record →" in fondo se ci sono PR
+- Isolamento: query filtra su `athlete_id = auth()->id()`
+
+**`Profile::render()`:** aggiunto `$recentPrs` via `PersonalRecord::with('exercise')->where(...)->orderByDesc('achieved_at')->limit(5)->get()`.
+
+**Fix view:** `$pr->exercise?->name` → `$pr->exercise?->name_it` (Exercise usa `name_it`).
+
+**Test (5):** tab mostra PR con esercizio e valore; stato vuoto; limit 5 (6° non renderizzato); PR di altro atleta non incluso; link "Vedi tutti" presente.
+
+Suite: 350 pass / 6 skipped. PHPStan 0 errori. Pint OK.
+
+---
+
 ## R17 — Misurazioni corporee nel profilo atleta (2026-08-24)
 
 **`Athlete\Profile` — tab "Misurazioni":**

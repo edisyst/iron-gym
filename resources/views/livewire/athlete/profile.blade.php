@@ -20,6 +20,10 @@
                 class="ig-tab {{ $activeSection === 'misurazioni' ? 'ig-tab--active' : '' }}">
             Misurazioni
         </button>
+        <button type="button" wire:click="$set('activeSection','record')"
+                class="ig-tab {{ $activeSection === 'record' ? 'ig-tab--active' : '' }}">
+            Record
+        </button>
         <button type="button" wire:click="$set('activeSection','password')"
                 class="ig-tab {{ $activeSection === 'password' ? 'ig-tab--active' : '' }}">
             Password
@@ -280,6 +284,53 @@
                     <a href="{{ route('athlete.measurements') }}"
                        style="font-size:var(--ig-text-sm);color:var(--ig-accent);text-decoration:none;">
                         Vedi tutte e aggiungi →
+                    </a>
+                </div>
+            @endif
+        </div>
+    @endif
+
+    {{-- ===== SEZIONE RECORD ===== --}}
+    @if ($activeSection === 'record')
+        <div class="athlete-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                <div class="section-title">PERSONAL RECORD (e1RM)</div>
+                <a href="{{ route('athlete.records') }}"
+                   style="font-size:var(--ig-text-xs);font-weight:600;color:var(--ig-accent);text-decoration:none;">
+                    Vedi tutti
+                </a>
+            </div>
+
+            @forelse ($recentPrs as $pr)
+                <div style="display:flex;align-items:center;justify-content:space-between;
+                            padding:12px 0;border-bottom:1px solid var(--ig-border);">
+                    <div>
+                        <div style="font-size:var(--ig-text-sm);font-weight:600;color:var(--ig-text-1);">
+                            {{ $pr->exercise?->name_it ?? '—' }}
+                        </div>
+                        <div style="font-size:var(--ig-text-xs);color:var(--ig-text-3);margin-top:2px;">
+                            {{ $pr->achieved_at->format('d/m/Y') }}
+                        </div>
+                    </div>
+                    <div style="text-align:right;">
+                        <span style="font-size:var(--ig-text-md);font-weight:700;color:var(--ig-accent);">
+                            {{ number_format((float) $pr->value, 1) }}
+                        </span>
+                        <span style="font-size:var(--ig-text-xs);color:var(--ig-text-3);margin-left:2px;">kg</span>
+                    </div>
+                </div>
+            @empty
+                <div style="text-align:center;padding:var(--ig-sp-6) 0;color:var(--ig-text-3);">
+                    <p style="font-size:var(--ig-text-base);margin:0;">Nessun record registrato.</p>
+                    <p style="font-size:var(--ig-text-sm);margin:8px 0 0;">I PR vengono rilevati automaticamente durante le sessioni.</p>
+                </div>
+            @endforelse
+
+            @if ($recentPrs->isNotEmpty())
+                <div style="text-align:center;margin-top:14px;">
+                    <a href="{{ route('athlete.records') }}"
+                       style="font-size:var(--ig-text-sm);color:var(--ig-accent);text-decoration:none;">
+                        Vedi tutti i record →
                     </a>
                 </div>
             @endif

@@ -2,6 +2,26 @@
 
 ---
 
+## R17 — Misurazioni corporee nel profilo atleta (2026-08-24)
+
+**`Athlete\Profile` — tab "Misurazioni":**
+- Nuovo tab tra "Sessioni PT" e "Password"
+- Mostra le ultime 5 misurazioni ordinate per data decrescente
+- Campi visibili per riga: data, peso (kg), BF%, vita (cm), petto (cm) — solo se valorizzati
+- Note della misurazione visibili se presenti
+- Link "+ Aggiungi" → `/athlete/measurements` (pagina `BodyMeasurementForm` esistente)
+- Stato vuoto con link diretto alla prima registrazione
+- "Vedi tutte e aggiungi →" in fondo se ci sono misurazioni
+- Isolamento: query filtra su `athlete_id = auth()->id()`
+
+**`Profile::render()`:** aggiunto `$recentMeasurements` via `BodyMeasurement::where('athlete_id', Auth::id())->orderByDesc('measured_at')->limit(5)->get()`.
+
+**Test (5):** tab mostra misurazione con peso/BF%/vita; stato vuoto; limit 5 (6° e 7° non renderizzati); isolamento da altri atleti; note visibili.
+
+Suite: 345 pass / 6 skipped. PHPStan 0 errori. Pint OK.
+
+---
+
 ## R16 — Sessioni PT nel profilo atleta (2026-08-24)
 
 **`Athlete\Profile` — tab "Sessioni PT":**

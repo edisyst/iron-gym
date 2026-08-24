@@ -16,6 +16,10 @@
                 class="ig-tab {{ $activeSection === 'pt' ? 'ig-tab--active' : '' }}">
             Sessioni PT
         </button>
+        <button type="button" wire:click="$set('activeSection','misurazioni')"
+                class="ig-tab {{ $activeSection === 'misurazioni' ? 'ig-tab--active' : '' }}">
+            Misurazioni
+        </button>
         <button type="button" wire:click="$set('activeSection','password')"
                 class="ig-tab {{ $activeSection === 'password' ? 'ig-tab--active' : '' }}">
             Password
@@ -210,6 +214,76 @@
                 @endforeach
             </div>
         @endif
+    @endif
+
+    {{-- ===== SEZIONE MISURAZIONI ===== --}}
+    @if ($activeSection === 'misurazioni')
+        <div class="athlete-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                <div class="section-title">MISURAZIONI CORPOREE</div>
+                <a href="{{ route('athlete.measurements') }}"
+                   style="font-size:var(--ig-text-xs);font-weight:600;color:var(--ig-accent);text-decoration:none;">
+                    + Aggiungi
+                </a>
+            </div>
+
+            @forelse ($recentMeasurements as $m)
+                <div style="padding:12px 0;border-bottom:1px solid var(--ig-border);">
+                    <div style="font-size:var(--ig-text-xs);color:var(--ig-text-3);margin-bottom:6px;">
+                        {{ $m->measured_at->format('d/m/Y') }}
+                    </div>
+                    <div style="display:flex;gap:16px;flex-wrap:wrap;">
+                        @if ($m->weight_kg !== null)
+                            <span style="font-size:var(--ig-text-sm);color:var(--ig-text-1);">
+                                <span style="color:var(--ig-text-3);font-size:var(--ig-text-xs);">PESO</span>
+                                <strong>{{ $m->weight_kg }} kg</strong>
+                            </span>
+                        @endif
+                        @if ($m->body_fat_pct !== null)
+                            <span style="font-size:var(--ig-text-sm);color:var(--ig-text-1);">
+                                <span style="color:var(--ig-text-3);font-size:var(--ig-text-xs);">BF%</span>
+                                <strong>{{ $m->body_fat_pct }}%</strong>
+                            </span>
+                        @endif
+                        @if ($m->waist_cm !== null)
+                            <span style="font-size:var(--ig-text-sm);color:var(--ig-text-1);">
+                                <span style="color:var(--ig-text-3);font-size:var(--ig-text-xs);">VITA</span>
+                                <strong>{{ $m->waist_cm }} cm</strong>
+                            </span>
+                        @endif
+                        @if ($m->chest_cm !== null)
+                            <span style="font-size:var(--ig-text-sm);color:var(--ig-text-1);">
+                                <span style="color:var(--ig-text-3);font-size:var(--ig-text-xs);">PETTO</span>
+                                <strong>{{ $m->chest_cm }} cm</strong>
+                            </span>
+                        @endif
+                    </div>
+                    @if ($m->notes)
+                        <div style="font-size:var(--ig-text-xs);color:var(--ig-text-3);margin-top:4px;">
+                            {{ $m->notes }}
+                        </div>
+                    @endif
+                </div>
+            @empty
+                <div style="text-align:center;padding:var(--ig-sp-6) 0;color:var(--ig-text-3);">
+                    <p style="font-size:var(--ig-text-base);margin:0;">Nessuna misurazione registrata.</p>
+                    <a href="{{ route('athlete.measurements') }}"
+                       style="font-size:var(--ig-text-sm);color:var(--ig-accent);text-decoration:none;
+                              display:inline-block;margin-top:8px;">
+                        Registra la prima misurazione →
+                    </a>
+                </div>
+            @endforelse
+
+            @if ($recentMeasurements->isNotEmpty())
+                <div style="text-align:center;margin-top:14px;">
+                    <a href="{{ route('athlete.measurements') }}"
+                       style="font-size:var(--ig-text-sm);color:var(--ig-accent);text-decoration:none;">
+                        Vedi tutte e aggiungi →
+                    </a>
+                </div>
+            @endif
+        </div>
     @endif
 
     {{-- ===== SEZIONE PASSWORD ===== --}}

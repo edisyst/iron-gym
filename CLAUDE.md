@@ -164,8 +164,9 @@ Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01
 **R09 Step 2** completato: command `classes:generate-occurrences`, prerequisiti enroll (abbonamento+cert), overlap check atleta e trainer, 29 nuovi test.
 **R09 Step 3** completato: ClassScheduleManager (CRUD palinsesto), attendance tracking (completeOccurrence/markAttended/markNoShow), 13 nuovi test.
 **R09 Step 4** completato: ClassOccurrenceCancelledNotification + NotifyClassCancellation job, check-in receptionist, feature flag gate in Athlete\Booking, 7 nuovi test.
+**R09 Step 5** completato: GroupClassCatalog CRUD definizioni corsi (solo gestore), sidebar submenu a 3 voci (Occorrenze/Palinsesto/Catalogo), dashboard atleta card prossimi corsi collettivi, 8 nuovi test.
 
-**Suite corrente:** 262 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
+**Suite corrente:** 270 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
 
 Storico completo release e audit: **`CHANGELOG.md`**.
 

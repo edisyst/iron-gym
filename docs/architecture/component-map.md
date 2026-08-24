@@ -38,6 +38,7 @@ Prefisso `/backoffice`, middleware `auth + role:gestore|trainer|receptionist`.
 | `backoffice.bookings.index` | `/backoffice/bookings` | `Backoffice\Calendar\BookingList` | |
 | `backoffice.group-classes.index` | `/backoffice/group-classes` | `Backoffice\Calendar\GroupClassManager` | |
 | `backoffice.group-classes.schedules` | `/backoffice/group-classes/schedules` | `Backoffice\Calendar\ClassScheduleManager` | |
+| `backoffice.group-classes.catalog` | `/backoffice/group-classes/catalog` | `Backoffice\Calendar\GroupClassCatalog` | solo gestore per CRUD |
 | `backoffice.athletes.messages` | `/backoffice/athletes/{athleteId}/messages` | `Backoffice\Messages\MessageThread` | |
 | `backoffice.communications.campaign` | `/backoffice/communications/campaign` | `Backoffice\Communications\CommunicationCampaign` | |
 | `backoffice.reports.manager` | `/backoffice/reports/manager` | `Backoffice\Reports\ManagerDashboard` | `gestore` |

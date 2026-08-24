@@ -397,9 +397,25 @@ return [
         ],
         [
             'text' => 'Corsi collettivi',
-            'url' => 'backoffice/group-classes',
             'icon' => 'fas fa-users',
             'can' => 'view-group-classes',
+            'submenu' => [
+                [
+                    'text' => 'Occorrenze',
+                    'url' => 'backoffice/group-classes',
+                    'icon' => 'fas fa-calendar-check',
+                ],
+                [
+                    'text' => 'Palinsesto',
+                    'url' => 'backoffice/group-classes/schedules',
+                    'icon' => 'fas fa-calendar-alt',
+                ],
+                [
+                    'text' => 'Catalogo corsi',
+                    'url' => 'backoffice/group-classes/catalog',
+                    'icon' => 'fas fa-list',
+                ],
+            ],
         ],
         [
             'text' => 'Orari di apertura',

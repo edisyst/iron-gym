@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Athlete;
 
+use App\Models\ClassBooking;
 use App\Models\Member;
 use App\Models\Mesocycle;
 use App\Models\MicrocycleWeek;
@@ -10,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use Laravel\Pennant\Feature;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
@@ -34,9 +36,13 @@ class Dashboard extends Component
 
     public int $lastSetsCompleted = 0;
 
+    /** @var Collection<int, ClassBooking> */
+    public Collection $upcomingClassBookings;
+
     public function mount(): void
     {
         $this->weekSessions = collect();
+        $this->upcomingClassBookings = collect();
 
         // Avviso certificato medico
         $member = Member::where('user_id', auth()->id())->first();
@@ -46,6 +52,21 @@ class Dashboard extends Component
                 $this->certWarningLevel = 'danger';
             } elseif ($expiry->lte(now()->addDays(30))) {
                 $this->certWarningLevel = 'warning';
+            }
+
+            if (Feature::active('group_classes')) {
+                $this->upcomingClassBookings = ClassBooking::with('occurrence.groupClass')
+                    ->where('member_id', $member->id)
+                    ->where('status', 'confirmed')
+                    ->whereHas('occurrence', fn ($q) => $q
+                        ->whereDate('date', '>=', today())
+                        ->where('status', 'planned'))
+                    ->join('class_occurrences', 'class_bookings.class_occurrence_id', '=', 'class_occurrences.id')
+                    ->orderBy('class_occurrences.date')
+                    ->orderBy('class_occurrences.start_time')
+                    ->select('class_bookings.*')
+                    ->limit(3)
+                    ->get();
             }
         }
 

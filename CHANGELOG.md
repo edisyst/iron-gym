@@ -2,6 +2,30 @@
 
 ---
 
+## R09 Step 5 — GroupClassCatalog, sidebar submenu, dashboard atleta (2026-08-24)
+
+**`GroupClassCatalog`** Livewire, route `/backoffice/group-classes/catalog`:
+- CRUD definizioni corso (GroupClass): nome, descrizione, durata, capienza default, sala, colore, is_active
+- Slug auto-generato con suffisso incrementale se già esistente
+- `toggleActive(id)`: attiva/disattiva corso senza toccare le occorrenze
+- `deleteClass(id)`: blocca se esistono occorrenze future pianificate (`whereDate`)
+- Accesso riservato a gestore (`hasRole('gestore')`); trainer visualizza ma non può modificare
+- Colonna "Prossimi" mostra conteggio occorrenze future tramite `withCount`
+
+**Sidebar submenu Corsi collettivi:**
+- Voce singola rimpiazzata da submenu a 3 voci: Occorrenze → Palinsesto → Catalogo corsi
+- Tutti e tre rispettano il gate `can: view-group-classes`
+
+**Dashboard atleta — card prossimi corsi:**
+- `Dashboard::mount()`: carica max 3 `ClassBooking` confirmed future (JOIN su `class_occurrences`) se `Feature::active('group_classes')`
+- View: sezione "Prossimi corsi" con dot colorato (colore corso), nome, data+orario; link a `athlete.booking`
+
+**Test (8):** visualizza catalogo; crea corso; modifica corso; toggle active×2; blocca delete con occorrenze future; delete senza occorrenze; trainer non può creare; slug con suffisso se già esistente
+
+Suite: 270 pass / 6 skipped. PHPStan 0 errori. Pint OK.
+
+---
+
 ## R09 Step 4 — Notifica cancellazione, check-in receptionist, feature flag gate (2026-08-24)
 
 **Notifica cancellazione occorrenza:**

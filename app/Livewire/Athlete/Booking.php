@@ -94,13 +94,13 @@ class Booking extends Component
     {
         $this->validate([
             'selectedTrainerId' => 'required|integer|min:1',
-            'selectedDate'      => 'required|date|after_or_equal:today',
-            'selectedStart'     => 'required',
-            'selectedEnd'       => 'required',
+            'selectedDate' => 'required|date|after_or_equal:today',
+            'selectedStart' => 'required',
+            'selectedEnd' => 'required',
         ], [
-            'selectedTrainerId.min'          => 'Seleziona un trainer.',
-            'selectedDate.after_or_equal'    => 'Non puoi prenotare nel passato.',
-            'selectedStart.required'         => 'Seleziona uno slot orario.',
+            'selectedTrainerId.min' => 'Seleziona un trainer.',
+            'selectedDate.after_or_equal' => 'Non puoi prenotare nel passato.',
+            'selectedStart.required' => 'Seleziona uno slot orario.',
         ]);
 
         $member = Auth::user()->member;

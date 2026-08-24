@@ -21,14 +21,14 @@ class GroupClassFactory extends Factory
         ]);
 
         return [
-            'slug'             => Str::slug($name).'-'.fake()->unique()->numberBetween(1, 9999),
-            'name'             => $name,
-            'description'      => fake()->optional()->sentence(),
+            'slug' => Str::slug($name).'-'.fake()->unique()->numberBetween(1, 9999),
+            'name' => $name,
+            'description' => fake()->optional()->sentence(),
             'duration_minutes' => fake()->randomElement([45, 60, 75, 90]),
             'default_capacity' => fake()->numberBetween(5, 20),
-            'room'             => null,
-            'color'            => null,
-            'is_active'        => true,
+            'room' => null,
+            'color' => null,
+            'is_active' => true,
         ];
     }
 }

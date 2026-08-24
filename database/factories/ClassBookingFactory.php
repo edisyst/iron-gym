@@ -18,16 +18,16 @@ class ClassBookingFactory extends Factory
     {
         return [
             'class_occurrence_id' => ClassOccurrence::factory(),
-            'member_id'           => Member::factory(),
-            'status'              => 'confirmed',
-            'position'            => null,
+            'member_id' => Member::factory(),
+            'status' => 'confirmed',
+            'position' => null,
         ];
     }
 
     public function waitlisted(): static
     {
         return $this->state([
-            'status'   => 'waitlisted',
+            'status' => 'waitlisted',
             'position' => fake()->numberBetween(1, 10),
         ]);
     }

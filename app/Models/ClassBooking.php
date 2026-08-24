@@ -65,7 +65,7 @@ class ClassBooking extends Model
         $oldPosition = $this->position;
 
         $this->update([
-            'status'   => 'confirmed',
+            'status' => 'confirmed',
             'position' => null,
         ]);
 

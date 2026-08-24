@@ -23,14 +23,14 @@ class ClassOccurrenceFactory extends Factory
         $end = $start->copy()->addMinutes($duration);
 
         return [
-            'group_class_id'    => GroupClass::factory(),
+            'group_class_id' => GroupClass::factory(),
             'class_schedule_id' => null,
-            'date'              => $start->toDateString(),
-            'start_time'        => $start->format('H:i:s'),
-            'end_time'          => $end->format('H:i:s'),
-            'trainer_id'        => User::factory(),
-            'capacity'          => fake()->numberBetween(5, 20),
-            'status'            => 'planned',
+            'date' => $start->toDateString(),
+            'start_time' => $start->format('H:i:s'),
+            'end_time' => $end->format('H:i:s'),
+            'trainer_id' => User::factory(),
+            'capacity' => fake()->numberBetween(5, 20),
+            'status' => 'planned',
         ];
     }
 
@@ -42,7 +42,7 @@ class ClassOccurrenceFactory extends Factory
     public function cancelled(): static
     {
         return $this->state([
-            'status'              => 'cancelled',
+            'status' => 'cancelled',
             'cancellation_reason' => 'Corso cancellato.',
         ]);
     }
@@ -56,14 +56,14 @@ class ClassOccurrenceFactory extends Factory
     {
         return $this->state(function () {
             $date = fake()->dateTimeBetween('-30 days', '-1 day');
-            $start = \Carbon\Carbon::instance($date)->setTime(9, 0, 0);
+            $start = Carbon::instance($date)->setTime(9, 0, 0);
             $end = $start->copy()->addHour();
 
             return [
-                'date'       => $start->toDateString(),
+                'date' => $start->toDateString(),
                 'start_time' => $start->format('H:i:s'),
-                'end_time'   => $end->format('H:i:s'),
-                'status'     => 'completed',
+                'end_time' => $end->format('H:i:s'),
+                'status' => 'completed',
             ];
         });
     }

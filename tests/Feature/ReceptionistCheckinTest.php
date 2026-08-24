@@ -233,10 +233,10 @@ it('GroupClassManager.save() lancia 403 per receptionist', function () {
 });
 
 it('GroupClassManager.deleteClass() lancia 403 per receptionist', function () {
-    $class    = GroupClass::factory()->create();
+    $class = GroupClass::factory()->create();
     $occurrence = ClassOccurrence::factory()->create([
         'group_class_id' => $class->id,
-        'trainer_id'     => $this->trainer->id,
+        'trainer_id' => $this->trainer->id,
     ]);
 
     Livewire::actingAs($this->receptionist)
@@ -415,16 +415,16 @@ it('gestore vede link Modifica e Profilo allenamento in MemberList', function ()
 // ---------------------------------------------------------------------------
 
 it('receptionist può rimuovere partecipante da corso (operazione front-desk)', function () {
-    $class      = GroupClass::factory()->create();
+    $class = GroupClass::factory()->create();
     $occurrence = ClassOccurrence::factory()->create([
         'group_class_id' => $class->id,
-        'trainer_id'     => $this->trainer->id,
-        'capacity'       => 10,
+        'trainer_id' => $this->trainer->id,
+        'capacity' => 10,
     ]);
     $booking = ClassBooking::factory()->create([
         'class_occurrence_id' => $occurrence->id,
-        'member_id'           => $this->memberOk->id,
-        'status'              => 'confirmed',
+        'member_id' => $this->memberOk->id,
+        'status' => 'confirmed',
     ]);
 
     Livewire::actingAs($this->receptionist)

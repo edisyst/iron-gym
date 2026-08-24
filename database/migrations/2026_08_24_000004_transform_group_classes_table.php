@@ -1,5 +1,6 @@
 <?php
 
+use Carbon\Carbon;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -40,13 +41,13 @@ return new class extends Migration
                 }
 
                 DB::table('group_classes')->where('id', $row->id)->update([
-                    'slug'             => $slug,
+                    'slug' => $slug,
                     'default_capacity' => $row->max_participants,
                 ]);
 
                 $seenNames[$normalizedName] = [
                     'canonical_id' => $row->id,
-                    'slug'         => $slug,
+                    'slug' => $slug,
                 ];
                 $oldIdToNewId[$row->id] = $row->id;
             }
@@ -64,25 +65,25 @@ return new class extends Migration
             $status = match ($row->status) {
                 'completed' => 'completed',
                 'cancelled' => 'cancelled',
-                default     => 'planned',
+                default => 'planned',
             };
 
-            $scheduledAt = \Carbon\Carbon::parse($row->scheduled_at);
+            $scheduledAt = Carbon::parse($row->scheduled_at);
             $endTime = $scheduledAt->copy()->addMinutes($row->duration_minutes)->format('H:i:s');
 
             DB::table('class_occurrences')->insert([
-                'group_class_id'      => $canonicalId,
-                'class_schedule_id'   => null,
-                'date'                => $scheduledAt->toDateString(),
-                'start_time'          => $scheduledAt->format('H:i:s'),
-                'end_time'            => $endTime,
-                'trainer_id'          => $row->trainer_id,
-                'capacity'            => $row->max_participants,
-                'status'              => $status,
+                'group_class_id' => $canonicalId,
+                'class_schedule_id' => null,
+                'date' => $scheduledAt->toDateString(),
+                'start_time' => $scheduledAt->format('H:i:s'),
+                'end_time' => $endTime,
+                'trainer_id' => $row->trainer_id,
+                'capacity' => $row->max_participants,
+                'status' => $status,
                 'cancellation_reason' => $row->cancellation_reason,
-                'old_class_id'        => $row->id,
-                'created_at'          => now(),
-                'updated_at'          => now(),
+                'old_class_id' => $row->id,
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
         }
 
@@ -152,14 +153,14 @@ return new class extends Migration
             $statusBack = match ($occ->status) {
                 'completed' => 'completed',
                 'cancelled' => 'cancelled',
-                default     => 'scheduled',
+                default => 'scheduled',
             };
 
             DB::table('group_classes')->where('id', $occ->group_class_id)->update([
-                'trainer_id'          => $occ->trainer_id,
-                'scheduled_at'        => $occ->date.' '.substr($occ->start_time, 0, 5),
-                'max_participants'    => $occ->capacity,
-                'status'              => $statusBack,
+                'trainer_id' => $occ->trainer_id,
+                'scheduled_at' => $occ->date.' '.substr($occ->start_time, 0, 5),
+                'max_participants' => $occ->capacity,
+                'status' => $statusBack,
                 'cancellation_reason' => $occ->cancellation_reason,
             ]);
         }

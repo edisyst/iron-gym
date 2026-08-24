@@ -64,7 +64,7 @@ class TrainerCalendar extends Component
     private function dispatchCalendarRefresh(): void
     {
         $this->dispatch('calendar-refresh', [
-            'events'    => $this->getEventsForWeek(),
+            'events' => $this->getEventsForWeek(),
             'weekStart' => $this->weekStart,
         ]);
     }
@@ -93,12 +93,12 @@ class TrainerCalendar extends Component
 
                 foreach ($slots as $slot) {
                     $events[] = [
-                        'id'            => 'avail_'.$slot->id,
-                        'title'         => 'Disponibile',
-                        'start'         => $day->toDateString().'T'.substr($slot->start_time, 0, 5),
-                        'end'           => $day->toDateString().'T'.substr($slot->end_time, 0, 5),
-                        'color'         => '#22c55e',
-                        'display'       => 'background',
+                        'id' => 'avail_'.$slot->id,
+                        'title' => 'Disponibile',
+                        'start' => $day->toDateString().'T'.substr($slot->start_time, 0, 5),
+                        'end' => $day->toDateString().'T'.substr($slot->end_time, 0, 5),
+                        'color' => '#22c55e',
+                        'display' => 'background',
                         'extendedProps' => ['type' => 'availability', 'id' => $slot->id],
                     ];
                 }
@@ -117,11 +117,11 @@ class TrainerCalendar extends Component
             $trainerLabel = $showAll && $booking->trainer ? ' ('.$booking->trainer->name.')' : '';
 
             $events[] = [
-                'id'            => 'pt_'.$booking->id,
-                'title'         => 'PT: '.$memberName.$trainerLabel,
-                'start'         => $booking->booked_date->toDateString().'T'.substr($booking->start_time, 0, 5),
-                'end'           => $booking->booked_date->toDateString().'T'.substr($booking->end_time, 0, 5),
-                'color'         => '#3b82f6',
+                'id' => 'pt_'.$booking->id,
+                'title' => 'PT: '.$memberName.$trainerLabel,
+                'start' => $booking->booked_date->toDateString().'T'.substr($booking->start_time, 0, 5),
+                'end' => $booking->booked_date->toDateString().'T'.substr($booking->end_time, 0, 5),
+                'color' => '#3b82f6',
                 'extendedProps' => ['type' => 'pt', 'id' => $booking->id],
             ];
         }
@@ -138,11 +138,11 @@ class TrainerCalendar extends Component
             $trainerLabel = $showAll && $occurrence->trainer ? ' ('.$occurrence->trainer->name.')' : '';
 
             $events[] = [
-                'id'            => 'class_'.$occurrence->id,
-                'title'         => $className.$trainerLabel,
-                'start'         => $occurrence->date->format('Y-m-d').'T'.substr($occurrence->start_time, 0, 5),
-                'end'           => $occurrence->date->format('Y-m-d').'T'.substr($occurrence->end_time, 0, 5),
-                'color'         => '#f59e0b',
+                'id' => 'class_'.$occurrence->id,
+                'title' => $className.$trainerLabel,
+                'start' => $occurrence->date->format('Y-m-d').'T'.substr($occurrence->start_time, 0, 5),
+                'end' => $occurrence->date->format('Y-m-d').'T'.substr($occurrence->end_time, 0, 5),
+                'color' => '#f59e0b',
                 'extendedProps' => ['type' => 'class', 'id' => $occurrence->id],
             ];
         }
@@ -169,12 +169,12 @@ class TrainerCalendar extends Component
 
         $this->validate([
             'bookingMemberId' => 'required|integer|exists:members,id',
-            'selectedDate'    => 'required|date',
-            'bookingStart'    => 'required|date_format:H:i',
-            'bookingEnd'      => 'required|date_format:H:i|after:bookingStart',
+            'selectedDate' => 'required|date',
+            'bookingStart' => 'required|date_format:H:i',
+            'bookingEnd' => 'required|date_format:H:i|after:bookingStart',
         ], [
             'bookingMemberId.required' => 'Seleziona un tesserato.',
-            'bookingEnd.after'         => "L'ora di fine deve essere successiva all'ora di inizio.",
+            'bookingEnd.after' => "L'ora di fine deve essere successiva all'ora di inizio.",
         ]);
 
         try {
@@ -232,7 +232,7 @@ class TrainerCalendar extends Component
         $detailBooking = null;
         if ($this->showDetailModal && $this->detailBookingId) {
             $detailBooking = match ($this->detailType) {
-                'pt'    => PtBooking::with(['member', 'trainer'])->find($this->detailBookingId),
+                'pt' => PtBooking::with(['member', 'trainer'])->find($this->detailBookingId),
                 'class' => ClassOccurrence::with(['groupClass', 'trainer', 'confirmedBookings.member'])->find($this->detailBookingId),
                 default => null,
             };

@@ -18,12 +18,12 @@ class ClassScheduleFactory extends Factory
     {
         return [
             'group_class_id' => GroupClass::factory(),
-            'weekday'        => fake()->numberBetween(0, 6),
-            'start_time'     => fake()->randomElement(['07:00:00', '09:00:00', '10:30:00', '18:00:00', '19:30:00']),
-            'trainer_id'     => User::factory(),
-            'valid_from'     => now()->toDateString(),
-            'valid_until'    => null,
-            'is_active'      => true,
+            'weekday' => fake()->numberBetween(0, 6),
+            'start_time' => fake()->randomElement(['07:00:00', '09:00:00', '10:30:00', '18:00:00', '19:30:00']),
+            'trainer_id' => User::factory(),
+            'valid_from' => now()->toDateString(),
+            'valid_until' => null,
+            'is_active' => true,
         ];
     }
 }

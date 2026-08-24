@@ -5,13 +5,13 @@ namespace Database\Seeders;
 use App\Models\ClassBooking;
 use App\Models\ClassOccurrence;
 use App\Models\GroupClass;
-use Illuminate\Support\Str;
 use App\Models\Member;
 use App\Models\PtBooking;
 use App\Models\TrainerAvailability;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class BookingDemoSeeder extends Seeder
 {
@@ -255,11 +255,11 @@ class BookingDemoSeeder extends Seeder
                 $definitionCache[$slug] = GroupClass::firstOrCreate(
                     ['slug' => $slug],
                     [
-                        'name'             => $name,
-                        'description'      => $data['description'],
+                        'name' => $name,
+                        'description' => $data['description'],
                         'duration_minutes' => $data['duration_minutes'],
                         'default_capacity' => $data['max_participants'],
-                        'is_active'        => true,
+                        'is_active' => true,
                     ]
                 );
             }
@@ -271,23 +271,23 @@ class BookingDemoSeeder extends Seeder
             $endTime = $scheduledAt->copy()->addMinutes($data['duration_minutes'])->format('H:i:s');
 
             $occurrence = ClassOccurrence::create([
-                'group_class_id'   => $groupClass->id,
+                'group_class_id' => $groupClass->id,
                 'class_schedule_id' => null,
-                'date'             => $scheduledAt->toDateString(),
-                'start_time'       => $scheduledAt->format('H:i:s'),
-                'end_time'         => $endTime,
-                'trainer_id'       => $data['trainer']->id,
-                'capacity'         => $data['max_participants'],
-                'status'           => $data['status'],
+                'date' => $scheduledAt->toDateString(),
+                'start_time' => $scheduledAt->format('H:i:s'),
+                'end_time' => $endTime,
+                'trainer_id' => $data['trainer']->id,
+                'capacity' => $data['max_participants'],
+                'status' => $data['status'],
             ]);
 
             foreach ($data['participants'] as $i => $member) {
                 $isWaitlist = $i >= $data['max_participants'];
                 ClassBooking::create([
                     'class_occurrence_id' => $occurrence->id,
-                    'member_id'           => $member->id,
-                    'status'              => $isWaitlist ? 'waitlisted' : 'confirmed',
-                    'position'            => $isWaitlist ? ($i - $data['max_participants'] + 1) : null,
+                    'member_id' => $member->id,
+                    'status' => $isWaitlist ? 'waitlisted' : 'confirmed',
+                    'position' => $isWaitlist ? ($i - $data['max_participants'] + 1) : null,
                 ]);
             }
         }

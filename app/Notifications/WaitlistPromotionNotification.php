@@ -40,9 +40,9 @@ class WaitlistPromotionNotification extends Notification implements ShouldQueue
         $date = $this->occurrence->date->format('d/m/Y').' '.substr($this->occurrence->start_time, 0, 5);
 
         return [
-            'type'         => 'waitlist_promotion',
+            'type' => 'waitlist_promotion',
             'occurrence_id' => $this->occurrence->id,
-            'message'      => "Confermato per il corso {$name} del {$date}",
+            'message' => "Confermato per il corso {$name} del {$date}",
         ];
     }
 
@@ -54,7 +54,7 @@ class WaitlistPromotionNotification extends Notification implements ShouldQueue
 
         return [
             'title' => 'Posto confermato!',
-            'body'  => "Sei confermato per {$name} del {$date}",
+            'body' => "Sei confermato per {$name} del {$date}",
         ];
     }
 }

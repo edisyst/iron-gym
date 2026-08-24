@@ -207,7 +207,9 @@ Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01
 
 **R29** completato: Export CSV abbonamenti (`/backoffice/subscriptions/export?filter=X`), solo gestore. CSV UTF-8 con BOM, separatore `;`, rispetta filtro corrente. Bottone in `SubscriptionList`. 4 nuovi test. R29 chiuso.
 
-**Suite corrente:** 406 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
+**R30** completato: Export CSV tesserati (`/backoffice/members/export?search=X&certFilter=Y`), solo gestore. Colonne: Cognome, Nome, Email, Telefono, Abbonamento, Scadenza abb., Cert. medico, Attivo. Bottone in `MemberList`. 4 nuovi test. R30 chiuso.
+
+**Suite corrente:** 410 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
 
 Storico completo release e audit: **`CHANGELOG.md`**.
 

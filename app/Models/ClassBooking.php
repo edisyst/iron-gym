@@ -12,30 +12,44 @@ class ClassBooking extends Model
     /** @use HasFactory<ClassBookingFactory> */
     use HasFactory;
 
-    // Nessun updated_at: le prenotazioni corso non vengono aggiornate parzialmente
     public const UPDATED_AT = null;
 
     protected $fillable = [
-        'class_id',
+        'class_occurrence_id',
         'member_id',
         'status',
         'position',
+        'attended_at',
+        'booked_by',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'attended_at' => 'datetime',
+        ];
+    }
 
     // -------------------------------------------------------------------------
     // Relazioni
     // -------------------------------------------------------------------------
 
-    /** @return BelongsTo<GroupClass, $this> */
-    public function groupClass(): BelongsTo
+    /** @return BelongsTo<ClassOccurrence, $this> */
+    public function occurrence(): BelongsTo
     {
-        return $this->belongsTo(GroupClass::class, 'class_id');
+        return $this->belongsTo(ClassOccurrence::class, 'class_occurrence_id');
     }
 
     /** @return BelongsTo<Member, $this> */
     public function member(): BelongsTo
     {
         return $this->belongsTo(Member::class);
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function bookedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'booked_by');
     }
 
     // -------------------------------------------------------------------------
@@ -48,17 +62,14 @@ class ClassBooking extends Model
      */
     public function promote(): void
     {
-        // Salva la posizione corrente prima di azzerarla
         $oldPosition = $this->position;
 
-        // Promuove l'iscrizione a confermata
         $this->update([
-            'status' => 'confirmed',
+            'status'   => 'confirmed',
             'position' => null,
         ]);
 
-        // Scala le posizioni successive nella waitlist
-        ClassBooking::where('class_id', $this->class_id)
+        ClassBooking::where('class_occurrence_id', $this->class_occurrence_id)
             ->where('status', 'waitlisted')
             ->where('position', '>', $oldPosition)
             ->decrement('position');

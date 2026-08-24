@@ -1,5 +1,6 @@
 <?php
 
+use App\Console\Commands\GenerateClassOccurrences;
 use App\Jobs\HealthCheckJob;
 use App\Jobs\SendMedicalCertExpiryReminders;
 use App\Jobs\SendSessionReminders;
@@ -22,3 +23,6 @@ Schedule::job(HealthCheckJob::class)->everyMinute();
 // Backup
 Schedule::command('backup:clean')->daily()->at('01:00');
 Schedule::command('backup:run')->daily()->at('02:00');
+
+// Genera occorrenze corsi collettivi dal palinsesto
+Schedule::command(GenerateClassOccurrences::class)->dailyAt('03:00');

@@ -7,6 +7,7 @@ use App\Jobs\NotifyWaitlistPromotion;
 use App\Models\ClassBooking;
 use App\Models\ClassOccurrence;
 use App\Models\Member;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class ClassBookingService
@@ -15,10 +16,20 @@ class ClassBookingService
      * Iscrive un membro a un'occorrenza di corso collettivo.
      * Se l'occorrenza è piena, lo mette in waitlist con posizione progressiva.
      *
-     * @throws BookingException Se il membro è già iscritto o in waitlist.
+     * @throws BookingException Se prerequisiti non soddisfatti, già iscritto o orario sovrapposto.
      */
     public function enroll(ClassOccurrence $occurrence, Member $member): ClassBooking
     {
+        // Prerequisito 1: abbonamento attivo
+        if (! $member->activeSubscription()->exists()) {
+            throw new BookingException('Nessun abbonamento attivo.');
+        }
+
+        // Prerequisito 2: certificato medico valido
+        if (! $member->has_medical_cert_valid) {
+            throw new BookingException('Certificato medico scaduto o assente.');
+        }
+
         $alreadyEnrolled = ClassBooking::where('class_occurrence_id', $occurrence->id)
             ->where('member_id', $member->id)
             ->whereIn('status', ['confirmed', 'waitlisted'])
@@ -30,15 +41,29 @@ class ClassBookingService
             );
         }
 
+        // Overlap: membro già confermato in un corso sovrapposto lo stesso giorno
+        $athleteOverlap = ClassBooking::where('member_id', $member->id)
+            ->where('status', 'confirmed')
+            ->whereHas('occurrence', function ($q) use ($occurrence) {
+                $q->whereDate('date', $occurrence->date->toDateString())
+                    ->where('start_time', '<', $occurrence->end_time)
+                    ->where('end_time', '>', $occurrence->start_time);
+            })
+            ->exists();
+
+        if ($athleteOverlap) {
+            throw new BookingException('Hai già un corso confermato in questo orario.');
+        }
+
         return DB::transaction(function () use ($occurrence, $member) {
             $fresh = ClassOccurrence::lockForUpdate()->find($occurrence->id);
 
             if ($fresh->available_spots > 0) {
                 return ClassBooking::create([
                     'class_occurrence_id' => $occurrence->id,
-                    'member_id'           => $member->id,
-                    'status'              => 'confirmed',
-                    'position'            => null,
+                    'member_id' => $member->id,
+                    'status' => 'confirmed',
+                    'position' => null,
                 ]);
             }
 
@@ -48,9 +73,9 @@ class ClassBookingService
 
             return ClassBooking::create([
                 'class_occurrence_id' => $occurrence->id,
-                'member_id'           => $member->id,
-                'status'              => 'waitlisted',
-                'position'            => $nextPosition,
+                'member_id' => $member->id,
+                'status' => 'waitlisted',
+                'position' => $nextPosition,
             ]);
         });
     }
@@ -69,7 +94,7 @@ class ClassBookingService
 
             if ($wasConfirmed) {
                 $occurrence = $booking->occurrence;
-                $occurrenceStart = \Carbon\Carbon::parse(
+                $occurrenceStart = Carbon::parse(
                     $occurrence->date->toDateString().' '.substr($occurrence->start_time, 0, 8)
                 );
 

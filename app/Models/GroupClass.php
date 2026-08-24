@@ -36,7 +36,10 @@ class GroupClass extends Model
     // Scopes
     // -------------------------------------------------------------------------
 
-    /** @param Builder<GroupClass> $query */
+    /**
+     * @param  Builder<GroupClass>  $query
+     * @return Builder<GroupClass>
+     */
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);

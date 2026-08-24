@@ -2,12 +2,17 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Database\Factories\ClassScheduleFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property Carbon|null $valid_from
+ * @property Carbon|null $valid_until
+ */
 class ClassSchedule extends Model
 {
     /** @use HasFactory<ClassScheduleFactory> */
@@ -26,9 +31,9 @@ class ClassSchedule extends Model
     protected function casts(): array
     {
         return [
-            'valid_from'  => 'date',
+            'valid_from' => 'date',
             'valid_until' => 'date',
-            'is_active'   => 'boolean',
+            'is_active' => 'boolean',
         ];
     }
 

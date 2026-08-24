@@ -1,15 +1,20 @@
 <?php
 
 use App\Exceptions\BookingException;
+use App\Models\ClassBooking;
 use App\Models\ClassOccurrence;
+use App\Models\ClassSchedule;
 use App\Models\GroupClass;
 use App\Models\Member;
+use App\Models\Subscription;
 use App\Models\TrainerAvailability;
 use App\Models\User;
 use App\Services\ClassBookingService;
 use App\Services\PtBookingService;
 use Carbon\Carbon;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 
 uses(RefreshDatabase::class);
@@ -20,21 +25,43 @@ beforeEach(function () {
     $this->trainer = User::factory()->create();
     $this->trainer->assignRole('trainer');
 
-    $this->member = Member::factory()->create();
+    $this->member = Member::factory()->create([
+        'medical_cert_expiry' => now()->addYear(),
+    ]);
+
+    Subscription::factory()->create([
+        'member_id' => $this->member->id,
+        'started_at' => today()->subDays(10)->toDateString(),
+        'expires_at' => today()->addDays(30)->toDateString(),
+        'status' => 'active',
+    ]);
 
     TrainerAvailability::create([
-        'trainer_id'    => $this->trainer->id,
-        'day_of_week'   => 0,
+        'trainer_id' => $this->trainer->id,
+        'day_of_week' => 0,
         'specific_date' => null,
-        'start_time'    => '09:00:00',
-        'end_time'      => '18:00:00',
-        'is_available'  => true,
+        'start_time' => '09:00:00',
+        'end_time' => '18:00:00',
+        'is_available' => true,
     ]);
 
     $this->testDate = Carbon::parse('next monday')->addWeek();
 
-    $this->ptService    = app(PtBookingService::class);
+    $this->ptService = app(PtBookingService::class);
     $this->classService = app(ClassBookingService::class);
+
+    // Helper: crea un Member con abbonamento attivo e certificato valido
+    $this->memberWithPrereqs = function (): Member {
+        $m = Member::factory()->create(['medical_cert_expiry' => now()->addYear()]);
+        Subscription::factory()->create([
+            'member_id' => $m->id,
+            'started_at' => today()->subDays(10)->toDateString(),
+            'expires_at' => today()->addDays(30)->toDateString(),
+            'status' => 'active',
+        ]);
+
+        return $m;
+    };
 });
 
 it('una prenotazione PT viene confermata se lo slot è disponibile', function () {
@@ -73,13 +100,13 @@ it('un membro viene messo in waitlist se il corso è pieno', function () {
     $groupClass = GroupClass::factory()->create(['default_capacity' => 1]);
     $occurrence = ClassOccurrence::factory()->create([
         'group_class_id' => $groupClass->id,
-        'trainer_id'     => $this->trainer->id,
-        'capacity'       => 1,
-        'date'           => now()->addDays(3)->toDateString(),
-        'status'         => 'planned',
+        'trainer_id' => $this->trainer->id,
+        'capacity' => 1,
+        'date' => now()->addDays(3)->toDateString(),
+        'status' => 'planned',
     ]);
 
-    $member2 = Member::factory()->create();
+    $member2 = ($this->memberWithPrereqs)();
 
     $this->classService->enroll($occurrence, $this->member);
     $waitlisted = $this->classService->enroll($occurrence, $member2);
@@ -92,15 +119,15 @@ it('cancellare una prenotazione confirmed promuove il primo in waitlist', functi
     $groupClass = GroupClass::factory()->create(['default_capacity' => 1]);
     $occurrence = ClassOccurrence::factory()->create([
         'group_class_id' => $groupClass->id,
-        'trainer_id'     => $this->trainer->id,
-        'capacity'       => 1,
-        'date'           => now()->addDays(3)->toDateString(),
-        'status'         => 'planned',
+        'trainer_id' => $this->trainer->id,
+        'capacity' => 1,
+        'date' => now()->addDays(3)->toDateString(),
+        'status' => 'planned',
     ]);
 
-    $member2 = Member::factory()->create();
+    $member2 = ($this->memberWithPrereqs)();
 
-    $confirmed  = $this->classService->enroll($occurrence, $this->member);
+    $confirmed = $this->classService->enroll($occurrence, $this->member);
     $waitlisted = $this->classService->enroll($occurrence, $member2);
 
     $this->classService->cancel($confirmed);
@@ -128,10 +155,10 @@ it('iscriversi due volte alla stessa occorrenza lancia BookingException', functi
     $groupClass = GroupClass::factory()->create(['default_capacity' => 10]);
     $occurrence = ClassOccurrence::factory()->create([
         'group_class_id' => $groupClass->id,
-        'trainer_id'     => $this->trainer->id,
-        'capacity'       => 10,
-        'date'           => now()->addDays(3)->toDateString(),
-        'status'         => 'planned',
+        'trainer_id' => $this->trainer->id,
+        'capacity' => 10,
+        'date' => now()->addDays(3)->toDateString(),
+        'status' => 'planned',
     ]);
 
     $this->classService->enroll($occurrence, $this->member);
@@ -175,7 +202,7 @@ it('ClassOccurrence ha le relazioni groupClass, trainer, bookings', function () 
     $groupClass = GroupClass::factory()->create();
     $occurrence = ClassOccurrence::factory()->create([
         'group_class_id' => $groupClass->id,
-        'trainer_id'     => $this->trainer->id,
+        'trainer_id' => $this->trainer->id,
     ]);
 
     expect($occurrence->groupClass->id)->toBe($groupClass->id);
@@ -186,80 +213,80 @@ it('ClassOccurrence ha le relazioni groupClass, trainer, bookings', function () 
 it('unique (class_occurrence_id, member_id) impedisce la doppia prenotazione a livello DB', function () {
     $occurrence = ClassOccurrence::factory()->create([
         'trainer_id' => $this->trainer->id,
-        'capacity'   => 5,
+        'capacity' => 5,
     ]);
 
-    \Illuminate\Support\Facades\DB::table('class_bookings')->insert([
+    DB::table('class_bookings')->insert([
         'class_occurrence_id' => $occurrence->id,
-        'member_id'           => $this->member->id,
-        'status'              => 'confirmed',
-        'position'            => null,
-        'created_at'          => now(),
+        'member_id' => $this->member->id,
+        'status' => 'confirmed',
+        'position' => null,
+        'created_at' => now(),
     ]);
 
-    expect(fn () => \Illuminate\Support\Facades\DB::table('class_bookings')->insert([
+    expect(fn () => DB::table('class_bookings')->insert([
         'class_occurrence_id' => $occurrence->id,
-        'member_id'           => $this->member->id,
-        'status'              => 'waitlisted',
-        'position'            => 1,
-        'created_at'          => now(),
-    ]))->toThrow(\Illuminate\Database\QueryException::class);
+        'member_id' => $this->member->id,
+        'status' => 'waitlisted',
+        'position' => 1,
+        'created_at' => now(),
+    ]))->toThrow(QueryException::class);
 });
 
 it('unique (class_schedule_id, date) impedisce occorrenze duplicate per palinsesto', function () {
     $groupClass = GroupClass::factory()->create();
-    $schedule   = \App\Models\ClassSchedule::factory()->create([
+    $schedule = ClassSchedule::factory()->create([
         'group_class_id' => $groupClass->id,
-        'trainer_id'     => $this->trainer->id,
+        'trainer_id' => $this->trainer->id,
     ]);
 
     ClassOccurrence::create([
-        'group_class_id'    => $groupClass->id,
+        'group_class_id' => $groupClass->id,
         'class_schedule_id' => $schedule->id,
-        'date'              => '2026-09-01',
-        'start_time'        => '09:00:00',
-        'end_time'          => '10:00:00',
-        'trainer_id'        => $this->trainer->id,
-        'capacity'          => 10,
-        'status'            => 'planned',
+        'date' => '2026-09-01',
+        'start_time' => '09:00:00',
+        'end_time' => '10:00:00',
+        'trainer_id' => $this->trainer->id,
+        'capacity' => 10,
+        'status' => 'planned',
     ]);
 
     expect(fn () => ClassOccurrence::create([
-        'group_class_id'    => $groupClass->id,
+        'group_class_id' => $groupClass->id,
         'class_schedule_id' => $schedule->id,
-        'date'              => '2026-09-01',
-        'start_time'        => '09:00:00',
-        'end_time'          => '10:00:00',
-        'trainer_id'        => $this->trainer->id,
-        'capacity'          => 10,
-        'status'            => 'planned',
-    ]))->toThrow(\Illuminate\Database\QueryException::class);
+        'date' => '2026-09-01',
+        'start_time' => '09:00:00',
+        'end_time' => '10:00:00',
+        'trainer_id' => $this->trainer->id,
+        'capacity' => 10,
+        'status' => 'planned',
+    ]))->toThrow(QueryException::class);
 });
 
 it('occorrenze una tantum (class_schedule_id NULL) non sono coperte dal vincolo unique', function () {
     $groupClass = GroupClass::factory()->create();
 
     ClassOccurrence::create([
-        'group_class_id'    => $groupClass->id,
+        'group_class_id' => $groupClass->id,
         'class_schedule_id' => null,
-        'date'              => '2026-09-01',
-        'start_time'        => '09:00:00',
-        'end_time'          => '10:00:00',
-        'trainer_id'        => $this->trainer->id,
-        'capacity'          => 10,
-        'status'            => 'planned',
+        'date' => '2026-09-01',
+        'start_time' => '09:00:00',
+        'end_time' => '10:00:00',
+        'trainer_id' => $this->trainer->id,
+        'capacity' => 10,
+        'status' => 'planned',
     ]);
 
     // La seconda occorrenza con class_schedule_id=NULL NON deve lanciare eccezione
     $second = ClassOccurrence::create([
-        'group_class_id'    => $groupClass->id,
+        'group_class_id' => $groupClass->id,
         'class_schedule_id' => null,
-        'date'              => '2026-09-01',
-        'start_time'        => '09:00:00',
-        'end_time'          => '10:00:00',
-        'trainer_id'        => $this->trainer->id,
-        'capacity'          => 10,
-        'status'            => 'planned',
+        'date' => '2026-09-01',
+        'start_time' => '09:00:00',
+        'end_time' => '10:00:00',
+        'trainer_id' => $this->trainer->id,
+        'capacity' => 10,
+        'status' => 'planned',
     ]);
 
     expect($second->id)->toBeGreaterThan(0);
@@ -276,7 +303,7 @@ it('un trainer non nel pivot class_trainer è assegnabile all\'occorrenza ma esc
 
     $occurrence = ClassOccurrence::factory()->create([
         'group_class_id' => $groupClass->id,
-        'trainer_id'     => $extraTrainer->id, // trainer non abilitato a livello definizione
+        'trainer_id' => $extraTrainer->id, // trainer non abilitato a livello definizione
     ]);
 
     // A livello DB l'occorrenza ha il trainer
@@ -285,4 +312,194 @@ it('un trainer non nel pivot class_trainer è assegnabile all\'occorrenza ma esc
     // La relazione GroupClass::trainers() lo esclude (non è nel pivot)
     expect($groupClass->trainers->contains($extraTrainer))->toBeFalse();
     expect($groupClass->trainers->contains($this->trainer))->toBeTrue();
+});
+
+// -------------------------------------------------------------------------
+// Test prerequisiti prenotazione (abbonamento + certificato)
+// -------------------------------------------------------------------------
+
+it('enroll fallisce senza abbonamento attivo', function () {
+    $memberNoPlan = Member::factory()->create(['medical_cert_expiry' => now()->addYear()]);
+
+    $occurrence = ClassOccurrence::factory()->create([
+        'trainer_id' => $this->trainer->id,
+        'capacity' => 10,
+        'date' => now()->addDays(3)->toDateString(),
+        'status' => 'planned',
+    ]);
+
+    expect(fn () => $this->classService->enroll($occurrence, $memberNoPlan))
+        ->toThrow(BookingException::class, 'Nessun abbonamento attivo.');
+});
+
+it('enroll fallisce con abbonamento scaduto', function () {
+    $memberExpired = Member::factory()->create(['medical_cert_expiry' => now()->addYear()]);
+    Subscription::factory()->create([
+        'member_id' => $memberExpired->id,
+        'started_at' => today()->subDays(40)->toDateString(),
+        'expires_at' => today()->subDays(10)->toDateString(),
+        'status' => 'expired',
+    ]);
+
+    $occurrence = ClassOccurrence::factory()->create([
+        'trainer_id' => $this->trainer->id,
+        'capacity' => 10,
+        'date' => now()->addDays(3)->toDateString(),
+        'status' => 'planned',
+    ]);
+
+    expect(fn () => $this->classService->enroll($occurrence, $memberExpired))
+        ->toThrow(BookingException::class, 'Nessun abbonamento attivo.');
+});
+
+it('enroll fallisce senza certificato medico', function () {
+    $memberNoCert = Member::factory()->create(['medical_cert_expiry' => null]);
+    Subscription::factory()->create([
+        'member_id' => $memberNoCert->id,
+        'started_at' => today()->subDays(10)->toDateString(),
+        'expires_at' => today()->addDays(30)->toDateString(),
+        'status' => 'active',
+    ]);
+
+    $occurrence = ClassOccurrence::factory()->create([
+        'trainer_id' => $this->trainer->id,
+        'capacity' => 10,
+        'date' => now()->addDays(3)->toDateString(),
+        'status' => 'planned',
+    ]);
+
+    expect(fn () => $this->classService->enroll($occurrence, $memberNoCert))
+        ->toThrow(BookingException::class, 'Certificato medico scaduto o assente.');
+});
+
+it('enroll fallisce con certificato medico scaduto', function () {
+    $memberExpiredCert = Member::factory()->create([
+        'medical_cert_expiry' => now()->subDay(),
+    ]);
+    Subscription::factory()->create([
+        'member_id' => $memberExpiredCert->id,
+        'started_at' => today()->subDays(10)->toDateString(),
+        'expires_at' => today()->addDays(30)->toDateString(),
+        'status' => 'active',
+    ]);
+
+    $occurrence = ClassOccurrence::factory()->create([
+        'trainer_id' => $this->trainer->id,
+        'capacity' => 10,
+        'date' => now()->addDays(3)->toDateString(),
+        'status' => 'planned',
+    ]);
+
+    expect(fn () => $this->classService->enroll($occurrence, $memberExpiredCert))
+        ->toThrow(BookingException::class, 'Certificato medico scaduto o assente.');
+});
+
+it('enroll ha successo con abbonamento attivo e certificato valido', function () {
+    $occurrence = ClassOccurrence::factory()->create([
+        'trainer_id' => $this->trainer->id,
+        'capacity' => 10,
+        'date' => now()->addDays(3)->toDateString(),
+        'status' => 'planned',
+    ]);
+
+    $booking = $this->classService->enroll($occurrence, $this->member);
+
+    expect($booking->status)->toBe('confirmed');
+    expect($booking->member_id)->toBe($this->member->id);
+});
+
+// -------------------------------------------------------------------------
+// Test overlap orario atleta
+// -------------------------------------------------------------------------
+
+it('enroll fallisce se l\'atleta ha già un corso confermato nello stesso orario', function () {
+    $occurrence1 = ClassOccurrence::factory()->create([
+        'trainer_id' => $this->trainer->id,
+        'capacity' => 10,
+        'date' => now()->addDays(3)->toDateString(),
+        'start_time' => '10:00:00',
+        'end_time' => '11:00:00',
+        'status' => 'planned',
+    ]);
+
+    $occurrence2 = ClassOccurrence::factory()->create([
+        'trainer_id' => $this->trainer->id,
+        'capacity' => 10,
+        'date' => now()->addDays(3)->toDateString(),
+        'start_time' => '10:30:00',
+        'end_time' => '11:30:00',
+        'status' => 'planned',
+    ]);
+
+    $this->classService->enroll($occurrence1, $this->member);
+
+    expect(fn () => $this->classService->enroll($occurrence2, $this->member))
+        ->toThrow(BookingException::class, 'Hai già un corso confermato in questo orario.');
+});
+
+it('enroll riesce se il secondo corso è in orario diverso lo stesso giorno', function () {
+    $occurrence1 = ClassOccurrence::factory()->create([
+        'trainer_id' => $this->trainer->id,
+        'capacity' => 10,
+        'date' => now()->addDays(3)->toDateString(),
+        'start_time' => '09:00:00',
+        'end_time' => '10:00:00',
+        'status' => 'planned',
+    ]);
+
+    $occurrence2 = ClassOccurrence::factory()->create([
+        'trainer_id' => $this->trainer->id,
+        'capacity' => 10,
+        'date' => now()->addDays(3)->toDateString(),
+        'start_time' => '10:00:00',
+        'end_time' => '11:00:00',
+        'status' => 'planned',
+    ]);
+
+    $this->classService->enroll($occurrence1, $this->member);
+    $booking2 = $this->classService->enroll($occurrence2, $this->member);
+
+    expect($booking2->status)->toBe('confirmed');
+});
+
+// -------------------------------------------------------------------------
+// Test overlap trainer PT vs ClassOccurrence
+// -------------------------------------------------------------------------
+
+it('prenotazione PT fallisce se il trainer ha un corso collettivo sovrapposto', function () {
+    ClassOccurrence::factory()->create([
+        'trainer_id' => $this->trainer->id,
+        'date' => $this->testDate->toDateString(),
+        'start_time' => '10:00:00',
+        'end_time' => '11:00:00',
+        'status' => 'planned',
+    ]);
+
+    expect(fn () => $this->ptService->book(
+        trainerId: $this->trainer->id,
+        memberId: $this->member->id,
+        date: $this->testDate,
+        startTime: '10:30',
+        endTime: '11:30',
+    ))->toThrow(BookingException::class, 'Il trainer ha un corso collettivo');
+});
+
+it('prenotazione PT riesce se il corso del trainer è in orario diverso', function () {
+    ClassOccurrence::factory()->create([
+        'trainer_id' => $this->trainer->id,
+        'date' => $this->testDate->toDateString(),
+        'start_time' => '08:00:00',
+        'end_time' => '09:00:00',
+        'status' => 'planned',
+    ]);
+
+    $booking = $this->ptService->book(
+        trainerId: $this->trainer->id,
+        memberId: $this->member->id,
+        date: $this->testDate,
+        startTime: '10:00',
+        endTime: '11:00',
+    );
+
+    expect($booking->status)->toBe('confirmed');
 });

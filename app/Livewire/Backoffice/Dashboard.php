@@ -18,6 +18,10 @@ class Dashboard extends Component
 
     public int $medicalCertIssuesCount = 0;
 
+    public int $certExpiring30Count = 0;
+
+    public int $subExpiring7Count = 0;
+
     public function mount(): void
     {
         $this->activeMembersCount = Member::where('is_active', true)->count();
@@ -35,6 +39,15 @@ class Dashboard extends Component
                     ->orWhere('medical_cert_expiry', '<=', now()->addDays(30)->toDateString());
             })
             ->count();
+
+        // Certificati medici in scadenza nei prossimi 30 giorni (non già scaduti)
+        $this->certExpiring30Count = Member::where('is_active', true)
+            ->whereNotNull('medical_cert_expiry')
+            ->whereBetween('medical_cert_expiry', [today()->toDateString(), now()->addDays(30)->toDateString()])
+            ->count();
+
+        // Abbonamenti in scadenza nei prossimi 7 giorni
+        $this->subExpiring7Count = Subscription::expiringSoon(7)->count();
     }
 
     public function render(): View

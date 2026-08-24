@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Backoffice\Access\AccessLogList;
+use App\Livewire\Backoffice\Access\QuickCheckin;
 use App\Livewire\Backoffice\Admin\FeatureFlagManager;
 use App\Livewire\Backoffice\Admin\FeedbackList;
 use App\Livewire\Backoffice\Admin\PlateInventoryManager;
@@ -55,6 +56,7 @@ Route::prefix('backoffice')
             Route::get('/members/{member}/edit', MemberForm::class)->name('members.edit');
             Route::get('/subscriptions/create', SubscriptionForm::class)->name('subscriptions.create');
             Route::get('/access-logs', AccessLogList::class)->name('access-logs.index');
+            Route::get('/checkin', QuickCheckin::class)->name('checkin');
         });
 
         // Libreria esercizi — lista e dettaglio: visibili anche al receptionist

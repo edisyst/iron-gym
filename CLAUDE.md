@@ -195,7 +195,9 @@ Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01
 
 **R23** completato: widget "Scadenze imminenti" nella Dashboard backoffice. Card condizionale con contatori `certExpiring30Count` e `subExpiring7Count`; link diretto al pannello scadenze. Link small-box esistenti aggiornati a `members.expiry`. 4 nuovi test. R23 chiuso.
 
-**Suite corrente:** 376 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
+**R24** completato: Check-in Rapido backoffice (`/backoffice/checkin`). Ricerca live tesserato, validazione cert+abbonamento+accessi, cronologia accessi odierni. Voce "Check-in" in sidebar. 7 nuovi test. R24 chiuso.
+
+**Suite corrente:** 383 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
 
 Storico completo release e audit: **`CHANGELOG.md`**.
 

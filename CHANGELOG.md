@@ -2,6 +2,25 @@
 
 ---
 
+## R24 — Check-in Rapido backoffice (2026-08-24)
+
+**Nuovo componente `Backoffice\Access\QuickCheckin` (`/backoffice/checkin`):**
+- Ricerca live tesserato per nome/cognome/email (min 2 caratteri, max 8 risultati)
+- Card risultato: nome, email, badge piano abbonamento, badge "Cert. scaduto" se necessario
+- `selectMember()` → popola campo ricerca con nome selezionato, abilita bottone
+- `registerAccess()` → verifica cert valido + abbonamento attivo + accessi disponibili; incrementa `accesses_used`, decrementa `accesses_remaining` se limitato; crea `AccessLog`
+- Messaggi di errore distinti: cert scaduto/mancante, nessun abbonamento attivo, accessi esauriti
+- Messaggio di successo con nome tesserato; reset automatico del form
+- Cronologia ultimi 10 accessi odierni in tabella affiancata (tesserato, piano, ora, operatore)
+- Route `backoffice.checkin` accessibile a gestore e receptionist; trainer bloccato (403)
+- Voce "Check-in" (icona `fa-sign-in-alt`) aggiunta in sidebar sopra "Accessi"
+
+**Test (7):** gestore accede; receptionist accede; trainer bloccato (403); accesso registrato con cert+abb validi; rifiuto cert scaduto; rifiuto nessun abbonamento; cronologia odierna visibile.
+
+Suite: 383 pass / 6 skipped. PHPStan 0 errori. Pint OK.
+
+---
+
 ## R23 — Widget scadenze nella Dashboard backoffice (2026-08-24)
 
 **`Backoffice\Dashboard` — widget scadenze imminenti:**

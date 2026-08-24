@@ -353,6 +353,12 @@ return [
             'icon' => 'fas fa-exclamation-triangle',
         ],
         [
+            'text' => 'Check-in',
+            'url' => 'backoffice/checkin',
+            'icon' => 'fas fa-sign-in-alt',
+            'can' => 'view-access-logs',
+        ],
+        [
             'text' => 'Accessi',
             'url' => 'backoffice/access-logs',
             'icon' => 'fas fa-door-open',

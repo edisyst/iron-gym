@@ -22,11 +22,11 @@ beforeEach(function () {
 
 it('tab sessioni mostra sessione completata', function () {
     TrainingSession::factory()->create([
-        'microcycle_week_id'      => $this->week->id,
-        'name'         => 'Push A',
-        'status'       => 'completed',
+        'microcycle_week_id' => $this->week->id,
+        'name' => 'Push A',
+        'status' => 'completed',
         'completed_at' => now()->subDays(1),
-        'started_at'   => now()->subDays(1)->subHour(),
+        'started_at' => now()->subDays(1)->subHour(),
     ]);
 
     Livewire::actingAs($this->athleteUser)
@@ -38,9 +38,9 @@ it('tab sessioni mostra sessione completata', function () {
 
 it('tab sessioni mostra sessione saltata', function () {
     TrainingSession::factory()->create([
-        'microcycle_week_id'      => $this->week->id,
-        'name'         => 'Pull B',
-        'status'       => 'skipped',
+        'microcycle_week_id' => $this->week->id,
+        'name' => 'Pull B',
+        'status' => 'skipped',
         'completed_at' => now()->subDays(2),
     ]);
 
@@ -54,8 +54,8 @@ it('tab sessioni mostra sessione saltata', function () {
 it('tab sessioni non mostra sessioni planned', function () {
     TrainingSession::factory()->create([
         'microcycle_week_id' => $this->week->id,
-        'name'    => 'Legs C',
-        'status'  => 'planned',
+        'name' => 'Legs C',
+        'status' => 'planned',
     ]);
 
     Livewire::actingAs($this->athleteUser)
@@ -66,10 +66,10 @@ it('tab sessioni non mostra sessioni planned', function () {
 
 it('tab sessioni mostra durata se disponibile', function () {
     TrainingSession::factory()->create([
-        'microcycle_week_id'      => $this->week->id,
-        'name'         => 'Push A',
-        'status'       => 'completed',
-        'started_at'   => now()->subDays(1)->setTime(10, 0),
+        'microcycle_week_id' => $this->week->id,
+        'name' => 'Push A',
+        'status' => 'completed',
+        'started_at' => now()->subDays(1)->setTime(10, 0),
         'completed_at' => now()->subDays(1)->setTime(11, 15),
     ]);
 
@@ -85,9 +85,9 @@ it('tab sessioni non mostra sessioni di altri atleti', function () {
     $otherWeek = MicrocycleWeek::factory()->create(['mesocycle_id' => $otherMeso->id]);
 
     TrainingSession::factory()->create([
-        'microcycle_week_id'      => $otherWeek->id,
-        'name'         => 'Sessione altrui',
-        'status'       => 'completed',
+        'microcycle_week_id' => $otherWeek->id,
+        'name' => 'Sessione altrui',
+        'status' => 'completed',
         'completed_at' => now()->subDays(1),
     ]);
 

@@ -22,12 +22,12 @@ beforeEach(function () {
 function makePr(int $athleteId, int $exerciseId, int $exerciseSetId, float $value, string $achievedAt): void
 {
     PersonalRecord::create([
-        'athlete_id'      => $athleteId,
-        'exercise_id'     => $exerciseId,
+        'athlete_id' => $athleteId,
+        'exercise_id' => $exerciseId,
         'exercise_set_id' => $exerciseSetId,
-        'record_type'     => 'e1rm',
-        'value'           => $value,
-        'achieved_at'     => $achievedAt,
+        'record_type' => 'e1rm',
+        'value' => $value,
+        'achieved_at' => $achievedAt,
     ]);
 }
 

@@ -242,7 +242,7 @@
                 </div>
             @endforeach
         </div>
-        <a href="{{ route('athlete.booking') }}" class="ig-btn ig-btn--secondary"
+        <a href="{{ route('athlete.bookings') }}" class="ig-btn ig-btn--secondary"
            style="margin-top:var(--ig-sp-3);width:100%;text-align:center;">
             Gestisci iscrizioni
         </a>

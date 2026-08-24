@@ -9,6 +9,7 @@ use App\Livewire\Athlete\Dashboard;
 use App\Livewire\Athlete\ExerciseCatalog;
 use App\Livewire\Athlete\ExerciseDetail as AthleteExerciseDetail;
 use App\Livewire\Athlete\Messages;
+use App\Livewire\Athlete\Notifications as AthleteNotifications;
 use App\Livewire\Athlete\PersonalRecords;
 use App\Livewire\Athlete\Profile as AthleteProfile;
 use App\Livewire\Athlete\ProgressPhotoUpload;
@@ -49,6 +50,12 @@ Route::prefix('athlete')
             return response()->json(['count' => Message::where('receiver_id', auth()->id())->whereNull('read_at')->count()]);
         })->name('messages.unread-count');
         Route::post('/push-subscribe', [PushSubscriptionController::class, 'store'])->name('push-subscribe');
+
+        // R10 — notification center
+        Route::get('/notifications', AthleteNotifications::class)->name('notifications');
+        Route::get('/notifications-unread-count', function () {
+            return response()->json(['count' => auth()->user()->unreadNotifications()->count()]);
+        })->name('notifications.unread-count');
 
         // Release 03 — sync offline queue
         Route::post('/session/sync', [SyncBatchController::class, 'handle'])->name('session.sync');

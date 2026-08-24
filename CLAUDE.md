@@ -205,7 +205,9 @@ Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01
 
 **R28** completato: note interne sul tesserato — `MemberForm` già completo; aggiunta icona `fa-sticky-note` con tooltip in `MemberList` quando note presenti. 4 nuovi test. R28 chiuso.
 
-**Suite corrente:** 402 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
+**R29** completato: Export CSV abbonamenti (`/backoffice/subscriptions/export?filter=X`), solo gestore. CSV UTF-8 con BOM, separatore `;`, rispetta filtro corrente. Bottone in `SubscriptionList`. 4 nuovi test. R29 chiuso.
+
+**Suite corrente:** 406 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
 
 Storico completo release e audit: **`CHANGELOG.md`**.
 

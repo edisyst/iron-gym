@@ -24,6 +24,13 @@
         <div class="card-header">
             <h3 class="card-title">Abbonamenti</h3>
             <div class="card-tools">
+                @role('gestore')
+                <a href="{{ route('backoffice.subscriptions.export', ['filter' => $filter]) }}"
+                   class="btn btn-sm btn-outline-secondary mr-1"
+                   title="Esporta CSV">
+                    <i class="fas fa-file-csv"></i> Esporta CSV
+                </a>
+                @endrole
                 @can('manage-subscriptions')
                 <a href="{{ route('backoffice.subscriptions.create') }}" class="btn btn-primary btn-sm">
                     <i class="fas fa-plus"></i> Nuovo abbonamento

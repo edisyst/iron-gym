@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\ClassBooking;
-use App\Models\GroupClass;
+use App\Models\ClassOccurrence;
 use App\Models\Member;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -17,7 +17,7 @@ class ClassBookingFactory extends Factory
     public function definition(): array
     {
         return [
-            'class_id' => GroupClass::factory(),
+            'class_occurrence_id' => ClassOccurrence::factory(),
             'member_id' => Member::factory(),
             'status' => 'confirmed',
             'position' => null,
@@ -34,6 +34,6 @@ class ClassBookingFactory extends Factory
 
     public function cancelled(): static
     {
-        return $this->state(['status' => 'cancelled', 'position' => null]);
+        return $this->state(['status' => 'cancelled_by_athlete', 'position' => null]);
     }
 }

@@ -8,7 +8,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class WaitlistPromotionNotification extends Notification implements ShouldQueue
+class ClassOccurrenceCancelledNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -26,10 +26,10 @@ class WaitlistPromotionNotification extends Notification implements ShouldQueue
         $date = $this->occurrence->date->format('d/m/Y').' '.substr($this->occurrence->start_time, 0, 5);
 
         return (new MailMessage)
-            ->subject("Sei stato confermato per il corso {$name}")
-            ->greeting('Ottima notizia!')
-            ->line("Sei stato confermato per il corso **{$name}** del **{$date}**.")
-            ->line('Ti aspettiamo in palestra!')
+            ->subject("Corso {$name} del {$date} cancellato")
+            ->greeting('Avviso importante')
+            ->line("Il corso **{$name}** previsto per il **{$date}** è stato cancellato.")
+            ->line('Ci scusiamo per il disagio.')
             ->salutation('Il team Iron Gym');
     }
 
@@ -40,9 +40,9 @@ class WaitlistPromotionNotification extends Notification implements ShouldQueue
         $date = $this->occurrence->date->format('d/m/Y').' '.substr($this->occurrence->start_time, 0, 5);
 
         return [
-            'type' => 'waitlist_promotion',
+            'type' => 'class_cancelled',
             'occurrence_id' => $this->occurrence->id,
-            'message' => "Confermato per il corso {$name} del {$date}",
+            'message' => "Corso {$name} del {$date} cancellato",
         ];
     }
 
@@ -53,8 +53,8 @@ class WaitlistPromotionNotification extends Notification implements ShouldQueue
         $date = $this->occurrence->date->format('d/m/Y').' '.substr($this->occurrence->start_time, 0, 5);
 
         return [
-            'title' => 'Posto confermato!',
-            'body' => "Sei confermato per {$name} del {$date}",
+            'title' => 'Corso cancellato',
+            'body' => "{$name} del {$date} è stato cancellato",
         ];
     }
 }

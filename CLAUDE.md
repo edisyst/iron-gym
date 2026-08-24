@@ -53,8 +53,11 @@ Gestionale palestra bodybuilding/fitness. Copre: anagrafica tesserati, abbonamen
 **Prenotazioni:**
 - TrainerAvailability: disponibilità settimanale trainer
 - PtBooking: prenotazione sessione PT
-- GroupClass: corso collettivo
-- ClassBooking: iscrizione corso con waitlist
+- GroupClass: **definizione** del corso (slug, name, description, duration_minutes, default_capacity, room, color, is_active). Non contiene data/ora.
+- ClassSchedule: palinsesto ricorrente per un corso (group_class_id, weekday 0=lun..6=dom, start_time, trainer_id nullable, valid_from, valid_until, is_active). Stesso weekday convention di TrainerAvailability.
+- ClassOccurrence: **istanza datata** del corso (group_class_id, class_schedule_id nullable, date, start_time, end_time, trainer_id, capacity, status planned/cancelled/completed). Unique (class_schedule_id, date) per idempotenza command. Porta gli accessor confirmed_count, available_spots, is_full.
+- class_trainer: pivot abilitazione trainer su corso (group_class_id, trainer_id).
+- ClassBooking: iscrizione a ClassOccurrence con waitlist. status enum: confirmed, waitlisted, cancelled_by_athlete, cancelled_by_gym, no_show. Ha attended_at e booked_by. Unique (class_occurrence_id, member_id).
 
 **Comunicazione:**
 - Message: messaggistica interna trainer-atleta
@@ -82,7 +85,7 @@ Gestionale palestra bodybuilding/fitness. Copre: anagrafica tesserati, abbonamen
 - DeloadEvaluator: valuta i quattro trigger di deload
 - KpiService: metriche aggregate per la dashboard gestore; cache Redis tag `kpi` TTL 1h
 - PtBookingService: prenotazioni PT con verifica disponibilità
-- ClassBookingService: iscrizioni corsi con gestione waitlist
+- ClassBookingService: enroll(ClassOccurrence, Member) → ClassBooking; cancel(ClassBooking) imposta cancelled_by_athlete e promuove waitlist; lockForUpdate su ClassOccurrence
 - E1rmCalculator: formula Epley per stima 1RM
 - PersonalRecordDetector: check(ExerciseSet, athleteId) → PersonalRecord|null; sincrono, pronto per migrazione a evento+listener; soglie in config/pr.php (max_reps_epley, min_sessions_before_pr)
 - ExerciseSubstitutionFinder: find(Exercise) → Collection max 5 candidati; matching per stesso joint_action_id o compound_pattern_id + stesso measurement_type + non soft-deleted; overlap = somma min(pct_orig, pct_cand) su muscoli comuni; tie-break: stesso mechanic poi skill_level
@@ -157,9 +160,14 @@ Exercise model usa `getRouteKeyName() = 'slug'` (route binding su slug).
 
 Step 1-10 implementati. Release 01-08 completate. UX01-UX07 completate. Tag v0.9.0 (2026-07-05).
 Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01 completati.
+**R09 Step 1** completato: schema GroupClass→ClassSchedule→ClassOccurrence, consumer adattati, test aggiornati.
+**R09 Step 2** completato: command `classes:generate-occurrences`, prerequisiti enroll (abbonamento+cert), overlap check atleta e trainer, 29 nuovi test.
+**R09 Step 3** completato: ClassScheduleManager (CRUD palinsesto), attendance tracking (completeOccurrence/markAttended/markNoShow), 13 nuovi test.
+**R09 Step 4** completato: ClassOccurrenceCancelledNotification + NotifyClassCancellation job, check-in receptionist, feature flag gate in Athlete\Booking, 7 nuovi test.
+**R09 Step 5** completato: GroupClassCatalog CRUD definizioni corsi (solo gestore), sidebar submenu a 3 voci (Occorrenze/Palinsesto/Catalogo), dashboard atleta card prossimi corsi collettivi, 8 nuovi test.
+**R09 Step 6** completato: finestra prenotazione (booking_opens_days/booking_closes_minutes in Athlete\Booking), finestra cancellazione gratuita (free_cancel_hours), removeParticipant → cancelled_by_gym, 5 nuovi test. R09 chiuso.
 
-**Suite corrente:** 220/226 (6 skip pre-esistenti: Vite manifest + Volt auth — non legati a codice app).
-**PHPStan:** livello 6, 0 errori. **Pint:** conforme.
+**Suite corrente:** 275 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
 
 Storico completo release e audit: **`CHANGELOG.md`**.
 

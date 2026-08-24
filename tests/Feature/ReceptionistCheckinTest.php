@@ -11,6 +11,7 @@ use App\Livewire\Backoffice\Members\MemberList;
 use App\Livewire\Backoffice\Mesocycles\MesocycleList;
 use App\Livewire\Backoffice\Templates\TemplateList;
 use App\Models\ClassBooking;
+use App\Models\ClassOccurrence;
 use App\Models\GroupClass;
 use App\Models\Member;
 use App\Models\PtBooking;
@@ -232,11 +233,15 @@ it('GroupClassManager.save() lancia 403 per receptionist', function () {
 });
 
 it('GroupClassManager.deleteClass() lancia 403 per receptionist', function () {
-    $class = GroupClass::factory()->create(['trainer_id' => $this->trainer->id]);
+    $class = GroupClass::factory()->create();
+    $occurrence = ClassOccurrence::factory()->create([
+        'group_class_id' => $class->id,
+        'trainer_id' => $this->trainer->id,
+    ]);
 
     Livewire::actingAs($this->receptionist)
         ->test(GroupClassManager::class)
-        ->call('deleteClass', $class->id)
+        ->call('deleteClass', $occurrence->id)
         ->assertForbidden();
 });
 
@@ -410,9 +415,14 @@ it('gestore vede link Modifica e Profilo allenamento in MemberList', function ()
 // ---------------------------------------------------------------------------
 
 it('receptionist può rimuovere partecipante da corso (operazione front-desk)', function () {
-    $class = GroupClass::factory()->create(['trainer_id' => $this->trainer->id]);
+    $class = GroupClass::factory()->create();
+    $occurrence = ClassOccurrence::factory()->create([
+        'group_class_id' => $class->id,
+        'trainer_id' => $this->trainer->id,
+        'capacity' => 10,
+    ]);
     $booking = ClassBooking::factory()->create([
-        'class_id' => $class->id,
+        'class_occurrence_id' => $occurrence->id,
         'member_id' => $this->memberOk->id,
         'status' => 'confirmed',
     ]);
@@ -422,7 +432,7 @@ it('receptionist può rimuovere partecipante da corso (operazione front-desk)', 
         ->call('removeParticipant', $booking->id)
         ->assertHasNoErrors();
 
-    expect($booking->fresh()->status)->toBe('cancelled');
+    expect($booking->fresh()->status)->toBe('cancelled_by_gym');
 });
 
 // ---------------------------------------------------------------------------

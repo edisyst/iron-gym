@@ -3,8 +3,8 @@
 namespace Database\Factories;
 
 use App\Models\GroupClass;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 /**
  * @extends Factory<GroupClass>
@@ -15,15 +15,20 @@ class GroupClassFactory extends Factory
 
     public function definition(): array
     {
+        $name = fake()->unique()->randomElement([
+            'Spinning', 'Yoga', 'CrossFit', 'Pilates', 'Zumba',
+            'Functional Training', 'Calisthenics', 'HIIT', 'Body Pump', 'Stretching',
+        ]);
+
         return [
-            'trainer_id' => User::factory(),
-            'name' => fake()->randomElement(['Spinning', 'Yoga', 'CrossFit', 'Pilates', 'Zumba']),
+            'slug' => Str::slug($name).'-'.fake()->unique()->numberBetween(1, 9999),
+            'name' => $name,
             'description' => fake()->optional()->sentence(),
-            // Data futura di default
-            'scheduled_at' => fake()->dateTimeBetween('+1 day', '+30 days'),
             'duration_minutes' => fake()->randomElement([45, 60, 75, 90]),
-            'max_participants' => fake()->numberBetween(5, 20),
-            'status' => 'scheduled',
+            'default_capacity' => fake()->numberBetween(5, 20),
+            'room' => null,
+            'color' => null,
+            'is_active' => true,
         ];
     }
 }

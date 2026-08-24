@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Exceptions\BookingException;
+use App\Models\ClassOccurrence;
 use App\Models\PtBooking;
 use App\Models\TrainerAvailability;
 use App\Models\User;
@@ -51,7 +52,21 @@ class PtBookingService
                 );
             }
 
-            // 2. Verifica che il trainer abbia disponibilità per questo slot
+            // 2. Verifica che il trainer non abbia un corso collettivo sovrapposto
+            $classOverlap = ClassOccurrence::where('trainer_id', $trainerId)
+                ->whereDate('date', $date->toDateString())
+                ->where('status', 'planned')
+                ->where('start_time', '<', $endTime)
+                ->where('end_time', '>', $startTime)
+                ->exists();
+
+            if ($classOverlap) {
+                throw new BookingException(
+                    "Il trainer ha un corso collettivo nello slot {$startTime}-{$endTime} del {$date->toDateString()}."
+                );
+            }
+
+            // 4. Verifica che il trainer abbia disponibilità per questo slot
             $availableSlots = TrainerAvailability::getAvailableSlots($trainerId, $date, $durationMinutes);
 
             $slotExists = $availableSlots->first(function (array $slot) use ($startTime) {
@@ -64,12 +79,12 @@ class PtBookingService
                 );
             }
 
-            // 3. Calcola deadline gratuita di cancellazione: 24 ore prima
+            // 5. Calcola deadline gratuita di cancellazione: 24 ore prima
             $cancellationDeadline = Carbon::parse(
                 $date->toDateString().' '.$startTime
             )->subHours(24);
 
-            // 4. Crea e restituisce la prenotazione confermata
+            // 6. Crea e restituisce la prenotazione confermata
             return PtBooking::create([
                 'trainer_id' => $trainerId,
                 'member_id' => $memberId,

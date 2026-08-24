@@ -146,57 +146,55 @@
     <div>
         <p class="section-title">Corsi disponibili</p>
 
-        @forelse($futureClasses as $class)
+        @forelse($futureClasses as $occurrence)
         @php
-            $alreadyEnrolled = in_array($class->id, $myEnrolledClassIds);
-            $myBookingForClass = $myClassBookings->firstWhere('class_id', $class->id);
+            $alreadyEnrolled = in_array($occurrence->id, $myEnrolledOccurrenceIds);
+            $myBookingForOccurrence = $myClassBookings->firstWhere('class_occurrence_id', $occurrence->id);
         @endphp
         <div class="athlete-card">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
                 <div>
-                    <div style="font-weight:700;font-size:16px;">{{ $class->name }}</div>
+                    <div style="font-weight:700;font-size:16px;">{{ $occurrence->groupClass->name }}</div>
                     <div style="color:#888;font-size:13px;margin-top:2px;">
-                        {{ $class->scheduled_at->format('d/m/Y H:i') }}
-                        &mdash; {{ $class->duration_minutes }} min
+                        {{ $occurrence->date->format('d/m/Y') }} {{ substr($occurrence->start_time, 0, 5) }}
+                        &mdash; {{ $occurrence->groupClass->duration_minutes }} min
                     </div>
-                    <div style="color:#888;font-size:13px;">Trainer: {{ $class->trainer?->name }}</div>
+                    <div style="color:#888;font-size:13px;">Trainer: {{ $occurrence->trainer?->name }}</div>
                 </div>
                 <div style="text-align:right;">
-                    @if($class->is_full)
+                    @if($occurrence->is_full)
                         <span class="athlete-badge badge-red">PIENO</span>
                     @else
-                        <span class="athlete-badge badge-green">{{ $class->available_spots }} posti</span>
+                        <span class="athlete-badge badge-green">{{ $occurrence->available_spots }} posti</span>
                     @endif
                 </div>
             </div>
 
-            @if($class->description)
-            <p style="color:#aaa;font-size:13px;margin-bottom:10px;">{{ $class->description }}</p>
+            @if($occurrence->groupClass->description)
+            <p style="color:#aaa;font-size:13px;margin-bottom:10px;">{{ $occurrence->groupClass->description }}</p>
             @endif
 
-            @if($alreadyEnrolled && $myBookingForClass)
-                {{-- Già iscritto --}}
+            @if($alreadyEnrolled && $myBookingForOccurrence)
                 <div style="display:flex;justify-content:space-between;align-items:center;">
-                    @if($myBookingForClass->status === 'waitlisted')
+                    @if($myBookingForOccurrence->status === 'waitlisted')
                         <span class="athlete-badge badge-gray">
-                            Lista d'attesa #{{ $myBookingForClass->position }}
+                            Lista d'attesa #{{ $myBookingForOccurrence->position }}
                         </span>
                     @else
                         <span class="athlete-badge badge-green">Iscritto</span>
                     @endif
-                    <button wire:click="cancelClassBooking({{ $myBookingForClass->id }})"
+                    <button wire:click="cancelClassBooking({{ $myBookingForOccurrence->id }})"
                             wire:confirm="Annullare l'iscrizione?"
                             class="btn-ghost" style="font-size:12px;padding:4px 10px;">
                         Annulla iscrizione
                     </button>
                 </div>
             @else
-                {{-- Non ancora iscritto --}}
-                <button wire:click="enrollClass({{ $class->id }})"
+                <button wire:click="enrollClass({{ $occurrence->id }})"
                         class="btn-accent" style="padding:10px;">
-                    <span wire:loading wire:target="enrollClass({{ $class->id }})">Iscrizione...</span>
-                    <span wire:loading.remove wire:target="enrollClass({{ $class->id }})">
-                        {{ $class->is_full ? "Iscriviti alla lista d'attesa" : 'Iscriviti' }}
+                    <span wire:loading wire:target="enrollClass({{ $occurrence->id }})">Iscrizione...</span>
+                    <span wire:loading.remove wire:target="enrollClass({{ $occurrence->id }})">
+                        {{ $occurrence->is_full ? "Iscriviti alla lista d'attesa" : 'Iscriviti' }}
                     </span>
                 </button>
             @endif
@@ -214,9 +212,10 @@
         @foreach($myClassBookings as $booking)
         <div class="athlete-card" style="display:flex;justify-content:space-between;align-items:center;">
             <div>
-                <div style="font-weight:600;font-size:15px;">{{ $booking->groupClass?->name }}</div>
+                <div style="font-weight:600;font-size:15px;">{{ $booking->occurrence?->groupClass?->name }}</div>
                 <div style="color:#888;font-size:13px;">
-                    {{ $booking->groupClass?->scheduled_at->format('d/m/Y H:i') }}
+                    {{ $booking->occurrence?->date?->format('d/m/Y') }}
+                    {{ $booking->occurrence ? substr($booking->occurrence->start_time, 0, 5) : '' }}
                 </div>
             </div>
             <span class="athlete-badge {{ $booking->status === 'confirmed' ? 'badge-green' : 'badge-gray' }}">

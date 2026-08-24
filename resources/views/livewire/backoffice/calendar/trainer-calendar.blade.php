@@ -122,9 +122,9 @@
                             <p><strong>Note:</strong> {{ $detailBooking->notes }}</p>
                         @endif
                     @elseif($detailType === 'class')
-                        <p><strong>Corso:</strong> {{ $detailBooking->name }}</p>
-                        <p><strong>Data:</strong> {{ $detailBooking->scheduled_at->format('d/m/Y H:i') }}</p>
-                        <p><strong>Iscritti:</strong> {{ $detailBooking->confirmed_count }} / {{ $detailBooking->max_participants }}</p>
+                        <p><strong>Corso:</strong> {{ $detailBooking->groupClass->name }}</p>
+                        <p><strong>Data:</strong> {{ $detailBooking->date->format('d/m/Y') }} {{ substr($detailBooking->start_time, 0, 5) }}</p>
+                        <p><strong>Iscritti:</strong> {{ $detailBooking->confirmed_count }} / {{ $detailBooking->capacity }}</p>
                     @endif
                 </div>
                 <div class="modal-footer">

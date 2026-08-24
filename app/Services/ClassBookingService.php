@@ -5,22 +5,32 @@ namespace App\Services;
 use App\Exceptions\BookingException;
 use App\Jobs\NotifyWaitlistPromotion;
 use App\Models\ClassBooking;
-use App\Models\GroupClass;
+use App\Models\ClassOccurrence;
 use App\Models\Member;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class ClassBookingService
 {
     /**
-     * Iscrive un membro a un corso collettivo.
-     * Se il corso è pieno, lo mette in waitlist con posizione progressiva.
+     * Iscrive un membro a un'occorrenza di corso collettivo.
+     * Se l'occorrenza è piena, lo mette in waitlist con posizione progressiva.
      *
-     * @throws BookingException Se il membro è già iscritto o in waitlist.
+     * @throws BookingException Se prerequisiti non soddisfatti, già iscritto o orario sovrapposto.
      */
-    public function enroll(GroupClass $class, Member $member): ClassBooking
+    public function enroll(ClassOccurrence $occurrence, Member $member): ClassBooking
     {
-        // Verifica che il membro non sia già iscritto o in waitlist
-        $alreadyEnrolled = ClassBooking::where('class_id', $class->id)
+        // Prerequisito 1: abbonamento attivo
+        if (! $member->activeSubscription()->exists()) {
+            throw new BookingException('Nessun abbonamento attivo.');
+        }
+
+        // Prerequisito 2: certificato medico valido
+        if (! $member->has_medical_cert_valid) {
+            throw new BookingException('Certificato medico scaduto o assente.');
+        }
+
+        $alreadyEnrolled = ClassBooking::where('class_occurrence_id', $occurrence->id)
             ->where('member_id', $member->id)
             ->whereIn('status', ['confirmed', 'waitlisted'])
             ->exists();
@@ -31,27 +41,38 @@ class ClassBookingService
             );
         }
 
-        return DB::transaction(function () use ($class, $member) {
-            // Rilegge il corso in lock per evitare race condition
-            $freshClass = GroupClass::lockForUpdate()->find($class->id);
+        // Overlap: membro già confermato in un corso sovrapposto lo stesso giorno
+        $athleteOverlap = ClassBooking::where('member_id', $member->id)
+            ->where('status', 'confirmed')
+            ->whereHas('occurrence', function ($q) use ($occurrence) {
+                $q->whereDate('date', $occurrence->date->toDateString())
+                    ->where('start_time', '<', $occurrence->end_time)
+                    ->where('end_time', '>', $occurrence->start_time);
+            })
+            ->exists();
 
-            if ($freshClass->available_spots > 0) {
-                // Posto disponibile: iscrizione diretta confermata
+        if ($athleteOverlap) {
+            throw new BookingException('Hai già un corso confermato in questo orario.');
+        }
+
+        return DB::transaction(function () use ($occurrence, $member) {
+            $fresh = ClassOccurrence::lockForUpdate()->find($occurrence->id);
+
+            if ($fresh->available_spots > 0) {
                 return ClassBooking::create([
-                    'class_id' => $class->id,
+                    'class_occurrence_id' => $occurrence->id,
                     'member_id' => $member->id,
                     'status' => 'confirmed',
                     'position' => null,
                 ]);
             }
 
-            // Corso pieno: inserisce in waitlist con posizione sequenziale
-            $nextPosition = (int) (ClassBooking::where('class_id', $class->id)
+            $nextPosition = (int) (ClassBooking::where('class_occurrence_id', $occurrence->id)
                 ->where('status', 'waitlisted')
                 ->max('position') ?? 0) + 1;
 
             return ClassBooking::create([
-                'class_id' => $class->id,
+                'class_occurrence_id' => $occurrence->id,
                 'member_id' => $member->id,
                 'status' => 'waitlisted',
                 'position' => $nextPosition,
@@ -61,29 +82,34 @@ class ClassBookingService
 
     /**
      * Cancella l'iscrizione di un membro a un corso.
-     * Se era confermata e il corso è in futuro, promuove automaticamente
-     * il primo in waitlist.
+     * $byGym=true: cancellazione da staff (status = cancelled_by_gym, nessuna restrizione di finestra).
+     * $byGym=false (default): cancellazione atleta (status = cancelled_by_athlete).
+     * La verifica della finestra di cancellazione gratuita è responsabilità del chiamante (Livewire).
+     * Se era confermata e l'occorrenza è in futuro, promuove automaticamente il primo in waitlist.
      */
-    public function cancel(ClassBooking $booking): void
+    public function cancel(ClassBooking $booking, bool $byGym = false): void
     {
-        DB::transaction(function () use ($booking) {
+        DB::transaction(function () use ($booking, $byGym) {
             $wasConfirmed = $booking->status === 'confirmed';
 
-            $booking->update(['status' => 'cancelled']);
+            $booking->update(['status' => $byGym ? 'cancelled_by_gym' : 'cancelled_by_athlete']);
 
-            // Se era confermata e il corso non è ancora iniziato, promuovi il primo in lista
-            if ($wasConfirmed && $booking->groupClass->scheduled_at->isFuture()) {
-                $this->promoteFirstWaitlisted($booking->groupClass);
+            if ($wasConfirmed) {
+                $occurrence = $booking->occurrence;
+                $occurrenceStart = Carbon::parse(
+                    $occurrence->date->toDateString().' '.substr($occurrence->start_time, 0, 8)
+                );
+
+                if ($occurrenceStart->isFuture()) {
+                    $this->promoteFirstWaitlisted($occurrence);
+                }
             }
         });
     }
 
-    /**
-     * Promuove il primo membro in waitlist a confermato e dispatcha la notifica.
-     */
-    private function promoteFirstWaitlisted(GroupClass $class): void
+    private function promoteFirstWaitlisted(ClassOccurrence $occurrence): void
     {
-        $first = ClassBooking::where('class_id', $class->id)
+        $first = ClassBooking::where('class_occurrence_id', $occurrence->id)
             ->where('status', 'waitlisted')
             ->orderBy('position')
             ->first();
@@ -94,7 +120,6 @@ class ClassBookingService
 
         $first->promote();
 
-        // Notifica asincrona dopo che la response HTTP è stata inviata (afterResponse)
         dispatch(new NotifyWaitlistPromotion($first))->afterResponse();
     }
 }

@@ -2,11 +2,15 @@
 
 namespace App\Livewire\Backoffice\Calendar;
 
+use App\Jobs\NotifyClassCancellation;
 use App\Models\ClassBooking;
+use App\Models\ClassOccurrence;
 use App\Models\GroupClass;
 use App\Models\User;
 use App\Services\ClassBookingService;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -15,15 +19,13 @@ class GroupClassManager extends Component
 {
     use WithPagination;
 
-    // Filtri lista
     public string $search = '';
 
-    public string $filterStatus = 'scheduled';
+    public string $filterStatus = 'planned';
 
-    // Form creazione/modifica
     public bool $showForm = false;
 
-    public ?int $editingClassId = null;
+    public ?int $editingClassId = null; // ID occorrenza in modifica
 
     public int $formTrainerId = 0;
 
@@ -35,12 +37,11 @@ class GroupClassManager extends Component
 
     public int $formDurationMinutes = 60;
 
-    public int $formMaxParticipants = 10;
+    public int $formMaxParticipants = 10; // capacity sull'occorrenza
 
-    // Pannello dettaglio corso
     public bool $showDetail = false;
 
-    public ?int $selectedClassId = null;
+    public ?int $selectedClassId = null; // ID occorrenza selezionata per il dettaglio
 
     // -------------------------------------------------------------------------
     // Lifecycle
@@ -69,27 +70,22 @@ class GroupClassManager extends Component
     // Form CRUD
     // -------------------------------------------------------------------------
 
-    /**
-     * Apre il form: se $id è valorizzato carica i dati per la modifica.
-     */
     public function openForm(?int $id = null): void
     {
         $this->showDetail = false;
 
         if ($id !== null) {
-            $class = GroupClass::findOrFail($id);
-            $this->editingClassId = $class->id;
-            $this->formTrainerId = $class->trainer_id;
-            $this->formName = $class->name;
-            $this->formDescription = $class->description ?? '';
-            $this->formScheduledAt = $class->scheduled_at->format('Y-m-d\TH:i');
-            $this->formDurationMinutes = $class->duration_minutes;
-            $this->formMaxParticipants = $class->max_participants;
+            $occurrence = ClassOccurrence::with('groupClass')->findOrFail($id);
+            $this->editingClassId = $occurrence->id;
+            $this->formTrainerId = $occurrence->trainer_id;
+            $this->formName = $occurrence->groupClass->name;
+            $this->formDescription = $occurrence->groupClass->description ?? '';
+            $this->formScheduledAt = $occurrence->date->format('Y-m-d').'T'.substr($occurrence->start_time, 0, 5);
+            $this->formDurationMinutes = $occurrence->groupClass->duration_minutes;
+            $this->formMaxParticipants = $occurrence->capacity;
         } else {
             $this->editingClassId = null;
-            $this->reset([
-                'formName', 'formDescription', 'formScheduledAt',
-            ]);
+            $this->reset(['formName', 'formDescription', 'formScheduledAt']);
             $this->formDurationMinutes = 60;
             $this->formMaxParticipants = 10;
             $this->formTrainerId = (int) Auth::id();
@@ -98,9 +94,6 @@ class GroupClassManager extends Component
         $this->showForm = true;
     }
 
-    /**
-     * Salva il corso (creazione o modifica).
-     */
     public function save(): void
     {
         abort_unless(Auth::user()->hasAnyRole(['gestore', 'trainer']), 403);
@@ -118,20 +111,54 @@ class GroupClassManager extends Component
             'formScheduledAt.after' => 'Il corso deve essere programmato in futuro.',
         ]);
 
-        $data = [
-            'trainer_id' => $this->formTrainerId,
-            'name' => $this->formName,
-            'description' => $this->formDescription ?: null,
-            'scheduled_at' => $this->formScheduledAt,
-            'duration_minutes' => $this->formDurationMinutes,
-            'max_participants' => $this->formMaxParticipants,
-        ];
+        $scheduledAt = Carbon::parse($this->formScheduledAt);
+        $endTime = $scheduledAt->copy()->addMinutes($this->formDurationMinutes)->format('H:i:s');
+
+        // Trova o crea la definizione del corso per slug
+        $slug = Str::slug($this->formName);
+        $groupClass = GroupClass::firstOrCreate(
+            ['slug' => $slug],
+            [
+                'name' => $this->formName,
+                'description' => $this->formDescription ?: null,
+                'duration_minutes' => $this->formDurationMinutes,
+                'default_capacity' => $this->formMaxParticipants,
+                'is_active' => true,
+            ]
+        );
+
+        // Aggiorna la descrizione se la definizione esisteva già
+        if (! $groupClass->wasRecentlyCreated) {
+            $groupClass->update([
+                'description' => $this->formDescription ?: null,
+                'duration_minutes' => $this->formDurationMinutes,
+            ]);
+        }
+
+        // Abilita il trainer sul corso
+        $groupClass->trainers()->syncWithoutDetaching([$this->formTrainerId]);
 
         if ($this->editingClassId !== null) {
-            GroupClass::findOrFail($this->editingClassId)->update($data);
+            $occurrence = ClassOccurrence::findOrFail($this->editingClassId);
+            $occurrence->update([
+                'trainer_id' => $this->formTrainerId,
+                'date' => $scheduledAt->toDateString(),
+                'start_time' => $scheduledAt->format('H:i:s'),
+                'end_time' => $endTime,
+                'capacity' => $this->formMaxParticipants,
+            ]);
             session()->flash('success', 'Corso aggiornato.');
         } else {
-            GroupClass::create($data);
+            ClassOccurrence::create([
+                'group_class_id' => $groupClass->id,
+                'class_schedule_id' => null,
+                'trainer_id' => $this->formTrainerId,
+                'date' => $scheduledAt->toDateString(),
+                'start_time' => $scheduledAt->format('H:i:s'),
+                'end_time' => $endTime,
+                'capacity' => $this->formMaxParticipants,
+                'status' => 'planned',
+            ]);
             session()->flash('success', 'Corso creato.');
         }
 
@@ -139,26 +166,23 @@ class GroupClassManager extends Component
         $this->editingClassId = null;
     }
 
-    /**
-     * Elimina (o cancella) un corso se non ha partecipanti confermati.
-     */
     public function deleteClass(int $id): void
     {
         abort_unless(Auth::user()->hasAnyRole(['gestore', 'trainer']), 403);
 
-        $class = GroupClass::findOrFail($id);
+        $occurrence = ClassOccurrence::findOrFail($id);
 
-        $hasConfirmed = $class->confirmedBookings()->exists();
+        $hasConfirmed = $occurrence->confirmedBookings()->exists();
 
         if ($hasConfirmed) {
-            // Imposta status cancelled invece di eliminare fisicamente
-            $class->update([
+            $occurrence->update([
                 'status' => 'cancelled',
                 'cancellation_reason' => 'Corso cancellato dal gestore.',
             ]);
-            session()->flash('success', 'Corso cancellato (aveva partecipanti iscritti).');
+            dispatch(new NotifyClassCancellation($occurrence))->afterResponse();
+            session()->flash('success', 'Corso cancellato — partecipanti notificati.');
         } else {
-            $class->delete();
+            $occurrence->delete();
             session()->flash('success', 'Corso eliminato.');
         }
 
@@ -172,9 +196,6 @@ class GroupClassManager extends Component
     // Dettaglio corso
     // -------------------------------------------------------------------------
 
-    /**
-     * Apre il pannello dettaglio corso con lista iscritti e waitlist.
-     */
     public function openDetail(int $id): void
     {
         $this->selectedClassId = $id;
@@ -182,14 +203,47 @@ class GroupClassManager extends Component
         $this->showDetail = true;
     }
 
-    /**
-     * Rimuove un partecipante dal corso e promuove il primo in waitlist se necessario.
-     */
     public function removeParticipant(int $bookingId): void
     {
+        abort_unless(Auth::user()->hasAnyRole(['gestore', 'trainer', 'receptionist']), 403);
+
         $booking = ClassBooking::findOrFail($bookingId);
-        app(ClassBookingService::class)->cancel($booking);
+        app(ClassBookingService::class)->cancel($booking, byGym: true);
         session()->flash('success', 'Partecipante rimosso.');
+    }
+
+    public function completeOccurrence(int $id): void
+    {
+        abort_unless(Auth::user()->hasAnyRole(['gestore', 'trainer']), 403);
+
+        $occurrence = ClassOccurrence::findOrFail($id);
+
+        if ($occurrence->status !== 'planned') {
+            session()->flash('error', 'Solo i corsi pianificati possono essere completati.');
+
+            return;
+        }
+
+        $occurrence->update(['status' => 'completed']);
+        $occurrence->confirmedBookings()->update(['attended_at' => now()]);
+
+        session()->flash('success', 'Corso completato. Presenze registrate per gli iscritti confermati.');
+    }
+
+    public function markAttended(int $bookingId): void
+    {
+        abort_unless(Auth::user()->hasAnyRole(['gestore', 'trainer', 'receptionist']), 403);
+
+        $booking = ClassBooking::findOrFail($bookingId);
+        $booking->update(['status' => 'confirmed', 'attended_at' => now()]);
+    }
+
+    public function markNoShow(int $bookingId): void
+    {
+        abort_unless(Auth::user()->hasAnyRole(['gestore', 'trainer', 'receptionist']), 403);
+
+        $booking = ClassBooking::findOrFail($bookingId);
+        $booking->update(['status' => 'no_show', 'attended_at' => null]);
     }
 
     // -------------------------------------------------------------------------
@@ -198,28 +252,31 @@ class GroupClassManager extends Component
 
     public function render(): View
     {
-        $classes = GroupClass::with(['trainer', 'confirmedBookings'])
-            ->when($this->search, fn ($q) => $q->where('name', 'like', '%'.$this->search.'%')
-            )
-            ->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus)
-            )
-            ->orderByDesc('scheduled_at')
+        $occurrences = ClassOccurrence::with(['groupClass', 'trainer', 'confirmedBookings'])
+            ->when($this->search, fn ($q) => $q->whereHas('groupClass', fn ($q2) => $q2->where('name', 'like', '%'.$this->search.'%')
+            ))
+            ->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus))
+            ->orderByDesc('date')
+            ->orderByDesc('start_time')
             ->paginate(20);
 
         $trainers = User::role(['trainer', 'gestore'])->orderBy('name')->get();
 
-        // Dettaglio corso selezionato con eager loading completo
         $selectedClass = null;
         if ($this->showDetail && $this->selectedClassId) {
-            $selectedClass = GroupClass::with([
+            $selectedClass = ClassOccurrence::with([
+                'groupClass',
                 'trainer',
                 'confirmedBookings.member',
                 'waitlist.member',
+                'bookings' => fn ($q) => $q->where('status', 'no_show')->with('member'),
             ])->find($this->selectedClassId);
         }
 
-        return view('livewire.backoffice.calendar.group-class-manager', compact(
-            'classes', 'trainers', 'selectedClass'
-        ))->layout('layouts.backoffice')->layoutData(['page_title' => 'Corsi collettivi']);
+        return view('livewire.backoffice.calendar.group-class-manager', [
+            'classes' => $occurrences,
+            'trainers' => $trainers,
+            'selectedClass' => $selectedClass,
+        ])->layout('layouts.backoffice')->layoutData(['page_title' => 'Corsi collettivi']);
     }
 }

@@ -4,7 +4,7 @@ namespace App\Livewire\Athlete;
 
 use App\Exceptions\BookingException;
 use App\Models\ClassBooking;
-use App\Models\GroupClass;
+use App\Models\ClassOccurrence;
 use App\Models\Member;
 use App\Models\Mesocycle;
 use App\Models\PtBooking;
@@ -23,7 +23,6 @@ class Booking extends Component
 {
     public string $activeTab = 'pt'; // 'pt' | 'classes'
 
-    // Tab PT
     public int $selectedTrainerId = 0;
 
     public string $selectedDate = '';
@@ -51,7 +50,6 @@ class Booking extends Component
             $this->loadAvailableSlots();
         }
 
-        // Reset selezione slot quando cambia la data
         $this->selectedStart = '';
         $this->selectedEnd = '';
     }
@@ -67,9 +65,6 @@ class Booking extends Component
     // Slot disponibili PT
     // -------------------------------------------------------------------------
 
-    /**
-     * Carica gli slot orari disponibili per il trainer e la data selezionati.
-     */
     public function loadAvailableSlots(): void
     {
         if ($this->selectedTrainerId === 0 || $this->selectedDate === '') {
@@ -85,9 +80,6 @@ class Booking extends Component
         );
     }
 
-    /**
-     * Seleziona uno slot orario dalla griglia.
-     */
     public function selectSlot(string $start, string $end): void
     {
         $this->selectedStart = $start;
@@ -98,9 +90,6 @@ class Booking extends Component
     // Prenotazioni PT
     // -------------------------------------------------------------------------
 
-    /**
-     * Prenota la sessione PT con lo slot selezionato.
-     */
     public function bookPt(): void
     {
         $this->validate([
@@ -140,9 +129,6 @@ class Booking extends Component
         }
     }
 
-    /**
-     * Annulla una prenotazione PT dell'atleta autenticato.
-     */
     public function cancelPtBooking(int $bookingId): void
     {
         /** @var Member|null $member */
@@ -175,10 +161,7 @@ class Booking extends Component
     // Corsi collettivi
     // -------------------------------------------------------------------------
 
-    /**
-     * Iscrive l'atleta autenticato a un corso collettivo.
-     */
-    public function enrollClass(int $classId): void
+    public function enrollClass(int $occurrenceId): void
     {
         abort_unless(Feature::active('group_classes'), 403);
 
@@ -190,10 +173,28 @@ class Booking extends Component
             return;
         }
 
-        $class = GroupClass::findOrFail($classId);
+        $occurrence = ClassOccurrence::findOrFail($occurrenceId);
+
+        // Finestra di prenotazione
+        $occurrenceStart = Carbon::parse($occurrence->date->toDateString().' '.substr($occurrence->start_time, 0, 8));
+        $opensAt = $occurrenceStart->copy()->subDays((int) config('classes.booking_opens_days', 7));
+        $closesAt = $occurrenceStart->copy()->subMinutes((int) config('classes.booking_closes_minutes', 30));
+
+        if (now()->lt($opensAt)) {
+            session()->flash('error', 'Le prenotazioni aprono il '.$opensAt->format('d/m/Y').'.');
+
+            return;
+        }
+
+        if (now()->gt($closesAt)) {
+            session()->flash('error', 'Prenotazioni chiuse (entro '.
+                config('classes.booking_closes_minutes', 30).' min dall\'inizio).');
+
+            return;
+        }
 
         try {
-            $booking = app(ClassBookingService::class)->enroll($class, $member);
+            $booking = app(ClassBookingService::class)->enroll($occurrence, $member);
 
             $message = $booking->status === 'confirmed'
                 ? 'Iscrizione confermata!'
@@ -205,9 +206,6 @@ class Booking extends Component
         }
     }
 
-    /**
-     * Annulla l'iscrizione dell'atleta a un corso.
-     */
     public function cancelClassBooking(int $bookingId): void
     {
         abort_unless(Feature::active('group_classes'), 403);
@@ -225,6 +223,17 @@ class Booking extends Component
             ->where('member_id', $member->id)
             ->firstOrFail();
 
+        $occurrence = $booking->occurrence;
+        $occurrenceStart = Carbon::parse($occurrence->date->toDateString().' '.substr($occurrence->start_time, 0, 8));
+        $freeCancelUntil = $occurrenceStart->copy()->subHours((int) config('classes.free_cancel_hours', 3));
+
+        if (now()->gt($freeCancelUntil)) {
+            session()->flash('error', 'Cancellazione non disponibile (entro '.
+                config('classes.free_cancel_hours', 3).' ore dall\'inizio).');
+
+            return;
+        }
+
         app(ClassBookingService::class)->cancel($booking);
         session()->flash('success', 'Iscrizione annullata.');
     }
@@ -238,7 +247,6 @@ class Booking extends Component
         /** @var Member|null $member */
         $member = Auth::user()->member;
 
-        // Trainer del mesociclo attivo/più recente dell'atleta
         $assignedTrainer = null;
         if ($member) {
             $activeMesocycle = Mesocycle::with('trainer')
@@ -257,10 +265,8 @@ class Booking extends Component
             $assignedTrainer = $activeMesocycle?->trainer;
         }
 
-        // Trainer disponibili per la prenotazione PT
         $trainers = User::role(['trainer', 'gestore'])->orderBy('name')->get();
 
-        // Prenotazioni PT future dell'atleta
         $futurePtBookings = $member
             ? PtBooking::with('trainer')
                 ->where('member_id', $member->id)
@@ -271,32 +277,34 @@ class Booking extends Component
                 ->get()
             : collect();
 
-        // Corsi collettivi futuri con eager load iscrizioni
-        $futureClasses = GroupClass::with(['trainer', 'confirmedBookings'])
-            ->where('status', 'scheduled')
-            ->where('scheduled_at', '>', now())
-            ->orderBy('scheduled_at')
-            ->get();
+        // Occorrenze future prenotabili (solo se feature attiva)
+        $futureClasses = Feature::active('group_classes')
+            ? ClassOccurrence::with(['groupClass', 'trainer', 'confirmedBookings'])
+                ->where('status', 'planned')
+                ->where('date', '>=', now()->toDateString())
+                ->orderBy('date')
+                ->orderBy('start_time')
+                ->get()
+            : collect();
 
-        // Le mie iscrizioni ai corsi
-        $myClassBookings = $member
-            ? ClassBooking::with('groupClass.trainer')
+        // Iscrizioni attive dell'atleta a occorrenze future (solo se feature attiva)
+        $myClassBookings = ($member && Feature::active('group_classes'))
+            ? ClassBooking::with('occurrence.groupClass')
                 ->where('member_id', $member->id)
                 ->whereIn('status', ['confirmed', 'waitlisted'])
-                ->whereHas('groupClass', fn ($q) => $q->where('scheduled_at', '>', now()))
+                ->whereHas('occurrence', fn ($q) => $q->where('date', '>=', now()->toDateString()))
                 ->orderBy('created_at', 'desc')
                 ->get()
             : collect();
 
-        // Set degli id corsi a cui sono già iscritto (per disabilitare il bottone)
-        $myEnrolledClassIds = $myClassBookings->pluck('class_id')->toArray();
+        $myEnrolledOccurrenceIds = $myClassBookings->pluck('class_occurrence_id')->toArray();
 
         return view('livewire.athlete.booking', compact(
             'trainers',
             'futurePtBookings',
             'futureClasses',
             'myClassBookings',
-            'myEnrolledClassIds',
+            'myEnrolledOccurrenceIds',
             'member',
             'assignedTrainer',
         ))->layout('layouts.athlete');

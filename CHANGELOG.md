@@ -2,6 +2,150 @@
 
 ---
 
+## R09 Step 6 — Finestre prenotazione e cancellazione (2026-08-24)
+
+**Finestra prenotazione (`Athlete\Booking::enrollClass`):**
+- Verifica `booking_opens_days` (default 7): blocca iscrizione se occorrenza è troppo lontana (finestra non ancora aperta)
+- Verifica `booking_closes_minutes` (default 30): blocca iscrizione se l'inizio è entro 30 min
+- Configurazione centralizzata in `config/classes.php`; la logica non è nel service per permettere bypass backoffice
+
+**Finestra cancellazione (`Athlete\Booking::cancelClassBooking`):**
+- Verifica `free_cancel_hours` (default 3): blocca cancellazione se inizio è entro 3 ore
+- Flash `session('error')` all'utente senza propagare eccezione
+
+**`ClassBookingService::cancel(bool $byGym = false)`:**
+- Parametro `$byGym`: se `true`, imposta `cancelled_by_gym` invece di `cancelled_by_athlete`; nessuna restrizione di finestra (già gestita dal chiamante)
+- `GroupClassManager::removeParticipant()` ora passa `byGym: true` (staff bypass) e include controllo ruolo receptionist
+
+**Test (5 `BookingWindowTest`):** enroll in finestra OK; enroll troppo presto bloccato; enroll troppo tardi bloccato; cancellazione entro finestra OK; cancellazione oltre free_cancel_hours bloccata
+
+Suite: 275 pass / 6 skipped. PHPStan 0 errori. Pint OK.
+
+---
+
+## R09 Step 5 — GroupClassCatalog, sidebar submenu, dashboard atleta (2026-08-24)
+
+**`GroupClassCatalog`** Livewire, route `/backoffice/group-classes/catalog`:
+- CRUD definizioni corso (GroupClass): nome, descrizione, durata, capienza default, sala, colore, is_active
+- Slug auto-generato con suffisso incrementale se già esistente
+- `toggleActive(id)`: attiva/disattiva corso senza toccare le occorrenze
+- `deleteClass(id)`: blocca se esistono occorrenze future pianificate (`whereDate`)
+- Accesso riservato a gestore (`hasRole('gestore')`); trainer visualizza ma non può modificare
+- Colonna "Prossimi" mostra conteggio occorrenze future tramite `withCount`
+
+**Sidebar submenu Corsi collettivi:**
+- Voce singola rimpiazzata da submenu a 3 voci: Occorrenze → Palinsesto → Catalogo corsi
+- Tutti e tre rispettano il gate `can: view-group-classes`
+
+**Dashboard atleta — card prossimi corsi:**
+- `Dashboard::mount()`: carica max 3 `ClassBooking` confirmed future (JOIN su `class_occurrences`) se `Feature::active('group_classes')`
+- View: sezione "Prossimi corsi" con dot colorato (colore corso), nome, data+orario; link a `athlete.booking`
+
+**Test (8):** visualizza catalogo; crea corso; modifica corso; toggle active×2; blocca delete con occorrenze future; delete senza occorrenze; trainer non può creare; slug con suffisso se già esistente
+
+Suite: 270 pass / 6 skipped. PHPStan 0 errori. Pint OK.
+
+---
+
+## R09 Step 4 — Notifica cancellazione, check-in receptionist, feature flag gate (2026-08-24)
+
+**Notifica cancellazione occorrenza:**
+- `ClassOccurrenceCancelledNotification` (mail + database + webpush): pattern identico a `WaitlistPromotionNotification`
+- `NotifyClassCancellation` job: itera `confirmedBookings()->with('member.user')`, salta senza account; dispatched `afterResponse` da `GroupClassManager::deleteClass()` quando `$hasConfirmed`
+- Flash message aggiornato: "Corso cancellato — partecipanti notificati."
+
+**Check-in receptionist:**
+- `GroupClassManager::markAttended` e `markNoShow`: aggiunto `'receptionist'` ai ruoli ammessi
+- `completeOccurrence` rimane riservato a gestore e trainer
+
+**Feature flag gate (`Athlete\Booking`):**
+- `render()`: `futureClasses` e `myClassBookings` caricati solo se `Feature::active('group_classes')`; in precedenza le query giravano sempre indipendentemente dal flag
+
+**Test (7):** dispatch job su deleteClass con confermati; no dispatch senza confermati; job notifica confermati con account; salta senza account; salta waitlist; receptionist markAttended; receptionist markNoShow
+
+Suite: 262 pass / 6 skipped. PHPStan 0 errori. Pint OK.
+
+---
+
+## R09 Step 3 — ClassScheduleManager e attendance tracking (2026-08-24)
+
+**`ClassScheduleManager`** Livewire, route `/backoffice/group-classes/schedules`:
+- CRUD per ClassSchedule (palinsesto ricorrente): group_class, weekday (select Lun–Dom), start_time, trainer, valid_from, valid_until, is_active
+- `toggleActive(id)`: switch on/off senza perdere le occorrenze già generate
+- `deleteSchedule(id)`: blocca se esistono occorrenze future pianificate (`whereDate('date', '>=', today())`)
+
+**Attendance tracking in `GroupClassManager`:**
+- `completeOccurrence(id)`: solo da `planned`; transitions → `completed`; `confirmedBookings()->update(['attended_at' => now()])` bulk (esclude no_show già segnati)
+- `markNoShow(bookingId)`: `status → no_show`, `attended_at → null`
+- `markAttended(bookingId)`: `status → confirmed`, `attended_at → now()` (ripristino no_show)
+- View: pulsante "Completa" in tabella e nel pannello dettaglio (visibile solo su planned); sezione no-show con ripristino; badge Presente su iscritti con attended_at; edit/completa nascosti su occorrenze completed/cancelled
+
+**Test (13 nuovi):**
+- `ClassScheduleManagerTest` (7 casi): lista, create, validazione, edit, toggle, delete con/senza occorrenze future
+- `AttendanceTest` (6 casi): complete bulk, idempotenza su già-completed, markNoShow, markAttended, ordine no-show→complete, ruolo trainer
+
+Suite: 255 pass / 6 skipped. PHPStan 0 errori. Pint OK.
+
+---
+
+## R09 Step 2 — Command, prerequisiti e overlap corsi collettivi (2026-08-24)
+
+**Command `classes:generate-occurrences`:**
+- Signature: `classes:generate-occurrences {--horizon=}` (default: `config/classes.php generation_horizon_days`, 28)
+- Legge ClassSchedule attivi con groupClass, itera CarbonPeriod max(today,valid_from)..min(until,valid_until), filtra per weekday (0=lun, dayOfWeekIso-1)
+- `ClassOccurrence::firstOrCreate([class_schedule_id, date], [...])` — idempotente; `wasRecentlyCreated` per contatore
+- `end_time` calcolato da `start_time + groupClass->duration_minutes`
+- Schedulato in `routes/console.php` daily 03:00
+
+**`ClassBookingService::enroll()` — prerequisiti:**
+- Abbonamento attivo: `$member->activeSubscription()->exists()` → `BookingException('Nessun abbonamento attivo.')`
+- Certificato medico: `$member->has_medical_cert_valid` → `BookingException('Certificato medico scaduto o assente.')`
+- Overlap atleta: `ClassBooking::whereHas('occurrence', fn → whereDate('date', ...) + time overlap)` → `BookingException('Hai già un corso confermato in questo orario.')`
+
+**`PtBookingService::book()` — overlap trainer:**
+- `ClassOccurrence::whereDate('date', ...)->where('status','planned')->where time overlap` → `BookingException('Il trainer ha un corso collettivo nello slot ...')`
+
+**Nota tecnica:** usato `whereDate()` (anziché `where('date', ...)`) su colonna cast 'date' per compatibilità SQLite (che serializza come 'Y-m-d H:i:s') e MySQL (tipo date).
+
+**Model:** `ClassSchedule` — `@property Carbon|null $valid_from/valid_until` (PHPStan L6); `GroupClass::scopeActive()` — return type `Builder<GroupClass>`
+
+**Test (29 nuovi/aggiornati):**
+- `BookingTest` (22 casi): enroll senza abbonamento, con abbonamento scaduto, senza cert, con cert scaduto, successo, overlap atleta (overlap e non-overlap), PT overlap trainer (overlap e non-overlap)
+- `GenerateClassOccurrencesTest` (7 casi): genera occorrenze, idempotenza, valid_from, valid_until, is_active=false, orizzonte custom, end_time da duration_minutes
+
+Suite: 241 pass / 6 skipped. PHPStan 0 errori. Pint OK.
+
+---
+
+## R09 Step 1 — Schema corsi collettivi (2026-08-24)
+
+Riscrittura semantica da modello monolitico a tre livelli: GroupClass (definizione) → ClassSchedule (palinsesto) → ClassOccurrence (istanza datata).
+
+**Migration (5 file):**
+- `create_class_trainer_table`: pivot abilitazione trainer-corso (PK composta, cascade/restrict)
+- `create_class_schedules_table`: palinsesto ricorrente; weekday 0=lun..6=dom (stessa convenzione TrainerAvailability)
+- `create_class_occurrences_table`: istanza datata; unique (class_schedule_id, date) per idempotenza command; NULL non coperto (corretto)
+- `transform_group_classes_table`: aggiunge slug/default_capacity/room/color/is_active; data migration con deduplica per name; crea class_trainer e class_occurrences da righe esistenti; rimuove trainer_id/scheduled_at/max_participants/status/cancellation_reason; down() best-effort
+- `transform_class_bookings_table`: aggiunge class_occurrence_id/attended_at/booked_by; popola via old_class_id helper; enum status → confirmed/waitlisted/cancelled_by_athlete/cancelled_by_gym/no_show; rimuove class_id; unique → (class_occurrence_id, member_id)
+
+**Model nuovi:** `ClassSchedule`, `ClassOccurrence` (con accessor confirmed_count/available_spots/is_full)
+
+**Model aggiornati:** `GroupClass` (relazioni trainers BelongsToMany, schedules/occurrences HasMany, scope active()), `ClassBooking` (relazione occurrence(), promuove su class_occurrence_id)
+
+**Service/Job/Notification aggiornati:** `ClassBookingService` (opera su ClassOccurrence; cancel → cancelled_by_athlete), `NotifyWaitlistPromotion` (usa booking->occurrence), `WaitlistPromotionNotification` (accetta ClassOccurrence)
+
+**Livewire:** `GroupClassManager` (lista/CRUD occorrenze, firstOrCreate GroupClass per slug), `TrainerCalendar` (occorrenze nel calendario), `Athlete\Booking` (enrollClass/cancelClass su occurrenceId)
+
+**Factory:** `ClassScheduleFactory`, `ClassOccurrenceFactory` (nuovi); `GroupClassFactory`, `ClassBookingFactory` (aggiornati al nuovo schema)
+
+**Seeder:** `GroupClassSeeder` (idempotente, 4 corsi con palinsesto + occorrenze 2 settimane, solo dev)
+
+**Config:** `config/classes.php` (booking_opens_days, booking_closes_minutes, free_cancel_hours, generation_horizon_days)
+
+**Test:** `BookingTest` adattato (ClassOccurrence, nuovi test relazioni/vincoli/null-schedule); `ReceptionistCheckinTest` adattato (ClassOccurrence factory, status cancelled_by_athlete)
+
+---
+
 ## DOC01 — Audit documentazione (2026-08-23)
 
 Audit completo dei 40 file `.md` in 6 fasi. Findings risolti: 2 CRITICO, 4 MEDIO, 7 BASSO. 6 file archiviati (dated reports).

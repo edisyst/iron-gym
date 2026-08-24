@@ -3,7 +3,7 @@
 namespace App\Livewire\Backoffice\Calendar;
 
 use App\Exceptions\BookingException;
-use App\Models\GroupClass;
+use App\Models\ClassOccurrence;
 use App\Models\Member;
 use App\Models\PtBooking;
 use App\Models\TrainerAvailability;
@@ -16,16 +16,12 @@ use Livewire\Component;
 
 class TrainerCalendar extends Component
 {
-    // Lunedì della settimana visualizzata (YYYY-MM-DD)
     public string $weekStart = '';
 
-    // Data selezionata per apertura modale (YYYY-MM-DD)
     public string $selectedDate = '';
 
-    // Trainer selezionato nel filtro (gestore può switchare)
     public int $selectedTrainerId = 0;
 
-    // Modale creazione prenotazione PT
     public bool $showBookingModal = false;
 
     public int $bookingMemberId = 0;
@@ -36,7 +32,6 @@ class TrainerCalendar extends Component
 
     public string $bookingMemberSearch = '';
 
-    // Modale dettaglio booking
     public bool $showDetailModal = false;
 
     public ?int $detailBookingId = null;
@@ -45,26 +40,19 @@ class TrainerCalendar extends Component
 
     public function mount(): void
     {
-        // Inizia dalla settimana corrente (lunedì ISO)
         $this->weekStart = Carbon::now()->startOfWeek(Carbon::MONDAY)->toDateString();
         $this->selectedTrainerId = 0;
     }
 
     public function previousWeek(): void
     {
-        $this->weekStart = Carbon::parse($this->weekStart)
-            ->subWeek()
-            ->toDateString();
-
+        $this->weekStart = Carbon::parse($this->weekStart)->subWeek()->toDateString();
         $this->dispatchCalendarRefresh();
     }
 
     public function nextWeek(): void
     {
-        $this->weekStart = Carbon::parse($this->weekStart)
-            ->addWeek()
-            ->toDateString();
-
+        $this->weekStart = Carbon::parse($this->weekStart)->addWeek()->toDateString();
         $this->dispatchCalendarRefresh();
     }
 
@@ -83,7 +71,7 @@ class TrainerCalendar extends Component
 
     /**
      * Restituisce eventi in formato FullCalendar per la settimana corrente.
-     * Comprende: finestre di disponibilità, prenotazioni PT, corsi collettivi.
+     * Comprende: finestre di disponibilità, prenotazioni PT, occorrenze corso.
      *
      * @return array<int, array<string, mixed>>
      */
@@ -95,7 +83,7 @@ class TrainerCalendar extends Component
 
         $showAll = $this->selectedTrainerId === 0;
 
-        // Disponibilità (slot aperti) — colore verde; in vista "tutti" si omette per non sovrapporre sfondi
+        // Disponibilità
         if (! $showAll) {
             for ($day = $start->copy(); $day->lte($end); $day->addDay()) {
                 $slots = TrainerAvailability::where('trainer_id', $this->selectedTrainerId)
@@ -117,7 +105,7 @@ class TrainerCalendar extends Component
             }
         }
 
-        // Prenotazioni PT — colore blu
+        // Prenotazioni PT
         $ptBookings = PtBooking::with(['member', 'trainer'])
             ->when(! $showAll, fn ($q) => $q->where('trainer_id', $this->selectedTrainerId))
             ->whereBetween('booked_date', [$start->toDateString(), $end->toDateString()])
@@ -138,36 +126,30 @@ class TrainerCalendar extends Component
             ];
         }
 
-        // Corsi collettivi — colore arancione ambra
-        $classes = GroupClass::with('trainer')
+        // Occorrenze corsi collettivi
+        $occurrences = ClassOccurrence::with(['groupClass', 'trainer'])
             ->when(! $showAll, fn ($q) => $q->where('trainer_id', $this->selectedTrainerId))
-            ->whereBetween('scheduled_at', [
-                $start->toDateString().' 00:00:00',
-                $end->toDateString().' 23:59:59',
-            ])
-            ->where('status', 'scheduled')
+            ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
+            ->where('status', 'planned')
             ->get();
 
-        foreach ($classes as $class) {
-            $classEnd = $class->scheduled_at->copy()->addMinutes($class->duration_minutes);
-            $classTrainerLabel = $showAll && $class->trainer ? ' ('.$class->trainer->name.')' : '';
+        foreach ($occurrences as $occurrence) {
+            $className = $occurrence->groupClass->name;
+            $trainerLabel = $showAll && $occurrence->trainer ? ' ('.$occurrence->trainer->name.')' : '';
 
             $events[] = [
-                'id' => 'class_'.$class->id,
-                'title' => $class->name.$classTrainerLabel,
-                'start' => $class->scheduled_at->format('Y-m-d\TH:i'),
-                'end' => $classEnd->format('Y-m-d\TH:i'),
+                'id' => 'class_'.$occurrence->id,
+                'title' => $className.$trainerLabel,
+                'start' => $occurrence->date->format('Y-m-d').'T'.substr($occurrence->start_time, 0, 5),
+                'end' => $occurrence->date->format('Y-m-d').'T'.substr($occurrence->end_time, 0, 5),
                 'color' => '#f59e0b',
-                'extendedProps' => ['type' => 'class', 'id' => $class->id],
+                'extendedProps' => ['type' => 'class', 'id' => $occurrence->id],
             ];
         }
 
         return $events;
     }
 
-    /**
-     * Apre la modale di creazione prenotazione PT con data e orari precompilati.
-     */
     public function openBookingModal(string $date, string $start, string $end): void
     {
         $this->selectedDate = $date;
@@ -177,9 +159,6 @@ class TrainerCalendar extends Component
         $this->showBookingModal = true;
     }
 
-    /**
-     * Crea una prenotazione PT dopo validazione.
-     */
     public function createBooking(): void
     {
         if ($this->selectedTrainerId === 0) {
@@ -215,9 +194,6 @@ class TrainerCalendar extends Component
         }
     }
 
-    /**
-     * Apre la modale di dettaglio per una prenotazione PT o un corso.
-     */
     public function openDetailModal(string $type, int $id): void
     {
         $this->detailType = $type;
@@ -225,9 +201,6 @@ class TrainerCalendar extends Component
         $this->showDetailModal = true;
     }
 
-    /**
-     * Annulla una prenotazione PT dal calendario.
-     */
     public function cancelBooking(int $bookingId): void
     {
         $booking = PtBooking::findOrFail($bookingId);
@@ -254,27 +227,22 @@ class TrainerCalendar extends Component
 
     public function render(): View
     {
-        // Trainer disponibili per il filtro (gestore vede tutti, trainer solo se stesso)
         $trainers = User::role(['trainer', 'gestore'])->orderBy('name')->get();
 
-        // Dettaglio booking per la modale
         $detailBooking = null;
         if ($this->showDetailModal && $this->detailBookingId) {
             $detailBooking = match ($this->detailType) {
                 'pt' => PtBooking::with(['member', 'trainer'])->find($this->detailBookingId),
-                'class' => GroupClass::with(['trainer', 'confirmedBookings.member'])->find($this->detailBookingId),
+                'class' => ClassOccurrence::with(['groupClass', 'trainer', 'confirmedBookings.member'])->find($this->detailBookingId),
                 default => null,
             };
         }
 
-        // Membri per la modale di creazione (filtro per ricerca)
         $members = Member::when($this->bookingMemberSearch, fn ($q) => $q->where(fn ($q2) => $q2->where('first_name', 'like', '%'.$this->bookingMemberSearch.'%')
             ->orWhere('last_name', 'like', '%'.$this->bookingMemberSearch.'%')
-        )
-        )->orderBy('last_name')->limit(20)->get();
+        ))->orderBy('last_name')->limit(20)->get();
 
         $events = $this->getEventsForWeek();
-
         $weekEnd = Carbon::parse($this->weekStart)->endOfWeek(Carbon::SUNDAY)->toDateString();
 
         return view('livewire.backoffice.calendar.trainer-calendar', compact(

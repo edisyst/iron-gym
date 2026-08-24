@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\ClassBooking;
+use App\Models\ClassOccurrence;
 use App\Models\GroupClass;
 use App\Models\Member;
 use App\Models\PtBooking;
@@ -10,6 +11,7 @@ use App\Models\TrainerAvailability;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class BookingDemoSeeder extends Seeder
 {
@@ -139,7 +141,7 @@ class BookingDemoSeeder extends Seeder
 
     private function seedGroupClasses(User $trainer1, User $trainer2, $members): void
     {
-        if (GroupClass::exists()) {
+        if (ClassOccurrence::exists()) {
             return;
         }
 
@@ -176,7 +178,7 @@ class BookingDemoSeeder extends Seeder
                 'scheduled_at' => $today->copy()->addDays(1)->setTime(10, 0),
                 'duration_minutes' => 60,
                 'max_participants' => 8,
-                'status' => 'scheduled',
+                'status' => 'planned',
                 'participants' => [$members[0], $members[1], $members[2], $members[3], $members[4], $members[5]],
             ],
             [
@@ -186,7 +188,7 @@ class BookingDemoSeeder extends Seeder
                 'scheduled_at' => $today->copy()->addDays(2)->setTime(18, 30),
                 'duration_minutes' => 45,
                 'max_participants' => 15,
-                'status' => 'scheduled',
+                'status' => 'planned',
                 'participants' => [$members[1], $members[3], $members[5]],
             ],
             [
@@ -196,7 +198,7 @@ class BookingDemoSeeder extends Seeder
                 'scheduled_at' => $today->copy()->addDays(3)->setTime(9, 0),
                 'duration_minutes' => 60,
                 'max_participants' => 10,
-                'status' => 'scheduled',
+                'status' => 'planned',
                 'participants' => [$members[0], $members[2], $members[4]],
             ],
             [
@@ -206,7 +208,7 @@ class BookingDemoSeeder extends Seeder
                 'scheduled_at' => $today->copy()->addDays(4)->setTime(8, 0),
                 'duration_minutes' => 75,
                 'max_participants' => 12,
-                'status' => 'scheduled',
+                'status' => 'planned',
                 'participants' => [$members[1], $members[2], $members[3], $members[5]],
             ],
 
@@ -218,7 +220,7 @@ class BookingDemoSeeder extends Seeder
                 'scheduled_at' => $today->copy()->addDays(8)->setTime(10, 0),
                 'duration_minutes' => 60,
                 'max_participants' => 8,
-                'status' => 'scheduled',
+                'status' => 'planned',
                 'participants' => [$members[0], $members[2]],
             ],
             [
@@ -228,7 +230,7 @@ class BookingDemoSeeder extends Seeder
                 'scheduled_at' => $today->copy()->addDays(9)->setTime(18, 30),
                 'duration_minutes' => 45,
                 'max_participants' => 15,
-                'status' => 'scheduled',
+                'status' => 'planned',
                 'participants' => [$members[4], $members[5]],
             ],
             [
@@ -238,30 +240,53 @@ class BookingDemoSeeder extends Seeder
                 'scheduled_at' => $today->copy()->addDays(11)->setTime(8, 0),
                 'duration_minutes' => 45,
                 'max_participants' => 12,
-                'status' => 'scheduled',
+                'status' => 'planned',
                 'participants' => [$members[1], $members[3]],
             ],
         ];
 
+        $definitionCache = [];
+
         foreach ($classes as $data) {
-            $groupClass = GroupClass::create([
+            $name = $data['name'];
+            $slug = Str::slug($name);
+
+            if (! isset($definitionCache[$slug])) {
+                $definitionCache[$slug] = GroupClass::firstOrCreate(
+                    ['slug' => $slug],
+                    [
+                        'name' => $name,
+                        'description' => $data['description'],
+                        'duration_minutes' => $data['duration_minutes'],
+                        'default_capacity' => $data['max_participants'],
+                        'is_active' => true,
+                    ]
+                );
+            }
+
+            $groupClass = $definitionCache[$slug];
+            $groupClass->trainers()->syncWithoutDetaching([$data['trainer']->id]);
+
+            $scheduledAt = $data['scheduled_at'];
+            $endTime = $scheduledAt->copy()->addMinutes($data['duration_minutes'])->format('H:i:s');
+
+            $occurrence = ClassOccurrence::create([
+                'group_class_id' => $groupClass->id,
+                'class_schedule_id' => null,
+                'date' => $scheduledAt->toDateString(),
+                'start_time' => $scheduledAt->format('H:i:s'),
+                'end_time' => $endTime,
                 'trainer_id' => $data['trainer']->id,
-                'name' => $data['name'],
-                'description' => $data['description'],
-                'scheduled_at' => $data['scheduled_at'],
-                'duration_minutes' => $data['duration_minutes'],
-                'max_participants' => $data['max_participants'],
+                'capacity' => $data['max_participants'],
                 'status' => $data['status'],
-                'cancellation_reason' => null,
             ]);
 
-            // Iscrivi i partecipanti
             foreach ($data['participants'] as $i => $member) {
                 $isWaitlist = $i >= $data['max_participants'];
                 ClassBooking::create([
-                    'class_id' => $groupClass->id,
+                    'class_occurrence_id' => $occurrence->id,
                     'member_id' => $member->id,
-                    'status' => $isWaitlist ? 'waitlist' : 'confirmed',
+                    'status' => $isWaitlist ? 'waitlisted' : 'confirmed',
                     'position' => $isWaitlist ? ($i - $data['max_participants'] + 1) : null,
                 ]);
             }

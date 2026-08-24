@@ -191,7 +191,9 @@ Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01
 
 **R21** completato: tab "Corsi" nel profilo atleta (gated `group_classes`, prossimi corsi prenotati + storico, badge Confermato/Lista d'attesa), 5 nuovi test. Fix SQL ambiguous column con qualifica `class_bookings.status`. R21 chiuso.
 
-**Suite corrente:** 365 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
+**R22** completato: Pannello Scadenze backoffice (`/backoffice/members/expiry`), accessibile a gestore e receptionist. Due tabelle: certificati medici in scadenza (default 30gg) e abbonamenti in scadenza (default 7gg). Filtri live per ricerca e finestra temporale. Voce sidebar "Scadenze". 7 nuovi test. R22 chiuso.
+
+**Suite corrente:** 372 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
 
 Storico completo release e audit: **`CHANGELOG.md`**.
 

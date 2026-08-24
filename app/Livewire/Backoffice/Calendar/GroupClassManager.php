@@ -208,6 +208,40 @@ class GroupClassManager extends Component
         session()->flash('success', 'Partecipante rimosso.');
     }
 
+    public function completeOccurrence(int $id): void
+    {
+        abort_unless(Auth::user()->hasAnyRole(['gestore', 'trainer']), 403);
+
+        $occurrence = ClassOccurrence::findOrFail($id);
+
+        if ($occurrence->status !== 'planned') {
+            session()->flash('error', 'Solo i corsi pianificati possono essere completati.');
+
+            return;
+        }
+
+        $occurrence->update(['status' => 'completed']);
+        $occurrence->confirmedBookings()->update(['attended_at' => now()]);
+
+        session()->flash('success', 'Corso completato. Presenze registrate per gli iscritti confermati.');
+    }
+
+    public function markAttended(int $bookingId): void
+    {
+        abort_unless(Auth::user()->hasAnyRole(['gestore', 'trainer']), 403);
+
+        $booking = ClassBooking::findOrFail($bookingId);
+        $booking->update(['status' => 'confirmed', 'attended_at' => now()]);
+    }
+
+    public function markNoShow(int $bookingId): void
+    {
+        abort_unless(Auth::user()->hasAnyRole(['gestore', 'trainer']), 403);
+
+        $booking = ClassBooking::findOrFail($bookingId);
+        $booking->update(['status' => 'no_show', 'attended_at' => null]);
+    }
+
     // -------------------------------------------------------------------------
     // Render
     // -------------------------------------------------------------------------
@@ -231,6 +265,7 @@ class GroupClassManager extends Component
                 'trainer',
                 'confirmedBookings.member',
                 'waitlist.member',
+                'bookings' => fn ($q) => $q->where('status', 'no_show')->with('member'),
             ])->find($this->selectedClassId);
         }
 

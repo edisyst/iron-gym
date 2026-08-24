@@ -9,6 +9,7 @@ use App\Livewire\Backoffice\Athletes\AthleteProfile;
 use App\Livewire\Backoffice\Athletes\BodyMeasurementForm;
 use App\Livewire\Backoffice\Calendar\AvailabilityManager;
 use App\Livewire\Backoffice\Calendar\BookingList;
+use App\Livewire\Backoffice\Calendar\ClassScheduleManager;
 use App\Livewire\Backoffice\Calendar\GroupClassManager;
 use App\Livewire\Backoffice\Calendar\TrainerCalendar;
 use App\Livewire\Backoffice\Communications\CommunicationCampaign;
@@ -70,6 +71,7 @@ Route::prefix('backoffice')
         Route::get('/calendar', TrainerCalendar::class)->name('calendar.index');
         Route::get('/bookings', BookingList::class)->name('bookings.index');
         Route::get('/group-classes', GroupClassManager::class)->name('group-classes.index');
+        Route::get('/group-classes/schedules', ClassScheduleManager::class)->name('group-classes.schedules');
 
         // Route riservate a trainer e gestore (mutano dati training o espongono dati medici)
         Route::middleware('role:gestore|trainer')->group(function () {

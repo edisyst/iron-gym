@@ -1,4 +1,4 @@
-{{-- Gestione corsi collettivi: CRUD e pannello iscritti --}}
+{{-- Gestione corsi collettivi: CRUD, pannello iscritti e presenza --}}
 <div>
     <div class="row">
         {{-- Colonna lista occorrenze --}}
@@ -127,10 +127,17 @@
                                             class="btn btn-sm btn-info mr-1" title="Dettaglio iscritti" aria-label="Iscritti {{ $occ->groupClass->name }}">
                                         <i class="fas fa-users" aria-hidden="true"></i>
                                     </button>
+                                    @if($occ->status === 'planned')
+                                    <button wire:click="completeOccurrence({{ $occ->id }})"
+                                            wire:confirm="Marcare il corso come completato e registrare le presenze?"
+                                            class="btn btn-sm btn-success mr-1" title="Completa corso" aria-label="Completa {{ $occ->groupClass->name }}">
+                                        <i class="fas fa-check" aria-hidden="true"></i>
+                                    </button>
                                     <button wire:click="openForm({{ $occ->id }})"
                                             class="btn btn-sm btn-primary mr-1" title="Modifica" aria-label="Modifica {{ $occ->groupClass->name }}">
                                         <i class="fas fa-edit" aria-hidden="true"></i>
                                     </button>
+                                    @endif
                                     <button wire:click="deleteClass({{ $occ->id }})"
                                             wire:confirm="Eliminare/cancellare questo corso?"
                                             class="btn btn-sm btn-danger" title="Elimina" aria-label="Elimina {{ $occ->groupClass->name }}">
@@ -179,7 +186,15 @@
                         {{ $selectedClass->confirmed_count }} / {{ $selectedClass->capacity }} iscritti
                     </p>
 
-                    {{-- Iscritti confermati --}}
+                    @if($selectedClass->status === 'planned')
+                    <button wire:click="completeOccurrence({{ $selectedClass->id }})"
+                            wire:confirm="Marcare il corso come completato e registrare le presenze?"
+                            class="btn btn-sm btn-success mb-3">
+                        <i class="fas fa-check mr-1"></i> Completa corso
+                    </button>
+                    @endif
+
+                    {{-- Iscritti confermati + presenza --}}
                     <h6 class="mb-2 font-weight-bold">Iscritti confermati</h6>
                     @if($selectedClass->confirmedBookings->isEmpty())
                         <p class="text-muted small">Nessun iscritto.</p>
@@ -187,15 +202,54 @@
                         <ul class="list-group list-group-flush mb-3">
                             @foreach($selectedClass->confirmedBookings as $booking)
                             <li class="list-group-item d-flex justify-content-between align-items-center px-2 py-1">
-                                <span class="small">{{ $booking->member?->full_name }}</span>
-                                <button wire:click="removeParticipant({{ $booking->id }})"
-                                        wire:confirm="Rimuovere questo partecipante?"
-                                        class="btn btn-sm btn-outline-danger" aria-label="Rimuovi {{ $booking->member?->full_name }}">
-                                    <i class="fas fa-user-minus" aria-hidden="true"></i>
-                                </button>
+                                <span class="small">
+                                    {{ $booking->member?->full_name }}
+                                    @if($booking->attended_at)
+                                        <span class="badge badge-success ml-1">Presente</span>
+                                    @elseif($selectedClass->status === 'completed')
+                                        <span class="badge badge-warning ml-1">Non registrato</span>
+                                    @endif
+                                </span>
+                                <div class="d-flex gap-1">
+                                    @if($selectedClass->status === 'completed' || $selectedClass->status === 'planned')
+                                    <button wire:click="markNoShow({{ $booking->id }})"
+                                            class="btn btn-sm btn-outline-warning mr-1"
+                                            title="Assente/No-show"
+                                            aria-label="Segna assente {{ $booking->member?->full_name }}">
+                                        <i class="fas fa-user-times" aria-hidden="true"></i>
+                                    </button>
+                                    @endif
+                                    @if($selectedClass->status === 'planned')
+                                    <button wire:click="removeParticipant({{ $booking->id }})"
+                                            wire:confirm="Rimuovere questo partecipante?"
+                                            class="btn btn-sm btn-outline-danger"
+                                            aria-label="Rimuovi {{ $booking->member?->full_name }}">
+                                        <i class="fas fa-user-minus" aria-hidden="true"></i>
+                                    </button>
+                                    @endif
+                                </div>
                             </li>
                             @endforeach
                         </ul>
+                    @endif
+
+                    {{-- No-show --}}
+                    @php $noShows = $selectedClass->bookings->where('status', 'no_show'); @endphp
+                    @if($noShows->isNotEmpty())
+                    <h6 class="mb-2 font-weight-bold">No-show</h6>
+                    <ul class="list-group list-group-flush mb-3">
+                        @foreach($noShows as $booking)
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-2 py-1">
+                            <span class="small text-muted">{{ $booking->member?->full_name }}</span>
+                            <button wire:click="markAttended({{ $booking->id }})"
+                                    class="btn btn-sm btn-outline-success"
+                                    title="Segna presente"
+                                    aria-label="Segna presente {{ $booking->member?->full_name }}">
+                                <i class="fas fa-user-check" aria-hidden="true"></i>
+                            </button>
+                        </li>
+                        @endforeach
+                    </ul>
                     @endif
 
                     {{-- Lista d'attesa --}}
@@ -212,7 +266,8 @@
                                 </span>
                                 <button wire:click="removeParticipant({{ $waitlisted->id }})"
                                         wire:confirm="Rimuovere dalla lista d'attesa?"
-                                        class="btn btn-sm btn-outline-danger" aria-label="Rimuovi {{ $waitlisted->member?->full_name }} dalla lista d'attesa">
+                                        class="btn btn-sm btn-outline-danger"
+                                        aria-label="Rimuovi {{ $waitlisted->member?->full_name }} dalla lista d'attesa">
                                     <i class="fas fa-times" aria-hidden="true"></i>
                                 </button>
                             </li>

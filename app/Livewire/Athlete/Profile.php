@@ -4,6 +4,7 @@ namespace App\Livewire\Athlete;
 
 use App\Livewire\Actions\Logout;
 use App\Models\BodyMeasurement;
+use App\Models\ClassBooking;
 use App\Models\Member;
 use App\Models\Message;
 use App\Models\PersonalRecord;
@@ -15,6 +16,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Laravel\Pennant\Feature;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
@@ -151,6 +153,33 @@ class Profile extends Component
             ->limit(5)
             ->get();
 
+        $groupClassesEnabled = Feature::active('group_classes');
+        $upcomingClassBookings = collect();
+        $pastClassBookings = collect();
+
+        if ($member && $groupClassesEnabled) {
+            $upcomingClassBookings = ClassBooking::with('occurrence.groupClass')
+                ->where('class_bookings.member_id', $member->id)
+                ->whereIn('class_bookings.status', ['confirmed', 'waitlisted'])
+                ->whereHas('occurrence', fn ($q) => $q->whereDate('date', '>=', today())->where('status', 'planned'))
+                ->join('class_occurrences', 'class_bookings.class_occurrence_id', '=', 'class_occurrences.id')
+                ->orderBy('class_occurrences.date')
+                ->orderBy('class_occurrences.start_time')
+                ->select('class_bookings.*')
+                ->limit(5)
+                ->get();
+
+            $pastClassBookings = ClassBooking::with('occurrence.groupClass')
+                ->where('class_bookings.member_id', $member->id)
+                ->whereIn('class_bookings.status', ['confirmed', 'cancelled_by_athlete', 'cancelled_by_gym', 'no_show'])
+                ->whereHas('occurrence', fn ($q) => $q->whereDate('date', '<', today()))
+                ->join('class_occurrences', 'class_bookings.class_occurrence_id', '=', 'class_occurrences.id')
+                ->orderByDesc('class_occurrences.date')
+                ->select('class_bookings.*')
+                ->limit(5)
+                ->get();
+        }
+
         $userId = Auth::id();
 
         $recentMessages = Message::with(['sender', 'receiver'])
@@ -164,7 +193,8 @@ class Profile extends Component
         return view('livewire.athlete.profile', compact(
             'subscription', 'upcomingPtBookings', 'pastPtBookings',
             'recentMeasurements', 'recentPrs', 'recentSessions',
-            'recentMessages', 'unreadMessagesCount'
+            'recentMessages', 'unreadMessagesCount',
+            'groupClassesEnabled', 'upcomingClassBookings', 'pastClassBookings'
         ))
             ->layout('layouts.athlete');
     }

@@ -2,6 +2,25 @@
 
 ---
 
+## R21 — Corsi collettivi nel profilo atleta (2026-08-24)
+
+**`Athlete\Profile` — tab "Corsi":**
+- Tab visibile solo se feature flag `group_classes` attivo (Pennant)
+- Sezione "Prossimi corsi": prenotazioni `confirmed`/`waitlisted` su occorrenze future `planned`; badge Confermato (verde) / Lista d'attesa (giallo); data+ora+nome corso
+- Sezione "Storico corsi": prenotazioni passate (tutti gli status tranne waitlisted); badge Confermato/Annullato/Assente
+- JOIN su `class_occurrences` per ordinamento per data; colonne qualificate `class_bookings.status` / `class_bookings.member_id` per evitare ambiguità SQL
+- Limite 5 record per sezione; stato vuoto per entrambe le sezioni
+- Link "Prenota un corso →" → `/athlete/bookings`
+- Isolamento: query filtrata su `member_id` dell'atleta loggato
+
+**`Profile::render()`:** aggiunto `$groupClassesEnabled`, `$upcomingClassBookings`, `$pastClassBookings`; query con JOIN condizionale al flag.
+
+**Test (5):** tab visibile con flag ON; tab assente con flag OFF; prenotazione confermata futura; prenotazione waitlisted; isolamento da altri atleti.
+
+Suite: 365 pass / 6 skipped. PHPStan 0 errori. Pint OK.
+
+---
+
 ## R20 — Messaggi nel profilo atleta (2026-08-24)
 
 **`Athlete\Profile` — tab "Messaggi":**

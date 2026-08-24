@@ -2,6 +2,29 @@
 
 ---
 
+## R10 — Centro notifiche atleta (2026-08-24)
+
+**`Athlete\Notifications`** Livewire, route `/athlete/notifications`:
+- Lista tutte le notifiche DB (session_reminder, waitlist_promoted, class_cancelled) in ordine cronologico inverso
+- Icona e colore per tipo notifica; badge "non lette" in evidenza
+- `markRead(id)`: segna singola notifica come letta (owner check su `notifiable_id`)
+- `markAllRead()`: segna tutte come lette tramite `unreadNotifications()->update()`
+- `deleteNotification(id)`: elimina (owner check; altri utenti al sicuro)
+- Paginazione 20 elementi
+
+**Sidebar atleta:**
+- Nuova voce "Notifiche" con icona campanella dopo "Messaggi"
+- Badge rosso con conteggio non lette via Alpine store `notifications`
+- Endpoint `GET /athlete/notifications-unread-count` → `{count: N}`
+
+**Fix:** `route('athlete.booking')` → `route('athlete.bookings')` nella dashboard atleta
+
+**Test (7):** vede proprie notifiche; non vede altrui; markRead; markAllRead; deleteNotification; delete non tocca altrui; endpoint unread-count
+
+Suite: 282 pass / 6 skipped. PHPStan 0 errori. Pint OK.
+
+---
+
 ## R09 Step 6 — Finestre prenotazione e cancellazione (2026-08-24)
 
 **Finestra prenotazione (`Athlete\Booking::enrollClass`):**

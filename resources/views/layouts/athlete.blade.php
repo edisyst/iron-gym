@@ -121,6 +121,18 @@
                       x-text="$store.messages.unread > 9 ? '9+' : $store.messages.unread"
                       class="ig-badge ig-badge--danger" style="margin-left:auto;" aria-live="polite"></span>
             </a>
+            <a href="{{ route('athlete.notifications') }}"
+               class="{{ request()->routeIs('athlete.notifications*') ? 'active' : '' }}"
+               aria-current="{{ request()->routeIs('athlete.notifications*') ? 'page' : 'false' }}"
+               style="padding-left:2.5rem;">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                </svg>
+                Notifiche
+                <span x-show="$store.notifications.unread > 0"
+                      x-text="$store.notifications.unread > 9 ? '9+' : $store.notifications.unread"
+                      class="ig-badge ig-badge--danger" style="margin-left:auto;" aria-live="polite"></span>
+            </a>
         </nav>
         <div class="sidenav-footer">
             <a href="{{ route('logout') }}"
@@ -263,6 +275,17 @@
             init: function () {
                 var self = this;
                 fetch('/athlete/messages-unread-count')
+                    .then(function (r) { return r.ok ? r.json() : { count: 0 }; })
+                    .then(function (d) { self.unread = d.count ?? 0; })
+                    .catch(function () {});
+            },
+        });
+
+        Alpine.store('notifications', {
+            unread: 0,
+            init: function () {
+                var self = this;
+                fetch('/athlete/notifications-unread-count')
                     .then(function (r) { return r.ok ? r.json() : { count: 0 }; })
                     .then(function (d) { self.unread = d.count ?? 0; })
                     .catch(function () {});

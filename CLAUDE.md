@@ -167,7 +167,9 @@ Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01
 **R09 Step 5** completato: GroupClassCatalog CRUD definizioni corsi (solo gestore), sidebar submenu a 3 voci (Occorrenze/Palinsesto/Catalogo), dashboard atleta card prossimi corsi collettivi, 8 nuovi test.
 **R09 Step 6** completato: finestra prenotazione (booking_opens_days/booking_closes_minutes in Athlete\Booking), finestra cancellazione gratuita (free_cancel_hours), removeParticipant → cancelled_by_gym, 5 nuovi test. R09 chiuso.
 
-**Suite corrente:** 275 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
+**R10** completato: centro notifiche atleta (`/athlete/notifications`), badge non lette in sidebar, endpoint `unread-count`, fix `route('athlete.booking')` → `athlete.bookings`, 7 nuovi test.
+
+**Suite corrente:** 282 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
 
 Storico completo release e audit: **`CHANGELOG.md`**.
 

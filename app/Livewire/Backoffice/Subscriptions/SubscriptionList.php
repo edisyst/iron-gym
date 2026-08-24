@@ -21,6 +21,26 @@ class SubscriptionList extends Component
         $this->resetPage();
     }
 
+    public function suspend(int $id): void
+    {
+        abort_unless(auth()->user()->hasRole('gestore'), 403);
+
+        $sub = Subscription::findOrFail($id);
+        abort_if($sub->status !== 'active', 422);
+
+        $sub->update(['status' => 'suspended']);
+    }
+
+    public function reactivate(int $id): void
+    {
+        abort_unless(auth()->user()->hasRole('gestore'), 403);
+
+        $sub = Subscription::findOrFail($id);
+        abort_if($sub->status !== 'suspended', 422);
+
+        $sub->update(['status' => 'active']);
+    }
+
     public function render(): View
     {
         // Eager loading per evitare N+1 su member e plan
@@ -28,6 +48,7 @@ class SubscriptionList extends Component
             ->when($this->filter === 'active', fn ($q) => $q->active())
             ->when($this->filter === 'expired', fn ($q) => $q->where('status', 'expired'))
             ->when($this->filter === 'expiring', fn ($q) => $q->expiringSoon(30))
+            ->when($this->filter === 'suspended', fn ($q) => $q->where('status', 'suspended'))
             ->orderByDesc('created_at');
 
         return view('livewire.backoffice.subscriptions.subscription-list', [

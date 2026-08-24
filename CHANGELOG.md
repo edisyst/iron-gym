@@ -2,6 +2,35 @@
 
 ---
 
+## R09 Step 2 — Command, prerequisiti e overlap corsi collettivi (2026-08-24)
+
+**Command `classes:generate-occurrences`:**
+- Signature: `classes:generate-occurrences {--horizon=}` (default: `config/classes.php generation_horizon_days`, 28)
+- Legge ClassSchedule attivi con groupClass, itera CarbonPeriod max(today,valid_from)..min(until,valid_until), filtra per weekday (0=lun, dayOfWeekIso-1)
+- `ClassOccurrence::firstOrCreate([class_schedule_id, date], [...])` — idempotente; `wasRecentlyCreated` per contatore
+- `end_time` calcolato da `start_time + groupClass->duration_minutes`
+- Schedulato in `routes/console.php` daily 03:00
+
+**`ClassBookingService::enroll()` — prerequisiti:**
+- Abbonamento attivo: `$member->activeSubscription()->exists()` → `BookingException('Nessun abbonamento attivo.')`
+- Certificato medico: `$member->has_medical_cert_valid` → `BookingException('Certificato medico scaduto o assente.')`
+- Overlap atleta: `ClassBooking::whereHas('occurrence', fn → whereDate('date', ...) + time overlap)` → `BookingException('Hai già un corso confermato in questo orario.')`
+
+**`PtBookingService::book()` — overlap trainer:**
+- `ClassOccurrence::whereDate('date', ...)->where('status','planned')->where time overlap` → `BookingException('Il trainer ha un corso collettivo nello slot ...')`
+
+**Nota tecnica:** usato `whereDate()` (anziché `where('date', ...)`) su colonna cast 'date' per compatibilità SQLite (che serializza come 'Y-m-d H:i:s') e MySQL (tipo date).
+
+**Model:** `ClassSchedule` — `@property Carbon|null $valid_from/valid_until` (PHPStan L6); `GroupClass::scopeActive()` — return type `Builder<GroupClass>`
+
+**Test (29 nuovi/aggiornati):**
+- `BookingTest` (22 casi): enroll senza abbonamento, con abbonamento scaduto, senza cert, con cert scaduto, successo, overlap atleta (overlap e non-overlap), PT overlap trainer (overlap e non-overlap)
+- `GenerateClassOccurrencesTest` (7 casi): genera occorrenze, idempotenza, valid_from, valid_until, is_active=false, orizzonte custom, end_time da duration_minutes
+
+Suite: 241 pass / 6 skipped. PHPStan 0 errori. Pint OK.
+
+---
+
 ## R09 Step 1 — Schema corsi collettivi (2026-08-24)
 
 Riscrittura semantica da modello monolitico a tre livelli: GroupClass (definizione) → ClassSchedule (palinsesto) → ClassOccurrence (istanza datata).

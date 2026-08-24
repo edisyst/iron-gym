@@ -160,10 +160,10 @@ Exercise model usa `getRouteKeyName() = 'slug'` (route binding su slug).
 
 Step 1-10 implementati. Release 01-08 completate. UX01-UX07 completate. Tag v0.9.0 (2026-07-05).
 Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01 completati.
-**R09 Step 1** in corso: schema GroupClass→ClassSchedule→ClassOccurrence, consumer adattati, test aggiornati.
+**R09 Step 1** completato: schema GroupClass→ClassSchedule→ClassOccurrence, consumer adattati, test aggiornati.
+**R09 Step 2** completato: command `classes:generate-occurrences`, prerequisiti enroll (abbonamento+cert), overlap check atleta e trainer, 29 nuovi test.
 
-**Suite corrente:** da verificare dopo R09 Step 1 (aggiornati BookingTest + ReceptionistCheckinTest).
-**PHPStan:** livello 6, 0 errori (da rilanciare). **Pint:** conforme (da rilanciare).
+**Suite corrente:** 241 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
 
 Storico completo release e audit: **`CHANGELOG.md`**.
 

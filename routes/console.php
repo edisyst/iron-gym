@@ -2,6 +2,7 @@
 
 use App\Console\Commands\GenerateClassOccurrences;
 use App\Jobs\HealthCheckJob;
+use App\Jobs\SendClassReminders;
 use App\Jobs\SendMedicalCertExpiryReminders;
 use App\Jobs\SendSessionReminders;
 use App\Jobs\SendSubscriptionExpiryReminders;
@@ -16,6 +17,7 @@ Artisan::command('inspire', function () {
 Schedule::job(SendMedicalCertExpiryReminders::class)->dailyAt('09:00');
 Schedule::job(SendSubscriptionExpiryReminders::class)->dailyAt('09:00');
 Schedule::job(SendSessionReminders::class)->everyFifteenMinutes();
+Schedule::job(SendClassReminders::class)->dailyAt('08:00');
 
 // Health check heartbeat — dispatchato ogni minuto, letto da HealthCheckController
 Schedule::job(HealthCheckJob::class)->everyMinute();

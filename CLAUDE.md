@@ -169,7 +169,9 @@ Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01
 
 **R10** completato: centro notifiche atleta (`/athlete/notifications`), badge non lette in sidebar, endpoint `unread-count`, fix `route('athlete.booking')` → `athlete.bookings`, 7 nuovi test.
 
-**Suite corrente:** 282 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
+**R11** completato: `ClassReminderNotification` (database + webpush) + `SendClassReminders` job schedulato `dailyAt('08:00')`, icona `class_reminder` in centro notifiche, 6 nuovi test.
+
+**Suite corrente:** 288 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
 
 Storico completo release e audit: **`CHANGELOG.md`**.
 

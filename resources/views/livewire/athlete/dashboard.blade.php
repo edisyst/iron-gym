@@ -225,6 +225,33 @@
 
     @endif
 
+    {{-- ===== PROSSIME SESSIONI PT ===== --}}
+    @if ($upcomingPtBookings->isNotEmpty())
+        <p class="home-section-label" style="margin-top:var(--ig-sp-5);">Prossime sessioni PT</p>
+        <div class="home-week-list">
+            @foreach ($upcomingPtBookings as $pt)
+                <div class="home-week-item">
+                    <span class="home-week-dot home-week-dot--planned"
+                          style="background:var(--ig-accent);"></span>
+                    <span class="home-week-name">
+                        PT
+                        @if ($pt->trainer)
+                            con {{ $pt->trainer->name }}
+                        @endif
+                    </span>
+                    <span class="home-week-date">
+                        {{ $pt->booked_date->format('d/m') }}
+                        &bull; {{ substr($pt->start_time, 0, 5) }}
+                    </span>
+                </div>
+            @endforeach
+        </div>
+        <a href="{{ route('athlete.bookings') }}" class="ig-btn ig-btn--secondary"
+           style="margin-top:var(--ig-sp-3);width:100%;text-align:center;">
+            Gestisci prenotazioni PT
+        </a>
+    @endif
+
     {{-- ===== PROSSIMI CORSI COLLETTIVI ===== --}}
     @if ($upcomingClassBookings->isNotEmpty())
         <p class="home-section-label" style="margin-top:var(--ig-sp-5);">Prossimi corsi</p>

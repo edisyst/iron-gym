@@ -171,7 +171,9 @@ Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01
 
 **R11** completato: `ClassReminderNotification` (database + webpush) + `SendClassReminders` job schedulato `dailyAt('08:00')`, icona `class_reminder` in centro notifiche, 6 nuovi test.
 
-**Suite corrente:** 288 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
+**R12** completato: `periodization_engine` attivato in PilotSeeder (`financial_reports` + `periodization_engine` on per default); test Livewire `MesocycleDetail` (applyProgression, forceDeload, role guards, 6 test); test Livewire `VolumeLandmarkManager` (save, resetToDefaults, auth trainer, 6 test).
+
+**Suite corrente:** 300 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
 
 Storico completo release e audit: **`CHANGELOG.md`**.
 
@@ -219,7 +221,7 @@ php artisan db:seed --class=PilotTemplateSeeder  # template PPL ipertrofia 4 set
 | Flag | Stato pilota | Quando attivare |
 |---|---|---|
 | `financial_reports` | ON | attivo da subito per gestore |
-| `periodization_engine` | OFF | dopo 2 settimane test manuale |
+| `periodization_engine` | ON | attivato via PilotSeeder (R12) |
 | `push_notifications` | OFF | dopo verifica service worker su dispositivo reale |
 | `group_classes` | OFF | solo se palestra usa corsi collettivi |
 

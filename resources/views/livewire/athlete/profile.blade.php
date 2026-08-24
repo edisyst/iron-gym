@@ -28,6 +28,12 @@
                 class="ig-tab {{ $activeSection === 'sessioni' ? 'ig-tab--active' : '' }}">
             Sessioni
         </button>
+        @if ($groupClassesEnabled)
+        <button type="button" wire:click="$set('activeSection','corsi')"
+                class="ig-tab {{ $activeSection === 'corsi' ? 'ig-tab--active' : '' }}">
+            Corsi
+        </button>
+        @endif
         <button type="button" wire:click="$set('activeSection','messaggi')"
                 class="ig-tab {{ $activeSection === 'messaggi' ? 'ig-tab--active' : '' }}">
             Messaggi
@@ -410,6 +416,96 @@
                 </div>
             @endif
         </div>
+    @endif
+
+    {{-- ===== SEZIONE CORSI COLLETTIVI ===== --}}
+    @if ($activeSection === 'corsi' && $groupClassesEnabled)
+        <div class="athlete-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                <div class="section-title">PROSSIMI CORSI</div>
+                <a href="{{ route('athlete.bookings') }}"
+                   style="font-size:var(--ig-text-xs);font-weight:600;color:var(--ig-accent);text-decoration:none;">
+                    Prenota
+                </a>
+            </div>
+
+            @forelse ($upcomingClassBookings as $booking)
+                @php
+                    $occ = $booking->occurrence;
+                    $course = $occ?->groupClass;
+                    $isWaitlisted = $booking->status === 'waitlisted';
+                @endphp
+                <div style="display:flex;align-items:center;justify-content:space-between;
+                            padding:12px 0;border-bottom:1px solid var(--ig-border);">
+                    <div>
+                        <div style="font-size:var(--ig-text-sm);font-weight:600;color:var(--ig-text-1);">
+                            {{ $course?->name ?? '—' }}
+                        </div>
+                        <div style="font-size:var(--ig-text-xs);color:var(--ig-text-3);margin-top:2px;">
+                            {{ \Carbon\Carbon::parse($occ?->date)->format('d/m/Y') }}
+                            &middot;
+                            {{ \Carbon\Carbon::parse($occ?->start_time)->format('H:i') }}
+                        </div>
+                    </div>
+                    <span style="font-size:var(--ig-text-xs);font-weight:700;
+                                 color:{{ $isWaitlisted ? 'var(--ig-warning)' : 'var(--ig-success)' }};
+                                 background:color-mix(in srgb, {{ $isWaitlisted ? 'var(--ig-warning)' : 'var(--ig-success)' }} 15%, transparent);
+                                 padding:3px 10px;border-radius:var(--ig-radius-full);">
+                        {{ $isWaitlisted ? 'Lista d\'attesa' : 'Confermato' }}
+                    </span>
+                </div>
+            @empty
+                <p style="font-size:var(--ig-text-sm);color:var(--ig-text-3);margin:0;">
+                    Nessun corso prenotato.
+                </p>
+                <div style="margin-top:12px;">
+                    <a href="{{ route('athlete.bookings') }}"
+                       style="font-size:var(--ig-text-sm);color:var(--ig-accent);text-decoration:none;">
+                        Scopri i corsi disponibili →
+                    </a>
+                </div>
+            @endforelse
+        </div>
+
+        @if ($pastClassBookings->isNotEmpty())
+            <div class="athlete-card">
+                <div class="section-title" style="margin-bottom:16px;">STORICO CORSI</div>
+                @foreach ($pastClassBookings as $booking)
+                    @php
+                        $occ = $booking->occurrence;
+                        $course = $occ?->groupClass;
+                        $statusLabel = match($booking->status) {
+                            'confirmed'           => 'Completato',
+                            'cancelled_by_athlete'=> 'Annullato',
+                            'cancelled_by_gym'    => 'Annullato',
+                            'no_show'             => 'Assente',
+                            default               => $booking->status,
+                        };
+                        $statusColor = match($booking->status) {
+                            'confirmed' => 'var(--ig-accent)',
+                            'no_show'   => 'var(--ig-danger)',
+                            default     => 'var(--ig-text-3)',
+                        };
+                    @endphp
+                    <div style="display:flex;align-items:center;justify-content:space-between;
+                                padding:12px 0;border-bottom:1px solid var(--ig-border);">
+                        <div>
+                            <div style="font-size:var(--ig-text-sm);font-weight:600;color:var(--ig-text-2);">
+                                {{ $course?->name ?? '—' }}
+                            </div>
+                            <div style="font-size:var(--ig-text-xs);color:var(--ig-text-3);margin-top:2px;">
+                                {{ \Carbon\Carbon::parse($occ?->date)->format('d/m/Y') }}
+                            </div>
+                        </div>
+                        <span style="font-size:var(--ig-text-xs);font-weight:700;color:{{ $statusColor }};
+                                     background:color-mix(in srgb, {{ $statusColor }} 15%, transparent);
+                                     padding:3px 10px;border-radius:var(--ig-radius-full);">
+                            {{ $statusLabel }}
+                        </span>
+                    </div>
+                @endforeach
+            </div>
+        @endif
     @endif
 
     {{-- ===== SEZIONE MESSAGGI ===== --}}

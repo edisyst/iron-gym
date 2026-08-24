@@ -189,7 +189,9 @@ Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01
 
 **R20** completato: tab "Messaggi" nel profilo atleta (ultimi 5 messaggi con contatto, anteprima, data, badge non letti + link a /athlete/messages), 5 nuovi test. R20 chiuso.
 
-**Suite corrente:** 360 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
+**R21** completato: tab "Corsi" nel profilo atleta (gated `group_classes`, prossimi corsi prenotati + storico, badge Confermato/Lista d'attesa), 5 nuovi test. Fix SQL ambiguous column con qualifica `class_bookings.status`. R21 chiuso.
+
+**Suite corrente:** 365 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
 
 Storico completo release e audit: **`CHANGELOG.md`**.
 

@@ -4,6 +4,7 @@ namespace App\Livewire\Athlete;
 
 use App\Livewire\Actions\Logout;
 use App\Models\Member;
+use App\Models\PtBooking;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -96,13 +97,36 @@ class Profile extends Component
     public function render(): View
     {
         $member = Member::where('user_id', Auth::id())->first();
+
         $subscription = $member?->subscriptions()
             ->with('plan')
             ->where('status', 'active')
             ->orderByDesc('expires_at')
             ->first();
 
-        return view('livewire.athlete.profile', compact('subscription'))
+        $upcomingPtBookings = collect();
+        $pastPtBookings = collect();
+
+        if ($member) {
+            $upcomingPtBookings = PtBooking::with('trainer')
+                ->where('member_id', $member->id)
+                ->whereIn('status', ['pending', 'confirmed'])
+                ->whereDate('booked_date', '>=', today())
+                ->orderBy('booked_date')
+                ->orderBy('start_time')
+                ->get();
+
+            $pastPtBookings = PtBooking::with('trainer')
+                ->where('member_id', $member->id)
+                ->whereIn('status', ['completed', 'no_show', 'cancelled'])
+                ->whereDate('booked_date', '<', today())
+                ->orderByDesc('booked_date')
+                ->orderByDesc('start_time')
+                ->limit(10)
+                ->get();
+        }
+
+        return view('livewire.athlete.profile', compact('subscription', 'upcomingPtBookings', 'pastPtBookings'))
             ->layout('layouts.athlete');
     }
 }

@@ -2,6 +2,23 @@
 
 ---
 
+## R16 — Sessioni PT nel profilo atleta (2026-08-24)
+
+**`Athlete\Profile` — tab "Sessioni PT":**
+- Nuovo tab tra "Abbonamento" e "Password"
+- **Prossime sessioni:** PT `pending`/`confirmed` da oggi in poi, ordinate per data/ora; badge status colorato (Confermata=verde, In attesa=giallo)
+- **Storico PT:** ultimi 10 PT `completed`/`no_show`/`cancelled` con data decrescente; sezione visibile solo se presenti
+- Stato vuoto "Nessuna sessione PT in programma" se nessuna prossima
+- Isolamento: ogni query filtra su `member_id` dell'atleta autenticato
+
+**`Profile::render()`:** carica `$upcomingPtBookings` e `$pastPtBookings` con eager load `trainer`.
+
+**Test (5):** tab PT mostra sessione confermata; tab PT mostra sessione pending; storico PT con completed; nessuna PT di altri atleti inclusa; stato vuoto senza sessioni.
+
+Suite: 340 pass / 6 skipped. PHPStan 0 errori. Pint OK.
+
+---
+
 ## R15 — Test BookingList e CommunicationCampaign (2026-08-24)
 
 **`BookingListTest` (7 test):**

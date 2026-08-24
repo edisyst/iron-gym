@@ -12,6 +12,10 @@
                 class="ig-tab {{ $activeSection === 'abbonamento' ? 'ig-tab--active' : '' }}">
             Abbonamento
         </button>
+        <button type="button" wire:click="$set('activeSection','pt')"
+                class="ig-tab {{ $activeSection === 'pt' ? 'ig-tab--active' : '' }}">
+            Sessioni PT
+        </button>
         <button type="button" wire:click="$set('activeSection','password')"
                 class="ig-tab {{ $activeSection === 'password' ? 'ig-tab--active' : '' }}">
             Password
@@ -130,6 +134,82 @@
                 </div>
             @endif
         </div>
+    @endif
+
+    {{-- ===== SEZIONE SESSIONI PT ===== --}}
+    @if ($activeSection === 'pt')
+        @php
+            $statusLabel = fn(string $s) => match($s) {
+                'pending'   => 'In attesa',
+                'confirmed' => 'Confermata',
+                'completed' => 'Completata',
+                'cancelled' => 'Annullata',
+                'no_show'   => 'Assente',
+                default     => $s,
+            };
+            $statusColor = fn(string $s) => match($s) {
+                'confirmed' => 'var(--ig-success)',
+                'pending'   => 'var(--ig-warning)',
+                'completed' => 'var(--ig-accent)',
+                default     => 'var(--ig-text-3)',
+            };
+        @endphp
+
+        <div class="athlete-card">
+            <div class="section-title" style="margin-bottom:16px;">PROSSIME SESSIONI PT</div>
+            @forelse ($upcomingPtBookings as $booking)
+                <div style="display:flex;align-items:center;justify-content:space-between;
+                            padding:12px 0;border-bottom:1px solid var(--ig-border);">
+                    <div>
+                        <div style="font-size:var(--ig-text-sm);font-weight:600;color:var(--ig-text-1);">
+                            {{ $booking->trainer->name ?? '—' }}
+                        </div>
+                        <div style="font-size:var(--ig-text-xs);color:var(--ig-text-3);margin-top:2px;">
+                            {{ \Carbon\Carbon::parse($booking->booked_date)->format('d/m/Y') }}
+                            &middot;
+                            {{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }}
+                        </div>
+                    </div>
+                    <span style="font-size:var(--ig-text-xs);font-weight:700;
+                                 color:{{ $statusColor($booking->status) }};
+                                 background:color-mix(in srgb, {{ $statusColor($booking->status) }} 15%, transparent);
+                                 padding:3px 10px;border-radius:var(--ig-radius-full);">
+                        {{ $statusLabel($booking->status) }}
+                    </span>
+                </div>
+            @empty
+                <p style="font-size:var(--ig-text-sm);color:var(--ig-text-3);margin:0;">
+                    Nessuna sessione PT in programma.
+                </p>
+            @endforelse
+        </div>
+
+        @if ($pastPtBookings->isNotEmpty())
+            <div class="athlete-card">
+                <div class="section-title" style="margin-bottom:16px;">STORICO PT</div>
+                @foreach ($pastPtBookings as $booking)
+                    <div style="display:flex;align-items:center;justify-content:space-between;
+                                padding:12px 0;border-bottom:1px solid var(--ig-border);">
+                        <div>
+                            <div style="font-size:var(--ig-text-sm);font-weight:600;color:var(--ig-text-1);">
+                                {{ $booking->trainer->name ?? '—' }}
+                            </div>
+                            <div style="font-size:var(--ig-text-xs);color:var(--ig-text-3);margin-top:2px;">
+                                {{ \Carbon\Carbon::parse($booking->booked_date)->format('d/m/Y') }}
+                                &middot;
+                                {{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }}
+                            </div>
+                        </div>
+                        <span style="font-size:var(--ig-text-xs);font-weight:700;
+                                     color:{{ $statusColor($booking->status) }};
+                                     background:color-mix(in srgb, {{ $statusColor($booking->status) }} 15%, transparent);
+                                     padding:3px 10px;border-radius:var(--ig-radius-full);">
+                            {{ $statusLabel($booking->status) }}
+                        </span>
+                    </div>
+                @endforeach
+            </div>
+        @endif
     @endif
 
     {{-- ===== SEZIONE PASSWORD ===== --}}

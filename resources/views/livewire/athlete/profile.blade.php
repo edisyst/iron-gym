@@ -24,6 +24,10 @@
                 class="ig-tab {{ $activeSection === 'record' ? 'ig-tab--active' : '' }}">
             Record
         </button>
+        <button type="button" wire:click="$set('activeSection','sessioni')"
+                class="ig-tab {{ $activeSection === 'sessioni' ? 'ig-tab--active' : '' }}">
+            Sessioni
+        </button>
         <button type="button" wire:click="$set('activeSection','password')"
                 class="ig-tab {{ $activeSection === 'password' ? 'ig-tab--active' : '' }}">
             Password
@@ -331,6 +335,65 @@
                     <a href="{{ route('athlete.records') }}"
                        style="font-size:var(--ig-text-sm);color:var(--ig-accent);text-decoration:none;">
                         Vedi tutti i record →
+                    </a>
+                </div>
+            @endif
+        </div>
+    @endif
+
+    {{-- ===== SEZIONE SESSIONI ===== --}}
+    @if ($activeSection === 'sessioni')
+        <div class="athlete-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                <div class="section-title">SESSIONI RECENTI</div>
+                <a href="{{ route('athlete.history') }}"
+                   style="font-size:var(--ig-text-xs);font-weight:600;color:var(--ig-accent);text-decoration:none;">
+                    Vedi storico
+                </a>
+            </div>
+
+            @forelse ($recentSessions as $session)
+                @php
+                    $isSkipped = $session->status === 'skipped';
+                    $sessionDate = $session->completed_at ?? $session->scheduled_date;
+                    $duration = null;
+                    if ($session->started_at && $session->completed_at) {
+                        $minutes = (int) $session->started_at->diffInMinutes($session->completed_at);
+                        $duration = $minutes > 0 ? "{$minutes} min" : null;
+                    }
+                @endphp
+                <div style="display:flex;align-items:center;justify-content:space-between;
+                            padding:12px 0;border-bottom:1px solid var(--ig-border);">
+                    <div>
+                        <div style="font-size:var(--ig-text-sm);font-weight:600;
+                                    color:{{ $isSkipped ? 'var(--ig-text-3)' : 'var(--ig-text-1)' }};">
+                            {{ $session->name ?? 'Sessione' }}
+                        </div>
+                        <div style="font-size:var(--ig-text-xs);color:var(--ig-text-3);margin-top:2px;">
+                            {{ $sessionDate?->format('d/m/Y') }}
+                            @if ($duration)
+                                &middot; {{ $duration }}
+                            @endif
+                        </div>
+                    </div>
+                    <span style="font-size:var(--ig-text-xs);font-weight:700;
+                                 color:{{ $isSkipped ? 'var(--ig-text-3)' : 'var(--ig-success)' }};
+                                 background:{{ $isSkipped ? 'var(--ig-surface-raised)' : 'color-mix(in srgb, var(--ig-success) 15%, transparent)' }};
+                                 padding:3px 10px;border-radius:var(--ig-radius-full);">
+                        {{ $isSkipped ? 'Saltata' : 'Completata' }}
+                    </span>
+                </div>
+            @empty
+                <div style="text-align:center;padding:var(--ig-sp-6) 0;color:var(--ig-text-3);">
+                    <p style="font-size:var(--ig-text-base);margin:0;">Nessuna sessione completata.</p>
+                </div>
+            @endforelse
+
+            @if ($recentSessions->isNotEmpty())
+                <div style="text-align:center;margin-top:14px;">
+                    <a href="{{ route('athlete.history') }}"
+                       style="font-size:var(--ig-text-sm);color:var(--ig-accent);text-decoration:none;">
+                        Storico completo →
                     </a>
                 </div>
             @endif

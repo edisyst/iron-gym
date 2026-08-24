@@ -7,6 +7,7 @@ use App\Models\BodyMeasurement;
 use App\Models\Member;
 use App\Models\PersonalRecord;
 use App\Models\PtBooking;
+use App\Models\TrainingSession;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -140,7 +141,16 @@ class Profile extends Component
             ->limit(5)
             ->get();
 
-        return view('livewire.athlete.profile', compact('subscription', 'upcomingPtBookings', 'pastPtBookings', 'recentMeasurements', 'recentPrs'))
+        $recentSessions = TrainingSession::whereHas(
+            'week.mesocycle',
+            fn ($q) => $q->where('athlete_id', Auth::id())
+        )
+            ->whereIn('status', ['completed', 'skipped'])
+            ->orderByDesc('completed_at')
+            ->limit(5)
+            ->get();
+
+        return view('livewire.athlete.profile', compact('subscription', 'upcomingPtBookings', 'pastPtBookings', 'recentMeasurements', 'recentPrs', 'recentSessions'))
             ->layout('layouts.athlete');
     }
 }

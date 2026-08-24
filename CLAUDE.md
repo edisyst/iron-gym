@@ -193,7 +193,9 @@ Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01
 
 **R22** completato: Pannello Scadenze backoffice (`/backoffice/members/expiry`), accessibile a gestore e receptionist. Due tabelle: certificati medici in scadenza (default 30gg) e abbonamenti in scadenza (default 7gg). Filtri live per ricerca e finestra temporale. Voce sidebar "Scadenze". 7 nuovi test. R22 chiuso.
 
-**Suite corrente:** 372 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
+**R23** completato: widget "Scadenze imminenti" nella Dashboard backoffice. Card condizionale con contatori `certExpiring30Count` e `subExpiring7Count`; link diretto al pannello scadenze. Link small-box esistenti aggiornati a `members.expiry`. 4 nuovi test. R23 chiuso.
+
+**Suite corrente:** 376 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
 
 Storico completo release e audit: **`CHANGELOG.md`**.
 

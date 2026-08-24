@@ -2,6 +2,21 @@
 
 ---
 
+## R23 — Widget scadenze nella Dashboard backoffice (2026-08-24)
+
+**`Backoffice\Dashboard` — widget scadenze imminenti:**
+- Card `card-outline card-warning` "Scadenze imminenti" mostrata condizionalmente quando `certExpiring30Count > 0 OR subExpiring7Count > 0`
+- Due badge contatori: certificati medici in scadenza entro 30 giorni (giallo) e abbonamenti in scadenza entro 7 giorni (rosso)
+- Bottone "Vai al pannello →" link diretto a `backoffice.members.expiry`
+- Link dei two small-box esistenti (Abbonamenti in scadenza, Certificati scaduti) aggiornati per puntare a `members.expiry` invece di pagine generiche
+- Nuove proprietà pubbliche: `$certExpiring30Count` (cert futuri nei prossimi 30gg, esclusi già scaduti) e `$subExpiring7Count` (abbonamenti attivi che scadono entro 7gg via `Subscription::expiringSoon(7)`)
+
+**Test (4):** widget visibile con cert in scadenza; widget assente senza scadenze; `certExpiring30Count` conta solo futuri entro finestra (esclude scaduti e oltre finestra); `subExpiring7Count` esclude abbonamenti con scadenza oltre 7 giorni.
+
+Suite: 376 pass / 6 skipped. PHPStan 0 errori. Pint OK.
+
+---
+
 ## R22 — Pannello Scadenze backoffice (2026-08-24)
 
 **Nuovo componente `Backoffice\Members\ExpiryDashboard` (`/backoffice/members/expiry`):**

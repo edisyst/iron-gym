@@ -3,6 +3,7 @@
 namespace App\Livewire\Athlete;
 
 use App\Livewire\Actions\Logout;
+use App\Models\BodyMeasurement;
 use App\Models\Member;
 use App\Models\PtBooking;
 use Illuminate\Support\Facades\Auth;
@@ -126,7 +127,12 @@ class Profile extends Component
                 ->get();
         }
 
-        return view('livewire.athlete.profile', compact('subscription', 'upcomingPtBookings', 'pastPtBookings'))
+        $recentMeasurements = BodyMeasurement::where('athlete_id', Auth::id())
+            ->orderByDesc('measured_at')
+            ->limit(5)
+            ->get();
+
+        return view('livewire.athlete.profile', compact('subscription', 'upcomingPtBookings', 'pastPtBookings', 'recentMeasurements'))
             ->layout('layouts.athlete');
     }
 }

@@ -39,15 +39,15 @@ it('tab corsi non visibile con feature flag disattivo', function () {
 
 it('tab corsi mostra prenotazione confermata futura', function () {
     $occ = ClassOccurrence::factory()->create([
-        'date'       => now()->addDays(3)->toDateString(),
+        'date' => now()->addDays(3)->toDateString(),
         'start_time' => '10:00:00',
-        'status'     => 'planned',
+        'status' => 'planned',
     ]);
 
     ClassBooking::factory()->create([
         'class_occurrence_id' => $occ->id,
-        'member_id'           => $this->member->id,
-        'status'              => 'confirmed',
+        'member_id' => $this->member->id,
+        'status' => 'confirmed',
     ]);
 
     Livewire::actingAs($this->athleteUser)
@@ -58,13 +58,13 @@ it('tab corsi mostra prenotazione confermata futura', function () {
 
 it('tab corsi mostra prenotazione in lista d\'attesa', function () {
     $occ = ClassOccurrence::factory()->create([
-        'date'   => now()->addDays(2)->toDateString(),
+        'date' => now()->addDays(2)->toDateString(),
         'status' => 'planned',
     ]);
 
     ClassBooking::factory()->waitlisted()->create([
         'class_occurrence_id' => $occ->id,
-        'member_id'           => $this->member->id,
+        'member_id' => $this->member->id,
     ]);
 
     Livewire::actingAs($this->athleteUser)
@@ -76,14 +76,14 @@ it('tab corsi mostra prenotazione in lista d\'attesa', function () {
 it('tab corsi non mostra prenotazioni di altri atleti', function () {
     $otherMember = Member::factory()->create();
     $occ = ClassOccurrence::factory()->create([
-        'date'   => now()->addDays(1)->toDateString(),
+        'date' => now()->addDays(1)->toDateString(),
         'status' => 'planned',
     ]);
 
     ClassBooking::factory()->create([
         'class_occurrence_id' => $occ->id,
-        'member_id'           => $otherMember->id,
-        'status'              => 'confirmed',
+        'member_id' => $otherMember->id,
+        'status' => 'confirmed',
     ]);
 
     Livewire::actingAs($this->athleteUser)

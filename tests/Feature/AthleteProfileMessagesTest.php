@@ -19,9 +19,9 @@ beforeEach(function () {
 
 it('tab messaggi mostra messaggio ricevuto con nome mittente', function () {
     Message::create([
-        'sender_id'   => $this->trainer->id,
+        'sender_id' => $this->trainer->id,
         'receiver_id' => $this->athleteUser->id,
-        'body'        => 'Ottimo lavoro oggi!',
+        'body' => 'Ottimo lavoro oggi!',
     ]);
 
     Livewire::actingAs($this->athleteUser)
@@ -33,9 +33,9 @@ it('tab messaggi mostra messaggio ricevuto con nome mittente', function () {
 
 it('tab messaggi mostra messaggio inviato con prefisso Tu', function () {
     Message::create([
-        'sender_id'   => $this->athleteUser->id,
+        'sender_id' => $this->athleteUser->id,
         'receiver_id' => $this->trainer->id,
-        'body'        => 'Grazie trainer!',
+        'body' => 'Grazie trainer!',
     ]);
 
     Livewire::actingAs($this->athleteUser)
@@ -46,10 +46,10 @@ it('tab messaggi mostra messaggio inviato con prefisso Tu', function () {
 
 it('tab messaggi mostra badge non letti', function () {
     Message::create([
-        'sender_id'   => $this->trainer->id,
+        'sender_id' => $this->trainer->id,
         'receiver_id' => $this->athleteUser->id,
-        'body'        => 'Messaggio non letto',
-        'read_at'     => null,
+        'body' => 'Messaggio non letto',
+        'read_at' => null,
     ]);
 
     Livewire::actingAs($this->athleteUser)
@@ -70,9 +70,9 @@ it('tab messaggi non mostra messaggi tra altri utenti', function () {
     $other = User::factory()->create()->assignRole('atleta');
 
     Message::create([
-        'sender_id'   => $other->id,
+        'sender_id' => $other->id,
         'receiver_id' => $this->trainer->id,
-        'body'        => 'Messaggio privato altrui',
+        'body' => 'Messaggio privato altrui',
     ]);
 
     Livewire::actingAs($this->athleteUser)

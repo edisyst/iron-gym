@@ -2,6 +2,98 @@
 
 ---
 
+## R15 — Test BookingList e CommunicationCampaign (2026-08-24)
+
+**`BookingListTest` (7 test):**
+- Gestore conferma qualsiasi prenotazione PT
+- Trainer conferma solo le proprie (filtro `trainer_id` nella query)
+- Altro trainer — silent no-op (query non trova record, nessun 403)
+- Gestore annulla con motivo → status `cancelled`
+- Altro trainer annulla → `abort_unless` → 403
+- Validazione motivo annullamento: minimo 5 caratteri
+- Gestore ripristina prenotazione annullata → `pending`
+
+**`CommunicationCampaignTest` (4 test):**
+- Gestore visualizza form campagna
+- `send()` dispatcha `SendCampaignMessages` con `memberIds` corretti (`Bus::fake`)
+- Validazione: `body` obbligatorio
+- Filtro `active` esclude tesserati senza abbonamento valido
+
+**PilotSeeder:** `group_classes` attivato per tutti con `Feature::activateForEveryone`.
+
+Suite: 335 pass / 6 skipped. PHPStan 0 errori. Pint OK.
+
+---
+
+## R14 — Sessioni PT in dashboard atleta e test analytics (2026-08-24)
+
+**`Athlete\Dashboard`:**
+- Proprietà `upcomingPtBookings` (Collection): PT pending/confirmed da oggi, limit 3, eager load `trainer`
+- View: sezione "Prossime sessioni PT" con nome trainer, data, orario, link a `/athlete/bookings`
+
+**Fix `ManagerDashboard`:** `CONCAT→||` cross-db in query `atRiskMembers` (SQLite test compat).
+
+**Test (10):**
+- `AthleteAnalyticsTest` (4): gestore vede dati atleta; trainer con mesociclo; atleta → 403; `findOrFail` su ID inesistente lancia `ModelNotFoundException`
+- `ManagerDashboardTest` (2): gestore OK; date `dateFrom`/`dateTo` inizializzate al mese corrente
+- `AthleteDashboardPtBookingTest` (4): PT futura confermata visibile; PT passata non mostrata; PT cancellata non mostrata; isolamento — PT di altro atleta non incluse
+
+Suite: 324 pass / 6 skipped. PHPStan 0 errori. Pint OK.
+
+---
+
+## R13 — Stato abbonamento nel profilo atleta e fix CONCAT (2026-08-24)
+
+**`Athlete\Profile` — tab "Abbonamento":**
+- Carica abbonamento attivo con `status=active`, `orderByDesc('expires_at')`, eager load `plan`
+- Badge stato dinamico: Attivo / In scadenza (≤30gg) / Scaduto
+- Mostra: nome piano, date `started_at`/`expires_at`, giorni rimanenti, `accesses_remaining` se valorizzato
+- Stato vuoto se nessun abbonamento attivo
+
+**Fix cross-db `CONCAT→||`:**
+- `TrainingReport` — 2 occorrenze in `whereRaw` (nome atleta)
+- `GlobalSearch` — 1 occorrenza in `whereRaw` (ricerca tesserati)
+- Pattern: `DB::connection()->getDriverName() === 'sqlite' ? "a || ' ' || b" : "CONCAT(a, ' ', b)"`
+
+**Test (14):**
+- `AthleteProfileSubscriptionTest` (4): abbonamento attivo visibile; badge scadenza; nessun abbonamento → stato vuoto; abbonamento di altro atleta non mostrato
+- `TrainingReportTest` (6): gestore vede tutti; trainer vede solo propri; trainer non vede altrui; drilldown gestore; drilldown trainer con mesociclo; drilldown trainer senza mesociclo → 403
+- `GlobalSearchTest` (4): query < 2 caratteri → nessun risultato; trova atleta; trova trainer; trova template
+
+Suite: 314 pass / 6 skipped. PHPStan 0 errori. Pint OK.
+
+---
+
+## R12 — Attivazione periodization engine e test Livewire (2026-08-24)
+
+**PilotSeeder:** `Feature::activateForEveryone('financial_reports')` e `Feature::activateForEveryone('periodization_engine')` — flag attivi per default su nuove installazioni pilota.
+
+**Test (12):**
+- `MesocycleDetailTest` (6): trainer accede OK; gestore accede OK; atleta → 403; `forceDeload` marca week2 come deload; `forceDeload` sull'ultima settimana → no-op; `applyProgression` aggiorna `lastProgressionResultData`
+- `VolumeLandmarkManagerTest` (6): gestore OK; trainer con mesociclo OK; trainer senza mesociclo → 403; `save()` persiste su DB; `resetToDefaults()` elimina righe custom; default caricati correttamente
+
+Suite: 300 pass / 6 skipped. PHPStan 0 errori. Pint OK.
+
+---
+
+## R11 — Class reminder notification (2026-08-24)
+
+**`ClassReminderNotification`** (`database` + `webpush`):
+- `toArray()`: `type=class_reminder`, `occurrence_id`, messaggio "Domani hai {nome} alle {HH:mm}."
+- `toWebPush()`: titolo "Corso domani", body uguale
+
+**`SendClassReminders` job** (schedulato `dailyAt('08:00')` in `routes/console.php`):
+- Query `ClassOccurrence` con `date = tomorrow` e `status = planned`
+- Per ogni `confirmedBookings`, notifica `$booking->member?->user`
+
+**Centro notifiche atleta:** aggiunta icona calendario e colore accent per `type = class_reminder`.
+
+**Test (6):** job notifica utenti con prenotazione confermata domani; non notifica se occorrenza oggi/dopodomani; non notifica se cancellata; non notifica se prenotazione waitlist/cancelled; nessuna notifica se nessuna occorrenza domani; idempotente su run multipli stessa data.
+
+Suite: 288 pass / 6 skipped. PHPStan 0 errori. Pint OK.
+
+---
+
 ## R10 — Centro notifiche atleta (2026-08-24)
 
 **`Athlete\Notifications`** Livewire, route `/athlete/notifications`:

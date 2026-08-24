@@ -18,6 +18,7 @@ use App\Livewire\Backoffice\Dashboard;
 use App\Livewire\Backoffice\Exercises\ExerciseDetail;
 use App\Livewire\Backoffice\Exercises\ExerciseForm;
 use App\Livewire\Backoffice\Exercises\ExerciseList;
+use App\Livewire\Backoffice\Members\ExpiryDashboard;
 use App\Livewire\Backoffice\Members\MemberForm;
 use App\Livewire\Backoffice\Members\MemberList;
 use App\Livewire\Backoffice\Mesocycles\MesocycleAssign;
@@ -45,6 +46,7 @@ Route::prefix('backoffice')
         Route::get('/search', GlobalSearch::class)->name('search');
 
         Route::get('/members', MemberList::class)->name('members.index');
+        Route::get('/members/expiry', ExpiryDashboard::class)->name('members.expiry');
         Route::get('/subscriptions', SubscriptionList::class)->name('subscriptions.index');
 
         // Tesserati e abbonamenti — scrittura riservata a gestore e receptionist

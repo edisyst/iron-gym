@@ -2,6 +2,23 @@
 
 ---
 
+## R22 — Pannello Scadenze backoffice (2026-08-24)
+
+**Nuovo componente `Backoffice\Members\ExpiryDashboard` (`/backoffice/members/expiry`):**
+- Tabella **certificati medici in scadenza** entro N giorni (default 30): nome, email, data scadenza con badge rosso/giallo, giorni rimanenti, piano abbonamento attivo, link modifica tesserato
+- Tabella **abbonamenti in scadenza** entro N giorni (default 7): nome, email, piano, data scadenza con badge, giorni rimanenti, link rinnovo
+- Filtri live: campo ricerca (nome/email), select finestra temporale certificati (7/14/30/60 gg), select finestra abbonamenti (3/7/14/30 gg)
+- Badge contatore rosso/verde su intestazione di ogni sezione
+- Stato vuoto per entrambe le sezioni quando non ci sono scadenze
+- Route `backoffice.members.expiry` accessibile a gestore e receptionist (middleware `role:gestore|trainer|receptionist` ereditato + atleta bloccato via HTTP 403)
+- Voce "Scadenze" (icona `fa-exclamation-triangle`) aggiunta alla sidebar sotto "Abbonamenti"
+
+**Test (7):** gestore accede; receptionist accede; atleta bloccato (403); cert in scadenza visibile; cert oltre finestra esclusa; abbonamento in scadenza visibile; filtro certDays esclude oltre finestra ridotta.
+
+Suite: 372 pass / 6 skipped. PHPStan 0 errori. Pint OK.
+
+---
+
 ## R21 — Corsi collettivi nel profilo atleta (2026-08-24)
 
 **`Athlete\Profile` — tab "Corsi":**

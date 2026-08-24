@@ -348,6 +348,11 @@ return [
             'icon' => 'fas fa-id-card',
         ],
         [
+            'text' => 'Scadenze',
+            'url' => 'backoffice/members/expiry',
+            'icon' => 'fas fa-exclamation-triangle',
+        ],
+        [
             'text' => 'Accessi',
             'url' => 'backoffice/access-logs',
             'icon' => 'fas fa-door-open',

@@ -2,6 +2,25 @@
 
 ---
 
+## R19 — Storico sessioni nel profilo atleta (2026-08-24)
+
+**`Athlete\Profile` — tab "Sessioni":**
+- Nuovo tab tra "Record" e "Password"
+- Mostra le ultime 5 sessioni `completed`/`skipped` ordinate per `completed_at DESC`
+- Ogni riga: nome sessione, data, durata in minuti (se `started_at` e `completed_at` presenti), badge Completata/Saltata
+- Badge colorato: Completata=verde, Saltata=grigio; nome sessione desaturato se saltata
+- Link "Vedi storico" → `/athlete/history` (`TrainingHub`)
+- Stato vuoto "Nessuna sessione completata"
+- Isolamento: query via `week.mesocycle.athlete_id`
+
+**`Profile::render()`:** aggiunto `$recentSessions` con `whereHas('week.mesocycle', athlete_id)->whereIn('status', ['completed','skipped'])->orderByDesc('completed_at')->limit(5)`.
+
+**Test (5):** sessione completata visibile; sessione saltata con badge; sessioni planned escluse; durata calcolata (75 min); sessioni di altri atleti non incluse.
+
+Suite: 355 pass / 6 skipped. PHPStan 0 errori. Pint OK.
+
+---
+
 ## R18 — Personal Record nel profilo atleta (2026-08-24)
 
 **`Athlete\Profile` — tab "Record":**

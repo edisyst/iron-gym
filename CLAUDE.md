@@ -185,7 +185,9 @@ Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01
 
 **R18** completato: tab "Record" nel profilo atleta (ultimi 5 e1RM con esercizio, valore, data + link a pagina completa), 5 nuovi test. R18 chiuso.
 
-**Suite corrente:** 350 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
+**R19** completato: tab "Sessioni" nel profilo atleta (ultime 5 completed/skipped con nome, data, durata, badge + link a storico completo), 5 nuovi test. R19 chiuso.
+
+**Suite corrente:** 355 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
 
 Storico completo release e audit: **`CHANGELOG.md`**.
 

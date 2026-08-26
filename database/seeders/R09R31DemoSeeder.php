@@ -8,6 +8,7 @@ use App\Models\ExerciseSet;
 use App\Models\Member;
 use App\Models\Message;
 use App\Models\PersonalRecord;
+use App\Models\PtBooking;
 use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -40,8 +41,73 @@ class R09R31DemoSeeder extends Seeder
         $this->seedSuspendedSubscription();
         $this->seedMembersWithNotes();
         $this->seedNotifications($athlete, $member);
+        $this->seedPendingPtBooking($member, $trainer1);
+        $this->seedExpiredSubscriptionAthlete();
 
-        $this->command->info('R09R31DemoSeeder: PR, messaggi, sospensione, note, notifiche creati.');
+        $this->command->info('R09R31DemoSeeder: PR, messaggi, sospensione, note, notifiche, PT pending, abbonamento scaduto creati.');
+    }
+
+    /**
+     * PT in attesa di conferma per l'atleta demo principale: serve a provare
+     * l'annullamento dalla dashboard atleta (R14), che agisce su pending e
+     * confirmed. Senza questo l'atleta demo non aveva prenotazioni pending.
+     */
+    private function seedPendingPtBooking(?Member $member, User $trainer): void
+    {
+        if ($member === null) {
+            return;
+        }
+
+        $exists = PtBooking::where('member_id', $member->id)
+            ->where('status', 'pending')
+            ->whereDate('booked_date', '>=', today())
+            ->exists();
+
+        if ($exists) {
+            return;
+        }
+
+        $date = today()->addDays(3);
+
+        PtBooking::create([
+            'trainer_id' => $trainer->id,
+            'member_id' => $member->id,
+            'booked_date' => $date->toDateString(),
+            'start_time' => '17:00:00',
+            'end_time' => '18:00:00',
+            'status' => 'pending',
+            'cancellation_deadline' => $date->copy()->setTime(17, 0)->subDay(),
+            'notes' => 'Richiesta valutazione tecnica su squat.',
+        ]);
+    }
+
+    /**
+     * Atleta demo con abbonamento scaduto e certificato medico scaduto:
+     * copre il badge "Scaduto" nel profilo (R13) e il blocco dei prerequisiti
+     * di iscrizione ai corsi (R09 Step 2).
+     *
+     * Lo status resta 'active' perche' e' cosi' che il profilo distingue un
+     * abbonamento lapsed da uno assente: filtra su status='active' e calcola
+     * il badge da expires_at.
+     */
+    private function seedExpiredSubscriptionAthlete(): void
+    {
+        $member = Member::where('email', 'alessia.colombo@example.com')->first();
+
+        if ($member === null) {
+            return;
+        }
+
+        $member->subscriptions()
+            ->orderByDesc('expires_at')
+            ->first()
+            ?->update([
+                'status' => 'active',
+                'started_at' => today()->subDays(40),
+                'expires_at' => today()->subDays(5),
+            ]);
+
+        $member->update(['medical_cert_expiry' => today()->subDays(7)]);
     }
 
     private function seedPersonalRecords(User $athlete): void

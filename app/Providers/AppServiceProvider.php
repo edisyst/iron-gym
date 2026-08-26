@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Channels\WebPushChannel;
 use App\Models\Exercise;
 use App\Models\PtBooking;
+use App\Models\Setting;
 use App\Models\Subscription;
 use App\Models\TrainerAvailability;
 use App\Models\TrainingSession;
@@ -54,8 +55,15 @@ class AppServiceProvider extends ServiceProvider
         Feature::define('push_notifications', fn (User $user) => $user->hasRole(['atleta', 'trainer'])
         );
 
+        // Flag globale (non per-utente): la sorgente di verita' e' la tabella
+        // settings, con config/env come default al primo avvio. Il valore
+        // risolto viene comunque memorizzato da Pennant per scope, quindi
+        // FeatureFlagManager esegue Feature::purge() a ogni toggle.
         Feature::define('group_classes', function (): bool {
-            return (bool) config('features.group_classes_enabled', false);
+            return Setting::bool(
+                'group_classes_enabled',
+                (bool) config('features.group_classes_enabled', false)
+            );
         });
 
         Feature::define('financial_reports', fn (User $user) => $user->hasRole('gestore')

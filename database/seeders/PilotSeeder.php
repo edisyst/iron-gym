@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Setting;
 use App\Models\SubscriptionPlan;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -61,7 +62,11 @@ class PilotSeeder extends Seeder
     {
         Feature::activateForEveryone('financial_reports');
         Feature::activateForEveryone('periodization_engine');
-        Feature::activateForEveryone('group_classes');
+
+        // Flag globale: activateForEveryone aggiorna solo le righe gia'
+        // esistenti, quindi gli utenti mai risolti resterebbero senza corsi.
+        Setting::write('group_classes_enabled', true);
+        Feature::purge('group_classes');
 
         $this->command->info('Feature flags attivati: financial_reports, periodization_engine, group_classes.');
     }

@@ -28,6 +28,15 @@
                         @endif
                     </div>
                 </div>
+
+                @can('access-training-section')
+                    <div class="ml-auto table-actions">
+                        <a href="{{ route('backoffice.athletes.volume-landmarks', $athleteId) }}"
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-sliders-h mr-1"></i> Volume landmarks
+                        </a>
+                    </div>
+                @endcan
             </div>
         </div>
     </div>

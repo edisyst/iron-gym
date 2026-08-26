@@ -74,6 +74,7 @@ Gestionale palestra bodybuilding/fitness. Copre: anagrafica tesserati, abbonamen
 **Sistema:**
 - FeedbackSubmission: feedback in-app utenti
 - Feature (Pennant): feature flags per roll-out graduale
+- Setting: impostazioni globali key/value (PK stringa, value JSON). Sorgente di verità per i feature flag validi per l'intera palestra — `group_classes` — perché `Feature::activateForEveryone()` aggiorna solo le righe già esistenti in `features`. Helper `Setting::bool($key, $default)` e `Setting::write($key, $value)`
 - SyncOperation: tabella idempotenza sync offline (client_uuid UNIQUE, operation, processed_at)
 
 ## Servizi disponibili
@@ -212,7 +213,9 @@ Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01
 
 **R31** completato: tabella "Sessioni PT completate per trainer" in `ManagerDashboard`; query `pt_bookings JOIN users` filtrata per periodo e `status=completed`, raggruppata per trainer. 3 nuovi test. R31 chiuso.
 
-**Suite corrente:** 413 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
+**FIX01** (2026-08-26): flag globale `group_classes` spostato su tabella `settings` (`activateForEveryone` non copriva gli utenti mai risolti, il toggle da backoffice era inefficace); guard `role:gestore` + whitelist in `FeatureFlagManager`; fix colonna `status` ambigua in `Athlete\Dashboard`; `MesocycleList` filtrata per trainer e ownership check in `MesocycleDetail::applyProgression/forceDeload`; `GroupClassSeeder` registrato in `DatabaseSeeder`; comando `classes:send-reminders`; alias `/athlete/dashboard`; link "Volume landmarks" in AthleteProfile; dati demo: PT pending per `atleta@atleta.atleta`, abbonamento+certificato scaduti per `alessia.colombo@example.com`, badge "In attesa" in dashboard atleta. 16 nuovi test.
+
+**Suite corrente:** 429 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
 
 Storico completo release e audit: **`CHANGELOG.md`**.
 
@@ -262,7 +265,7 @@ php artisan db:seed --class=PilotTemplateSeeder  # template PPL ipertrofia 4 set
 | `financial_reports` | ON | attivo da subito per gestore |
 | `periodization_engine` | ON | attivato via PilotSeeder (R12) |
 | `push_notifications` | OFF | dopo verifica service worker su dispositivo reale |
-| `group_classes` | OFF | solo se palestra usa corsi collettivi |
+| `group_classes` | ON | flag globale in `settings.group_classes_enabled`, non per-utente |
 
 Per modificare flags: backoffice → Admin → Feature Flags (solo gestore).
 

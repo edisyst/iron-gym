@@ -80,9 +80,29 @@ class MesocycleDetail extends Component
 
     }
 
+    /**
+     * Il gestore opera su qualsiasi mesociclo, il trainer solo sui propri.
+     * Ricontrollato a ogni azione: mount() da solo non basta, le action
+     * Livewire arrivano come richieste indipendenti.
+     */
+    private function authorizeOwnership(): void
+    {
+        $user = auth()->user();
+        abort_unless($user?->hasAnyRole(['gestore', 'trainer']), 403);
+
+        if ($user->hasRole('gestore')) {
+            return;
+        }
+
+        abort_unless(
+            Mesocycle::whereKey($this->mesocycleId)->value('trainer_id') === $user->id,
+            403
+        );
+    }
+
     public function applyProgression(): void
     {
-        abort_unless(auth()->user()?->hasAnyRole(['gestore', 'trainer']), 403);
+        $this->authorizeOwnership();
 
         $service = app(WeeklyProgressionService::class);
         $result = $service->progressWeek($this->mesocycleId, $this->selectedWeekNumber);
@@ -101,7 +121,7 @@ class MesocycleDetail extends Component
 
     public function forceDeload(): void
     {
-        abort_unless(auth()->user()?->hasAnyRole(['gestore', 'trainer']), 403);
+        $this->authorizeOwnership();
 
         $meso = Mesocycle::with('weeks')->findOrFail($this->mesocycleId);
 

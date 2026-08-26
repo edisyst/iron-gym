@@ -25,6 +25,8 @@ Route::prefix('athlete')
     ->name('athlete.')
     ->group(function () {
         Route::get('/', Dashboard::class)->name('dashboard');
+        // Alias: /athlete/dashboard e' l'URL che ci si aspetta per convenzione
+        Route::get('/dashboard', fn () => redirect()->route('athlete.dashboard'));
         Route::get('/session/{session}', WorkoutSession::class)->name('session');
         Route::get('/session/{session}/recap', SessionRecap::class)->name('session.recap');
         Route::get('/history', TrainingHub::class)->name('history');

@@ -238,6 +238,9 @@
                         @if ($pt->trainer)
                             con {{ $pt->trainer->name }}
                         @endif
+                        @if ($pt->status === 'pending')
+                            <span class="ig-badge ig-badge--warning">In attesa</span>
+                        @endif
                     </span>
                     <span class="home-week-date">
                         {{ $pt->booked_date->format('d/m') }}

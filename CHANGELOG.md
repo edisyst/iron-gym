@@ -2,6 +2,77 @@
 
 ---
 
+## FIX01 — Feature flag globali e autorizzazioni mesocicli (2026-08-26)
+
+Nato dal test funzionale R09-R14: quasi tutti i sintomi riportati (corsi
+invisibili all'atleta, catalogo senza link, promemoria non testabili) avevano
+un'unica causa.
+
+**Feature flag globale `group_classes`:**
+- Causa: `Feature::activateForEveryone()` aggiorna solo le righe gia' presenti in
+  `features`. Un utente che non aveva mai risolto il flag ricadeva sul definer
+  → `config` → `env` → `false`. Il toggle da backoffice era quindi inefficace,
+  e le righe memorizzate a `false` vincevano comunque sul definer.
+- Nuova tabella `settings` (key/value JSON) come sorgente di verita' per i flag
+  validi per l'intera palestra; `config/features.php` resta il default iniziale.
+- `Setting::bool()` / `Setting::write()` con cache invalidata in scrittura.
+- Definer `group_classes` legge da `settings`; `FeatureFlagManager` scrive in
+  `settings` ed esegue `Feature::purge()` cosi' il nuovo valore vale per tutti.
+- `FeatureFlagManager::confirmToggle()`: aggiunti guard `role:gestore` e
+  whitelist dei flag gestiti (prima nessun controllo di ruolo).
+- Migration cancella le righe stale `group_classes` da `features`.
+- Gli altri tre flag (`periodization_engine`, `push_notifications`,
+  `financial_reports`) restano per-utente, risolti per ruolo.
+
+**Fix query `Athlete\Dashboard`:** la card "prossimi corsi" faceva join fra
+`class_bookings` e `class_occurrences` senza qualificare `status` e `member_id`
+→ MySQL 1052 "Column 'status' in where clause is ambiguous", pagina `/athlete`
+in errore 500 con il flag attivo. Colonne ora qualificate, `whereHas` ridondante
+rimosso. Stessa classe di bug gia' corretta in R21.
+
+**Autorizzazioni mesocicli:**
+- `MesocycleList`: il trainer vede solo i propri mesocicli (prima vedeva quelli
+  di tutti, con pulsanti che portavano a un 403).
+- `MesocycleDetail`: `applyProgression()` e `forceDeload()` verificavano solo il
+  ruolo, non la proprieta'. Aggiunto `authorizeOwnership()` — `mount()` da solo
+  non basta, le action Livewire arrivano come richieste indipendenti.
+
+**Dati e comandi:**
+- `GroupClassSeeder` registrato in `DatabaseSeeder` prima di `BookingDemoSeeder`:
+  creava le uniche `ClassSchedule` del progetto ma non veniva mai eseguito
+  (`class_schedules` era vuota, pagina palinsesto senza dati).
+- Nuovo comando `classes:send-reminders [--sync]` che dispatcha
+  `SendClassReminders` (esisteva solo come job schedulato, non lanciabile a mano).
+- Alias route `/athlete/dashboard` → redirect a `athlete.dashboard`.
+- Link "Volume landmarks" nell'header di `AthleteProfile` backoffice: la route
+  esisteva senza alcun link nell'interfaccia.
+
+**Nota su R12:** `applyProgression` funziona correttamente. La progressione
+MEV→MRV agisce sul numero di **set** (`planned_sets_count`), non sui carichi:
+verificato su dati reali, `exercise_sets` 23 → 37 con `action=progressed`. I
+`planned_weight_kg` dei set esistenti restano invariati per design.
+
+**Dati demo atleti (`R09R31DemoSeeder`):**
+- `atleta@atleta.atleta` riceve una sessione PT **pending** futura: prima non ne
+  aveva, quindi l'annullamento dalla dashboard (R14) non era provabile.
+- `alessia.colombo@example.com` diventa il caso "abbonamento scaduto"
+  deterministico — `status=active` con `expires_at` nel passato, piu' certificato
+  medico scaduto. Copre il badge "Scaduto" (R13) e il blocco dei prerequisiti di
+  iscrizione ai corsi (R09 Step 2).
+- Nota: i due casi non possono coincidere sullo stesso atleta. Il profilo
+  distingue un abbonamento lapsed da uno assente filtrando su `status=active` e
+  calcolando il badge da `expires_at`; un atleta in quello stato fallisce
+  `Member::activeSubscription()` e non puo' iscriversi ai corsi.
+- Badge "In attesa" sulle sessioni PT pending nella dashboard atleta: la card
+  mostrava data e trainer ma non lo stato.
+
+**Test (16):** `GlobalFeatureFlagTest` (6), `MesocycleOwnershipTest` (5),
+`AthleteDashboardClassCardTest` (3), `AthleteDashboardPendingPtBadgeTest` (2).
+
+Suite: 429 pass / 6 skipped. PHPStan 0 errori. Pint OK.
+
+---
+
 ## R31 — Statistiche PT in ManagerDashboard (2026-08-24)
 
 **`ManagerDashboard` — sezione "Sessioni PT completate per trainer":**

@@ -32,6 +32,10 @@ class DatabaseSeeder extends Seeder
                 TrainingHistorySeeder::class,
                 ActiveMesocycleSeeder::class,
                 ProgressDemoSeeder::class,
+                // Prima di BookingDemoSeeder: crea le definizioni corso con il
+                // palinsesto ricorrente, cosi' le occorrenze nascono da uno
+                // ClassSchedule invece che sciolte.
+                GroupClassSeeder::class,
                 BookingDemoSeeder::class,
                 R09R31DemoSeeder::class,
             ]);

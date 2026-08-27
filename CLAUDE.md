@@ -123,6 +123,10 @@ gli observers, i seeder e gli artisan commands è in:
 Leggila prima di aggiungere nuovi componenti o route per evitare conflitti e
 seguire i pattern esistenti.
 
+**Componenti backoffice non nella component-map (trovati in codice):**
+- `OpeningHoursManager` (`/backoffice/settings/opening-hours`): CRUD orari apertura settimanali + eccezioni per data specifica. Accessibile a tutti i ruoli backoffice; modificabile da gestore e receptionist.
+- `GlobalSearch` (`/backoffice/search`): ricerca live atleti/trainer/template, min 2 caratteri.
+
 **Nota architetturale:** le view Livewire usano wrapper `<div>` (non `@extends`).
 Il layout è gestito con `->layout('layouts.backoffice')` nel `render()`. Questo
 pattern è necessario per embeddare componenti via `@livewire` (es. in `AthleteProfile`).
@@ -217,9 +221,11 @@ Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01
 
 **Suite corrente:** 429 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
 
+**DOC02** (2026-08-27): assessment funzionale R09+ (`docs/reviews/r09-plus-test-assessment.md`), piano di test manuale 109 casi (`docs/testing/r09-plus-functional-test-plan.md`), `FunctionalTestSeeder` con 4 scenari demo (Yoga Full + waitlist, Carlo Accessi ingressi esauriti, overlap trainer PT+corso, occorrenza passata per attendance). Findings documentati: F-01 `OpeningHoursSeeder::truncate` non idempotente, F-02 `ClassBookingService::enroll` non controlla overlap atleta PT+corso, F-04 `DatabaseSeeder` chiama `OpeningHoursSeeder` fuori da `isLocal()`.
+
 Storico completo release e audit: **`CHANGELOG.md`**.
 
-Prossima attività: raccogliere feedback dai primi atleti pilota dopo prima sessione.
+Prossima attività: eseguire il piano di test manuale (`docs/testing/r09-plus-functional-test-plan.md`).
 
 ## Architettura offline
 
@@ -252,6 +258,20 @@ Prossima attività: raccogliere feedback dai primi atleti pilota dopo prima sess
 php artisan db:seed --class=PilotSeeder          # piani abbonamento + account gestore
 php artisan db:seed --class=PilotTemplateSeeder  # template PPL ipertrofia 4 sett.
 ```
+
+### Seeder test funzionali (idempotente, solo ambienti non-production)
+
+```bash
+php artisan db:seed --class=FunctionalTestSeeder
+```
+
+Crea 4 scenari per il piano di test `docs/testing/r09-plus-functional-test-plan.md`:
+- **Yoga Full**: occorrenza yoga `now+3` capacity=3, 3 confirmed + Federica in waitlist (TC-CLS-009/012)
+- **Carlo Accessi** (`carlo.accessi@functional-test.demo` / `demo1234`): abb. a ingressi con `accesses_remaining=0` (TC-CHK-004)
+- **Overlap trainer**: ClassOccurrence + PtBooking per Trainer 1 stesso slot `now+5` 14:00 (REG-003)
+- **Occorrenza passata**: `now-2` status=planned per test attendance (TC-CLS-015/016)
+
+**ATTENZIONE:** `OpeningHoursSeeder` usa `truncate()` — NON rieseguire su DB con dati reali (finding F-01). `DatabaseSeeder` senza `--class` lo esegue fuori da `isLocal()` (finding F-04) — usare sempre `--class` esplicito.
 
 ### Account pilota locale
 

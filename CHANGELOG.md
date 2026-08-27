@@ -2,6 +2,34 @@
 
 ---
 
+## DOC02 — Piano test funzionali R09+ e seeder demo (2026-08-27)
+
+Attivita' di qualita' read-only: nessuna modifica al codice applicativo.
+
+**Assessment:** `docs/reviews/r09-plus-test-assessment.md` — perimetro reale R09→FIX01
+(158 commit, 182 file, 226 nuovi test automatici). 6 findings documentati, non corretti.
+
+**Piano di test manuale:** `docs/testing/r09-plus-functional-test-plan.md` — 109 casi
+in 14 aree funzionali (CLS, SCH, CAT, GEN, NOT, PRF, EXP, CHK, SUB, MBR, DBC, FLG, OPH, REG).
+Ogni caso: persona, account, precondizioni, step, risultato atteso verificabile in UI.
+
+**FunctionalTestSeeder** — 4 scenari demo idempotenti:
+- Yoga Full (occorrenza al completo + waitlist per TC-CLS-009/012)
+- Carlo Accessi — `carlo.accessi@functional-test.demo` / `demo1234` (TC-CHK-004)
+- Overlap trainer PT+corso (REG-003)
+- Occorrenza passata non completata (TC-CLS-015/016)
+
+**Divergenze codice/doc corrette in CLAUDE.md:**
+- Aggiunto `OpeningHoursManager` (`/backoffice/settings/opening-hours`) alla sezione componenti
+- Aggiunto warning F-01/F-04 su `OpeningHoursSeeder::truncate` e `DatabaseSeeder`
+
+**Findings aperti (non corretti — da pianificare):**
+- F-01: `OpeningHoursSeeder:13` usa `truncate()` — non idempotente
+- F-02: `ClassBookingService::enroll` non controlla overlap atleta PT+corso
+- F-04: `DatabaseSeeder` chiama `OpeningHoursSeeder` fuori da `isLocal()`
+
+---
+
 ## FIX01 — Feature flag globali e autorizzazioni mesocicli (2026-08-26)
 
 Nato dal test funzionale R09-R14: quasi tutti i sintomi riportati (corsi

@@ -38,6 +38,7 @@ class DatabaseSeeder extends Seeder
                 GroupClassSeeder::class,
                 BookingDemoSeeder::class,
                 R09R31DemoSeeder::class,
+                FunctionalTestSeeder::class,
             ]);
         }
     }

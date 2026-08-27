@@ -7,6 +7,7 @@ use App\Jobs\NotifyWaitlistPromotion;
 use App\Models\ClassBooking;
 use App\Models\ClassOccurrence;
 use App\Models\Member;
+use App\Models\PtBooking;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -53,6 +54,18 @@ class ClassBookingService
 
         if ($athleteOverlap) {
             throw new BookingException('Hai già un corso confermato in questo orario.');
+        }
+
+        // Overlap: membro ha una sessione PT confermata nello stesso orario
+        $ptOverlap = PtBooking::where('member_id', $member->id)
+            ->where('status', 'confirmed')
+            ->where('booked_date', $occurrence->date->toDateString())
+            ->where('start_time', '<', $occurrence->end_time)
+            ->where('end_time', '>', $occurrence->start_time)
+            ->exists();
+
+        if ($ptOverlap) {
+            throw new BookingException('Hai già una sessione PT confermata in questo orario.');
         }
 
         return DB::transaction(function () use ($occurrence, $member) {

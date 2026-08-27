@@ -2,6 +2,22 @@
 
 ---
 
+## FIX02 — Idempotenza seeder e overlap PT+corso atleta (2026-08-27)
+
+**F-01/F-04 — `OpeningHoursSeeder` idempotente** (`9b906a8`):
+- Sostituito `truncate()+create()` con `firstOrCreate` su chiave naturale:
+  slot settimanali su `(day_of_week, specific_date=null)`, festività/vigilie su
+  `(specific_date, is_annual=true)`. Rieseguibile N volte senza perdita dati.
+- F-04 risolto di conseguenza: il seeder e' ora sicuro in tutti gli ambienti,
+  niente da spostare in `DatabaseSeeder`.
+
+**F-02 — `ClassBookingService::enroll` controlla overlap PT+corso** (`4ecc742`):
+- Aggiunto check `PtBooking confirmed` stesso giorno/orario prima di iscrivere
+  il membro al corso collettivo. Eccezione: `"Hai già una sessione PT confermata
+  in questo orario."` Previene doppia prenotazione PT+corso sullo stesso slot.
+
+---
+
 ## DOC02 — Piano test funzionali R09+ e seeder demo (2026-08-27)
 
 Attivita' di qualita' read-only: nessuna modifica al codice applicativo.

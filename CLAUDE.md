@@ -221,7 +221,9 @@ Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01
 
 **Suite corrente:** 429 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
 
-**DOC02** (2026-08-27): assessment funzionale R09+ (`docs/reviews/r09-plus-test-assessment.md`), piano di test manuale 109 casi (`docs/testing/r09-plus-functional-test-plan.md`), `FunctionalTestSeeder` con 4 scenari demo (Yoga Full + waitlist, Carlo Accessi ingressi esauriti, overlap trainer PT+corso, occorrenza passata per attendance). Findings documentati: F-01 `OpeningHoursSeeder::truncate` non idempotente, F-02 `ClassBookingService::enroll` non controlla overlap atleta PT+corso, F-04 `DatabaseSeeder` chiama `OpeningHoursSeeder` fuori da `isLocal()`.
+**DOC02** (2026-08-27): assessment funzionale R09+ (`docs/reviews/r09-plus-test-assessment.md`), piano di test manuale 109 casi (`docs/testing/r09-plus-functional-test-plan.md`), `FunctionalTestSeeder` con 5 scenari demo (corsi collettivi + waitlist, notifiche, check-in ingressi esauriti, abbonamento in scadenza, orari apertura). Findings documentati: F-01/F-02/F-04 risolti in FIX02.
+
+**FIX02** (2026-08-27): `OpeningHoursSeeder` idempotente con `firstOrCreate` (risolve F-01/F-04); `ClassBookingService::enroll` controlla overlap atleta PT+corso (risolve F-02).
 
 Storico completo release e audit: **`CHANGELOG.md`**.
 
@@ -271,7 +273,7 @@ Crea 4 scenari per il piano di test `docs/testing/r09-plus-functional-test-plan.
 - **Overlap trainer**: ClassOccurrence + PtBooking per Trainer 1 stesso slot `now+5` 14:00 (REG-003)
 - **Occorrenza passata**: `now-2` status=planned per test attendance (TC-CLS-015/016)
 
-**ATTENZIONE:** `OpeningHoursSeeder` usa `truncate()` — NON rieseguire su DB con dati reali (finding F-01). `DatabaseSeeder` senza `--class` lo esegue fuori da `isLocal()` (finding F-04) — usare sempre `--class` esplicito.
+`OpeningHoursSeeder` e' idempotente (usa `firstOrCreate`): sicuro da rieseguire in qualsiasi ambiente.
 
 ### Account pilota locale
 

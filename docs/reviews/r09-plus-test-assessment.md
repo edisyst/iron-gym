@@ -247,16 +247,16 @@ Feature::purge('group_classes');  // svuota cache Pennant
 
 ## 4. Findings
 
-> Non corretti — annotati per riferimento.
+> Stato aggiornato al 2026-08-27 dopo FIX02 e DOC02.
 
-| ID | File | Riga | Tipo | Descrizione |
-|---|---|---|---|---|
-| F-01 | `database/seeders/OpeningHoursSeeder.php` | 13 | Non-idempotente | `OpeningHour::truncate()` — se eseguito su DB non vuoto cancella dati reali. Non può essere rieseguito sicuramente su ambiente pilota. |
-| F-02 | `app/Services/ClassBookingService.php` | 45–55 | Gap funzionale | `enroll()` controlla overlap corso-corso per atleta ma NON controlla se l'atleta ha una sessione PT confermata nello stesso slot. Possibile doppia prenotazione PT+corso. |
-| F-03 | `database/seeders/BookingDemoSeeder.php` | 180 | Dati demo insufficienti | Circuit Training: capacity=8, participants=6 — nessun corso è al completo nel demo. Impossibile testare manualmente il flusso "corso pieno → waitlist → promozione" senza dati aggiuntivi. |
-| F-04 | `database/seeders/DatabaseSeeder.php` | 24 | Non-idempotente a cascata | `OpeningHoursSeeder` è chiamato da `DatabaseSeeder` (non in blocco `isLocal()`) e usa `truncate()`. Eseguire `db:seed` (senza `--class`) su ambiente pilota cancella gli orari di apertura. |
-| F-05 | `CLAUDE.md` | sezione componenti | Doc-code divergenza | `OpeningHoursManager` (`/backoffice/settings/opening-hours`) non è menzionato nella sezione "Mappa componenti". `DumbbellInventory` e `GlobalSearch` citati in CLAUDE.md ma senza route o componente dettagliato. |
-| F-06 | `CLAUDE.md` | sezione stato sviluppo | Doc obsoleta | CLAUDE.md elenca `FIX01` come contenente "fix colonna status ambigua in Athlete\Dashboard" ma non menziona `OpeningHoursManager` come componente esistente introdotto prima di R09. |
+| ID | File | Riga | Tipo | Descrizione | Stato |
+|---|---|---|---|---|---|
+| F-01 | `database/seeders/OpeningHoursSeeder.php` | 13 | Non-idempotente | `OpeningHour::truncate()` — se eseguito su DB non vuoto cancella dati reali. | **RISOLTO** — `firstOrCreate` su chiave naturale (commit `9b906a8`) |
+| F-02 | `app/Services/ClassBookingService.php` | 45–55 | Gap funzionale | `enroll()` non controllava overlap atleta PT+corso. Possibile doppia prenotazione. | **RISOLTO** — aggiunto check `PtBooking confirmed` stesso slot (commit `4ecc742`) |
+| F-03 | `database/seeders/BookingDemoSeeder.php` | 180 | Dati demo insufficienti | Nessun corso al completo nel demo originale. | **RISOLTO** — `FunctionalTestSeeder` crea "Yoga Full" capacity=3 + waitlist (commit `24f3ea4`) |
+| F-04 | `database/seeders/DatabaseSeeder.php` | 24 | Non-idempotente a cascata | `OpeningHoursSeeder` chiamato fuori da `isLocal()` con `truncate()`. | **RISOLTO** — risolto da F-01: seeder ora sicuro in tutti gli ambienti (commit `9b906a8`) |
+| F-05 | `CLAUDE.md` | sezione componenti | Doc-code divergenza | `OpeningHoursManager` non menzionato in sezione componenti. | **RISOLTO** — aggiunto in CLAUDE.md (commit `24f3ea4`) |
+| F-06 | `CLAUDE.md` | sezione stato sviluppo | Doc obsoleta | `OpeningHoursManager` assente dalla sezione stato sviluppo. | **RISOLTO** — sezione componenti aggiornata (commit `24f3ea4`) |
 
 ---
 

@@ -9,10 +9,7 @@ class OpeningHoursSeeder extends Seeder
 {
     public function run(): void
     {
-        // Idempotente: svuota e reinserisce
-        OpeningHour::truncate();
-
-        // Slot settimanali ricorrenti
+        // Slot settimanali ricorrenti — chiave naturale: (day_of_week, specific_date=null)
         // 0=Lun, 1=Mar, 2=Mer, 3=Gio, 4=Ven, 5=Sab, 6=Dom
         $weekly = [
             ['day_of_week' => 0, 'start_time' => '06:30', 'end_time' => '22:30'], // Lunedì
@@ -25,11 +22,10 @@ class OpeningHoursSeeder extends Seeder
         ];
 
         foreach ($weekly as $slot) {
-            OpeningHour::create(array_merge($slot, [
-                'specific_date' => null,
-                'is_annual' => false,
-                'is_open' => true,
-            ]));
+            OpeningHour::firstOrCreate(
+                ['day_of_week' => $slot['day_of_week'], 'specific_date' => null],
+                array_merge($slot, ['is_annual' => false, 'is_open' => true])
+            );
         }
 
         // Festività annuali — chiusura totale
@@ -43,15 +39,16 @@ class OpeningHoursSeeder extends Seeder
         ];
 
         foreach ($holidays as $h) {
-            OpeningHour::create([
-                'day_of_week' => null,
-                'specific_date' => $h['date'],
-                'is_annual' => true,
-                'start_time' => null,
-                'end_time' => null,
-                'is_open' => false,
-                'notes' => $h['notes'],
-            ]);
+            OpeningHour::firstOrCreate(
+                ['specific_date' => $h['date'], 'is_annual' => true],
+                [
+                    'day_of_week' => null,
+                    'start_time' => null,
+                    'end_time' => null,
+                    'is_open' => false,
+                    'notes' => $h['notes'],
+                ]
+            );
         }
 
         // Vigilie delle festività — orario ridotto 10:00-14:00
@@ -64,15 +61,16 @@ class OpeningHoursSeeder extends Seeder
         ];
 
         foreach ($eves as $e) {
-            OpeningHour::create([
-                'day_of_week' => null,
-                'specific_date' => $e['date'],
-                'is_annual' => true,
-                'start_time' => '10:00',
-                'end_time' => '14:00',
-                'is_open' => true,
-                'notes' => $e['notes'],
-            ]);
+            OpeningHour::firstOrCreate(
+                ['specific_date' => $e['date'], 'is_annual' => true],
+                [
+                    'day_of_week' => null,
+                    'start_time' => '10:00',
+                    'end_time' => '14:00',
+                    'is_open' => true,
+                    'notes' => $e['notes'],
+                ]
+            );
         }
     }
 }

@@ -413,9 +413,9 @@ return [
         ],
         ['header' => 'CORSI COLLETTIVI', 'can' => 'view-group-classes'],
         [
-            'text' => 'Occorrenze',
-            'url' => 'backoffice/group-classes',
-            'icon' => 'fas fa-calendar-check',
+            'text' => 'Catalogo corsi',
+            'url' => 'backoffice/group-classes/catalog',
+            'icon' => 'fas fa-list',
             'can' => 'view-group-classes',
         ],
         [
@@ -425,9 +425,9 @@ return [
             'can' => 'view-group-classes',
         ],
         [
-            'text' => 'Catalogo corsi',
-            'url' => 'backoffice/group-classes/catalog',
-            'icon' => 'fas fa-list',
+            'text' => 'Classi Pianificate',
+            'url' => 'backoffice/group-classes',
+            'icon' => 'fas fa-calendar-check',
             'can' => 'view-group-classes',
         ],
         ['header' => 'COMUNICAZIONE', 'can' => 'send-campaigns'],

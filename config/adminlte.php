@@ -406,6 +406,11 @@ return [
             'url' => 'backoffice/bookings',
             'icon' => 'fas fa-user-clock',
         ],
+        [
+            'text' => 'Orari di apertura',
+            'url' => 'backoffice/settings/opening-hours',
+            'icon' => 'fas fa-door-open',
+        ],
         ['header' => 'CORSI COLLETTIVI', 'can' => 'view-group-classes'],
         [
             'text' => 'Occorrenze',
@@ -424,11 +429,6 @@ return [
             'url' => 'backoffice/group-classes/catalog',
             'icon' => 'fas fa-list',
             'can' => 'view-group-classes',
-        ],
-        [
-            'text' => 'Orari di apertura',
-            'url' => 'backoffice/settings/opening-hours',
-            'icon' => 'fas fa-door-open',
         ],
         ['header' => 'COMUNICAZIONE', 'can' => 'send-campaigns'],
         [

@@ -39,6 +39,7 @@ class DatabaseSeeder extends Seeder
                 BookingDemoSeeder::class,
                 R09R31DemoSeeder::class,
                 FunctionalTestSeeder::class,
+                VolumeDemoSeeder::class,
             ]);
         }
     }

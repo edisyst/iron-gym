@@ -330,3 +330,143 @@ php artisan db:seed --class=PilotSeeder    # attiva feature flags
   - Coprire i permessi negativi sistematicamente (tabella persona × azione)
   - Descrivere come forzare le condizioni temporali senza modificare il codice (es. usare occorrenze con date calcolate dal seeder)
 - Il piano deve indicare per ogni caso quale record demo usare per nome (es. "usa l'occorrenza Circuit Training del+1 da BookingDemoSeeder")
+
+---
+
+## 7. Estensione volumi (Fase 0 — Assessment read-only)
+
+> Analisi prodotta il 2026-08-28 in preparazione al seeder di volume `VolumeDemoSeeder`.
+> Obiettivo: 50 tesserati demo, 12 settimane di storico, dati realistici per paginazione/filtri/KPI/grafici.
+
+### 7.1 Conteggio record attuali per entità (post-stack demo completo)
+
+| Entità | Seeder sorgente | Record stimati |
+|--------|----------------|---------------|
+| User (staff) | DemoSeeder | 4 |
+| User (atleti) | DemoSeeder + FunctionalTestSeeder | ~9 |
+| Member | DemoSeeder + FunctionalTestSeeder | ~9 |
+| SubscriptionPlan | DemoSeeder + FunctionalTestSeeder | 3 |
+| Subscription | DemoSeeder + R09R31DemoSeeder + FunctionalTestSeeder | ~10 |
+| AccessLog | DemoSeeder | 10 |
+| Mesocycle | TrainingHistorySeeder (6 atleti × 1) + ProgressDemoSeeder (5) + ActiveMesocycleSeeder (~2) | ~13 |
+| MicrocycleWeek | TrainingHistory (24) + ProgressDemo (20) | ~44 |
+| TrainingSession | TrainingHistory (48) + ProgressDemo (60) | ~108 |
+| SessionExercise | TrainingHistory (~144) + ProgressDemo (~240) | ~384 |
+| ExerciseSet | TrainingHistory (~576) + ProgressDemo (~1080) | ~1656 |
+| SessionFeedback | TrainingHistory (48) + ProgressDemo (60) | ~108 |
+| BodyMeasurement | ProgressDemoSeeder | 15 |
+| PersonalRecord | R09R31DemoSeeder | ~25 |
+| GroupClass | GroupClassSeeder (4) + BookingDemoSeeder (~6, parziale overlap) | ~8 |
+| ClassSchedule | GroupClassSeeder | 4 |
+| ClassOccurrence | GroupClassSeeder (~8) + BookingDemoSeeder (9) + FunctionalTestSeeder (13) | ~30 |
+| ClassBooking | BookingDemoSeeder (~27) + FunctionalTestSeeder (~10) | ~37 |
+| PtBooking | BookingDemoSeeder (15) + R09R31DemoSeeder (1) + FunctionalTestSeeder (1) | ~17 |
+| TrainerAvailability | BookingDemoSeeder | 11 |
+| Message | R09R31DemoSeeder | ~12 |
+
+**Totale ExerciseSet attuali: ~1.656** — insufficiente per testare grafici storici significativi su più atleti.
+
+### 7.2 Factory esistenti vs. necessarie
+
+**Disponibili e utilizzabili:**
+`MemberFactory`, `UserFactory`, `SubscriptionFactory`, `SubscriptionPlanFactory`,
+`MesocycleFactory`, `MicrocycleWeekFactory`, `TrainingSessionFactory`,
+`SessionExerciseFactory`, `ExerciseSetFactory`, `SessionFeedbackFactory`,
+`SessionExerciseFeedbackFactory`, `ClassBookingFactory`, `ClassOccurrenceFactory`,
+`ClassScheduleFactory`, `GroupClassFactory`, `PtBookingFactory`, `BodyMeasurementFactory`,
+`AthleteVolumeLandmarkFactory`.
+
+**Mancanti e da creare:**
+| Factory | Motivazione |
+|---------|-------------|
+| `AccessLogFactory` | Necessaria per generare storico ingressi distribuito su 12 settimane con fasce orarie |
+| `MessageFactory` | Necessaria per thread trainer-atleta multipli |
+| `PersonalRecordFactory` | Necessaria per PR storici deterministici su più atleti |
+
+### 7.3 Observer attivati dagli insert massivi e impatto
+
+| Observer | Trigger | Si attiva in bulk seeder? | Impatto |
+|----------|---------|--------------------------|---------|
+| `TrainingSessionObserver` | `updated` su cambio status → `completed` | **No** — i session vengono create già `completed` (`created` event, non `updated`) | Nessuno |
+| `PtBookingObserver` | `saved` (create + update) | **Sì** — 1 flush cache Redis per ogni PtBooking | Con 150+ record: 150 flush `slots:{trainer}:{date}` + 150 flush tag `kpi`. Costo trascurabile su Redis locale ma genera rumore nei log |
+| `SubscriptionObserver` | `saved` (create + update) | **Sì** — 1 flush tag `kpi` per ogni Subscription | Con 50 member: 50 flush tag `kpi`. Trascurabile ma evitabile |
+| `TrainerAvailabilityObserver` | `saved` | **Sì** — se si aggiungono slot disponibilità | Trascurabile |
+| `ExerciseObserver` | `saved`/`deleted` su Exercise | **No** — nessun esercizio nuovo creato | Nessuno |
+
+**Conclusione:** nessun observer scrive su DB, manda mail o dispatcha job. Il rischio è puramente di performance (flush cache ripetuti). Strategia: usare `Model::withoutObservers()` per i bulk insert di `PtBooking` e `Subscription`, oppure `DB::table()->insert([...])` direttamente per le entità senza logica di dominio da rispettare.
+
+### 7.4 Job e notifiche attivate dagli insert
+
+| Scrittura | Job/Notifica | Attivato da? | Rischio |
+|-----------|-------------|-------------|---------|
+| `ClassBooking::create()` | `NotifyWaitlistPromotion` | Solo da `ClassBookingService::cancel()` — **non** da insert diretto | **Nessuno** se si usa insert diretto |
+| `PtBooking::create()` | Nessun job | PtBookingObserver fa solo cache flush | Nessuno |
+| `TrainingSession status=completed` | Nessun job | Observer aggiorna solo cache volume | Nessuno |
+| `Subscription::create()` | Nessun job | Observer fa solo cache flush KPI | Nessuno |
+
+**Nessun insert in bulk attiverà code, push o mail**, a condizione di non passare attraverso `ClassBookingService::cancel()` su dati storici.
+
+### 7.5 Punti dove è obbligatorio passare dai servizi applicativi
+
+| Operazione | Servizio/Comando | Motivazione |
+|-----------|-----------------|-------------|
+| **PersonalRecord su storico** | `PersonalRecordDetector::check()` o insert diretto con valori calcolati | Il detector non è chiamato da observer — va invocato esplicitamente o si inseriscono PR calcolati con `E1rmCalculator::epley()` inline nel seeder. **Preferenza:** insert diretto con e1rm pre-calcolato nel seeder, per controllo deterministico. |
+| **Occorrenze future da ClassSchedule** | Artisan `classes:generate-occurrences` | Già idempotente. Va eseguito per materializzare i nuovi schedule creati per i 6 corsi volume. Non deve essere re-invocato dentro il seeder (o si lancia con `Artisan::call`). |
+| **Promozione waitlist da cancellazioni storiche** | Non necessaria | Le cancellazioni storiche vengono inserite direttamente come `cancelled_by_athlete` — nessuna promozione servita su dati passati. |
+
+### 7.6 Stima volumi target e record aggiuntivi
+
+Con i parametri di Fase 1 (50 tesserati, 35 con account atleta, 12 settimane storico):
+
+| Entità | Record aggiuntivi stimati | Note |
+|--------|--------------------------|------|
+| Member / User atleta | +41 (50 totali − 9 esistenti) | Dominio `volume-demo.test` |
+| Subscription | +90 circa | Distribuzione: ~30 attivi, ~10 in scadenza <30gg, ~8 scaduti, ~4 sospesi, ~8 mai rinnovati |
+| AccessLog | +2.500 circa | 12 settimane, frequenza differenziata (assidui/saltuari/dormienti), fasce orarie 7-22 |
+| Mesocycle | +35 circa | 1 per atleta con storico; alcuni completati, alcuni in corso |
+| MicrocycleWeek | +140 circa | 4 settimane × 35 mesocicli |
+| TrainingSession | +1.050 circa | 3 sessioni/settimana × 10 settimane completate × 35 atleti |
+| SessionExercise | +4.200 circa | 4 esercizi per sessione |
+| ExerciseSet | +16.800 circa | 4 set per esercizio (1 warmup + 3 working) |
+| SessionFeedback | +525 circa | 50% delle sessioni completate |
+| SessionExerciseFeedback | +1.050 circa | 20% delle sessioni completate, 4 esercizi selezionati |
+| BodyMeasurement | +180 circa | 15 atleti × 1/mese × 12 mesi |
+| PersonalRecord | +105 circa | 3 esercizi × 35 atleti, progressione lineare storica |
+| GroupClass | +2 (totale 6 distinti) | Aggiunta Spinning e Pilates Avanzato |
+| ClassSchedule | +6 | Schedule ricorrenti per i 6 corsi |
+| ClassOccurrence | +70 circa | 12 settimane × 6 corsi × 1/settimana (passate) + ~24 future |
+| ClassBooking | +420 circa | Media 6 iscritti per occorrenza passata |
+| PtBooking | +180 circa | Storico 12 settimane (3/settimana per 2 trainer) + 30 future |
+| Message | +80 circa | Thread multipli trainer-atleta |
+
+**ExerciseSet totali attesi: ~18.456** — sufficiente per grafici forza e tonnellaggio su 12 settimane.
+
+### 7.7 Rischio performance e strategia di insert
+
+| Entità | Volume | Strategia consigliata |
+|--------|--------|-----------------------|
+| ExerciseSet | ~16.800 | `DB::table('exercise_sets')->insert([...])` in chunk da 500 |
+| SessionExercise | ~4.200 | `DB::table('session_exercises')->insert([...])` in chunk da 200 |
+| TrainingSession | ~1.050 | `DB::table('training_sessions')->insert([...])` in chunk da 100 (no observer su create) |
+| AccessLog | ~2.500 | `DB::table('access_logs')->insert([...])` in chunk da 200 |
+| ClassBooking | ~420 | Insert diretto (no ClassBookingService — dati storici) |
+| PtBooking | ~180 | `PtBooking::withoutObservers()` o insert diretto |
+| Subscription | ~90 | `Subscription::withoutObservers()` |
+
+**Stima tempo di esecuzione:**
+- Con Eloquent `create()` individuale a ~5ms/record: ~21.000 × 5ms ≈ **105 secondi** — sopra il limite di 2 minuti.
+- Con `DB::table()->insert()` in chunk: ~21.000 record ≈ **20-30 secondi** — entro il limite.
+
+**Seed deterministico:** `fake()->seed(42)` fisso in cima al seeder; ogni run produce gli stessi dati.
+
+### 7.8 Proposta di ripartizione: seeder e factory da creare
+
+**Factory nuove (3):**
+1. `AccessLogFactory` — fields: `member_id`, `subscription_id`, `checked_in_at`, `checked_in_by`
+2. `MessageFactory` — fields: `sender_id`, `receiver_id`, `body`, `read_at`, `created_at`
+3. `PersonalRecordFactory` — fields: `athlete_id`, `exercise_id`, `exercise_set_id`, `record_type`, `value`, `achieved_at`
+
+**Seeder nuovo (1):**
+- `VolumeDemoSeeder` — orchestratore; non tocca nessuno dei seeder esistenti; riconoscibile dal dominio `volume-demo.test` sulle email.
+
+**Non serve `migrate:fresh`**; il seeder è additivo e idempotente via `firstOrCreate` / `updateOrCreate` per le entità puntuali, e verifica `email LIKE '%volume-demo.test%'` come guard per evitare duplicati sui record di volume.

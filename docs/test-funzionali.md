@@ -75,7 +75,7 @@ php artisan db:seed --class=FunctionalTestSeeder
 > 🔐 Login: `admin@admin.admin` / `admin`
 
 - [ ] Individua un'occorrenza futura con partecipanti
-- [ ] Cancella l'occorrenza (aggiungi motivo) → verifica status `cancelled`
+- [ ] Cancella l'occorrenza → verifica status `cancelled`
 
 > 🔐 Poi: `atleta@atleta.atleta` / `atleta`
 

@@ -27,18 +27,11 @@ class DatabaseSeeder extends Seeder
         // Seeder solo in ambiente locale
         if (app()->isLocal()) {
             $this->call([
-                DemoSeeder::class,
-                DemoTemplatesSeeder::class,
-                TrainingHistorySeeder::class,
-                ActiveMesocycleSeeder::class,
-                ProgressDemoSeeder::class,
-                // Prima di BookingDemoSeeder: crea le definizioni corso con il
-                // palinsesto ricorrente, cosi' le occorrenze nascono da uno
-                // ClassSchedule invece che sciolte.
-                GroupClassSeeder::class,
-                BookingDemoSeeder::class,
-                R09R31DemoSeeder::class,
-                FunctionalTestSeeder::class,
+                CoreDemoSeeder::class,
+                TemplateSeeder::class,
+                TrainingDemoSeeder::class,
+                ClassDemoSeeder::class,
+                ScenarioDemoSeeder::class,
                 VolumeDemoSeeder::class,
             ]);
         }

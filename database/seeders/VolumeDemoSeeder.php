@@ -859,7 +859,6 @@ class VolumeDemoSeeder extends Seeder
                         'attended_at' => $attendedAt?->toDateTimeString(),
                         'booked_by' => null,
                         'created_at' => $occDate->copy()->subDays(3)->toDateTimeString(),
-                        'updated_at' => $occDate->copy()->subDays(3)->toDateTimeString(),
                     ];
                 }
 
@@ -883,7 +882,6 @@ class VolumeDemoSeeder extends Seeder
                         'attended_at' => null,
                         'booked_by' => null,
                         'created_at' => $occDate->copy()->subDays(3)->toDateTimeString(),
-                        'updated_at' => $occDate->copy()->subDays(3)->toDateTimeString(),
                     ];
                 }
 
@@ -952,7 +950,7 @@ class VolumeDemoSeeder extends Seeder
                         'start_time' => sprintf('%02d:00:00', $hour),
                         'end_time' => sprintf('%02d:00:00', $hour + 1),
                         'status' => $status,
-                        'cancelled_by' => $status === 'cancelled' ? 'athlete' : null,
+                        'cancelled_by' => null,
                         'cancellation_reason' => $status === 'cancelled' ? 'Impegno personale' : null,
                         'cancellation_deadline' => $bookDate->copy()->subDay()->setTime(20, 0)->toDateTimeString(),
                         'notes' => null,
@@ -1024,7 +1022,6 @@ class VolumeDemoSeeder extends Seeder
                         : $athleteLines[$m % count($athleteLines)],
                     'read_at' => $isOld ? $msgDate->copy()->addMinutes(15)->toDateTimeString() : null,
                     'created_at' => $msgDate->toDateTimeString(),
-                    'updated_at' => $msgDate->toDateTimeString(),
                 ]);
             }
         }

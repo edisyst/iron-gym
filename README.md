@@ -98,6 +98,14 @@ curl http://localhost:8000/health
 
 # Go-live: inizializza piani abbonamento reali e account gestore
 php artisan pilot:init
+
+# Elenca task schedulati (nome, cron, prossima esecuzione, stato abilitato/disabilitato)
+# In iron-gym: classes:generate-occurrences (giornaliero) e classes:send-reminders (dailyAt 08:00)
+php artisan schedule:list
+
+# Invia promemoria corsi collettivi di domani (signature: classes:send-reminders, NON app:send-class-reminders)
+php artisan classes:send-reminders          # accoda job in queue (richiede worker attivo)
+php artisan classes:send-reminders --sync   # esegue inline senza queue
 ```
 
 ## Struttura

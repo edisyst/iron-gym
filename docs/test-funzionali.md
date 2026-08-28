@@ -129,7 +129,7 @@ php artisan db:seed --class=FunctionalTestSeeder
 > 🔐 Terminale (nessun login richiesto)
 
 - [ ] `php artisan schedule:list` → verifica `SendClassReminders` schedulato `dailyAt('08:00')`
-- [ ] `php artisan app:send-class-reminders` → esegui manualmente → verifica log senza errori
+- [ ] `php artisan classes:send-reminders --sync` → esegui manualmente → verifica log senza errori
 
 ---
 

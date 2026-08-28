@@ -71,7 +71,17 @@ class ClassBookingService
         return DB::transaction(function () use ($occurrence, $member) {
             $fresh = ClassOccurrence::lockForUpdate()->find($occurrence->id);
 
+            $existing = ClassBooking::where('class_occurrence_id', $occurrence->id)
+                ->where('member_id', $member->id)
+                ->first();
+
             if ($fresh->available_spots > 0) {
+                if ($existing) {
+                    $existing->update(['status' => 'confirmed', 'position' => null, 'booked_by' => null, 'attended_at' => null]);
+
+                    return $existing->fresh();
+                }
+
                 return ClassBooking::create([
                     'class_occurrence_id' => $occurrence->id,
                     'member_id' => $member->id,
@@ -83,6 +93,12 @@ class ClassBookingService
             $nextPosition = (int) (ClassBooking::where('class_occurrence_id', $occurrence->id)
                 ->where('status', 'waitlisted')
                 ->max('position') ?? 0) + 1;
+
+            if ($existing) {
+                $existing->update(['status' => 'waitlisted', 'position' => $nextPosition, 'booked_by' => null, 'attended_at' => null]);
+
+                return $existing->fresh();
+            }
 
             return ClassBooking::create([
                 'class_occurrence_id' => $occurrence->id,

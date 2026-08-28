@@ -8,20 +8,34 @@ Guida ai test manuali per verificare tutte le funzionalità introdotte da R09 a 
 php artisan migrate:fresh --seed
 ```
 
+Per i test manuali delle aree CLS/CHK/EXP/REG (piano `docs/testing/r09-plus-functional-test-plan.md`) aggiungere anche il seeder funzionale:
+
+```bash
+php artisan db:seed --class=FunctionalTestSeeder
+```
+
 **Account disponibili dopo il seed:**
 
-| Ruolo | Email | Password |
+| Ruolo | Email | Password | Note |
+|---|---|---|---|
+| Gestore | `admin@admin.admin` | `admin` | |
+| Trainer 1 | `trainer@trainer.trainer` | `trainer` | |
+| Trainer 2 | `trainer2@trainer.trainer` | `trainer` | |
+| Receptionist | `receptionist@receptionist.receptionist` | `receptionist` | |
+| Atleta demo | `atleta@atleta.atleta` | `atleta` | |
+| Giovanni Ferrari | `giovanni.ferrari@example.com` | `atleta` | |
+| Alessia Colombo | `alessia.colombo@example.com` | `atleta` | cert scaduto |
+| Marco Ricci | `marco.ricci@example.com` | `atleta` | |
+| Federica Esposito | `federica.esposito@example.com` | `atleta` | in waitlist yoga |
+| Davide Martini | `davide.martini@example.com` | `atleta` | |
+
+**Account aggiuntivi da `FunctionalTestSeeder` (password: `demo1234`):**
+
+| Nome | Email | Scenario |
 |---|---|---|
-| Gestore | `admin@admin.admin` | `admin` |
-| Trainer 1 | `trainer@trainer.trainer` | `trainer` |
-| Trainer 2 | `trainer2@trainer.trainer` | `trainer` |
-| Receptionist | `receptionist@receptionist.receptionist` | `receptionist` |
-| Atleta demo | `atleta@atleta.atleta` | `atleta` |
-| Giovanni Ferrari | `giovanni.ferrari@example.com` | `atleta` |
-| Alessia Colombo | `alessia.colombo@example.com` | `atleta` |
-| Marco Ricci | `marco.ricci@example.com` | `atleta` |
-| Federica Esposito | `federica.esposito@example.com` | `atleta` |
-| Davide Martini | `davide.martini@example.com` | `atleta` |
+| Carlo Accessi | `carlo.accessi@functional-test.demo` | Abbonamento a ingressi esauriti (`accesses_remaining=0`) — TC-CHK-004 |
+| Stefano NoAbb | `stefano.noabb@functional-test.demo` | Nessun abbonamento — TC-CHK-003 |
+| Giulia Scadenza | `giulia.scadenza@functional-test.demo` | Abbonamento in scadenza a 5 giorni — TC-EXP-002/005 |
 
 ---
 
@@ -457,6 +471,33 @@ php artisan migrate:fresh --seed
 
 ---
 
+## FIX02 — Idempotenza seeder e overlap PT+corso atleta (2026-08-27)
+
+### FIX02-A — OpeningHoursSeeder idempotente (F-01 / F-04)
+
+> 🔐 Terminale
+
+- [ ] Esegui `php artisan migrate:fresh --seed` → nessun errore
+- [ ] Esegui di nuovo `php artisan db:seed --class=OpeningHoursSeeder` → deve completare senza errori (nessun duplicato, nessuna `UniqueConstraintViolationException`)
+- [ ] DB → tabella `opening_hours` → righe invariate tra la prima e seconda esecuzione
+
+### FIX02-B — Overlap PT + corso collettivo (F-02)
+
+> Prerequisito: `FunctionalTestSeeder` eseguito (crea occorrenza L: Trainer overlap `now+5` 14:00 con PtBooking trainer1)
+
+> 🔐 Login: `atleta@atleta.atleta` / `atleta`
+
+- [ ] Vai a `/athlete/booking` → individua l'occorrenza nello stesso slot di una sessione PT confermata
+- [ ] Tenta prenotazione → deve mostrare errore: "Hai già una sessione PT confermata in questo orario."
+- [ ] Prenotazione NON creata (verifica assenza in `class_bookings`)
+
+> 🔐 Login: `admin@admin.admin` / `admin` (test lato backoffice)
+
+- [ ] Individua occorrenza con slot libero (nessuna PT sovrapposta per l'atleta)
+- [ ] Iscrivi atleta → deve procedere senza errori
+
+---
+
 ## Test trasversali — Ruoli e permessi
 
 | Route | Login da usare per test 403 | Gestore | Trainer | Receptionist | Atleta |
@@ -509,10 +550,14 @@ php artisan migrate:fresh --seed
 ## Checklist pre-demo
 
 - [ ] `php artisan migrate:fresh --seed` completato senza errori
+- [ ] `php artisan db:seed --class=FunctionalTestSeeder` completato (scenari CLS/CHK/EXP/REG)
 - [ ] `php artisan serve` attivo su porta 8000
 - [ ] Feature flags verificati: `financial_reports` ON, `periodization_engine` ON, `group_classes` ON
 - [ ] Almeno 1 abbonamento sospeso in DB (da R09R31DemoSeeder)
 - [ ] Almeno 2 tesserati con note: Giovanni Ferrari, Marco Ricci
 - [ ] `atleta@atleta.atleta` ha PR, messaggi, notifiche, accessi, sessioni PT e corsi prenotati
+- [ ] `carlo.accessi@functional-test.demo` esiste con `accesses_remaining=0` (TC-CHK-004)
+- [ ] Occorrenza Yoga Full (`now+3`) con 3 confirmed + Federica in waitlist (TC-CLS-009/012)
+- [ ] Occorrenza L (`now+5` 14:00) con PtBooking trainer1 sovrapposta (REG-003 / FIX02-B)
 - [ ] Sessioni PT `completed` nel mese corrente per R31 (BookingDemoSeeder)
 - [ ] Queue worker attivo: `php artisan queue:work redis --queue=default`

@@ -197,6 +197,11 @@
                         {{ $occurrence->is_full ? "Iscriviti alla lista d'attesa" : 'Iscriviti' }}
                     </span>
                 </button>
+                @if($enrollErrorId === $occurrence->id && $enrollErrorMsg)
+                <div style="margin-top:8px;background:#ef4444;color:#fff;border-radius:6px;padding:8px 12px;font-size:13px;">
+                    {{ $enrollErrorMsg }}
+                </div>
+                @endif
             @endif
         </div>
         @empty

@@ -34,6 +34,10 @@ class Booking extends Component
 
     public string $selectedEnd = '';
 
+    public int $enrollErrorId = 0;
+
+    public string $enrollErrorMsg = '';
+
     public function mount(): void
     {
         $this->availableSlots = collect();
@@ -165,6 +169,9 @@ class Booking extends Component
     {
         abort_unless(Feature::active('group_classes'), 403);
 
+        $this->enrollErrorId = 0;
+        $this->enrollErrorMsg = '';
+
         $member = Auth::user()->member;
 
         if ($member === null) {
@@ -181,14 +188,16 @@ class Booking extends Component
         $closesAt = $occurrenceStart->copy()->subMinutes((int) config('classes.booking_closes_minutes', 30));
 
         if (now()->lt($opensAt)) {
-            session()->flash('error', 'Le prenotazioni aprono il '.$opensAt->format('d/m/Y').'.');
+            $this->enrollErrorId = $occurrenceId;
+            $this->enrollErrorMsg = 'Le prenotazioni aprono il '.$opensAt->format('d/m/Y').'.';
 
             return;
         }
 
         if (now()->gt($closesAt)) {
-            session()->flash('error', 'Prenotazioni chiuse (entro '.
-                config('classes.booking_closes_minutes', 30).' min dall\'inizio).');
+            $this->enrollErrorId = $occurrenceId;
+            $this->enrollErrorMsg = 'Prenotazioni chiuse (entro '.
+                config('classes.booking_closes_minutes', 30)." min dall'inizio).";
 
             return;
         }
@@ -202,7 +211,8 @@ class Booking extends Component
 
             session()->flash('success', $message);
         } catch (BookingException $e) {
-            session()->flash('error', $e->getMessage());
+            $this->enrollErrorId = $occurrenceId;
+            $this->enrollErrorMsg = $e->getMessage();
         }
     }
 

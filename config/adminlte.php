@@ -406,27 +406,24 @@ return [
             'url' => 'backoffice/bookings',
             'icon' => 'fas fa-user-clock',
         ],
+        ['header' => 'CORSI COLLETTIVI', 'can' => 'view-group-classes'],
         [
-            'text' => 'Corsi collettivi',
-            'icon' => 'fas fa-users',
+            'text' => 'Occorrenze',
+            'url' => 'backoffice/group-classes',
+            'icon' => 'fas fa-calendar-check',
             'can' => 'view-group-classes',
-            'submenu' => [
-                [
-                    'text' => 'Occorrenze',
-                    'url' => 'backoffice/group-classes',
-                    'icon' => 'fas fa-calendar-check',
-                ],
-                [
-                    'text' => 'Palinsesto',
-                    'url' => 'backoffice/group-classes/schedules',
-                    'icon' => 'fas fa-calendar-alt',
-                ],
-                [
-                    'text' => 'Catalogo corsi',
-                    'url' => 'backoffice/group-classes/catalog',
-                    'icon' => 'fas fa-list',
-                ],
-            ],
+        ],
+        [
+            'text' => 'Palinsesto',
+            'url' => 'backoffice/group-classes/schedules',
+            'icon' => 'fas fa-calendar-alt',
+            'can' => 'view-group-classes',
+        ],
+        [
+            'text' => 'Catalogo corsi',
+            'url' => 'backoffice/group-classes/catalog',
+            'icon' => 'fas fa-list',
+            'can' => 'view-group-classes',
         ],
         [
             'text' => 'Orari di apertura',

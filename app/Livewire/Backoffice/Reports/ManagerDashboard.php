@@ -6,6 +6,7 @@ use App\Services\KpiService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use Laravel\Pennant\Feature;
 use Livewire\Component;
 
 class ManagerDashboard extends Component
@@ -16,6 +17,7 @@ class ManagerDashboard extends Component
 
     public function mount(): void
     {
+        abort_unless(Feature::active('financial_reports'), 403);
         $this->dateFrom = now()->startOfMonth()->toDateString();
         $this->dateTo = now()->endOfMonth()->toDateString();
     }

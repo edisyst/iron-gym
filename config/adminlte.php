@@ -444,6 +444,19 @@ return [
             'icon' => 'fas fa-dumbbell',
             'can' => 'access-admin-section',
         ],
+        ['header' => 'IMPOSTAZIONI', 'can' => 'access-admin-section'],
+        [
+            'text' => 'Feature Flags',
+            'url' => 'backoffice/admin/feature-flags',
+            'icon' => 'fas fa-toggle-on',
+            'can' => 'access-admin-section',
+        ],
+        [
+            'text' => 'Feedback utenti',
+            'url' => 'backoffice/admin/feedback',
+            'icon' => 'fas fa-comment-alt',
+            'can' => 'access-admin-section',
+        ],
     ],
 
     /*

@@ -6,6 +6,7 @@ use App\Jobs\ExportFinancialReportCsv;
 use App\Jobs\ExportMembersListCsv;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use Laravel\Pennant\Feature;
 use Livewire\Component;
 
 class FinancialReport extends Component
@@ -18,6 +19,7 @@ class FinancialReport extends Component
 
     public function mount(): void
     {
+        abort_unless(Feature::active('financial_reports'), 403);
         $this->year = (int) now()->year;
     }
 

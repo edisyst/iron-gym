@@ -10,6 +10,7 @@ use App\Services\WeeklyVolumeCalculator;
 use App\ValueObjects\DeloadSignal;
 use App\ValueObjects\ProgressionResult;
 use Illuminate\View\View;
+use Laravel\Pennant\Feature;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
@@ -103,6 +104,7 @@ class MesocycleDetail extends Component
     public function applyProgression(): void
     {
         $this->authorizeOwnership();
+        abort_unless(Feature::active('periodization_engine'), 403);
 
         $service = app(WeeklyProgressionService::class);
         $result = $service->progressWeek($this->mesocycleId, $this->selectedWeekNumber);

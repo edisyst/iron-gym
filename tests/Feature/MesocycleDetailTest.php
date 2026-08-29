@@ -9,6 +9,7 @@ use App\Services\WeeklyProgressionService;
 use App\ValueObjects\DeloadSignal;
 use App\ValueObjects\ProgressionResult;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Pennant\Feature;
 use Livewire\Livewire;
 use Mockery\MockInterface;
 use Spatie\Permission\Models\Role;
@@ -108,6 +109,8 @@ it('forceDeload mostra errore se non esiste settimana successiva', function () {
 });
 
 it('applyProgression chiama il servizio e aggiorna lastProgressionResultData', function () {
+    Feature::for($this->trainer)->activate('periodization_engine');
+
     $this->instance(
         WeeklyProgressionService::class,
         $this->mock(WeeklyProgressionService::class, function (MockInterface $m) {
@@ -129,4 +132,19 @@ it('applyProgression chiama il servizio e aggiorna lastProgressionResultData', f
 
     expect($component->get('lastProgressionResultData'))->not->toBeNull()
         ->and($component->get('lastProgressionResultData')['action'])->toBe('increase');
+});
+
+it('applyProgression nega 403 se periodization_engine disattivo', function () {
+    Feature::for($this->trainer)->deactivate('periodization_engine');
+
+    $this->instance(
+        WeeklyProgressionService::class,
+        $this->mock(WeeklyProgressionService::class, fn (MockInterface $m) => null)
+    );
+
+    Livewire::actingAs($this->trainer)
+        ->test(MesocycleDetail::class, ['mesocycleId' => $this->mesocycle->id])
+        ->set('selectedWeekNumber', 1)
+        ->call('applyProgression')
+        ->assertForbidden();
 });

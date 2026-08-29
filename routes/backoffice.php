@@ -78,9 +78,13 @@ Route::prefix('backoffice')
         // Step 6 — prenotazioni e calendario
         Route::get('/calendar', TrainerCalendar::class)->name('calendar.index');
         Route::get('/bookings', BookingList::class)->name('bookings.index');
-        Route::get('/group-classes', GroupClassManager::class)->name('group-classes.index');
-        Route::get('/group-classes/schedules', ClassScheduleManager::class)->name('group-classes.schedules');
-        Route::get('/group-classes/catalog', GroupClassCatalog::class)->name('group-classes.catalog');
+
+        // Corsi collettivi — gated sul flag group_classes (via gate view-group-classes)
+        Route::middleware('can:view-group-classes')->group(function () {
+            Route::get('/group-classes', GroupClassManager::class)->name('group-classes.index');
+            Route::get('/group-classes/schedules', ClassScheduleManager::class)->name('group-classes.schedules');
+            Route::get('/group-classes/catalog', GroupClassCatalog::class)->name('group-classes.catalog');
+        });
 
         // Route riservate a trainer e gestore (mutano dati training o espongono dati medici)
         Route::middleware('role:gestore|trainer')->group(function () {

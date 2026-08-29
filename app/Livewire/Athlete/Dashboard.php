@@ -75,14 +75,16 @@ class Dashboard extends Component
                     ->get();
             }
 
-            $this->upcomingPtBookings = PtBooking::with('trainer')
-                ->where('member_id', $member->id)
-                ->whereIn('status', ['pending', 'confirmed'])
-                ->whereDate('booked_date', '>=', today())
-                ->orderBy('booked_date')
-                ->orderBy('start_time')
-                ->limit(3)
-                ->get();
+            if (Feature::active('pt_bookings')) {
+                $this->upcomingPtBookings = PtBooking::with('trainer')
+                    ->where('member_id', $member->id)
+                    ->whereIn('status', ['pending', 'confirmed'])
+                    ->whereDate('booked_date', '>=', today())
+                    ->orderBy('booked_date')
+                    ->orderBy('start_time')
+                    ->limit(3)
+                    ->get();
+            }
         }
 
         // Cerca il mesociclo attivo dell'atleta con le settimane e sessioni

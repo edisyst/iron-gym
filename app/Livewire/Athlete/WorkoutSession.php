@@ -12,6 +12,7 @@ use App\Services\PersonalRecordDetector;
 use App\Services\ReadinessEvaluator;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
+use Laravel\Pennant\Feature;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
@@ -84,7 +85,7 @@ class WorkoutSession extends Component
 
         if ($this->session->status === 'planned') {
             $hasCheck = SessionReadinessCheck::where('training_session_id', $session->id)->exists();
-            if ($hasCheck) {
+            if ($hasCheck || ! Feature::active('readiness_check')) {
                 $this->startSession();
             } else {
                 $this->showReadinessModal = true;
@@ -229,7 +230,9 @@ class WorkoutSession extends Component
         $set->update($updates);
         $set->refresh();
 
-        $pr = app(PersonalRecordDetector::class)->check($set, auth()->id());
+        $pr = Feature::active('personal_records')
+            ? app(PersonalRecordDetector::class)->check($set, auth()->id())
+            : null;
         if ($pr !== null) {
             $this->dispatch('pr-achieved',
                 exerciseName: $set->sessionExercise->exercise->name_it,
@@ -273,7 +276,9 @@ class WorkoutSession extends Component
         $set->update($updates);
         $set->refresh();
 
-        $pr = app(PersonalRecordDetector::class)->check($set, auth()->id());
+        $pr = Feature::active('personal_records')
+            ? app(PersonalRecordDetector::class)->check($set, auth()->id())
+            : null;
         if ($pr !== null) {
             $this->dispatch('pr-achieved',
                 exerciseName: $set->sessionExercise->exercise->name_it,
@@ -525,6 +530,7 @@ class WorkoutSession extends Component
      */
     public function skipReadiness(): void
     {
+        abort_unless(Feature::active('readiness_check'), 403);
         $this->showReadinessModal = false;
         $this->startSession();
     }
@@ -539,6 +545,8 @@ class WorkoutSession extends Component
      */
     public function submitReadiness(int $sleep, int $stress, int $soreness, int $joint, string $note = ''): void
     {
+        abort_unless(Feature::active('readiness_check'), 403);
+
         foreach ([$sleep, $stress, $soreness, $joint] as $val) {
             if ($val < 0 || $val > 3) {
                 return;
@@ -701,6 +709,8 @@ class WorkoutSession extends Component
      */
     public function openSubstitutionModal(int $seId): void
     {
+        abort_unless(Feature::active('exercise_substitution'), 403);
+
         $se = SessionExercise::where('session_id', $this->session->id)
             ->with(['exercise', 'sets'])
             ->findOrFail($seId);
@@ -744,6 +754,8 @@ class WorkoutSession extends Component
      */
     public function confirmSubstitution(string $newExerciseSlug): void
     {
+        abort_unless(Feature::active('exercise_substitution'), 403);
+
         if ($this->substitutingSeId === null) {
             return;
         }

@@ -96,6 +96,8 @@ class Booking extends Component
 
     public function bookPt(): void
     {
+        abort_unless(Feature::active('pt_bookings'), 403);
+
         $this->validate([
             'selectedTrainerId' => 'required|integer|min:1',
             'selectedDate' => 'required|date|after_or_equal:today',
@@ -135,6 +137,8 @@ class Booking extends Component
 
     public function cancelPtBooking(int $bookingId): void
     {
+        abort_unless(Feature::active('pt_bookings'), 403);
+
         /** @var Member|null $member */
         $member = Auth::user()->member;
 
@@ -277,7 +281,7 @@ class Booking extends Component
 
         $trainers = User::role(['trainer', 'gestore'])->orderBy('name')->get();
 
-        $futurePtBookings = $member
+        $futurePtBookings = ($member && Feature::active('pt_bookings'))
             ? PtBooking::with('trainer')
                 ->where('member_id', $member->id)
                 ->where('booked_date', '>=', now()->toDateString())

@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\CommunicationLog;
 use App\Models\Member;
+use App\Models\Setting;
 use App\Notifications\MedicalCertExpiryNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -18,6 +19,10 @@ class SendMedicalCertExpiryReminders implements ShouldQueue
 
     public function handle(): void
     {
+        if (! Setting::bool('outbound_notifications_enabled', true)) {
+            return;
+        }
+
         $today = Carbon::today();
 
         // Scaduti negli ultimi 7 giorni o in scadenza entro 30 giorni

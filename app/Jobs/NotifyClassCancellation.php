@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\ClassBooking;
 use App\Models\ClassOccurrence;
+use App\Models\Setting;
 use App\Notifications\ClassOccurrenceCancelledNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -19,6 +20,10 @@ class NotifyClassCancellation implements ShouldQueue
 
     public function handle(): void
     {
+        if (! Setting::bool('outbound_notifications_enabled', true)) {
+            return;
+        }
+
         $notification = new ClassOccurrenceCancelledNotification($this->occurrence);
 
         $this->occurrence->confirmedBookings()

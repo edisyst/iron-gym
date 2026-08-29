@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\ClassOccurrence;
+use App\Models\Setting;
 use App\Notifications\ClassReminderNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -17,6 +18,10 @@ class SendClassReminders implements ShouldQueue
 
     public function handle(): void
     {
+        if (! Setting::bool('outbound_notifications_enabled', true)) {
+            return;
+        }
+
         $tomorrow = Carbon::tomorrow()->toDateString();
 
         ClassOccurrence::query()

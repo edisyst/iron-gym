@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\Setting;
 use App\Models\Subscription;
 use App\Notifications\SubscriptionExpiryNotification;
 use Illuminate\Bus\Queueable;
@@ -17,6 +18,10 @@ class SendSubscriptionExpiryReminders implements ShouldQueue
 
     public function handle(): void
     {
+        if (! Setting::bool('outbound_notifications_enabled', true)) {
+            return;
+        }
+
         $today = Carbon::today();
 
         foreach ([7, 2] as $days) {

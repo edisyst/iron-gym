@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\Setting;
 use App\Models\TrainingSession;
 use App\Notifications\SessionReminderNotification;
 use Illuminate\Bus\Queueable;
@@ -17,6 +18,10 @@ class SendSessionReminders implements ShouldQueue
 
     public function handle(): void
     {
+        if (! Setting::bool('outbound_notifications_enabled', true)) {
+            return;
+        }
+
         $today = Carbon::today()->toDateString();
 
         TrainingSession::query()

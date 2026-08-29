@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\ClassBooking;
+use App\Models\Setting;
 use App\Notifications\WaitlistPromotionNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -22,6 +23,10 @@ class NotifyWaitlistPromotion implements ShouldQueue
 
     public function handle(): void
     {
+        if (! Setting::bool('outbound_notifications_enabled', true)) {
+            return;
+        }
+
         $member = $this->booking->member;
         if ($member?->user !== null) {
             $member->user->notify(new WaitlistPromotionNotification($this->booking->occurrence));

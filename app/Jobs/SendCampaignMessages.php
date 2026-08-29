@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\CommunicationLog;
 use App\Models\Member;
+use App\Models\Setting;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -29,6 +30,10 @@ class SendCampaignMessages implements ShouldQueue
 
     public function handle(): void
     {
+        if (! Setting::bool('outbound_notifications_enabled', true)) {
+            return;
+        }
+
         $chunks = array_chunk($this->memberIds, 50);
 
         foreach ($chunks as $chunk) {

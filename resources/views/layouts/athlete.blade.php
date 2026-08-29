@@ -102,6 +102,7 @@
                 </svg>
                 Profilo
             </a>
+            @can('view-athlete-bookings')
             <a href="{{ route('athlete.bookings') }}"
                class="{{ request()->routeIs('athlete.bookings*') ? 'active' : '' }}"
                aria-current="{{ request()->routeIs('athlete.bookings*') ? 'page' : 'false' }}"
@@ -111,6 +112,7 @@
                 </svg>
                 Prenota
             </a>
+            @endcan
             @feature('messaging')
             <a href="{{ route('athlete.messages') }}"
                class="{{ request()->routeIs('athlete.messages*') ? 'active' : '' }}"
@@ -277,11 +279,13 @@
         Alpine.store('messages', {
             unread: 0,
             init: function () {
+                @feature('messaging')
                 var self = this;
                 fetch('/athlete/messages-unread-count')
                     .then(function (r) { return r.ok ? r.json() : { count: 0 }; })
                     .then(function (d) { self.unread = d.count ?? 0; })
                     .catch(function () {});
+                @endfeature
             },
         });
 

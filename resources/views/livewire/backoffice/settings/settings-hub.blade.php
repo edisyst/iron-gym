@@ -21,14 +21,7 @@
 
     {{-- Tab: Manuale --}}
     <div x-show="tab === 'manuale'" x-cloak>
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Manuale operativo</h3>
-            </div>
-            <div class="card-body">
-                <p class="text-muted">In preparazione.</p>
-            </div>
-        </div>
+        @livewire('backoffice.settings.manual-viewer')
     </div>
 
 </div>

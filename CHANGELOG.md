@@ -2,6 +2,60 @@
 
 ---
 
+## SET01 Step 3 — Manualistica backoffice (2026-08-29)
+
+### Infrastruttura
+
+- `app/Services/ManualRenderer.php`: service che scopre file `.md` in `resources/docs/manual/`, ordina per nome, estrae titoli H1, renderizza con `Str::markdown()`, cache per mtime (`manual.{slug}.{mtime}`, TTL 1h). Slug validato come chiave di array — mai concatenato a path (path-traversal safe).
+- `app/Livewire/Backoffice/Settings/ManualViewer.php`: componente Livewire embedded in tab "Manuale" di SettingsHub. `selectSection(slug)` con validazione slug. `SECTION_FLAGS` vuoto (popolato in Step 4).
+- `resources/views/livewire/backoffice/settings/manual-viewer.blade.php`: sidebar sezioni con ricerca Alpine (`x-show` su `title.includes`), badge flag ON/OFF condizionale, contenuto renderizzato con stili `.manual-content` scoped.
+- `resources/views/livewire/backoffice/settings/settings-hub.blade.php`: tab "Manuale" aggiornato con `@livewire('backoffice.settings.manual-viewer')`.
+
+### Sezioni Markdown (resources/docs/manual/)
+
+- `01-dashboard.md`: contatori, widget scadenze, flusso operativo, errori comuni.
+- `02-tesserati.md`: registrazione, modifica, note interne, filtro certificati, export CSV.
+- `03-abbonamenti.md`: creazione, rinnovo rapido, filtri, sospensione/riattivazione (solo gestore), export CSV.
+- `04-accessi-checkin.md`: flusso check-in, 3 controlli (cert/abbonamento/ingressi), cronologia odierna, storico completo.
+- `05-scadenze.md`: due tabelle (cert + abbonamenti), finestra temporale, ricerca, widget dashboard, flusso operativo.
+- `06-esercizi.md`: filtri (nome/muscolo/meccanica/livello/attrezzatura), vincolo XOR pattern, soft-delete, cache tag.
+
+### Documentazione
+
+- `docs/manual-howto.md`: istruzioni per aggiungere, rinominare o rimuovere sezioni; sezione su SECTION_FLAGS badge.
+
+### Fix
+
+- `app/Livewire/Backoffice/Access/QuickCheckin.php` non toccato.
+- `app/Livewire/Backoffice/Settings/OpeningHoursManager.php`: `orderByRaw('MONTH(specific_date), DAY(specific_date)')` → `orderBy('specific_date')`. Fix SQL MySQL-specifico non portabile in SQLite (già incluso in FunctionalPlanGapTest).
+
+### Test
+
+- `tests/Feature/ManualViewerTest.php` (11 test): gestore → 200; receptionist/trainer/atleta → 403; slug path-traversal e slug inesistente → false da `slugExists`; tutte le sezioni renderizzano senza eccezioni; mount con prima sezione attiva; `selectSection` valido; `selectSection` con slug inesistente non modifica `currentSlug`.
+
+**Suite:** 506 test (500 pass / 6 skipped). PHPStan: 0 errori. Pint: conforme.
+
+---
+
+## Piano test funzionale R09+ — esecuzione automatizzata (2026-08-29)
+
+### Copertura automatizzata
+
+84 casi del piano `docs/testing/r09-plus-functional-test-plan.md` mappati alla suite esistente (484 test). Gap identificati e colmati:
+
+**Bug trovato e fixato:**
+- `OpeningHoursManager::render()`: `MONTH(specific_date), DAY(specific_date)` → SQL MySQL-specifico non compatibile SQLite in test. Fix: `->orderBy('specific_date')`. Comportamento identico in produzione (MySQL), test ora portabili.
+
+**Nuovi test (FunctionalPlanGapTest — 11 test):**
+- TC-OPH-001..007: `OpeningHoursManager` — visualizzazione slot ricorrenti, aggiunta, modifica inline, eliminazione, eccezione chiuso, validazione `end_time > start_time`, permesso negato atleta.
+- TC-CLS-018: atleta → `/backoffice/group-classes` → 403.
+- TC-CLS-019: receptionist → `deleteClass()` → 403.
+- TC-NOT-006: gestore e trainer → `/athlete/notifications` → 403.
+
+**Suite:** 495 test (489 pass / 6 skipped). PHPStan: 0 errori. Pint: conforme.
+
+---
+
 ## SET01 Step 2C — Gating flag sessione atleta + navigazione filtrata (2026-08-29)
 
 ### Navigazione filtrata

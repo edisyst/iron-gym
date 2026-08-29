@@ -219,7 +219,7 @@ Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01
 
 **FIX01** (2026-08-26): flag globale `group_classes` spostato su tabella `settings` (`activateForEveryone` non copriva gli utenti mai risolti, il toggle da backoffice era inefficace); guard `role:gestore` + whitelist in `FeatureFlagManager`; fix colonna `status` ambigua in `Athlete\Dashboard`; `MesocycleList` filtrata per trainer e ownership check in `MesocycleDetail::applyProgression/forceDeload`; `GroupClassSeeder` registrato in `DatabaseSeeder`; comando `classes:send-reminders`; alias `/athlete/dashboard`; link "Volume landmarks" in AthleteProfile; dati demo: PT pending per `atleta@atleta.atleta`, abbonamento+certificato scaduti per `alessia.colombo@example.com`, badge "In attesa" in dashboard atleta. 16 nuovi test.
 
-**Suite corrente:** 484 test (478 pass / 6 skipped). **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
+**Suite corrente:** 495 test (489 pass / 6 skipped). **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
 
 **DOC02** (2026-08-27): assessment funzionale R09+ (`docs/reviews/r09-plus-test-assessment.md`), piano di test manuale 109 casi (`docs/testing/r09-plus-functional-test-plan.md`), `FunctionalTestSeeder` con 5 scenari demo (corsi collettivi + waitlist, notifiche, check-in ingressi esauriti, abbonamento in scadenza, orari apertura). Findings documentati: F-01/F-02/F-04 risolti in FIX02.
 
@@ -233,9 +233,11 @@ Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01
 
 **SET01 Step 2C** (2026-08-29): gating sei flag "Sessione atleta" + fix navigazione filtrata. Nav: sidebar "Progressi" href condizionale su `weekly_volume` (fallback a `athlete.measurements`); toast PR wrappato in `@feature('personal_records')`; link recap "Ultimo allenamento" in dashboard wrappato in `@feature('session_recap')`. Flag `plate_calculator` aggiunto a `config/features.php` managed_flags e `AppServiceProvider` (nessun gating point atleta, rimosso in UX01). `WorkoutSession::completeSet/quickLog`: `PersonalRecordDetector` ora sempre eseguito; dispatch evento `pr-achieved` condizionale su flag (PR sempre scritto in DB anche con flag off). `TrainerAvailabilityObserver` lasciato attivo. 10 nuovi test (SessionFlagGatingTest). Pint fix preesistente FeedbackDemoSeeder. Suite: 484 test (478 pass / 6 skipped).
 
+**SET01 Step 3** (2026-08-29): manualistica backoffice. `ManualRenderer` service (slug-safe, cache mtime, `Str::markdown()`); `ManualViewer` componente Livewire embedded in tab "Manuale" di SettingsHub; 6 sezioni Markdown (`resources/docs/manual/01-06`): Dashboard, Tesserati, Abbonamenti, Accessi e check-in, Scadenze, Esercizi. `docs/manual-howto.md` per aggiungere sezioni. Fix `OpeningHoursManager` SQL MySQL-specifico (`MONTH/DAY` → `orderBy`). 11 nuovi test (ManualViewerTest). Suite: 506 test (500 pass / 6 skipped).
+
 Storico completo release e audit: **`CHANGELOG.md`**.
 
-Prossima attività: eseguire il piano di test manuale (`docs/testing/r09-plus-functional-test-plan.md`).
+Prossima attività: SET01 Step 4 (sezioni manuale 7-16 + SECTION_FLAGS badge flag).
 
 ## Architettura offline
 

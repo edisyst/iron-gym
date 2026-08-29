@@ -12,6 +12,7 @@ use App\Models\TrainingSession;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Pennant\Feature;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
 
@@ -20,6 +21,8 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     Role::firstOrCreate(['name' => 'atleta', 'guard_name' => 'web']);
     Role::firstOrCreate(['name' => 'trainer', 'guard_name' => 'web']);
+
+    Feature::activate('exercise_substitution');
 
     $this->athlete = User::factory()->create();
     $this->athlete->assignRole('atleta');

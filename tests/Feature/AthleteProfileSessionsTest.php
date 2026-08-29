@@ -6,6 +6,7 @@ use App\Models\MicrocycleWeek;
 use App\Models\TrainingSession;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Pennant\Feature;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
 
@@ -13,6 +14,8 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     Role::firstOrCreate(['name' => 'atleta', 'guard_name' => 'web']);
+
+    Feature::activate('pt_bookings');
 
     $this->athleteUser = User::factory()->create()->assignRole('atleta');
 

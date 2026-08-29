@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             DumbbellInventorySeeder::class,
             OpeningHoursSeeder::class,
             CommunicationTemplateSeeder::class,
+            SettingsFlagSeeder::class,
         ]);
 
         // Seeder solo in ambiente locale

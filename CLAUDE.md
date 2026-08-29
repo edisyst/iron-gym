@@ -227,6 +227,8 @@ Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01
 
 **SET01 Step 1** (2026-08-29): sezione Impostazioni backoffice (`/backoffice/settings`), unificazione flag. `SettingsHub` + `FeatureFlagManager` (spostato da Admin → Settings). Pattern uniforme per tutti e 4 i flag: `Setting::bool(key, default) && <condizione_scope>`; toggle sempre `Setting::write` + `Feature::purge`. `SettingsFlagSeeder` idempotente. Redirect 301 da vecchia route. Sidebar: ADMIN soppresso, tutto in IMPOSTAZIONI. Chiude DIFETTO-A e DIFETTO-B. 448 test (442 pass / 6 skipped).
 
+**SET01 Step 2** (2026-08-29): chiude GAP-03 (route /reports/* con middleware `can:view-financial-reports`); aggiunge 9 nuovi flag globali con kill switch completo a tutti i livelli (route, Livewire, view, job). `config/features.php` ristrutturato con campo `group` (Moduli / Sessione atleta / Sistema). `FeatureFlagManager` ora raggruppa i 13 flag per gruppo. 17 nuovi test (FeatureFlagGatingTest 10, OutboundNotificationsKillSwitchTest 7). Suite: 465 test (459 pass / 6 skipped).
+
 Storico completo release e audit: **`CHANGELOG.md`**.
 
 Prossima attività: eseguire il piano di test manuale (`docs/testing/r09-plus-functional-test-plan.md`).
@@ -287,12 +289,21 @@ Crea 4 scenari per il piano di test `docs/testing/r09-plus-functional-test-plan.
 Tutti i flag usano `Setting::bool(key, default) && <condizione_scope>`.
 Toggle sempre via `Setting::write` + `Feature::purge` (non `activateForEveryone`).
 
-| Flag | Chiave `settings` | Stato pilota | Platea (quando acceso) |
-|---|---|---|---|
-| `financial_reports` | `financial_reports_enabled` | ON | Solo gestore |
-| `periodization_engine` | `periodization_engine_enabled` | ON | Gestore + trainer in lista beta |
-| `push_notifications` | `push_notifications_enabled` | OFF | Atleti e trainer |
-| `group_classes` | `group_classes_enabled` | ON | Tutta la palestra (flag globale) |
+| Flag | Chiave `settings` | Stato pilota | Platea (quando acceso) | Gruppo |
+|---|---|---|---|---|
+| `group_classes` | `group_classes_enabled` | ON | Tutta la palestra | Moduli |
+| `messaging` | `messaging_enabled` | ON | Tutta la palestra | Moduli |
+| `pt_bookings` | `pt_bookings_enabled` | ON | Tutta la palestra | Moduli |
+| `financial_reports` | `financial_reports_enabled` | ON | Solo gestore | Moduli |
+| `periodization_engine` | `periodization_engine_enabled` | ON | Gestore + trainer beta | Moduli |
+| `readiness_check` | `readiness_check_enabled` | ON | Atleti | Sessione atleta |
+| `exercise_substitution` | `exercise_substitution_enabled` | ON | Atleti | Sessione atleta |
+| `session_recap` | `session_recap_enabled` | ON | Atleti | Sessione atleta |
+| `personal_records` | `personal_records_enabled` | ON | Atleti | Sessione atleta |
+| `weekly_volume` | `weekly_volume_enabled` | ON | Atleti | Sessione atleta |
+| `push_notifications` | `push_notifications_enabled` | OFF | Atleti e trainer | Sistema |
+| `outbound_notifications` | `outbound_notifications_enabled` | ON | Job di sistema | Sistema |
+| `in_app_feedback` | `in_app_feedback_enabled` | OFF | Tutti | Sistema |
 
 Per modificare flags: backoffice → Impostazioni → Funzioni (solo gestore).
 

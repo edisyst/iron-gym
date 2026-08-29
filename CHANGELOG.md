@@ -2,6 +2,26 @@
 
 ---
 
+## SET01 Step 2 — Gating completo 9 nuovi flag (2026-08-29)
+
+**Obiettivo:** chiudere GAP-03 e aggiungere kill switch a tutti i livelli per 9 nuovi flag: `messaging`, `pt_bookings`, `outbound_notifications`, `in_app_feedback`, `readiness_check`, `exercise_substitution`, `session_recap`, `personal_records`, `weekly_volume`.
+
+**GAP-03 chiuso:** route `/reports/manager` e `/reports/financial` protette da middleware `can:view-financial-reports` (defense-in-depth oltre al gate nei componenti Livewire).
+
+**Nuovi flag — livelli di applicazione:**
+- **Route middleware:** `can:view-messaging` su `/messages`, `can:view-session-recap` su `/session/recap`, `can:view-personal-records` su `/records`, `can:view-weekly-volume` su `/volume`.
+- **Livewire (PHP):** `WorkoutSession` — readiness_check gate su mount/skip/submit; exercise_substitution su openSubstitutionModal/confirmSubstitution; personal_records su rilevamento PR. `SessionFeedbackForm` — redirect condizionale session_recap. `Profile`, `Dashboard`, `Booking` — pt_bookings e personal_records gated sulle query.
+- **View Blade:** `@feature` su link sidenav messaggi, link sidenav record, tab profilo PT/record/messaggi, bottone sostituzione esercizio, feedback in-app in entrambi i layout.
+- **Job kill switch:** `outbound_notifications_enabled=false` → i 7 job di notifica (SendSubscriptionExpiryReminders, SendMedicalCertExpiryReminders, SendSessionReminders, SendClassReminders, NotifyClassCancellation, NotifyWaitlistPromotion, SendCampaignMessages) ritornano subito senza inviare.
+
+**FeatureFlagManager:** vista ristrutturata con una card per gruppo (Moduli / Sessione atleta / Sistema). Fix bug chiavi stringa perse da `->groupBy()` (sostituito con loop PHP nativo).
+
+**config/features.php:** 13 flag con campo `group`. `SettingsFlagSeeder` aggiornato.
+
+**Test:** 17 nuovi test — `FeatureFlagGatingTest` (10: flag-off/on per messaging, pt_bookings, session_recap, personal_records, weekly_volume, readiness_check), `OutboundNotificationsKillSwitchTest` (7: kill switch per ogni job). Aggiornati 5 test esistenti con `Feature::activate()` in beforeEach. Suite: 465 test (459 pass / 6 skipped). PHPStan 0 errori. Pint conforme.
+
+---
+
 ## SET01 Step 1 — Sezione Impostazioni e unificazione feature flag (2026-08-29)
 
 **Obiettivo:** creare la sezione Impostazioni riservata al gestore, portarci la gestione dei flag, e chiudere DIFETTO-A e DIFETTO-B rilevati nell'assessment.

@@ -14,6 +14,7 @@ use App\Models\TrainingSession;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -136,7 +137,7 @@ class TrainingDemoSeeder extends Seeder
     // -------------------------------------------------------------------------
 
     /** @param array<string, Exercise> $exercises */
-    private function seedHistory(\Illuminate\Support\Collection $athletes, \Illuminate\Support\Collection $trainers, array $exercises): void
+    private function seedHistory(Collection $athletes, Collection $trainers, array $exercises): void
     {
         foreach ($athletes as $i => $athlete) {
             Mesocycle::where('athlete_id', $athlete->id)
@@ -286,7 +287,7 @@ class TrainingDemoSeeder extends Seeder
     // -------------------------------------------------------------------------
 
     /** @param array<string, Exercise> $exercises */
-    private function seedActiveMesocycles(\Illuminate\Support\Collection $athletes, \Illuminate\Support\Collection $trainers, array $exercises): void
+    private function seedActiveMesocycles(Collection $athletes, Collection $trainers, array $exercises): void
     {
         foreach ($athletes as $i => $athlete) {
             Mesocycle::where('athlete_id', $athlete->id)

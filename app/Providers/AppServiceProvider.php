@@ -56,6 +56,8 @@ class AppServiceProvider extends ServiceProvider
         // Il toggle scrive su settings e chiama Feature::purge() cosi' anche
         // gli utenti che non avevano mai risolto il flag lo rileggono.
 
+        // --- Moduli ---
+
         Feature::define('periodization_engine', fn (User $user) => Setting::bool('periodization_engine_enabled', true) &&
             ($user->hasRole('gestore') || in_array($user->email, config('features.beta_trainers', [])))
         );
@@ -64,16 +66,37 @@ class AppServiceProvider extends ServiceProvider
             $user->hasRole(['atleta', 'trainer'])
         );
 
-        // Flag globale: nessuna condizione scope per-utente.
         Feature::define('group_classes', fn (): bool => Setting::bool(
             'group_classes_enabled',
             (bool) config('features.group_classes_enabled', false)
-        )
-        );
+        ));
 
         Feature::define('financial_reports', fn (User $user) => Setting::bool('financial_reports_enabled', true) &&
             $user->hasRole('gestore')
         );
+
+        Feature::define('messaging', fn (): bool => Setting::bool('messaging_enabled', true));
+
+        Feature::define('pt_bookings', fn (): bool => Setting::bool('pt_bookings_enabled', true));
+
+        Feature::define('outbound_notifications', fn (): bool => Setting::bool('outbound_notifications_enabled', true));
+
+        Feature::define('in_app_feedback', fn (): bool => Setting::bool(
+            'in_app_feedback_enabled',
+            (bool) config('features.in_app_feedback_enabled', false)
+        ));
+
+        // --- Sessione atleta ---
+
+        Feature::define('readiness_check', fn (): bool => Setting::bool('readiness_check_enabled', true));
+
+        Feature::define('exercise_substitution', fn (): bool => Setting::bool('exercise_substitution_enabled', true));
+
+        Feature::define('session_recap', fn (): bool => Setting::bool('session_recap_enabled', true));
+
+        Feature::define('personal_records', fn (): bool => Setting::bool('personal_records_enabled', true));
+
+        Feature::define('weekly_volume', fn (): bool => Setting::bool('weekly_volume_enabled', true));
     }
 
     private function defineGates(): void
@@ -96,6 +119,16 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('view-access-logs', fn (User $user) => $user->hasAnyRole(['gestore', 'receptionist']));
         Gate::define('manage-members', fn (User $user) => $user->hasAnyRole(['gestore', 'receptionist']));
         Gate::define('manage-subscriptions', fn (User $user) => $user->hasAnyRole(['gestore', 'receptionist']));
+
+        // Gate feature-gated reports (completano il role:gestore gia' presente sulla route)
+        Gate::define('view-financial-reports', fn (User $user) => Feature::for($user)->active('financial_reports'));
+
+        // Gate per moduli flaggabili (route middleware + sidebar)
+        Gate::define('view-messaging', fn () => Feature::active('messaging'));
+        Gate::define('enroll-pt-bookings', fn () => Feature::active('pt_bookings'));
+        Gate::define('view-session-recap', fn () => Feature::active('session_recap'));
+        Gate::define('view-personal-records', fn () => Feature::active('personal_records'));
+        Gate::define('view-weekly-volume', fn () => Feature::active('weekly_volume'));
     }
 
     private function configureFlare(): void

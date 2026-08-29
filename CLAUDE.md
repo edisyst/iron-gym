@@ -219,7 +219,7 @@ Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01
 
 **FIX01** (2026-08-26): flag globale `group_classes` spostato su tabella `settings` (`activateForEveryone` non copriva gli utenti mai risolti, il toggle da backoffice era inefficace); guard `role:gestore` + whitelist in `FeatureFlagManager`; fix colonna `status` ambigua in `Athlete\Dashboard`; `MesocycleList` filtrata per trainer e ownership check in `MesocycleDetail::applyProgression/forceDeload`; `GroupClassSeeder` registrato in `DatabaseSeeder`; comando `classes:send-reminders`; alias `/athlete/dashboard`; link "Volume landmarks" in AthleteProfile; dati demo: PT pending per `atleta@atleta.atleta`, abbonamento+certificato scaduti per `alessia.colombo@example.com`, badge "In attesa" in dashboard atleta. 16 nuovi test.
 
-**Suite corrente:** 429 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
+**Suite corrente:** 474 test (468 pass / 6 skipped). **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
 
 **DOC02** (2026-08-27): assessment funzionale R09+ (`docs/reviews/r09-plus-test-assessment.md`), piano di test manuale 109 casi (`docs/testing/r09-plus-functional-test-plan.md`), `FunctionalTestSeeder` con 5 scenari demo (corsi collettivi + waitlist, notifiche, check-in ingressi esauriti, abbonamento in scadenza, orari apertura). Findings documentati: F-01/F-02/F-04 risolti in FIX02.
 
@@ -228,6 +228,8 @@ Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01
 **SET01 Step 1** (2026-08-29): sezione Impostazioni backoffice (`/backoffice/settings`), unificazione flag. `SettingsHub` + `FeatureFlagManager` (spostato da Admin → Settings). Pattern uniforme per tutti e 4 i flag: `Setting::bool(key, default) && <condizione_scope>`; toggle sempre `Setting::write` + `Feature::purge`. `SettingsFlagSeeder` idempotente. Redirect 301 da vecchia route. Sidebar: ADMIN soppresso, tutto in IMPOSTAZIONI. Chiude DIFETTO-A e DIFETTO-B. 448 test (442 pass / 6 skipped).
 
 **SET01 Step 2** (2026-08-29): chiude GAP-03 (route /reports/* con middleware `can:view-financial-reports`); aggiunge 9 nuovi flag globali con kill switch completo a tutti i livelli (route, Livewire, view, job). `config/features.php` ristrutturato con campo `group` (Moduli / Sessione atleta / Sistema). `FeatureFlagManager` ora raggruppa i 13 flag per gruppo. 17 nuovi test (FeatureFlagGatingTest 10, OutboundNotificationsKillSwitchTest 7). Suite: 465 test (459 pass / 6 skipped).
+
+**SET01 Step 2B** (2026-08-29): gating completo `messaging` e `pt_bookings`. `messaging`: Alpine store `messages.init()` non emette fetch a `unread-count` quando flag spento; link "Apri messaggi" in dashboard empty-state gated. `pt_bookings`: gate `view-athlete-bookings` (PT OR corsi collettivi); route `/athlete/bookings` gated; tab PT e contenuto tab PT in `@feature('pt_bookings')`; `Booking::mount()` forza `activeTab='classes'` se PT off; link "Prenota" in bottom-nav gated con `@can`. `TrainerAvailabilityObserver` lasciato attivo (consistenza dati, non invio). 8 nuovi test (ModuleFlagGatingTest). Suite: 474 test (468 pass / 6 skipped).
 
 Storico completo release e audit: **`CHANGELOG.md`**.
 

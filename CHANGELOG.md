@@ -2,6 +2,33 @@
 
 ---
 
+## SET01 Step 2B — Gating completo messaging e pt_bookings (2026-08-29)
+
+**`messaging` — punto mancante:**
+- Alpine store `messages.init()` avvolge la `fetch('/athlete/messages-unread-count')` in `@feature('messaging')/@endfeature`: con il flag spento il browser non emette la chiamata HTTP a ogni pagina.
+- Link "Apri messaggi" nel dashboard empty-state (sezione "Nessuna scheda attiva") aggiunto a `@feature('messaging')`.
+
+**`pt_bookings` — gating completo:**
+- Nuovo gate `view-athlete-bookings`: true se `pt_bookings` OR `group_classes` attivo.
+- Route `/athlete/bookings` → middleware `can:view-athlete-bookings` (403 se entrambi i flag spenti).
+- `Booking::mount()`: se `pt_bookings` off → `activeTab='classes'` (evita tab PT attivo ma invisibile).
+- `booking.blade.php`: tab button "Sessione PT" e intero contenuto tab PT in `@feature('pt_bookings')`.
+- Bottom-nav atleta: link "Prenota" in `@can('view-athlete-bookings')/@endcan`.
+- `TrainerAvailabilityObserver` lasciato attivo: ricalcola slot (consistenza dati, non invio verso atleti).
+- Backoffice `BookingList` non toccato: trainer continua a gestire l'agenda PT esistente.
+
+**Matrice pt_bookings × group_classes:**
+| pt_bookings | group_classes | Pagina Prenota |
+|---|---|---|
+| ON | ON | Entrambi i tab visibili |
+| ON | OFF | Solo tab PT |
+| OFF | ON | Solo tab Corsi; mount forza activeTab='classes' |
+| OFF | OFF | 403; link Prenota assente |
+
+**Test:** 8 nuovi test in `ModuleFlagGatingTest` (fetch assente, link assenti, matrice 4 casi, activeTab). Suite: 474 test (468 pass / 6 skipped). PHPStan 0 errori. Pint conforme.
+
+---
+
 ## SET01 Step 2 — Fix post-release (2026-08-29)
 
 **Log::warning nel kill switch:** ogni job `outbound_notifications` ora emette `Log::warning('[outbound_notifications] invio soppresso da interruttore', ['job' => ...])` prima di ritornare. Facilita il debug in produzione. Test aggiunto (`OutboundNotificationsKillSwitchTest` +1 → 8 test). Suite: 466 test (460 pass / 6 skipped).

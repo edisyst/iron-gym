@@ -69,7 +69,7 @@ Prefisso `/athlete`, middleware `auth + role:atleta`.
 | `athlete.photos.show` | `/athlete/photos/{progressPhoto}` | `ProgressPhotoController@show` |
 | `athlete.exercises.index` | `/athlete/exercises` | `Athlete\ExerciseCatalog` |
 | `athlete.exercises.show` | `/athlete/exercises/{exercise:slug}` | `Athlete\ExerciseDetail` |
-| `athlete.bookings` | `/athlete/bookings` | `Athlete\Booking` |
+| `athlete.bookings` | `/athlete/bookings` | `Athlete\Booking` | `can:view-athlete-bookings` (pt_bookings OR group_classes) |
 | `athlete.profile` | `/athlete/profile` | `Athlete\Profile` |
 | `athlete.messages` | `/athlete/messages` | `Athlete\Messages` |
 | `athlete.messages.unread-count` | `/athlete/messages-unread-count` | closure JSON |

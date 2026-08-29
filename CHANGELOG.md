@@ -2,6 +2,33 @@
 
 ---
 
+## SET01 Step 4 — Manuale sezioni 7-16 + SECTION_FLAGS (2026-08-30)
+
+### Sezioni Markdown aggiunte (resources/docs/manual/)
+
+- `07-schede-mesocicli.md`: template e mesocicli — builder, duplica, assegnazione, stati, filtri.
+- `08-progressione-volume.md`: volume landmarks (MEV/MAV/MRV), progressione automatica, deload; flag `periodization_engine`.
+- `09-calendario-disponibilita.md`: slot ricorrenti trainer, override puntuali, flusso prenotazioni PT.
+- `10-prenotazioni-pt.md`: stati prenotazione, conferma/annulla/ripristina, filtri, report completate.
+- `11-corsi-collettivi.md`: struttura GroupClass/ClassSchedule/ClassOccurrence, flusso creazione, lista d'attesa, finestre prenotazione; gated `group_classes`.
+- `12-comunicazione-campagne.md`: campagne massa email/SMS, messaggistica one-to-one trainer-atleta, coda asincrona.
+- `13-report-allenamento.md`: panoramica atleti, drilldown sessioni, filtri periodo e stato mesociclo.
+- `14-report-finanziari.md`: KPI ricavi, occupazione PT, sessioni completate, cache Redis; gated `financial_reports`.
+- `15-inventario-dischi.md`: dischi e manubri, edit inline, PlateLoadoutCalculator.
+- `16-impostazioni-sistema.md`: tabella flag per gruppo (Moduli/Sessione atleta/Sistema), procedura toggle, avvertenze.
+
+### SECTION_FLAGS
+
+`ManualViewer::SECTION_FLAGS` popolato con due associazioni slug → flag:
+- `11-corsi-collettivi` → `group_classes`
+- `14-report-finanziari` → `financial_reports`
+
+Badge ON/OFF appaiono nella sidebar del manuale accanto ai titoli delle sezioni gated.
+
+**Suite:** 506 test (500 pass / 6 skipped). PHPStan: 0 errori. Pint: conforme. SET01 chiuso.
+
+---
+
 ## SET01 Step 3 — Manualistica backoffice (2026-08-29)
 
 ### Infrastruttura

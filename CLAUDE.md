@@ -235,9 +235,11 @@ Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01
 
 **SET01 Step 3** (2026-08-29): manualistica backoffice. `ManualRenderer` service (slug-safe, cache mtime, `Str::markdown()`); `ManualViewer` componente Livewire embedded in tab "Manuale" di SettingsHub; 6 sezioni Markdown (`resources/docs/manual/01-06`): Dashboard, Tesserati, Abbonamenti, Accessi e check-in, Scadenze, Esercizi. `docs/manual-howto.md` per aggiungere sezioni. Fix `OpeningHoursManager` SQL MySQL-specifico (`MONTH/DAY` → `orderBy`). 11 nuovi test (ManualViewerTest). Suite: 506 test (500 pass / 6 skipped).
 
+**SET01 Step 4** (2026-08-30): sezioni manuale 7-16: Schede template e mesocicli, Progressione e volume landmarks, Calendario e disponibilita', Prenotazioni PT, Corsi collettivi, Comunicazione e campagne, Report allenamento, Report finanziari, Inventario dischi, Impostazioni di sistema. `SECTION_FLAGS` in `ManualViewer` mappato: `11-corsi-collettivi → group_classes`, `14-report-finanziari → financial_reports`. Badge ON/OFF attivi in sidebar manuale per le sezioni gated. Suite: 506 test (500 pass / 6 skipped). SET01 chiuso.
+
 Storico completo release e audit: **`CHANGELOG.md`**.
 
-Prossima attività: SET01 Step 4 (sezioni manuale 7-16 + SECTION_FLAGS badge flag).
+Prossima attività: da definire.
 
 ## Architettura offline
 

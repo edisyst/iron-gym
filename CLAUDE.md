@@ -98,7 +98,7 @@ Gestionale palestra bodybuilding/fitness. Copre: anagrafica tesserati, abbonamen
 Registrati in `AppServiceProvider`. Tutti in `app/Observers/`.
 
 - ExerciseObserver (Exercise): flush cache tag `exercises` su create/update/delete
-- PtBookingObserver (PtBooking): notifica atleta+trainer su conferma/cancellazione
+- PtBookingObserver (PtBooking): invalida cache slot trainer e tag KPI su saved/deleted. **Nota:** documentazione precedente ("notifica atleta+trainer") era errata — nessuna notifica viene inviata.
 - SubscriptionObserver (Subscription): invalida cache KPI tag `kpi` su create/update
 - TrainerAvailabilityObserver (TrainerAvailability): ricalcola slot disponibili su saved/deleted
 - TrainingSessionObserver (TrainingSession): aggiorna status, started_at, completed_at su update

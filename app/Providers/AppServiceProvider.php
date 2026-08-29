@@ -97,6 +97,8 @@ class AppServiceProvider extends ServiceProvider
         Feature::define('personal_records', fn (): bool => Setting::bool('personal_records_enabled', true));
 
         Feature::define('weekly_volume', fn (): bool => Setting::bool('weekly_volume_enabled', true));
+
+        Feature::define('plate_calculator', fn (): bool => Setting::bool('plate_calculator_enabled', true));
     }
 
     private function defineGates(): void

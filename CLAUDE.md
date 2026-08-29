@@ -219,7 +219,7 @@ Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01
 
 **FIX01** (2026-08-26): flag globale `group_classes` spostato su tabella `settings` (`activateForEveryone` non copriva gli utenti mai risolti, il toggle da backoffice era inefficace); guard `role:gestore` + whitelist in `FeatureFlagManager`; fix colonna `status` ambigua in `Athlete\Dashboard`; `MesocycleList` filtrata per trainer e ownership check in `MesocycleDetail::applyProgression/forceDeload`; `GroupClassSeeder` registrato in `DatabaseSeeder`; comando `classes:send-reminders`; alias `/athlete/dashboard`; link "Volume landmarks" in AthleteProfile; dati demo: PT pending per `atleta@atleta.atleta`, abbonamento+certificato scaduti per `alessia.colombo@example.com`, badge "In attesa" in dashboard atleta. 16 nuovi test.
 
-**Suite corrente:** 474 test (468 pass / 6 skipped). **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
+**Suite corrente:** 484 test (478 pass / 6 skipped). **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
 
 **DOC02** (2026-08-27): assessment funzionale R09+ (`docs/reviews/r09-plus-test-assessment.md`), piano di test manuale 109 casi (`docs/testing/r09-plus-functional-test-plan.md`), `FunctionalTestSeeder` con 5 scenari demo (corsi collettivi + waitlist, notifiche, check-in ingressi esauriti, abbonamento in scadenza, orari apertura). Findings documentati: F-01/F-02/F-04 risolti in FIX02.
 
@@ -230,6 +230,8 @@ Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01
 **SET01 Step 2** (2026-08-29): chiude GAP-03 (route /reports/* con middleware `can:view-financial-reports`); aggiunge 9 nuovi flag globali con kill switch completo a tutti i livelli (route, Livewire, view, job). `config/features.php` ristrutturato con campo `group` (Moduli / Sessione atleta / Sistema). `FeatureFlagManager` ora raggruppa i 13 flag per gruppo. 17 nuovi test (FeatureFlagGatingTest 10, OutboundNotificationsKillSwitchTest 7). Suite: 465 test (459 pass / 6 skipped).
 
 **SET01 Step 2B** (2026-08-29): gating completo `messaging` e `pt_bookings`. `messaging`: Alpine store `messages.init()` non emette fetch a `unread-count` quando flag spento; link "Apri messaggi" in dashboard empty-state gated. `pt_bookings`: gate `view-athlete-bookings` (PT OR corsi collettivi); route `/athlete/bookings` gated; tab PT e contenuto tab PT in `@feature('pt_bookings')`; `Booking::mount()` forza `activeTab='classes'` se PT off; link "Prenota" in bottom-nav gated con `@can`. `TrainerAvailabilityObserver` lasciato attivo (consistenza dati, non invio). 8 nuovi test (ModuleFlagGatingTest). Suite: 474 test (468 pass / 6 skipped).
+
+**SET01 Step 2C** (2026-08-29): gating sei flag "Sessione atleta" + fix navigazione filtrata. Nav: sidebar "Progressi" href condizionale su `weekly_volume` (fallback a `athlete.measurements`); toast PR wrappato in `@feature('personal_records')`; link recap "Ultimo allenamento" in dashboard wrappato in `@feature('session_recap')`. Flag `plate_calculator` aggiunto a `config/features.php` managed_flags e `AppServiceProvider` (nessun gating point atleta, rimosso in UX01). `WorkoutSession::completeSet/quickLog`: `PersonalRecordDetector` ora sempre eseguito; dispatch evento `pr-achieved` condizionale su flag (PR sempre scritto in DB anche con flag off). `TrainerAvailabilityObserver` lasciato attivo. 10 nuovi test (SessionFlagGatingTest). Pint fix preesistente FeedbackDemoSeeder. Suite: 484 test (478 pass / 6 skipped).
 
 Storico completo release e audit: **`CHANGELOG.md`**.
 
@@ -303,6 +305,7 @@ Toggle sempre via `Setting::write` + `Feature::purge` (non `activateForEveryone`
 | `session_recap` | `session_recap_enabled` | ON | Atleti | Sessione atleta |
 | `personal_records` | `personal_records_enabled` | ON | Atleti | Sessione atleta |
 | `weekly_volume` | `weekly_volume_enabled` | ON | Atleti | Sessione atleta |
+| `plate_calculator` | `plate_calculator_enabled` | ON | Atleti (nessun gating point, riservato a usi futuri) | Sessione atleta |
 | `push_notifications` | `push_notifications_enabled` | OFF | Atleti e trainer | Sistema |
 | `outbound_notifications` | `outbound_notifications_enabled` | ON | Job di sistema | Sistema |
 | `in_app_feedback` | `in_app_feedback_enabled` | OFF | Tutti | Sistema |

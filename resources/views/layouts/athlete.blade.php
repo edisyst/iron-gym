@@ -71,7 +71,7 @@
                 </svg>
                 Esercizi
             </a>
-            <a href="{{ route('athlete.volume') }}"
+            <a href="{{ \Laravel\Pennant\Feature::active('weekly_volume') ? route('athlete.volume') : route('athlete.measurements') }}"
                class="{{ request()->routeIs('athlete.volume', 'athlete.records', 'athlete.measurements', 'athlete.photos.*') ? 'active' : '' }}"
                aria-current="{{ request()->routeIs('athlete.volume', 'athlete.records', 'athlete.measurements', 'athlete.photos.*') ? 'page' : 'false' }}">
                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
@@ -225,6 +225,7 @@
     @endif
 
     {{-- Toast PR --}}
+    @feature('personal_records')
     <div
         x-data="{ show: false, exerciseName: '', e1rm: '' }"
         x-on:pr-achieved.window="exerciseName = $event.detail.exerciseName; e1rm = $event.detail.e1rm; show = true; setTimeout(() => show = false, 4000)"
@@ -255,6 +256,7 @@
             </div>
         </div>
     </div>
+    @endfeature
 
     @stack('scripts')
     @livewireScripts

@@ -85,6 +85,14 @@ return [
             'settings_key' => 'weekly_volume_enabled',
             'default' => true,
         ],
+        'plate_calculator' => [
+            'group' => 'Sessione atleta',
+            'label' => 'Calcolatore dischi',
+            'description' => 'Suggerisce la combinazione dischi per il bilanciere (rimosso da UI atleta, riservato a usi futuri).',
+            'platea' => 'Atleti (flag globale)',
+            'settings_key' => 'plate_calculator_enabled',
+            'default' => true,
+        ],
 
         // ----------------------------------------------------------------
         // Sistema — flag operativi e infrastrutturali

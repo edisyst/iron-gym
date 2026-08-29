@@ -230,10 +230,8 @@ class WorkoutSession extends Component
         $set->update($updates);
         $set->refresh();
 
-        $pr = Feature::active('personal_records')
-            ? app(PersonalRecordDetector::class)->check($set, auth()->id())
-            : null;
-        if ($pr !== null) {
+        $pr = app(PersonalRecordDetector::class)->check($set, auth()->id());
+        if ($pr !== null && Feature::active('personal_records')) {
             $this->dispatch('pr-achieved',
                 exerciseName: $set->sessionExercise->exercise->name_it,
                 e1rm: $pr->value
@@ -276,10 +274,8 @@ class WorkoutSession extends Component
         $set->update($updates);
         $set->refresh();
 
-        $pr = Feature::active('personal_records')
-            ? app(PersonalRecordDetector::class)->check($set, auth()->id())
-            : null;
-        if ($pr !== null) {
+        $pr = app(PersonalRecordDetector::class)->check($set, auth()->id());
+        if ($pr !== null && Feature::active('personal_records')) {
             $this->dispatch('pr-achieved',
                 exerciseName: $set->sessionExercise->exercise->name_it,
                 e1rm: $pr->value

@@ -2,6 +2,34 @@
 
 ---
 
+## SET01 Step 2C — Gating flag sessione atleta + navigazione filtrata (2026-08-29)
+
+### Navigazione filtrata
+
+- `athlete.blade.php`: sidebar "Progressi" href ora condizionale — `weekly_volume` attivo → `/athlete/volume`, altrimenti `/athlete/measurements`. Risolve link morto con flag spento.
+- `athlete.blade.php`: toast PR (`pr-achieved`) wrappato in `@feature('personal_records')/@endfeature`.
+- `dashboard.blade.php`: link chevron "Ultimo allenamento" → recap wrappato in `@feature('session_recap')/@endfeature`.
+
+### WorkoutSession — PersonalRecordDetector sempre attivo
+
+`WorkoutSession::completeSet()` e `quickLog()`: `PersonalRecordDetector::check()` ora eseguito sempre (anche con `personal_records` off). Il dispatch dell'evento `pr-achieved` (toast) rimane condizionale sul flag. I PR vengono scritti in DB anche durante test pilota con flag spento.
+
+### Flag plate_calculator
+
+Aggiunto a `config/features.php` managed_flags (gruppo "Sessione atleta") e `AppServiceProvider` (`Feature::define`). Nessun gating point lato atleta (rimosso in UX01). Toggle esposto in FeatureFlagManager per uso futuro. `PlateInventoryManager` backoffice accessibile a prescindere.
+
+### Test
+
+- `SessionFlagGatingTest` (10 test): `readiness_check` off abort 403; `exercise_substitution` off abort 403; `personal_records` off → route 403, toast assente, PR salvato in DB; `weekly_volume` off → route 403, sidebar href fallback; `session_recap` off → route 403, link recap assente in dashboard.
+
+### Fix preesistente
+
+- `FeedbackDemoSeeder.php`: fix Pint `concat_space` / `binary_operator_spaces`.
+
+**Suite:** 484 test (478 pass / 6 skipped). PHPStan: 0 errori. Pint: conforme.
+
+---
+
 ## SET01 Step 2B — Gating completo messaging e pt_bookings (2026-08-29)
 
 **`messaging` — punto mancante:**

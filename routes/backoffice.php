@@ -110,17 +110,19 @@ Route::prefix('backoffice')
             Route::get('/athletes/{athleteId}/analytics', AthleteAnalytics::class)->name('athletes.analytics');
             Route::get('/athletes/{athleteId}/profile', AthleteProfile::class)->name('athletes.profile');
 
-            // Step 7 — messaggistica con atleti
-            Route::get('/athletes/{athleteId}/messages', MessageThread::class)->name('athletes.messages');
+            // Step 7 — messaggistica con atleti (gated: feature messaging)
+            Route::get('/athletes/{athleteId}/messages', MessageThread::class)
+                ->middleware('can:view-messaging')
+                ->name('athletes.messages');
         });
 
-        // Step 8 — reportistica gestore
+        // Step 8 — reportistica gestore (gated: role + feature flag)
         Route::get('/reports/manager', ManagerDashboard::class)
-            ->middleware('role:gestore')
+            ->middleware(['role:gestore', 'can:view-financial-reports'])
             ->name('reports.manager');
 
         Route::get('/reports/financial', FinancialReport::class)
-            ->middleware('role:gestore')
+            ->middleware(['role:gestore', 'can:view-financial-reports'])
             ->name('reports.financial');
 
         Route::get('/reports/training', TrainingReport::class)

@@ -18,6 +18,7 @@ use App\Livewire\Athlete\TrainingHub;
 use App\Livewire\Athlete\WeeklyVolume;
 use App\Livewire\Athlete\WorkoutSession;
 use App\Models\Message;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('athlete')
@@ -28,7 +29,9 @@ Route::prefix('athlete')
         // Alias: /athlete/dashboard e' l'URL che ci si aspetta per convenzione
         Route::get('/dashboard', fn () => redirect()->route('athlete.dashboard'));
         Route::get('/session/{session}', WorkoutSession::class)->name('session');
-        Route::get('/session/{session}/recap', SessionRecap::class)->name('session.recap');
+        Route::get('/session/{session}/recap', SessionRecap::class)
+            ->middleware('can:view-session-recap')
+            ->name('session.recap');
         Route::get('/history', TrainingHub::class)->name('history');
         Route::get('/progress', fn () => redirect()->route('athlete.history'))->name('progress');
         Route::get('/measurements', BodyMeasurementForm::class)->name('measurements');
@@ -42,13 +45,23 @@ Route::prefix('athlete')
         // Step 6 — prenotazioni
         Route::get('/bookings', Booking::class)->name('bookings');
 
-        Route::get('/volume', WeeklyVolume::class)->name('volume');
-        Route::get('/records', PersonalRecords::class)->name('records');
+        Route::get('/volume', WeeklyVolume::class)
+            ->middleware('can:view-weekly-volume')
+            ->name('volume');
+        Route::get('/records', PersonalRecords::class)
+            ->middleware('can:view-personal-records')
+            ->name('records');
         Route::get('/profile', AthleteProfile::class)->name('profile');
 
-        // Step 7 — messaggistica e push
-        Route::get('/messages', Messages::class)->name('messages');
+        // Step 7 — messaggistica e push (gated: feature messaging)
+        Route::get('/messages', Messages::class)
+            ->middleware('can:view-messaging')
+            ->name('messages');
         Route::get('/messages-unread-count', function () {
+            if (! Gate::allows('view-messaging')) {
+                return response()->json(['count' => 0]);
+            }
+
             return response()->json(['count' => Message::where('receiver_id', auth()->id())->whereNull('read_at')->count()]);
         })->name('messages.unread-count');
         Route::post('/push-subscribe', [PushSubscriptionController::class, 'store'])->name('push-subscribe');

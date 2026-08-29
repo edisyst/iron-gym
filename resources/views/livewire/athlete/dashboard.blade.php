@@ -53,10 +53,12 @@
                          M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
             </svg>
             <p class="home-empty-title">Nessuna scheda attiva</p>
-            <p class="home-empty-body">Il tuo trainer non ha ancora assegnato un mesociclo. Contattalo via messaggi.</p>
+            <p class="home-empty-body">Il tuo trainer non ha ancora assegnato un mesociclo.</p>
+            @feature('messaging')
             <a href="{{ route('athlete.messages') }}" class="ig-btn ig-btn--secondary" style="margin-top:var(--ig-sp-4);">
                 Apri messaggi
             </a>
+            @endfeature
         </div>
 
     @else

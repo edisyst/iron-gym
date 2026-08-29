@@ -34,6 +34,7 @@ class DatabaseSeeder extends Seeder
                 ClassDemoSeeder::class,
                 ScenarioDemoSeeder::class,
                 VolumeDemoSeeder::class,
+                FeedbackDemoSeeder::class,
             ]);
         }
     }

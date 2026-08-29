@@ -49,24 +49,30 @@ class AppServiceProvider extends ServiceProvider
 
     private function defineFeatureFlags(): void
     {
-        Feature::define('periodization_engine', fn (User $user) => $user->hasRole('gestore') || in_array($user->email, config('features.beta_trainers', []))
+        // Tutti i flag gestibili da UI usano il pattern:
+        //   Setting::bool(chiave, default) && <condizione_scope>
+        // Spegnere l'interruttore spegne per tutti; accenderlo non allarga
+        // la platea rispetto alla condizione scope preesistente.
+        // Il toggle scrive su settings e chiama Feature::purge() cosi' anche
+        // gli utenti che non avevano mai risolto il flag lo rileggono.
+
+        Feature::define('periodization_engine', fn (User $user) => Setting::bool('periodization_engine_enabled', true) &&
+            ($user->hasRole('gestore') || in_array($user->email, config('features.beta_trainers', [])))
         );
 
-        Feature::define('push_notifications', fn (User $user) => $user->hasRole(['atleta', 'trainer'])
+        Feature::define('push_notifications', fn (User $user) => Setting::bool('push_notifications_enabled', false) &&
+            $user->hasRole(['atleta', 'trainer'])
         );
 
-        // Flag globale (non per-utente): la sorgente di verita' e' la tabella
-        // settings, con config/env come default al primo avvio. Il valore
-        // risolto viene comunque memorizzato da Pennant per scope, quindi
-        // FeatureFlagManager esegue Feature::purge() a ogni toggle.
-        Feature::define('group_classes', function (): bool {
-            return Setting::bool(
-                'group_classes_enabled',
-                (bool) config('features.group_classes_enabled', false)
-            );
-        });
+        // Flag globale: nessuna condizione scope per-utente.
+        Feature::define('group_classes', fn (): bool => Setting::bool(
+            'group_classes_enabled',
+            (bool) config('features.group_classes_enabled', false)
+        )
+        );
 
-        Feature::define('financial_reports', fn (User $user) => $user->hasRole('gestore')
+        Feature::define('financial_reports', fn (User $user) => Setting::bool('financial_reports_enabled', true) &&
+            $user->hasRole('gestore')
         );
     }
 

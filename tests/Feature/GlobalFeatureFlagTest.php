@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\Backoffice\Admin\FeatureFlagManager;
+use App\Livewire\Backoffice\Settings\FeatureFlagManager;
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;

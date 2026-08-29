@@ -225,6 +225,8 @@ Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01
 
 **FIX02** (2026-08-27): `OpeningHoursSeeder` idempotente con `firstOrCreate` (risolve F-01/F-04); `ClassBookingService::enroll` controlla overlap atleta PT+corso (risolve F-02).
 
+**SET01 Step 1** (2026-08-29): sezione Impostazioni backoffice (`/backoffice/settings`), unificazione flag. `SettingsHub` + `FeatureFlagManager` (spostato da Admin → Settings). Pattern uniforme per tutti e 4 i flag: `Setting::bool(key, default) && <condizione_scope>`; toggle sempre `Setting::write` + `Feature::purge`. `SettingsFlagSeeder` idempotente. Redirect 301 da vecchia route. Sidebar: ADMIN soppresso, tutto in IMPOSTAZIONI. Chiude DIFETTO-A e DIFETTO-B. 448 test (442 pass / 6 skipped).
+
 Storico completo release e audit: **`CHANGELOG.md`**.
 
 Prossima attività: eseguire il piano di test manuale (`docs/testing/r09-plus-functional-test-plan.md`).
@@ -280,16 +282,19 @@ Crea 4 scenari per il piano di test `docs/testing/r09-plus-functional-test-plan.
 - Gestore: `gestore@iron-gym.test` / `changeme` (da `.env` PILOT_MANAGER_EMAIL/PASSWORD)
 - Trainer demo: `trainer@trainer.trainer`
 
-### Feature flags pilota (impostati via Pennant DB store)
+### Feature flags pilota (impostati via SettingsFlagSeeder)
 
-| Flag | Stato pilota | Quando attivare |
-|---|---|---|
-| `financial_reports` | ON | attivo da subito per gestore |
-| `periodization_engine` | ON | attivato via PilotSeeder (R12) |
-| `push_notifications` | OFF | dopo verifica service worker su dispositivo reale |
-| `group_classes` | ON | flag globale in `settings.group_classes_enabled`, non per-utente |
+Tutti i flag usano `Setting::bool(key, default) && <condizione_scope>`.
+Toggle sempre via `Setting::write` + `Feature::purge` (non `activateForEveryone`).
 
-Per modificare flags: backoffice → Admin → Feature Flags (solo gestore).
+| Flag | Chiave `settings` | Stato pilota | Platea (quando acceso) |
+|---|---|---|---|
+| `financial_reports` | `financial_reports_enabled` | ON | Solo gestore |
+| `periodization_engine` | `periodization_engine_enabled` | ON | Gestore + trainer in lista beta |
+| `push_notifications` | `push_notifications_enabled` | OFF | Atleti e trainer |
+| `group_classes` | `group_classes_enabled` | ON | Tutta la palestra (flag globale) |
+
+Per modificare flags: backoffice → Impostazioni → Funzioni (solo gestore).
 
 ### Procedura registrazione atleta pilota
 

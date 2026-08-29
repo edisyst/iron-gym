@@ -44,9 +44,13 @@ Prefisso `/backoffice`, middleware `auth + role:gestore|trainer|receptionist`.
 | `backoffice.reports.manager` | `/backoffice/reports/manager` | `Backoffice\Reports\ManagerDashboard` | `gestore` |
 | `backoffice.reports.financial` | `/backoffice/reports/financial` | `Backoffice\Reports\FinancialReport` | `gestore` |
 | `backoffice.reports.training` | `/backoffice/reports/training` | `Backoffice\Reports\TrainingReport` | `gestore\|trainer` |
-| `backoffice.admin.feature-flags` | `/backoffice/admin/feature-flags` | `Backoffice\Admin\FeatureFlagManager` | `gestore` |
+| `backoffice.settings.index` | `/backoffice/settings` | `Backoffice\Settings\SettingsHub` | `gestore` (can:access-admin-section) |
+| `backoffice.settings.feature-flags` | `/backoffice/settings/feature-flags` | `Backoffice\Settings\FeatureFlagManager` | `gestore` (can:access-admin-section) |
 | `backoffice.admin.feedback` | `/backoffice/admin/feedback` | `Backoffice\Admin\FeedbackList` | `gestore` |
+| `backoffice.admin.plate-inventory` | `/backoffice/admin/plate-inventory` | `Backoffice\Admin\PlateInventoryManager` | `gestore` |
 | `backoffice.reports.download` | `/backoffice/reports/download/{file}` | closure | `gestore` |
+
+Note: `/backoffice/admin/feature-flags` redirige con 301 a `/backoffice/settings/feature-flags`.
 
 ---
 

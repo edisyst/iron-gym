@@ -2,6 +2,34 @@
 
 ---
 
+## SET01 Step 1 — Sezione Impostazioni e unificazione feature flag (2026-08-29)
+
+**Obiettivo:** creare la sezione Impostazioni riservata al gestore, portarci la gestione dei flag, e chiudere DIFETTO-A e DIFETTO-B rilevati nell'assessment.
+
+**DIFETTO-A — Pattern uniforme per tutti i flag:**
+Tutti e quattro i flag gestibili da UI (`periodization_engine`, `push_notifications`, `group_classes`, `financial_reports`) usano ora il pattern `Setting::bool(key, default) && <condizione_scope>`. Il toggle scrive sempre su `settings` + `Feature::purge()`, mai `activateForEveryone/deactivateForEveryone`. Utenti che non avevano mai risolto un flag ora lo rileggono correttamente al prossimo accesso.
+
+**DIFETTO-B — UI mostra stato interruttore gym-wide:**
+`FeatureFlagManager::render()` non chiama più `Feature::active($flag)` (risolto sull'utente corrente). Legge direttamente `Setting::bool()`, indipendente dal ruolo del gestore. Corregge la visualizzazione di `push_notifications` (definer scope: atleta/trainer) che il gestore vedeva sempre spento.
+
+**Nuovi componenti:**
+- `Backoffice\Settings\SettingsHub` (`/backoffice/settings`) — hub con tab Funzioni e Manuale (segnaposto)
+- `Backoffice\Settings\FeatureFlagManager` (`/backoffice/settings/feature-flags`) — spostato da `Admin`, aggiornato
+
+**Route e redirect:**
+- Nuovo gruppo `can:access-admin-section` su `/backoffice/settings/*`
+- Redirect 301 da `/backoffice/admin/feature-flags` → `/backoffice/settings/feature-flags`
+
+**Sidebar:** header ADMIN soppresso, voci accorpate in IMPOSTAZIONI (Funzioni, Inventario Dischi, Feedback utenti).
+
+**SettingsFlagSeeder:** scrive le 4 chiavi `settings` con valori pilota; idempotente (`Setting::write`); escluso da prod; registrato in `DatabaseSeeder`. `PilotSeeder::seedFeatureFlags` delega a questo seeder.
+
+**config/features.php:** aggiunta chiave `managed_flags` con label, description, platea, settings_key e default per ogni flag. Fonte unica usata da `FeatureFlagManager` e dalla manualistica.
+
+**Test:** 11 nuovi test in `SettingsFeatureFlagsTest` (accesso 4 ruoli, redirect 301, DIFETTO-A per 4 flag, DIFETTO-B push_notifications). Import aggiornato in `GlobalFeatureFlagTest`. Suite: 448 test (442 pass / 6 skipped). PHPStan 0 errori. Pint conforme.
+
+---
+
 ## FIX02 — Idempotenza seeder e overlap PT+corso atleta (2026-08-27)
 
 **F-01/F-04 — `OpeningHoursSeeder` idempotente** (`9b906a8`):

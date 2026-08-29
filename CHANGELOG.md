@@ -2,6 +2,20 @@
 
 ---
 
+## SET01 Step 2 — Fix post-release (2026-08-29)
+
+**Log::warning nel kill switch:** ogni job `outbound_notifications` ora emette `Log::warning('[outbound_notifications] invio soppresso da interruttore', ['job' => ...])` prima di ritornare. Facilita il debug in produzione. Test aggiunto (`OutboundNotificationsKillSwitchTest` +1 → 8 test). Suite: 466 test (460 pass / 6 skipped).
+
+**Fix punto 4 SET01 Step 1 — SettingsHub embed:** il tab "Funzioni" ora embeds `@livewire('backoffice.settings.feature-flag-manager')` direttamente; rimosso il link "Gestisci funzioni" che richiedeva un click extra.
+
+**Fix punto 6 SET01 Step 1 — raggruppamento flag:** `financial_reports` e `periodization_engine` spostati dal gruppo "Moduli" a "Sistema" in `config/features.php` e `FeatureFlagManager`. Sidebar: "Feedback utenti" spostato da IMPOSTAZIONI a COMUNICAZIONE (posizione corretta accanto a Campagne).
+
+**Fix PHPStan — factory mancanti:** create `AthleteVolumeLandmarkFactory` e `SessionExerciseFeedbackFactory`; `database/factories` aggiunto ai path in `phpstan.neon`. PHPStan livello 6: 0 errori.
+
+**Docs:** corretto `PtBookingObserver` in CLAUDE.md — l'observer invalida cache slot trainer e tag KPI (non invia notifiche come documentato erroneamente).
+
+---
+
 ## SET01 Step 2 — Gating completo 9 nuovi flag (2026-08-29)
 
 **Obiettivo:** chiudere GAP-03 e aggiungere kill switch a tutti i livelli per 9 nuovi flag: `messaging`, `pt_bookings`, `outbound_notifications`, `in_app_feedback`, `readiness_check`, `exercise_substitution`, `session_recap`, `personal_records`, `weekly_volume`.

@@ -437,18 +437,17 @@ return [
             'icon' => 'fas fa-bullhorn',
             'can' => 'send-campaigns',
         ],
-        ['header' => 'ADMIN', 'can' => 'access-admin-section'],
+        ['header' => 'IMPOSTAZIONI', 'can' => 'access-admin-section'],
+        [
+            'text' => 'Funzioni',
+            'url' => 'backoffice/settings/feature-flags',
+            'icon' => 'fas fa-toggle-on',
+            'can' => 'access-admin-section',
+        ],
         [
             'text' => 'Inventario Dischi',
             'url' => 'backoffice/admin/plate-inventory',
             'icon' => 'fas fa-dumbbell',
-            'can' => 'access-admin-section',
-        ],
-        ['header' => 'IMPOSTAZIONI', 'can' => 'access-admin-section'],
-        [
-            'text' => 'Feature Flags',
-            'url' => 'backoffice/admin/feature-flags',
-            'icon' => 'fas fa-toggle-on',
             'can' => 'access-admin-section',
         ],
         [

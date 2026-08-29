@@ -2,7 +2,6 @@
 
 use App\Livewire\Backoffice\Access\AccessLogList;
 use App\Livewire\Backoffice\Access\QuickCheckin;
-use App\Livewire\Backoffice\Admin\FeatureFlagManager;
 use App\Livewire\Backoffice\Admin\FeedbackList;
 use App\Livewire\Backoffice\Admin\PlateInventoryManager;
 use App\Livewire\Backoffice\Athletes\AthleteAnalytics;
@@ -31,7 +30,9 @@ use App\Livewire\Backoffice\Reports\FinancialReport;
 use App\Livewire\Backoffice\Reports\ManagerDashboard;
 use App\Livewire\Backoffice\Reports\TrainingReport;
 use App\Livewire\Backoffice\Search\GlobalSearch;
+use App\Livewire\Backoffice\Settings\FeatureFlagManager;
 use App\Livewire\Backoffice\Settings\OpeningHoursManager;
+use App\Livewire\Backoffice\Settings\SettingsHub;
 use App\Livewire\Backoffice\Subscriptions\SubscriptionForm;
 use App\Livewire\Backoffice\Subscriptions\SubscriptionList;
 use App\Livewire\Backoffice\Templates\TemplateBuilder;
@@ -205,11 +206,19 @@ Route::prefix('backoffice')
 
         // Step 10 — admin tools e campagne comunicazione (solo gestore)
         Route::middleware('role:gestore')->group(function () {
-            Route::get('/admin/feature-flags', FeatureFlagManager::class)->name('admin.feature-flags');
             Route::get('/admin/feedback', FeedbackList::class)->name('admin.feedback');
             Route::get('/admin/plate-inventory', PlateInventoryManager::class)->name('admin.plate-inventory');
             Route::get('/communications/campaign', CommunicationCampaign::class)->name('communications.campaign');
         });
+
+        // Sezione Impostazioni — solo gestore (via gate access-admin-section)
+        Route::middleware('can:access-admin-section')->prefix('settings')->name('settings.')->group(function () {
+            Route::get('/', SettingsHub::class)->name('index');
+            Route::get('/feature-flags', FeatureFlagManager::class)->name('feature-flags');
+        });
+
+        // Redirect 301 dalla vecchia URL
+        Route::redirect('/admin/feature-flags', '/backoffice/settings/feature-flags', 301);
 
         Route::get('/reports/download/{file}', function (string $file) {
             // Sicurezza: solo nome file senza path traversal

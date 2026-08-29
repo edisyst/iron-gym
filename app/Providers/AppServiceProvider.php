@@ -125,6 +125,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Gate per moduli flaggabili (route middleware + sidebar)
         Gate::define('view-messaging', fn () => Feature::active('messaging'));
+        Gate::define('view-athlete-bookings', fn () => Feature::active('pt_bookings') || Feature::active('group_classes'));
         Gate::define('enroll-pt-bookings', fn () => Feature::active('pt_bookings'));
         Gate::define('view-session-recap', fn () => Feature::active('session_recap'));
         Gate::define('view-personal-records', fn () => Feature::active('personal_records'));

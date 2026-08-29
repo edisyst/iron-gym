@@ -43,7 +43,9 @@ Route::prefix('athlete')
         Route::get('/exercises/{exercise:slug}', AthleteExerciseDetail::class)->name('exercises.show');
 
         // Step 6 — prenotazioni
-        Route::get('/bookings', Booking::class)->name('bookings');
+        Route::get('/bookings', Booking::class)
+            ->middleware('can:view-athlete-bookings')
+            ->name('bookings');
 
         Route::get('/volume', WeeklyVolume::class)
             ->middleware('can:view-weekly-volume')

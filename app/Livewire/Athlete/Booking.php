@@ -42,6 +42,9 @@ class Booking extends Component
     {
         $this->availableSlots = collect();
         $this->selectedDate = now()->toDateString();
+        if (! Feature::active('pt_bookings')) {
+            $this->activeTab = 'classes';
+        }
     }
 
     // -------------------------------------------------------------------------

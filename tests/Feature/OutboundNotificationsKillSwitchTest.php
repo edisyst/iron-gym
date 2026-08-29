@@ -11,6 +11,7 @@ use App\Models\ClassBooking;
 use App\Models\ClassOccurrence;
 use App\Models\Setting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 
 uses(RefreshDatabase::class);
@@ -66,4 +67,14 @@ it('SendCampaignMessages rispetta kill switch', function () {
     $job->handle();
 
     Notification::assertNothingSent();
+});
+
+it('kill switch traccia warning nel log applicativo', function () {
+    Log::spy();
+
+    (new SendSubscriptionExpiryReminders)->handle();
+
+    Log::shouldHaveReceived('warning')
+        ->withArgs(fn ($msg) => str_contains($msg, '[outbound_notifications] invio soppresso da interruttore'))
+        ->once();
 });

@@ -16,20 +16,7 @@
 
     {{-- Tab: Funzioni --}}
     <div x-show="tab === 'funzioni'">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Attivazione funzioni</h3>
-            </div>
-            <div class="card-body">
-                <p class="text-muted mb-3">
-                    Attiva o disattiva le funzionalita' della piattaforma per tutti gli utenti.
-                    Le modifiche hanno effetto immediato.
-                </p>
-                <a href="{{ route('backoffice.settings.feature-flags') }}" class="btn btn-primary">
-                    <i class="fas fa-toggle-on mr-1"></i> Gestisci funzioni
-                </a>
-            </div>
-        </div>
+        @livewire('backoffice.settings.feature-flag-manager')
     </div>
 
     {{-- Tab: Manuale --}}

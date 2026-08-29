@@ -40,22 +40,6 @@ return [
             'settings_key' => 'pt_bookings_enabled',
             'default' => true,
         ],
-        'financial_reports' => [
-            'group' => 'Moduli',
-            'label' => 'Report finanziari',
-            'description' => 'Dashboard KPI e report economici nella sezione Gestore.',
-            'platea' => 'Solo gestore',
-            'settings_key' => 'financial_reports_enabled',
-            'default' => true,
-        ],
-        'periodization_engine' => [
-            'group' => 'Moduli',
-            'label' => 'Motore di periodizzazione',
-            'description' => 'Progressione automatica set e carichi nei mesocicli.',
-            'platea' => 'Gestore + trainer nella lista beta (FEATURE_BETA_TRAINERS)',
-            'settings_key' => 'periodization_engine_enabled',
-            'default' => true,
-        ],
 
         // ----------------------------------------------------------------
         // Sessione atleta — funzioni nel flusso di allenamento
@@ -106,6 +90,22 @@ return [
         // Sistema — flag operativi e infrastrutturali
         // ----------------------------------------------------------------
 
+        'financial_reports' => [
+            'group' => 'Sistema',
+            'label' => 'Report finanziari',
+            'description' => 'Dashboard KPI e report economici nella sezione Gestore.',
+            'platea' => 'Solo gestore',
+            'settings_key' => 'financial_reports_enabled',
+            'default' => true,
+        ],
+        'periodization_engine' => [
+            'group' => 'Sistema',
+            'label' => 'Motore di periodizzazione',
+            'description' => 'Progressione automatica set e carichi nei mesocicli.',
+            'platea' => 'Gestore + trainer nella lista beta (FEATURE_BETA_TRAINERS)',
+            'settings_key' => 'periodization_engine_enabled',
+            'default' => true,
+        ],
         'push_notifications' => [
             'group' => 'Sistema',
             'label' => 'Notifiche push',

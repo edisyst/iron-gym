@@ -437,6 +437,12 @@ return [
             'icon' => 'fas fa-bullhorn',
             'can' => 'send-campaigns',
         ],
+        [
+            'text' => 'Feedback utenti',
+            'url' => 'backoffice/admin/feedback',
+            'icon' => 'fas fa-comment-alt',
+            'can' => 'send-campaigns',
+        ],
         ['header' => 'IMPOSTAZIONI', 'can' => 'access-admin-section'],
         [
             'text' => 'Funzioni',
@@ -448,12 +454,6 @@ return [
             'text' => 'Inventario Dischi',
             'url' => 'backoffice/admin/plate-inventory',
             'icon' => 'fas fa-dumbbell',
-            'can' => 'access-admin-section',
-        ],
-        [
-            'text' => 'Feedback utenti',
-            'url' => 'backoffice/admin/feedback',
-            'icon' => 'fas fa-comment-alt',
             'can' => 'access-admin-section',
         ],
     ],

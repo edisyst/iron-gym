@@ -12,18 +12,22 @@
                 class="ig-tab {{ $activeSection === 'abbonamento' ? 'ig-tab--active' : '' }}">
             Abbonamento
         </button>
+        @feature('pt_bookings')
         <button type="button" wire:click="$set('activeSection','pt')"
                 class="ig-tab {{ $activeSection === 'pt' ? 'ig-tab--active' : '' }}">
             Sessioni PT
         </button>
+        @endfeature
         <button type="button" wire:click="$set('activeSection','misurazioni')"
                 class="ig-tab {{ $activeSection === 'misurazioni' ? 'ig-tab--active' : '' }}">
             Misurazioni
         </button>
+        @feature('personal_records')
         <button type="button" wire:click="$set('activeSection','record')"
                 class="ig-tab {{ $activeSection === 'record' ? 'ig-tab--active' : '' }}">
             Record
         </button>
+        @endfeature
         <button type="button" wire:click="$set('activeSection','sessioni')"
                 class="ig-tab {{ $activeSection === 'sessioni' ? 'ig-tab--active' : '' }}">
             Sessioni
@@ -38,6 +42,7 @@
                 class="ig-tab {{ $activeSection === 'accessi' ? 'ig-tab--active' : '' }}">
             Accessi
         </button>
+        @feature('messaging')
         <button type="button" wire:click="$set('activeSection','messaggi')"
                 class="ig-tab {{ $activeSection === 'messaggi' ? 'ig-tab--active' : '' }}">
             Messaggi
@@ -50,6 +55,7 @@
                 </span>
             @endif
         </button>
+        @endfeature
         <button type="button" wire:click="$set('activeSection','password')"
                 class="ig-tab {{ $activeSection === 'password' ? 'ig-tab--active' : '' }}">
             Password
@@ -171,6 +177,7 @@
     @endif
 
     {{-- ===== SEZIONE SESSIONI PT ===== --}}
+    @feature('pt_bookings')
     @if ($activeSection === 'pt')
         @php
             $statusLabel = fn(string $s) => match($s) {
@@ -245,6 +252,7 @@
             </div>
         @endif
     @endif
+    @endfeature
 
     {{-- ===== SEZIONE MISURAZIONI ===== --}}
     @if ($activeSection === 'misurazioni')
@@ -317,6 +325,7 @@
     @endif
 
     {{-- ===== SEZIONE RECORD ===== --}}
+    @feature('personal_records')
     @if ($activeSection === 'record')
         <div class="athlete-card">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
@@ -362,6 +371,7 @@
             @endif
         </div>
     @endif
+    @endfeature
 
     {{-- ===== SEZIONE SESSIONI ===== --}}
     @if ($activeSection === 'sessioni')
@@ -550,6 +560,7 @@
     @endif
 
     {{-- ===== SEZIONE MESSAGGI ===== --}}
+    @feature('messaging')
     @if ($activeSection === 'messaggi')
         <div class="athlete-card">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
@@ -615,6 +626,7 @@
             @endif
         </div>
     @endif
+    @endfeature
 
     {{-- ===== SEZIONE PASSWORD ===== --}}
     @if ($activeSection === 'password')

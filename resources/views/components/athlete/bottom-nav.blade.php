@@ -31,8 +31,8 @@
         <span>Allenamento</span>
     </a>
 
-    {{-- Progressi --}}
-    <a href="{{ route('athlete.volume') }}"
+    {{-- Progressi — href condizionale: se volume spento apre misurazioni --}}
+    <a href="{{ \Laravel\Pennant\Feature::active('weekly_volume') ? route('athlete.volume') : route('athlete.measurements') }}"
        class="{{ request()->routeIs('athlete.volume', 'athlete.records', 'athlete.measurements', 'athlete.photos.*') ? 'active' : '' }}"
        aria-current="{{ request()->routeIs('athlete.volume', 'athlete.records', 'athlete.measurements', 'athlete.photos.*') ? 'page' : 'false' }}"
        aria-label="Progressi">

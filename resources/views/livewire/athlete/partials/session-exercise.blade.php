@@ -75,7 +75,8 @@
                 {{ $exercise->exercise->name_it }}
             </button>
             <div class="ws-exercise-btns">
-@if ($canSubstitute)
+@feature('exercise_substitution')
+                @if ($canSubstitute)
                     <button wire:click="openSubstitutionModal({{ $exercise->id }})"
                             class="ws-icon-btn" aria-label="Sostituisci {{ $exercise->exercise->name_it }}">
                         <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -84,6 +85,7 @@
                         Sost.
                     </button>
                 @endif
+@endfeature
             </div>
         </div>
 

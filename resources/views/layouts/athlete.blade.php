@@ -81,6 +81,7 @@
                 </svg>
                 Progressi
             </a>
+            @feature('personal_records')
             <a href="{{ route('athlete.records') }}"
                class="{{ request()->routeIs('athlete.records') ? 'active' : '' }}"
                aria-current="{{ request()->routeIs('athlete.records') ? 'page' : 'false' }}"
@@ -91,6 +92,7 @@
                 </svg>
                 Record
             </a>
+            @endfeature
             <a href="{{ route('athlete.profile') }}"
                class="{{ request()->routeIs('athlete.profile', 'athlete.bookings*', 'athlete.messages*') ? 'active' : '' }}"
                aria-current="{{ request()->routeIs('athlete.profile', 'athlete.bookings*', 'athlete.messages*') ? 'page' : 'false' }}">
@@ -109,6 +111,7 @@
                 </svg>
                 Prenota
             </a>
+            @feature('messaging')
             <a href="{{ route('athlete.messages') }}"
                class="{{ request()->routeIs('athlete.messages*') ? 'active' : '' }}"
                aria-current="{{ request()->routeIs('athlete.messages*') ? 'page' : 'false' }}"
@@ -121,6 +124,7 @@
                       x-text="$store.messages.unread > 9 ? '9+' : $store.messages.unread"
                       class="ig-badge ig-badge--danger" style="margin-left:auto;" aria-live="polite"></span>
             </a>
+            @endfeature
             <a href="{{ route('athlete.notifications') }}"
                class="{{ request()->routeIs('athlete.notifications*') ? 'active' : '' }}"
                aria-current="{{ request()->routeIs('athlete.notifications*') ? 'page' : 'false' }}"
@@ -294,9 +298,9 @@
     });
     </script>
 
-    @if(config('features.in_app_feedback_enabled'))
+    @feature('in_app_feedback')
         @livewire('shared.in-app-feedback')
-    @endif
+    @endfeature
 
     {{-- Registrazione service worker e permesso push --}}
     @auth

@@ -63,11 +63,13 @@
                 <i class="fas fa-mountain mr-1"></i> Volume landmarks
             </a>
         </li>
+        @feature('messaging')
         <li class="nav-item">
             <a class="nav-link" :class="{ active: tab === 'messaggi' }" href="#" @click.prevent="tab = 'messaggi'">
                 <i class="fas fa-comments mr-1"></i> Messaggi
             </a>
         </li>
+        @endfeature
     </ul>
 
     {{-- Tab content --}}
@@ -87,7 +89,9 @@
         @livewire('backoffice.mesocycles.volume-landmark-manager', ['athleteId' => $athleteId])
     </div>
 
+    @feature('messaging')
     <div x-show="tab === 'messaggi'" x-cloak>
         @livewire('backoffice.messages.message-thread', ['athleteId' => $athleteId])
     </div>
+    @endfeature
 </div>

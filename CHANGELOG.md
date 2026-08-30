@@ -2,6 +2,20 @@
 
 ---
 
+## SET01 — Risoluzione scostamenti post-chiusura (2026-08-30)
+
+Tutti e cinque gli scostamenti identificati in Fase 3 risolti.
+
+- **S-01** (sezione 08 senza navigazione): aggiunta sezione "Come raggiungerla" in `08-progressione-volume.md` con percorso esplicito per dettaglio mesociclo e volume landmarks.
+- **S-02** (report finanziari senza voce sidebar): aggiunta voce "Report finanziario" in `config/adminlte.php` sotto TRAINING, `can: view-financial-reports` — nascosta automaticamente con flag OFF.
+- **S-03** ("Feedback utenti" senza manuale): aggiunta sottosezione in `12-comunicazione-campagne.md` con descrizione, accesso gestore, comportamento flag OFF.
+- **S-04** (route messaggistica errata in sezione 12): corretta a `/backoffice/athletes/{id}/messages` con percorso Tesserati → profilo atleta → tab Messaggi.
+- **S-05** (`Admin/FeatureFlagManager.php` dead code): file eliminato; unica implementazione attiva: `Settings\FeatureFlagManager`.
+
+**Suite:** 506 test (500 pass / 6 skipped). PHPStan: 0 errori. Pint: conforme.
+
+---
+
 ## SET01 Fase 3 — Verifica finale e chiusura (2026-08-30)
 
 ### Correzioni CLAUDE.md
@@ -23,13 +37,13 @@
 - Seeder aggiunti: `GroupClassSeeder`, `SettingsFlagSeeder`, `FeedbackDemoSeeder`, `FunctionalTestSeeder`.
 - `OpeningHoursSeeder`: riga deduplicata.
 
-### Scostamenti documentati (set01-chiusura.md)
+### Scostamenti identificati (risolti nel blocco successivo)
 
-- S-01: sezione 08 senza voce sidebar diretta.
-- S-02: sezione 14 (report finanziari) senza voce sidebar in adminlte.php.
+- S-01: sezione 08 senza navigazione esplicita.
+- S-02: report finanziari senza voce sidebar.
 - S-03: "Feedback utenti" in menu senza sezione manuale.
-- S-04: sezione 12 cita `/backoffice/messages` che non esiste; la route e' per-atleta.
-- S-05: `Admin/FeatureFlagManager.php` dead code (file non rimosso dopo migrazione a Settings).
+- S-04: sezione 12 citava `/backoffice/messages` inesistente.
+- S-05: `Admin/FeatureFlagManager.php` dead code.
 
 **Suite:** 506 test (500 pass / 6 skipped). PHPStan: 0 errori. Pint: conforme.
 

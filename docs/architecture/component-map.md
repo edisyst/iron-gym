@@ -124,7 +124,7 @@ Tutti in `app/Livewire/Backoffice/`. Layout: `->layout('layouts.backoffice')`.
 | `Reports` | `FinancialReport` | Report mensile/trimestrale/annuale, export CSV e PDF. Solo gestore. |
 | `Reports` | `TrainingReport` | Sessioni completate, volume medio, aderenza schede |
 | `Settings` | `SettingsHub` | Hub impostazioni con tab "Funzioni" (feature flags) e "Manuale". Solo gestore. |
-| `Settings` | `FeatureFlagManager` | Toggle 13 flag raggruppati per gruppo (Moduli/Sessione atleta/Sistema). Solo gestore. |
+| `Settings` | `FeatureFlagManager` | Toggle 14 flag raggruppati per gruppo (Moduli/Sessione atleta/Sistema). Solo gestore. |
 | `Settings` | `ManualViewer` | Renderer manuale Markdown embedded nel tab "Manuale" di SettingsHub |
 | `Settings` | `OpeningHoursManager` | CRUD orari apertura settimanali + eccezioni per data. Accessibile a gestore e receptionist. |
 | `Shared` | `NotificationBell` | Campanella con contatore notifiche non lette |
@@ -225,17 +225,21 @@ Tutti in `app/Services/`.
 |---|---|---|
 | `RoleSeeder` | sempre | Ruoli Spatie: `gestore`, `trainer`, `receptionist`, `atleta` |
 | `ExerciseSeeder` | sempre | Carica `database/seeders/sql/exercises_seed.sql` via `DB::unprepared()` (83 esercizi, 26 muscoli, 14 equipment, 27 pattern) |
-| `DemoSeeder` | solo `local` | Utenti di test, dati fittizi per sviluppo locale |
+| `CoreDemoSeeder` | solo `local` | Account staff (gestore/trainer/receptionist/atleta), tesserati, abbonamenti, accessi demo |
 | `PilotSeeder` | via `pilot:init` | Piani abbonamento reali + account gestore da env |
 | `PlateInventorySeeder` | `db:seed` | Dischi reali: 20/15/10/5/2.5/1.25 kg per lato |
-| `PilotTemplateSeeder` | manuale | Template PPL Ipertrofia Intermediato (4 sett.) con 3 sessioni/sett. e progressione automatica |
+| `DumbbellInventorySeeder` | `db:seed` | Manubri standard (2–60 kg) |
+| `TemplateSeeder` | manuale | Template PPL Ipertrofia Intermediato (4 sett.) + 4 template dimostrativi; idempotente |
 | `ExerciseDescriptionSeeder` | `db:seed` | Popola `execution_description` su tutti e 83 esercizi |
 | `CommunicationTemplateSeeder` | `db:seed` | Template messaggi automatici (scadenza abbonamento, certificato medico, promemoria sessione) |
-| `GroupClassSeeder` | `db:seed` | Corsi collettivi demo (yoga, spinning, zumba) con palinsesti e occorrenze future |
-| `SettingsFlagSeeder` | `db:seed` | Inizializza tutte le chiavi `settings` per i 13 flag gestibili; idempotente (`firstOrCreate`) |
+| `ClassDemoSeeder` | `db:seed` | Corsi collettivi demo (yoga, spinning, zumba), palinsesti, occorrenze future, prenotazioni PT demo |
+| `SettingsFlagSeeder` | `db:seed` | Inizializza tutte le chiavi `settings` per i 14 flag gestibili; idempotente (`firstOrCreate`) |
 | `FeedbackDemoSeeder` | `db:seed` | 8 feedback in-app demo (4 da atleta@atleta.atleta) |
-| `FunctionalTestSeeder` | solo `local/test` | 4 scenari per piano test funzionale (yoga waitlist, accessi esauriti, overlap trainer, occorrenza passata) |
+| `TrainingDemoSeeder` | `db:seed` | Storico sessioni di allenamento con set e feedback per gli atleti demo |
+| `VolumeDemoSeeder` | `db:seed` | 50 atleti con 12 settimane di storico (PR, misurazioni, iscrizioni corsi) per report e analytics |
+| `VolumeLandmarkDemoSeeder` | `db:seed` | Landmark MEV/MAV/MRV personalizzati per atleta ID=5 (visibilita' pulsante "Ripristina default") |
 | `OpeningHoursSeeder` | `db:seed` | Orari apertura default lun–ven 06:30–22:30, sab 08:00–18:00, dom 10:00–14:00; idempotente (`firstOrCreate`) |
+| `ScenarioDemoSeeder` | solo `local/test` | 4 scenari per piano test funzionale (yoga waitlist, accessi esauriti, overlap trainer, occorrenza passata) |
 
 ---
 
@@ -262,14 +266,38 @@ Usati solo per operazioni non-Livewire.
 
 ## Feature flags (Laravel Pennant)
 
-Definiti in `AppServiceProvider::defineFeatureFlags()`. Tabella `features` nel DB.
-
-| Flag | Attivo per | Default |
-|---|---|---|
-| `periodization_engine` | gestore o email in `FEATURE_BETA_TRAINERS` | per utente |
-| `push_notifications` | atleti e trainer | per utente |
-| `group_classes` | `FEATURE_GROUP_CLASSES=true` | false globale |
-| `financial_reports` | solo gestore | per utente |
+Definiti in `AppServiceProvider::boot()` via `Setting::bool()`. Fonte di verita': tabella `settings`.
+Metadati (label, platea, chiave settings, default, gruppo): `config/features.php → managed_flags`.
+Gestione UI: `/backoffice/settings/feature-flags` (solo gestore).
+Nota: `/backoffice/admin/feature-flags` fa 301 redirect alla route sopra.
 
 Directive Blade: `@feature('flag') ... @endfeature`.
-Gestione UI: `/backoffice/admin/feature-flags` (solo gestore).
+
+### Moduli
+
+| Flag | Platea | Default pilota |
+|---|---|---|
+| `group_classes` | Tutta la palestra (globale) | ON |
+| `messaging` | Tutta la palestra (globale) | ON |
+| `pt_bookings` | Atleti (globale) | ON |
+
+### Sessione atleta
+
+| Flag | Platea | Default pilota |
+|---|---|---|
+| `readiness_check` | Atleti (globale) | ON |
+| `exercise_substitution` | Atleti (globale) | ON |
+| `session_recap` | Atleti (globale) | ON |
+| `personal_records` | Atleti (globale) | ON |
+| `weekly_volume` | Atleti (globale) | ON |
+| `plate_calculator` | Atleti (globale, nessun gating point UI) | ON |
+
+### Sistema
+
+| Flag | Platea | Default pilota |
+|---|---|---|
+| `financial_reports` | Solo gestore | ON |
+| `periodization_engine` | Gestore + trainer in `FEATURE_BETA_TRAINERS` | ON |
+| `push_notifications` | Atleti e trainer | OFF |
+| `outbound_notifications` | Tutta la palestra (kill switch globale email/push) | ON |
+| `in_app_feedback` | Tutti gli utenti (globale) | OFF |

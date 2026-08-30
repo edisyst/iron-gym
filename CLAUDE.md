@@ -241,6 +241,8 @@ Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01
 
 Storico completo release e audit: **`CHANGELOG.md`**.
 
+**DOC02** (2026-08-30): allineamento documentazione post-SET01/PERF01. Fix B-03 (route prenotazioni manuale sez. 09/10); piani test per ruolo aggiornati (sez. Impostazioni, plate calculator rimosso, note flag, notifiche R10); consolidamento `docs/review/` + `docs/audit/` → `docs/reviews/`; `11-doc02-chiusura.md`. 12 commit, solo `.md`.
+
 Prossima attività: da definire.
 
 ## Architettura offline

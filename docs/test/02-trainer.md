@@ -116,20 +116,17 @@ URL: `/backoffice/reports/training`
 
 ---
 
-## 11. Campagne comunicazione
-
-URL: `/backoffice/communications/campaign`
-
-- [ ] Pagina accessibile al trainer
-- [ ] Invio campagna funziona
-
----
-
 ## 12. 403 attesi (aree riservate al gestore)
+
+> Tutte le route seguenti usano middleware `role:gestore` o gate `access-admin-section`.
+> Il trainer riceve 403 su ognuna.
 
 - [ ] `/backoffice/reports/manager` → 403
 - [ ] `/backoffice/reports/financial` → 403
-- [ ] `/backoffice/admin/feature-flags` → 403
+- [ ] `/backoffice/communications/campaign` → 403
+- [ ] `/backoffice/settings` → 403
+- [ ] `/backoffice/settings/feature-flags` → 403
+- [ ] `/backoffice/admin/feature-flags` → 301 redirect a `/backoffice/settings/feature-flags`, poi 403
 - [ ] `/backoffice/admin/feedback` → 403
 - [ ] `/backoffice/admin/plate-inventory` → 403
 

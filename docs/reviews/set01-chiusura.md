@@ -66,26 +66,21 @@ dedicata nel manuale.
 **Impatto operativo:** limitato — e' una lista read-only dei feedback in-app
 inviati dagli utenti. La sezione 12 (Comunicazione e campagne) non la menziona.
 
-### S-04 — Sezione 12: citazione errata della route messaggistica
+### S-04 — Sezione 12: citazione errata della route messaggistica ✓ RISOLTO
 
-La sezione 12 del manuale cita `/backoffice/messages` come URL della messaggistica
-one-to-one. La route effettiva e' `backoffice.athletes.messages` a
-`/backoffice/athletes/{athleteId}/messages` (per-atleta). Non esiste una route
-standalone `/backoffice/messages` ne' una voce sidebar corrispondente.
+La sezione 12 citava `/backoffice/messages` come URL della messaggistica
+one-to-one. La route effettiva e' `/backoffice/athletes/{athleteId}/messages`
+(per-atleta, accessibile dal profilo atleta in backoffice).
 
-**Impatto operativo:** il lettore della sezione 12 cerca una voce "Messaggi" nel
-menu che non esiste. La messaggistica e' accessibile solo dal profilo atleta
-backoffice (tab o link diretto all'interno di `AthleteProfile`).
+**Fix applicato:** testo della sezione 12 corretto per descrivere il percorso
+reale (Tesserati → profilo atleta → tab Messaggi).
 
-### S-05 — File Admin/FeatureFlagManager.php non rimosso dopo migrazione a Settings
+### S-05 — File Admin/FeatureFlagManager.php non rimosso dopo migrazione a Settings ✓ RISOLTO
 
-Dopo SET01 Step 1 (spostamento FeatureFlagManager da Admin a Settings), il file
-originale `app/Livewire/Backoffice/Admin/FeatureFlagManager.php` non e' stato
-eliminato. Esiste tuttora con namespace `App\Livewire\Backoffice\Admin`.
+Dopo SET01 Step 1, il file originale `app/Livewire/Backoffice/Admin/FeatureFlagManager.php`
+era rimasto come dead code. Nessun riferimento attivo (route, test, alias Livewire).
 
-La route `backoffice.settings.feature-flags` punta correttamente alla classe
-`Settings\FeatureFlagManager`. Il file Admin e' dead code ma non causa errori
-(non e' referenziato da route o test). Da eliminare in un rilascio di cleanup.
+**Fix applicato:** file eliminato. `Settings\FeatureFlagManager` e' l'unica implementazione attiva.
 
 ---
 

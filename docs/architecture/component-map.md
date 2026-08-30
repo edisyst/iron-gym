@@ -95,7 +95,6 @@ Tutti in `app/Livewire/Backoffice/`. Layout: `->layout('layouts.backoffice')`.
 | (root) | `Dashboard` | Schermata iniziale backoffice |
 | `Access` | `AccessLogList` | Registro accessi struttura |
 | `Access` | `QuickCheckin` | Check-in rapido: ricerca tesserato live, validazione cert+abbonamento, cronologia giornaliera |
-| `Admin` | `FeatureFlagManager` | Classe originale (namespace Admin) — tenuta per retrocompatibilita'; route usa `Settings\FeatureFlagManager` |
 | `Admin` | `FeedbackList` | Gestione feedback in-app (solo gestore) |
 | `Athletes` | `AthleteProfile` | Contenitore profilo atleta con tab Alpine (storico, analytics, misurazioni, landmarks, messaggi) |
 | `Athletes` | `AthleteSessionHistory` | Storico sessioni atleta lato backoffice, dettaglio inline con e1RM |

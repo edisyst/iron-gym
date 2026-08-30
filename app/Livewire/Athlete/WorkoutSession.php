@@ -415,9 +415,7 @@ class WorkoutSession extends Component
         // Shifta i working set per fare spazio ai warm-up
         ExerciseSet::where('session_exercise_id', $sessionExerciseId)
             ->where('is_warmup', false)
-            ->orderByDesc('set_index')
-            ->get()
-            ->each(fn ($s) => $s->update(['set_index' => $s->set_index + $warmupCount]));
+            ->increment('set_index', $warmupCount);
 
         foreach ($warmupDef as $i => [$pct, $reps]) {
             $weight = round($target * $pct / 2.5) * 2.5;

@@ -150,18 +150,25 @@ class KpiService
                 return 0.0;
             }
 
+            $memberIds = $expired->pluck('member_id')->unique()->values()->all();
+            $expiredIds = $expired->pluck('id')->values()->all();
+            $latestDeadline = Carbon::parse($toDate)->addDays(30)->toDateString();
+
+            $renewals = DB::table('subscriptions')
+                ->whereIn('member_id', $memberIds)
+                ->whereNotIn('id', $expiredIds)
+                ->where('started_at', '>', $fromDate)
+                ->where('started_at', '<=', $latestDeadline)
+                ->select('member_id', 'started_at')
+                ->get()
+                ->groupBy('member_id');
+
             $churned = 0;
             foreach ($expired as $sub) {
-                $expiredDate = Carbon::parse($sub->expires_at);
-                $renewalDeadline = $expiredDate->copy()->addDays(30)->toDateString();
-
-                $renewed = DB::table('subscriptions')
-                    ->where('member_id', $sub->member_id)
-                    ->where('id', '!=', $sub->id)
-                    ->where('started_at', '>', $sub->expires_at)
-                    ->where('started_at', '<=', $renewalDeadline)
-                    ->exists();
-
+                $renewalDeadline = Carbon::parse($sub->expires_at)->addDays(30)->toDateString();
+                $renewed = ($renewals->get($sub->member_id) ?? collect())
+                    ->filter(fn ($r) => $r->started_at > $sub->expires_at && $r->started_at <= $renewalDeadline)
+                    ->isNotEmpty();
                 if (! $renewed) {
                     $churned++;
                 }

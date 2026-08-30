@@ -16,8 +16,8 @@ class ManualViewer extends Component
      * @var array<string, string>
      */
     private const SECTION_FLAGS = [
-        '11-corsi-collettivi'   => 'group_classes',
-        '14-report-finanziari'  => 'financial_reports',
+        '11-corsi-collettivi' => 'group_classes',
+        '14-report-finanziari' => 'financial_reports',
     ];
 
     public string $currentSlug = '';

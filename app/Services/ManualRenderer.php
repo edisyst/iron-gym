@@ -16,7 +16,7 @@ class ManualRenderer
      */
     public function sections(): array
     {
-        $files = glob(base_path(self::MANUAL_DIR . '/*.md'));
+        $files = glob(base_path(self::MANUAL_DIR.'/*.md'));
         if ($files === false || $files === []) {
             return [];
         }

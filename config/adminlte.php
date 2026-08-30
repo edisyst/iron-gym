@@ -457,6 +457,12 @@ return [
             'can' => 'access-admin-section',
         ],
         [
+            'text' => 'Comandi Artisan',
+            'url' => 'backoffice/settings/artisan',
+            'icon' => 'fas fa-terminal',
+            'can' => 'access-admin-section',
+        ],
+        [
             'text' => 'Inventario Dischi',
             'url' => 'backoffice/admin/plate-inventory',
             'icon' => 'fas fa-dumbbell',

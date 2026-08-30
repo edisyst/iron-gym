@@ -30,6 +30,7 @@ use App\Livewire\Backoffice\Reports\FinancialReport;
 use App\Livewire\Backoffice\Reports\ManagerDashboard;
 use App\Livewire\Backoffice\Reports\TrainingReport;
 use App\Livewire\Backoffice\Search\GlobalSearch;
+use App\Livewire\Backoffice\Settings\ArtisanRunner;
 use App\Livewire\Backoffice\Settings\FeatureFlagManager;
 use App\Livewire\Backoffice\Settings\OpeningHoursManager;
 use App\Livewire\Backoffice\Settings\SettingsHub;
@@ -217,7 +218,7 @@ Route::prefix('backoffice')
         Route::middleware('can:access-admin-section')->prefix('settings')->name('settings.')->group(function () {
             Route::get('/', SettingsHub::class)->name('index');
             Route::get('/feature-flags', FeatureFlagManager::class)->name('feature-flags');
-            Route::get('/artisan', \App\Livewire\Backoffice\Settings\ArtisanRunner::class)->name('artisan');
+            Route::get('/artisan', ArtisanRunner::class)->name('artisan');
         });
 
         // Redirect 301 dalla vecchia URL

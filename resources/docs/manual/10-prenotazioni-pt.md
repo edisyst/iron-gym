@@ -2,7 +2,7 @@
 
 ## A cosa serve
 
-La sezione Prenotazioni PT (`/backoffice/calendar/bookings`) raccoglie tutte
+La sezione Prenotazioni PT (`/backoffice/bookings`) raccoglie tutte
 le sessioni di personal training prenotate dagli atleti o create dallo staff.
 Il trainer gestisce le richieste in arrivo (conferma o annullamento); il
 gestore ha visibilita' su tutto lo staff.

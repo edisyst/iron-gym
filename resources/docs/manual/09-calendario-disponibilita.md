@@ -46,7 +46,7 @@ se esiste uno slot ricorrente per quel giorno.
 ## Prenotazioni PT backoffice
 
 Le prenotazioni create dagli atleti o dallo staff si trovano in
-**Prenotazioni PT** (`/backoffice/calendar/bookings`), accessibile a gestore
+**Prenotazioni PT** (`/backoffice/bookings`), accessibile a gestore
 e trainer. Vedi la sezione "Prenotazioni PT" del manuale per i dettagli.
 
 ## Errori comuni

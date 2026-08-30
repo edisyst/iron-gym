@@ -30,8 +30,37 @@
 - [ ] SMTP produzione configurato e verificato
 
 ## Roll-out graduale
-- [ ] Feature flag `financial_reports` ON (attivare da subito per il gestore)
-- [ ] Feature flag `periodization_engine` OFF (attivare dopo 2 settimane di test manuale)
-- [ ] Feature flag `push_notifications` OFF (attivare dopo verifica service worker su dispositivo reale)
-- [ ] Feature flag `group_classes` OFF (attivare se la palestra usa corsi collettivi)
+
+I 14 flag sono gestibili da backoffice → Impostazioni → Funzioni (solo gestore).
+Tutti i flag usano `Setting::bool(key, default)` + `Feature::purge` — modificabili live senza deploy.
+
+### Moduli (attivi per tutta la palestra)
+
+| Flag | Stato consigliato al primo avvio | Note |
+|---|---|---|
+| `group_classes` | OFF → ON se palestra usa corsi collettivi | Attivare solo dopo aver caricato corsi e palinsesti |
+| `messaging` | ON | Messaggistica trainer-atleta, nessun prerequisito |
+| `pt_bookings` | ON | Prenotazioni PT lato atleta; richiede disponibilita' trainer configurate |
+
+### Sessione atleta (attivi per tutti gli atleti)
+
+| Flag | Stato consigliato al primo avvio | Note |
+|---|---|---|
+| `readiness_check` | ON | Check pre-sessione 4 domande |
+| `exercise_substitution` | ON | Sostituzione esercizio live |
+| `session_recap` | ON | Riepilogo post-sessione con PR e top muscoli |
+| `personal_records` | ON | Rilevamento e storico PR e1RM |
+| `weekly_volume` | ON | Dashboard volume muscolare |
+| `plate_calculator` | ON | Nessun gating point UI corrente; lasciare ON |
+
+### Sistema
+
+| Flag | Stato consigliato al primo avvio | Note |
+|---|---|---|
+| `financial_reports` | ON | Report KPI e fatturato; visibile solo al gestore |
+| `periodization_engine` | OFF → ON dopo 2 sett. test | Progressione automatica mesocicli; testare con trainer beta prima |
+| `push_notifications` | OFF | Attivare dopo verifica service worker su dispositivo reale |
+| `outbound_notifications` | **ON obbligatorio** | Kill switch globale: se OFF blocca tutte le email e push schedulati |
+| `in_app_feedback` | OFF | Widget feedback in-app; attivare dopo rodaggio |
+
 - [ ] Primo gruppo pilota: 3-5 atleti + 1 trainer

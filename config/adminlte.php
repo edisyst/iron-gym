@@ -389,6 +389,12 @@ return [
             'icon' => 'fas fa-chart-bar',
             'can' => 'view-training-reports',
         ],
+        [
+            'text' => 'Report finanziario',
+            'url' => 'backoffice/reports/manager',
+            'icon' => 'fas fa-euro-sign',
+            'can' => 'view-financial-reports',
+        ],
         ['header' => 'CALENDARIO'],
         [
             'text' => 'Calendario',

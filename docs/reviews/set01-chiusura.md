@@ -30,41 +30,29 @@ Correzione applicata direttamente in CLAUDE.md.
 
 ## Scostamenti manuale vs menu (solo documentazione, nessuna correzione)
 
-### S-01 — Sezione 08 (Progressione e volume landmarks): nessuna voce sidebar diretta
+### S-01 — Sezione 08 (Progressione e volume landmarks): nessuna voce sidebar diretta ✓ RISOLTO
 
-La sezione documenta funzionalita' raggiungibili solo navigando all'interno di
-altre pagine:
-- Dettaglio mesociclo (pulsante "Applica progressione", tab volume)
-- Profilo atleta in backoffice (link "Volume landmarks")
+La sezione documenta funzionalita' accessibili solo dall'interno di altre pagine
+(dettaglio mesociclo, profilo atleta). Non esiste una route top-level sensata
+poiche' entrambe le sotto-pagine sono per-atleta.
 
-Nessuna voce `config/adminlte.php` punta a una route `/backoffice/volume-landmarks`
-o simile. La sezione 08 del manuale e' concettualmente una sotto-sezione della 07
-(Schede template e mesocicli).
+**Fix applicato:** aggiunta sezione "Come raggiungerla" in `08-progressione-volume.md`
+con percorso di navigazione esplicito per entrambe le funzioni
+(Mesocicli → dettaglio e profilo atleta → Volume landmarks).
 
-**Impatto operativo:** il lettore che cerca "Volume landmarks" nel menu non trova
-una voce corrispondente. La sezione 08 e' comunque raggiungibile dal manuale.
+### S-02 — Sezione 14 (Report finanziari): nessuna voce sidebar ✓ RISOLTO
 
-### S-02 — Sezione 14 (Report finanziari): nessuna voce sidebar
+**Fix applicato:** aggiunta voce "Report finanziario" in `config/adminlte.php`
+sotto TRAINING, con `'can' => 'view-financial-reports'`. Visibile solo al
+gestore con flag `financial_reports` ON; nascosta automaticamente quando il
+flag e' OFF (gate restituisce false).
 
-La route `/backoffice/reports/manager` e' gated da `can:view-financial-reports`
-(implicito: flag `financial_reports` ON + ruolo gestore). Non esiste pero' una
-voce nel menu `config/adminlte.php` che la colleghi.
+### S-03 — "Feedback utenti" (menu COMUNICAZIONE): nessuna sezione manuale ✓ RISOLTO
 
-La pagina e' raggiungibile solo tramite URL diretta o eventuale link interno
-dalla dashboard. Non e' presente in TRAINING ne' in IMPOSTAZIONI.
-
-**Impatto operativo:** il gestore con flag attivo non vede la voce nel menu.
-Da valutare se aggiungere una voce "Report finanziario" sotto TRAINING o
-sotto IMPOSTAZIONI in un rilascio futuro.
-
-### S-03 — "Feedback utenti" (menu COMUNICAZIONE): nessuna sezione manuale
-
-La voce `Feedback utenti` (`/backoffice/admin/feedback`) appare nella sidebar
-sotto COMUNICAZIONE (`can: access-admin-section`). Non esiste una sezione
-dedicata nel manuale.
-
-**Impatto operativo:** limitato — e' una lista read-only dei feedback in-app
-inviati dagli utenti. La sezione 12 (Comunicazione e campagne) non la menziona.
+**Fix applicato:** aggiunta sottosezione "Feedback utenti" in
+`12-comunicazione-campagne.md` con descrizione della pagina, gate di accesso
+(solo gestore), comportamento con flag `in_app_feedback` OFF e persistenza dei
+dati gia' archiviati.
 
 ### S-04 — Sezione 12: citazione errata della route messaggistica ✓ RISOLTO
 

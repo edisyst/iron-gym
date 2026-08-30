@@ -82,9 +82,9 @@ URL: `/backoffice/bookings`
 
 URL: `/backoffice/group-classes`
 
-> **Nota:** la voce di menu "Corsi collettivi" è visibile solo se feature flag `group_classes` = ON
-> (gate `view-group-classes`). Con flag OFF la voce è nascosta nella sidebar ma la route è
-> tecnicamente accessibile navigando direttamente.
+> **Nota:** la voce di menu "Corsi collettivi" è visibile solo se feature flag `group_classes` = ON.
+> Con flag OFF la route restituisce **403** (gate `view-group-classes`) per tutti i ruoli,
+> incluso il receptionist. Verificare che il flag sia ON prima di eseguire questi passi.
 
 - [ ] Lista corsi si carica (se flag ON)
 - [ ] Iscrizioni a corso visibili
@@ -115,7 +115,9 @@ URL: `/backoffice/settings/opening-hours`
 - [ ] `/backoffice/reports/training` → 403
 - [ ] `/backoffice/reports/manager` → 403
 - [ ] `/backoffice/reports/financial` → 403
-- [ ] `/backoffice/admin/feature-flags` → 403
+- [ ] `/backoffice/settings` → 403
+- [ ] `/backoffice/settings/feature-flags` → 403
+- [ ] `/backoffice/admin/feature-flags` → 301 redirect a `/backoffice/settings/feature-flags`, poi 403
 - [ ] `/backoffice/admin/plate-inventory` → 403
 
 ---

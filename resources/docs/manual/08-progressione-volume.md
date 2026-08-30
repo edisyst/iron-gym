@@ -9,6 +9,15 @@ riferimento per muscolo che definiscono il range ottimale di lavoro: MEV
 (Minimum Effective Volume), MAV (Maximum Adaptive Volume — range min/max) e
 MRV (Maximum Recoverable Volume).
 
+## Come raggiungerla
+
+Questa sezione non ha una voce di menu autonoma. Si accede in due modi:
+
+- **Progressione e volume** (per mesociclo): Training → Mesocicli → clicca sul
+  nome del mesociclo → pagina dettaglio.
+- **Volume landmarks** (per atleta): Training → Mesocicli → clicca sul profilo
+  dell'atleta → link "Volume landmarks" nel pannello laterale del profilo.
+
 ## Chi la vede
 
 La pagina di dettaglio mesociclo e il gestore volume landmarks sono accessibili

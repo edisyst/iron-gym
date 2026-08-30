@@ -44,6 +44,17 @@ I template sono predefiniti in database. Non esiste una UI di gestione
 template nel backoffice attuale: per aggiungere o modificare template occorre
 farlo direttamente in database o via seeder.
 
+## Feedback utenti
+
+La voce **Feedback utenti** (`/backoffice/admin/feedback`), sotto Comunicazione,
+raccoglie i feedback inviati dagli utenti tramite il widget in-app
+(flag `in_app_feedback` in Impostazioni → Funzioni). E' una lista read-only
+accessibile solo al gestore: mostra tipo di feedback, testo, utente,
+pagina di invio e data.
+
+Con il flag `in_app_feedback` OFF il widget non appare agli utenti ma i
+feedback gia' archiviati in database restano visibili in questa pagina.
+
 ## Errori comuni
 
 **Il corpo e' vuoto: errore di validazione**: il campo corpo e' obbligatorio.

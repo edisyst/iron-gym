@@ -2,6 +2,16 @@
 
 ---
 
+## v1.2.4 — Tag di allineamento post-SET01 (2026-08-30)
+
+- `ArtisanRunner`: pagina comandi Artisan per il gestore (`/backoffice/settings/artisan`). Whitelist comandi sicuri, output live via `Process`, log in sessione, accesso solo gestore.
+- develop allineato a master (fast-forward).
+- CLAUDE.md aggiornato con voce v1.2.4.
+
+**Suite:** 506 test (500 pass / 6 skipped). PHPStan: 0 errori. Pint: conforme.
+
+---
+
 ## DOC02 — Allineamento documentazione post-SET01/PERF01 (2026-08-30)
 
 Audit documentazione con delta DOC01→v0.9+SET01+PERF01. Solo file `.md` toccati.

@@ -321,6 +321,30 @@ visibile via Alpine `x-show` quando `localStorage['ig-viewport'] === 'desktop'`.
 
 ---
 
+## Navigazione filtrata per flag (SET01 Step 2C)
+
+Alcune voci del layout cambiano comportamento in base ai feature flag attivi.
+Il nucleo garantito (Home, Allenamento, Profilo) e' sempre visibile.
+
+### Bottom nav (`x-athlete.bottom-nav` + `layouts/athlete.blade.php`)
+
+| Elemento | Flag | Comportamento se flag OFF |
+|---|---|---|
+| Tab "Progressi" href | `weekly_volume` | Punta a `route('athlete.measurements')` invece di `route('athlete.volume')`. Il tab rimane visibile. |
+| Link "Prenota" | gate `view-athlete-bookings` (`pt_bookings` OR `group_classes`) | Link rimosso dal bottom-nav. |
+
+### Layout atleta (`layouts/athlete.blade.php`)
+
+| Elemento | Flag | Comportamento se flag OFF |
+|---|---|---|
+| Toast PR post-set | `personal_records` | Evento `pr-achieved` non emette toast (il record e' scritto in DB ugualmente). |
+| Fetch `/athlete/messages-unread-count` | `messaging` | La chiamata HTTP non viene emessa. Il badge non appare. |
+| Link "Apri messaggi" (empty-state dashboard) | `messaging` | Link non renderizzato. |
+
+Implementazione: `@feature('flag')..@endfeature` nelle Blade; `Feature::active()` inline per l'href condizionale.
+
+---
+
 ## Alpine store globali (layout `athlete.blade.php`)
 
 | Store | Proprietà | Inizializzazione | Uso |

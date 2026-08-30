@@ -302,8 +302,8 @@ Toggle sempre via `Setting::write` + `Feature::purge` (non `activateForEveryone`
 | `group_classes` | `group_classes_enabled` | ON | Tutta la palestra | Moduli |
 | `messaging` | `messaging_enabled` | ON | Tutta la palestra | Moduli |
 | `pt_bookings` | `pt_bookings_enabled` | ON | Tutta la palestra | Moduli |
-| `financial_reports` | `financial_reports_enabled` | ON | Solo gestore | Moduli |
-| `periodization_engine` | `periodization_engine_enabled` | ON | Gestore + trainer beta | Moduli |
+| `financial_reports` | `financial_reports_enabled` | ON | Solo gestore | Sistema |
+| `periodization_engine` | `periodization_engine_enabled` | ON | Gestore + trainer beta | Sistema |
 | `readiness_check` | `readiness_check_enabled` | ON | Atleti | Sessione atleta |
 | `exercise_substitution` | `exercise_substitution_enabled` | ON | Atleti | Sessione atleta |
 | `session_recap` | `session_recap_enabled` | ON | Atleti | Sessione atleta |
@@ -311,7 +311,7 @@ Toggle sempre via `Setting::write` + `Feature::purge` (non `activateForEveryone`
 | `weekly_volume` | `weekly_volume_enabled` | ON | Atleti | Sessione atleta |
 | `plate_calculator` | `plate_calculator_enabled` | ON | Atleti (nessun gating point, riservato a usi futuri) | Sessione atleta |
 | `push_notifications` | `push_notifications_enabled` | OFF | Atleti e trainer | Sistema |
-| `outbound_notifications` | `outbound_notifications_enabled` | ON | Job di sistema | Sistema |
+| `outbound_notifications` | `outbound_notifications_enabled` | ON | Tutta la palestra (flag globale) | Sistema |
 | `in_app_feedback` | `in_app_feedback_enabled` | OFF | Tutti | Sistema |
 
 Per modificare flags: backoffice → Impostazioni → Funzioni (solo gestore).

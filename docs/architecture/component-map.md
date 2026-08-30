@@ -49,6 +49,11 @@ Prefisso `/backoffice`, middleware `auth + role:gestore|trainer|receptionist`.
 | `backoffice.admin.feedback` | `/backoffice/admin/feedback` | `Backoffice\Admin\FeedbackList` | `gestore` |
 | `backoffice.admin.plate-inventory` | `/backoffice/admin/plate-inventory` | `Backoffice\Admin\PlateInventoryManager` | `gestore` |
 | `backoffice.reports.download` | `/backoffice/reports/download/{file}` | closure | `gestore` |
+| `backoffice.members.expiry` | `/backoffice/members/expiry` | `Backoffice\Members\ExpiryDashboard` | `gestore\|receptionist` |
+| `backoffice.checkin` | `/backoffice/checkin` | `Backoffice\Access\QuickCheckin` | |
+| `backoffice.settings.opening-hours` | `/backoffice/settings/opening-hours` | `Backoffice\Settings\OpeningHoursManager` | |
+| `backoffice.subscriptions.export` | `/backoffice/subscriptions/export` | closure CSV | `gestore` |
+| `backoffice.members.export` | `/backoffice/members/export` | closure CSV | `gestore` |
 
 Note: `/backoffice/admin/feature-flags` redirige con 301 a `/backoffice/settings/feature-flags`.
 
@@ -89,7 +94,8 @@ Tutti in `app/Livewire/Backoffice/`. Layout: `->layout('layouts.backoffice')`.
 |---|---|---|
 | (root) | `Dashboard` | Schermata iniziale backoffice |
 | `Access` | `AccessLogList` | Registro accessi struttura |
-| `Admin` | `FeatureFlagManager` | Toggle feature flags (solo gestore) |
+| `Access` | `QuickCheckin` | Check-in rapido: ricerca tesserato live, validazione cert+abbonamento, cronologia giornaliera |
+| `Admin` | `FeatureFlagManager` | Classe originale (namespace Admin) — tenuta per retrocompatibilita'; route usa `Settings\FeatureFlagManager` |
 | `Admin` | `FeedbackList` | Gestione feedback in-app (solo gestore) |
 | `Athletes` | `AthleteProfile` | Contenitore profilo atleta con tab Alpine (storico, analytics, misurazioni, landmarks, messaggi) |
 | `Athletes` | `AthleteSessionHistory` | Storico sessioni atleta lato backoffice, dettaglio inline con e1RM |
@@ -98,12 +104,15 @@ Tutti in `app/Livewire/Backoffice/`. Layout: `->layout('layouts.backoffice')`.
 | `Calendar` | `TrainerCalendar` | Vista settimanale FullCalendar.js, drag-and-drop slot |
 | `Calendar` | `AvailabilityManager` | CRUD ricorrenze settimanali trainer |
 | `Calendar` | `BookingList` | Lista prenotazioni PT con filtri e azioni |
-| `Calendar` | `GroupClassManager` | CRUD corsi collettivi, lista iscritti |
+| `Calendar` | `GroupClassManager` | Lista occorrenze corsi collettivi, gestione iscritti, check-in presenze, annullamento |
+| `Calendar` | `ClassScheduleManager` | CRUD palinsesti ricorrenti (ClassSchedule): giorno, orario, trainer, date validita' |
+| `Calendar` | `GroupClassCatalog` | CRUD definizioni corsi (GroupClass): nome, slug, durata, capienza, sala. Solo gestore. |
 | `Communications` | `CommunicationCampaign` | Campagne comunicazione con segmentazione e invio batch |
 | `Exercises` | `ExerciseList` | Lista esercizi con filtri e paginazione; cache Redis tag `exercises` |
 | `Exercises` | `ExerciseDetail` | Scheda tecnica esercizio (breadcrumb, muscoli con progress bar, video). Binding su slug. |
 | `Exercises` | `ExerciseForm` | CRUD esercizio con pivot exercise_muscle e exercise_equipment |
 | `Members` | `MemberList` | Lista tesserati con link a profilo allenamento |
+| `Members` | `ExpiryDashboard` | Pannello scadenze: certificati medici e abbonamenti in scadenza con filtri temporali |
 | `Members` | `MemberForm` | CRUD anagrafica tesserato; sezione opzionale "Crea account accesso app" (crea User + ruolo atleta in un unico submit) |
 | `Mesocycles` | `MesocycleList` | Lista mesocicli con link a profilo atleta e dettaglio |
 | `Mesocycles` | `MesocycleDetail` | Tabella volume per muscolo, progressione, forza deload; gated su `periodization_engine` |
@@ -115,6 +124,10 @@ Tutti in `app/Livewire/Backoffice/`. Layout: `->layout('layouts.backoffice')`.
 | `Reports` | `ManagerDashboard` | KPI gestore: info-box, grafici Chart.js fatturato/piano/occupancy, churn. Solo gestore. |
 | `Reports` | `FinancialReport` | Report mensile/trimestrale/annuale, export CSV e PDF. Solo gestore. |
 | `Reports` | `TrainingReport` | Sessioni completate, volume medio, aderenza schede |
+| `Settings` | `SettingsHub` | Hub impostazioni con tab "Funzioni" (feature flags) e "Manuale". Solo gestore. |
+| `Settings` | `FeatureFlagManager` | Toggle 13 flag raggruppati per gruppo (Moduli/Sessione atleta/Sistema). Solo gestore. |
+| `Settings` | `ManualViewer` | Renderer manuale Markdown embedded nel tab "Manuale" di SettingsHub |
+| `Settings` | `OpeningHoursManager` | CRUD orari apertura settimanali + eccezioni per data. Accessibile a gestore e receptionist. |
 | `Shared` | `NotificationBell` | Campanella con contatore notifiche non lette |
 | `Subscriptions` | `SubscriptionList` | Lista abbonamenti attivi |
 | `Subscriptions` | `SubscriptionForm` | CRUD abbonamento |
@@ -165,7 +178,7 @@ Tutti in `app/Observers/`. Registrati in `AppServiceProvider`.
 | Observer | Modello | Azioni |
 |---|---|---|
 | `ExerciseObserver` | `Exercise` | `create/update/delete` → flush cache tag `exercises` |
-| `PtBookingObserver` | `PtBooking` | `update` (confermato/cancellato) → invia notifica atleta e trainer |
+| `PtBookingObserver` | `PtBooking` | `saved/deleted` → invalida cache slot trainer e tag KPI. Nessuna notifica inviata. |
 | `SubscriptionObserver` | `Subscription` | `create/update` → invalida cache KPI tag `kpi` |
 | `TrainerAvailabilityObserver` | `TrainerAvailability` | `saved/deleted` → ricalcola slot disponibili |
 | `TrainingSessionObserver` | `TrainingSession` | `update` → aggiorna `status`, `started_at`, `completed_at` |
@@ -202,6 +215,8 @@ Tutti in `app/Services/`.
 | `pwa:generate-icons` | `GeneratePwaIcons` | Genera icone PWA da `resources/images/icon.png` (192px, 512px, maskable) | manuale |
 | `members:notify-inactive` | `InactiveMembersCommand` | Identifica tesserati inattivi da N giorni, mette in coda campagna automatica | schedulato |
 | `kpi:summary` | `KpiSummaryCommand` | Genera e invia per email report KPI mensile | schedulato 1° del mese |
+| `classes:generate-occurrences` | `GenerateClassOccurrences` | Genera `ClassOccurrence` dal palinsesto attivo per N giorni futuri; idempotente (unique su schedule+date) | schedulato giornalmente |
+| `classes:send-reminders` | `SendClassReminders` | Invia `ClassReminderNotification` agli iscritti con occorrenze il giorno successivo | schedulato `dailyAt('08:00')` |
 
 ---
 
@@ -217,7 +232,11 @@ Tutti in `app/Services/`.
 | `PilotTemplateSeeder` | manuale | Template PPL Ipertrofia Intermediato (4 sett.) con 3 sessioni/sett. e progressione automatica |
 | `ExerciseDescriptionSeeder` | `db:seed` | Popola `execution_description` su tutti e 83 esercizi |
 | `CommunicationTemplateSeeder` | `db:seed` | Template messaggi automatici (scadenza abbonamento, certificato medico, promemoria sessione) |
-| `OpeningHoursSeeder` | `db:seed` | Orari apertura default lun–ven 06:30–22:30, sab 08:00–18:00, dom 10:00–14:00 |
+| `GroupClassSeeder` | `db:seed` | Corsi collettivi demo (yoga, spinning, zumba) con palinsesti e occorrenze future |
+| `SettingsFlagSeeder` | `db:seed` | Inizializza tutte le chiavi `settings` per i 13 flag gestibili; idempotente (`firstOrCreate`) |
+| `FeedbackDemoSeeder` | `db:seed` | 8 feedback in-app demo (4 da atleta@atleta.atleta) |
+| `FunctionalTestSeeder` | solo `local/test` | 4 scenari per piano test funzionale (yoga waitlist, accessi esauriti, overlap trainer, occorrenza passata) |
+| `OpeningHoursSeeder` | `db:seed` | Orari apertura default lun–ven 06:30–22:30, sab 08:00–18:00, dom 10:00–14:00; idempotente (`firstOrCreate`) |
 
 ---
 

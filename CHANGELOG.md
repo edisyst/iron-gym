@@ -2,6 +2,39 @@
 
 ---
 
+## SET01 Fase 3 — Verifica finale e chiusura (2026-08-30)
+
+### Correzioni CLAUDE.md
+
+- `financial_reports` e `periodization_engine`: gruppo corretto da "Moduli" a "Sistema" (allineamento a `config/features.php`).
+- `outbound_notifications`: platea corretta da "Job di sistema" a "Tutta la palestra (flag globale)".
+
+### Fix Pint
+
+- `app/Services/ManualRenderer.php`: `concat_space`, `unary_operator_spaces`, `not_operator_with_successor_space`.
+- `app/Livewire/Backoffice/Settings/ManualViewer.php`: `binary_operator_spaces`.
+
+### component-map.md aggiornato
+
+- Route backoffice aggiunte: `members.expiry`, `checkin`, `settings.opening-hours`, `subscriptions.export`, `members.export`.
+- Componenti aggiunti: `Access\QuickCheckin`, `Members\ExpiryDashboard`, `Calendar\ClassScheduleManager`, `Calendar\GroupClassCatalog`, `Settings\SettingsHub`, `Settings\FeatureFlagManager`, `Settings\ManualViewer`, `Settings\OpeningHoursManager`.
+- `PtBookingObserver`: descrizione corretta (nessuna notifica inviata).
+- Comandi aggiunti: `classes:generate-occurrences`, `classes:send-reminders`.
+- Seeder aggiunti: `GroupClassSeeder`, `SettingsFlagSeeder`, `FeedbackDemoSeeder`, `FunctionalTestSeeder`.
+- `OpeningHoursSeeder`: riga deduplicata.
+
+### Scostamenti documentati (set01-chiusura.md)
+
+- S-01: sezione 08 senza voce sidebar diretta.
+- S-02: sezione 14 (report finanziari) senza voce sidebar in adminlte.php.
+- S-03: "Feedback utenti" in menu senza sezione manuale.
+- S-04: sezione 12 cita `/backoffice/messages` che non esiste; la route e' per-atleta.
+- S-05: `Admin/FeatureFlagManager.php` dead code (file non rimosso dopo migrazione a Settings).
+
+**Suite:** 506 test (500 pass / 6 skipped). PHPStan: 0 errori. Pint: conforme.
+
+---
+
 ## SET01 Step 4 — Manuale sezioni 7-16 + SECTION_FLAGS (2026-08-30)
 
 ### Sezioni Markdown aggiunte (resources/docs/manual/)

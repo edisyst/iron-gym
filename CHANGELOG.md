@@ -2,6 +2,20 @@
 
 ---
 
+## PERF01 — Audit prestazioni: 5 fix query (2026-08-30)
+
+Risolti tutti gli 8 finding del report `docs/reviews/perf-audit-2026-08-30.md` (i finding 1/3/4 erano già stati risolti nella sessione precedente).
+
+- **CRITICO-2** `KpiService::trainerOccupancy`: loop con 4 query per trainer → 4 query batch `GROUP BY trainer_id` + merge PHP. Costo O(1) indipendente dal numero trainer.
+- **IMPORTANTE-5** `ManagerDashboard::atRiskMembers`: subquery correlata `(SELECT MAX FROM access_logs WHERE member_id = m.id)` → `LEFT JOIN access_logs + MAX(al.checked_in_at) GROUP BY`. Query avvolta in `Cache::remember(300)` chiave data.
+- **IMPORTANTE-6** `TrainingReport::loadAthleteRows`: nessuna cache su query multi-JOIN → `Cache::remember(60)` chiave `from:to:trainer:mesoStatus`.
+- **MINORE-7** `PersonalRecordDetector::hasSufficientHistory`: 4-JOIN COUNT eseguita per ogni set completato → `Cache::remember(300)` chiave `pr_history:{athleteId}:{exerciseId}`.
+- **MINORE-8** `Backoffice\Dashboard`: 5 COUNT separate (`Member` ×3, `Subscription` ×2) → 2 query `DB::table` con `CASE WHEN` (già in `Cache::remember(300)`).
+
+**Suite:** 506 test (500 pass / 6 skipped). PHPStan: 0 errori. Pint: conforme.
+
+---
+
 ## SET01 — Risoluzione scostamenti post-chiusura (2026-08-30)
 
 Tutti e cinque gli scostamenti identificati in Fase 3 risolti.

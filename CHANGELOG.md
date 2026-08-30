@@ -2,6 +2,31 @@
 
 ---
 
+## DOC02 — Allineamento documentazione post-SET01/PERF01 (2026-08-30)
+
+Audit documentazione con delta DOC01→v0.9+SET01+PERF01. Solo file `.md` toccati.
+
+**Fase 2 — Architettura/devops:**
+- `component-map.md`: 14 flag (non 13), seeder rinominati post 2026-08-28 (CoreDemoSeeder, TemplateSeeder, ScenarioDemoSeeder, ClassDemoSeeder, VolumeDemoSeeder, VolumeLandmarkDemoSeeder, DumbbellInventorySeeder), feature flags section riscritta con 3 gruppi.
+- `go-live-checklist.md`: roll-out aggiornato a 14 flag in 3 tabelle.
+- `ui-atleta.md`: documentata navigazione filtrata per flag (SET01 Step 2C): Progressi, Prenota, toast PR, fetch unread-count.
+- `docs/README.md`: 5 voci reviews/ aggiunte, note doc-audit aggiornata.
+
+**Fase 3-B — Piani test per ruolo:**
+- `01-gestore.md`: sez. 18 riscritta (Impostazioni: tab Funzioni + Manuale + Feedback utenti), aggiunte sez. 20-22 (Check-in rapido R24, Pannello scadenze R22/R23, Export CSV R29/R30).
+- `02-trainer.md`: rimossa sez. 11 errata (communications/campaign → 403 trainer, non accessibile), sez. 12 aggiornata con settings e redirect 301.
+- `03-receptionist.md`: nota group_classes corretta (403 con flag OFF anche navigando direttamente), sez. 9 aggiornata con /backoffice/settings.
+- `04-atleta.md`: rimossa sez. 11 plate calculator (UI eliminato in UX01), aggiunte note prerequisito flag in sez. 4/5/7/9/10/12/13, aggiunta sez. 16 notifiche (R10).
+
+**Fase 4 — Consolidamento:**
+- Fix B-03: URL `/backoffice/calendar/bookings` → `/backoffice/bookings` in manuale sez. 09 e 10.
+- `docs/review/` + `docs/audit/` → `docs/reviews/` (git mv, link aggiornati in README).
+- `docs/reviews/doc-audit/11-doc02-chiusura.md` scritto.
+
+**Suite:** 506 test (500 pass / 6 skipped). PHPStan: 0 errori. Pint: conforme.
+
+---
+
 ## PERF01 — Audit prestazioni: 5 fix query (2026-08-30)
 
 Risolti tutti gli 8 finding del report `docs/reviews/perf-audit-2026-08-30.md` (i finding 1/3/4 erano già stati risolti nella sessione precedente).

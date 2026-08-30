@@ -9,6 +9,7 @@ use App\Models\GroupClass;
 use App\Models\User;
 use App\Services\ClassBookingService;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -244,6 +245,13 @@ class GroupClassManager extends Component
 
         $booking = ClassBooking::findOrFail($bookingId);
         $booking->update(['status' => 'no_show', 'attended_at' => null]);
+    }
+
+    public function generateOccurrences(): void
+    {
+        abort_unless(Auth::user()->hasRole('gestore'), 403);
+        Artisan::call('classes:generate-occurrences');
+        session()->flash('success', 'Occorrenze generate. Le nuove date del palinsesto sono ora visibili in lista.');
     }
 
     // -------------------------------------------------------------------------

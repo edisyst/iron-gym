@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\CommunicationLog;
 use App\Models\Member;
+use App\Models\Setting;
 use App\Notifications\MedicalCertExpiryNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -11,6 +12,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class SendMedicalCertExpiryReminders implements ShouldQueue
 {
@@ -18,6 +20,12 @@ class SendMedicalCertExpiryReminders implements ShouldQueue
 
     public function handle(): void
     {
+        if (! Setting::bool('outbound_notifications_enabled', true)) {
+            Log::warning('[outbound_notifications] invio soppresso da interruttore', ['job' => static::class]);
+
+            return;
+        }
+
         $today = Carbon::today();
 
         // Scaduti negli ultimi 7 giorni o in scadenza entro 30 giorni

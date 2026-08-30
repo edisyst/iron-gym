@@ -60,13 +60,14 @@ class Dashboard extends Component
             }
 
             if (Feature::active('group_classes')) {
+                // Colonne qualificate: class_bookings e class_occurrences
+                // condividono i nomi status e created_at.
                 $this->upcomingClassBookings = ClassBooking::with('occurrence.groupClass')
-                    ->where('member_id', $member->id)
-                    ->where('status', 'confirmed')
-                    ->whereHas('occurrence', fn ($q) => $q
-                        ->whereDate('date', '>=', today())
-                        ->where('status', 'planned'))
                     ->join('class_occurrences', 'class_bookings.class_occurrence_id', '=', 'class_occurrences.id')
+                    ->where('class_bookings.member_id', $member->id)
+                    ->where('class_bookings.status', 'confirmed')
+                    ->whereDate('class_occurrences.date', '>=', today())
+                    ->where('class_occurrences.status', 'planned')
                     ->orderBy('class_occurrences.date')
                     ->orderBy('class_occurrences.start_time')
                     ->select('class_bookings.*')
@@ -74,14 +75,16 @@ class Dashboard extends Component
                     ->get();
             }
 
-            $this->upcomingPtBookings = PtBooking::with('trainer')
-                ->where('member_id', $member->id)
-                ->whereIn('status', ['pending', 'confirmed'])
-                ->whereDate('booked_date', '>=', today())
-                ->orderBy('booked_date')
-                ->orderBy('start_time')
-                ->limit(3)
-                ->get();
+            if (Feature::active('pt_bookings')) {
+                $this->upcomingPtBookings = PtBooking::with('trainer')
+                    ->where('member_id', $member->id)
+                    ->whereIn('status', ['pending', 'confirmed'])
+                    ->whereDate('booked_date', '>=', today())
+                    ->orderBy('booked_date')
+                    ->orderBy('start_time')
+                    ->limit(3)
+                    ->get();
+            }
         }
 
         // Cerca il mesociclo attivo dell'atleta con le settimane e sessioni

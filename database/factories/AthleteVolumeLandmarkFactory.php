@@ -16,18 +16,13 @@ class AthleteVolumeLandmarkFactory extends Factory
 
     public function definition(): array
     {
-        $mev = fake()->numberBetween(6, 10);
-        $mavMin = $mev + fake()->numberBetween(2, 4);
-        $mavMax = $mavMin + fake()->numberBetween(4, 8);
-        $mrv = $mavMax + fake()->numberBetween(2, 4);
-
         return [
             'athlete_id' => User::factory(),
             'muscle_id' => Muscle::factory(),
-            'mev' => $mev,
-            'mav_min' => $mavMin,
-            'mav_max' => $mavMax,
-            'mrv' => $mrv,
+            'mev' => $this->faker->numberBetween(6, 10),
+            'mav_min' => $this->faker->numberBetween(12, 16),
+            'mav_max' => $this->faker->numberBetween(16, 20),
+            'mrv' => $this->faker->numberBetween(20, 26),
             'notes' => null,
             'updated_by' => null,
         ];

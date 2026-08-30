@@ -5,6 +5,7 @@ namespace App\Livewire\Backoffice\Reports;
 use App\Models\Mesocycle;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Livewire\Component;
@@ -55,7 +56,8 @@ class TrainingReport extends Component
         // Trainer loggato vede solo i suoi atleti; gestore vede tutti
         $trainerFilter = $user->hasRole('gestore') ? null : $user->id;
 
-        $athleteRows = $this->loadAthleteRows($from, $to, $trainerFilter);
+        $cacheKey = 'training_report:'.$from->toDateString().':'.$to->toDateString().':'.($trainerFilter ?? 'all').':'.$this->mesoStatus;
+        $athleteRows = Cache::remember($cacheKey, 60, fn () => $this->loadAthleteRows($from, $to, $trainerFilter));
         $drilldown = null;
         if ($this->drilldownAthleteId !== null) {
             $drilldown = $this->loadDrilldown($this->drilldownAthleteId);

@@ -389,6 +389,12 @@ return [
             'icon' => 'fas fa-chart-bar',
             'can' => 'view-training-reports',
         ],
+        [
+            'text' => 'Report finanziario',
+            'url' => 'backoffice/reports/manager',
+            'icon' => 'fas fa-euro-sign',
+            'can' => 'view-financial-reports',
+        ],
         ['header' => 'CALENDARIO'],
         [
             'text' => 'Calendario',
@@ -407,31 +413,28 @@ return [
             'icon' => 'fas fa-user-clock',
         ],
         [
-            'text' => 'Corsi collettivi',
-            'icon' => 'fas fa-users',
-            'can' => 'view-group-classes',
-            'submenu' => [
-                [
-                    'text' => 'Occorrenze',
-                    'url' => 'backoffice/group-classes',
-                    'icon' => 'fas fa-calendar-check',
-                ],
-                [
-                    'text' => 'Palinsesto',
-                    'url' => 'backoffice/group-classes/schedules',
-                    'icon' => 'fas fa-calendar-alt',
-                ],
-                [
-                    'text' => 'Catalogo corsi',
-                    'url' => 'backoffice/group-classes/catalog',
-                    'icon' => 'fas fa-list',
-                ],
-            ],
-        ],
-        [
             'text' => 'Orari di apertura',
             'url' => 'backoffice/settings/opening-hours',
             'icon' => 'fas fa-door-open',
+        ],
+        ['header' => 'CORSI COLLETTIVI', 'can' => 'view-group-classes'],
+        [
+            'text' => 'Catalogo corsi',
+            'url' => 'backoffice/group-classes/catalog',
+            'icon' => 'fas fa-list',
+            'can' => 'view-group-classes',
+        ],
+        [
+            'text' => 'Palinsesto',
+            'url' => 'backoffice/group-classes/schedules',
+            'icon' => 'fas fa-calendar-alt',
+            'can' => 'view-group-classes',
+        ],
+        [
+            'text' => 'Classi Pianificate',
+            'url' => 'backoffice/group-classes',
+            'icon' => 'fas fa-calendar-check',
+            'can' => 'view-group-classes',
         ],
         ['header' => 'COMUNICAZIONE', 'can' => 'send-campaigns'],
         [
@@ -440,7 +443,19 @@ return [
             'icon' => 'fas fa-bullhorn',
             'can' => 'send-campaigns',
         ],
-        ['header' => 'ADMIN', 'can' => 'access-admin-section'],
+        [
+            'text' => 'Feedback utenti',
+            'url' => 'backoffice/admin/feedback',
+            'icon' => 'fas fa-comment-alt',
+            'can' => 'send-campaigns',
+        ],
+        ['header' => 'IMPOSTAZIONI', 'can' => 'access-admin-section'],
+        [
+            'text' => 'Funzioni',
+            'url' => 'backoffice/settings/feature-flags',
+            'icon' => 'fas fa-toggle-on',
+            'can' => 'access-admin-section',
+        ],
         [
             'text' => 'Inventario Dischi',
             'url' => 'backoffice/admin/plate-inventory',

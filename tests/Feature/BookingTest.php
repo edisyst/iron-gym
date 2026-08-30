@@ -503,3 +503,57 @@ it('prenotazione PT riesce se il corso del trainer è in orario diverso', functi
 
     expect($booking->status)->toBe('confirmed');
 });
+
+// -------------------------------------------------------------------------
+// Test re-iscrizione dopo cancellazione
+// -------------------------------------------------------------------------
+
+it('re-iscrizione dopo cancellazione aggiorna il booking esistente invece di crearne uno nuovo', function () {
+    $occurrence = ClassOccurrence::factory()->create([
+        'trainer_id' => $this->trainer->id,
+        'capacity' => 10,
+        'date' => now()->addDays(3)->toDateString(),
+        'status' => 'planned',
+    ]);
+
+    $booking = $this->classService->enroll($occurrence, $this->member);
+    $originalId = $booking->id;
+
+    $this->classService->cancel($booking);
+
+    $reEnrolled = $this->classService->enroll($occurrence, $this->member);
+
+    expect($reEnrolled->id)->toBe($originalId);
+    expect($reEnrolled->status)->toBe('confirmed');
+    expect(ClassBooking::where('class_occurrence_id', $occurrence->id)
+        ->where('member_id', $this->member->id)
+        ->count())->toBe(1);
+});
+
+it('re-iscrizione in waitlist dopo cancellazione riutilizza il record esistente', function () {
+    $groupClass = GroupClass::factory()->create(['default_capacity' => 1]);
+    $occurrence = ClassOccurrence::factory()->create([
+        'group_class_id' => $groupClass->id,
+        'trainer_id' => $this->trainer->id,
+        'capacity' => 1,
+        'date' => now()->addDays(3)->toDateString(),
+        'status' => 'planned',
+    ]);
+
+    $member2 = ($this->memberWithPrereqs)();
+    $this->classService->enroll($occurrence, $member2);
+
+    $booking = $this->classService->enroll($occurrence, $this->member);
+    $originalId = $booking->id;
+    expect($booking->status)->toBe('waitlisted');
+
+    $this->classService->cancel($booking);
+
+    $reEnrolled = $this->classService->enroll($occurrence, $this->member);
+
+    expect($reEnrolled->id)->toBe($originalId);
+    expect($reEnrolled->status)->toBe('waitlisted');
+    expect(ClassBooking::where('class_occurrence_id', $occurrence->id)
+        ->where('member_id', $this->member->id)
+        ->count())->toBe(1);
+});

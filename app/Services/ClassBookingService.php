@@ -7,6 +7,7 @@ use App\Jobs\NotifyWaitlistPromotion;
 use App\Models\ClassBooking;
 use App\Models\ClassOccurrence;
 use App\Models\Member;
+use App\Models\PtBooking;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -55,10 +56,32 @@ class ClassBookingService
             throw new BookingException('Hai già un corso confermato in questo orario.');
         }
 
+        // Overlap: membro ha una sessione PT confermata nello stesso orario
+        $ptOverlap = PtBooking::where('member_id', $member->id)
+            ->where('status', 'confirmed')
+            ->where('booked_date', $occurrence->date->toDateString())
+            ->where('start_time', '<', $occurrence->end_time)
+            ->where('end_time', '>', $occurrence->start_time)
+            ->exists();
+
+        if ($ptOverlap) {
+            throw new BookingException('Hai già una sessione PT confermata in questo orario.');
+        }
+
         return DB::transaction(function () use ($occurrence, $member) {
             $fresh = ClassOccurrence::lockForUpdate()->find($occurrence->id);
 
+            $existing = ClassBooking::where('class_occurrence_id', $occurrence->id)
+                ->where('member_id', $member->id)
+                ->first();
+
             if ($fresh->available_spots > 0) {
+                if ($existing) {
+                    $existing->update(['status' => 'confirmed', 'position' => null, 'booked_by' => null, 'attended_at' => null]);
+
+                    return $existing->fresh();
+                }
+
                 return ClassBooking::create([
                     'class_occurrence_id' => $occurrence->id,
                     'member_id' => $member->id,
@@ -70,6 +93,12 @@ class ClassBookingService
             $nextPosition = (int) (ClassBooking::where('class_occurrence_id', $occurrence->id)
                 ->where('status', 'waitlisted')
                 ->max('position') ?? 0) + 1;
+
+            if ($existing) {
+                $existing->update(['status' => 'waitlisted', 'position' => $nextPosition, 'booked_by' => null, 'attended_at' => null]);
+
+                return $existing->fresh();
+            }
 
             return ClassBooking::create([
                 'class_occurrence_id' => $occurrence->id,

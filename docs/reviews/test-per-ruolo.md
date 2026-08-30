@@ -1,6 +1,13 @@
 # Test per tipologia utente — iron-gym
 
-Suite: **226 test** (220 pass + 6 skip) in 45 file. Organizzati per ruolo/contesto di esecuzione.
+> **ARCHIVIATO** — snapshot al 2026-08-23 (226 test, 220 pass + 6 skip).
+> La suite attuale conta **506 test** (500 pass + 6 skip).
+> Per la lista aggiornata: `./vendor/bin/pest --list`
+> Questo documento non verra' piu' aggiornato.
+
+---
+
+Suite al 2026-08-23: **226 test** (220 pass + 6 skip) in 45 file. Organizzati per ruolo/contesto di esecuzione.
 
 ---
 

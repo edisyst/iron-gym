@@ -4,6 +4,7 @@ use App\Livewire\Athlete\Profile;
 use App\Models\Message;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Pennant\Feature;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
 
@@ -12,6 +13,8 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     Role::firstOrCreate(['name' => 'atleta', 'guard_name' => 'web']);
     Role::firstOrCreate(['name' => 'trainer', 'guard_name' => 'web']);
+
+    Feature::activate('messaging');
 
     $this->athleteUser = User::factory()->create()->assignRole('atleta');
     $this->trainer = User::factory()->create(['name' => 'Marco Rossi'])->assignRole('trainer');

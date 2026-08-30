@@ -34,10 +34,17 @@ class Booking extends Component
 
     public string $selectedEnd = '';
 
+    public int $enrollErrorId = 0;
+
+    public string $enrollErrorMsg = '';
+
     public function mount(): void
     {
         $this->availableSlots = collect();
         $this->selectedDate = now()->toDateString();
+        if (! Feature::active('pt_bookings')) {
+            $this->activeTab = 'classes';
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -92,6 +99,8 @@ class Booking extends Component
 
     public function bookPt(): void
     {
+        abort_unless(Feature::active('pt_bookings'), 403);
+
         $this->validate([
             'selectedTrainerId' => 'required|integer|min:1',
             'selectedDate' => 'required|date|after_or_equal:today',
@@ -131,6 +140,8 @@ class Booking extends Component
 
     public function cancelPtBooking(int $bookingId): void
     {
+        abort_unless(Feature::active('pt_bookings'), 403);
+
         /** @var Member|null $member */
         $member = Auth::user()->member;
 
@@ -165,6 +176,9 @@ class Booking extends Component
     {
         abort_unless(Feature::active('group_classes'), 403);
 
+        $this->enrollErrorId = 0;
+        $this->enrollErrorMsg = '';
+
         $member = Auth::user()->member;
 
         if ($member === null) {
@@ -181,14 +195,16 @@ class Booking extends Component
         $closesAt = $occurrenceStart->copy()->subMinutes((int) config('classes.booking_closes_minutes', 30));
 
         if (now()->lt($opensAt)) {
-            session()->flash('error', 'Le prenotazioni aprono il '.$opensAt->format('d/m/Y').'.');
+            $this->enrollErrorId = $occurrenceId;
+            $this->enrollErrorMsg = 'Le prenotazioni aprono il '.$opensAt->format('d/m/Y').'.';
 
             return;
         }
 
         if (now()->gt($closesAt)) {
-            session()->flash('error', 'Prenotazioni chiuse (entro '.
-                config('classes.booking_closes_minutes', 30).' min dall\'inizio).');
+            $this->enrollErrorId = $occurrenceId;
+            $this->enrollErrorMsg = 'Prenotazioni chiuse (entro '.
+                config('classes.booking_closes_minutes', 30)." min dall'inizio).";
 
             return;
         }
@@ -202,7 +218,8 @@ class Booking extends Component
 
             session()->flash('success', $message);
         } catch (BookingException $e) {
-            session()->flash('error', $e->getMessage());
+            $this->enrollErrorId = $occurrenceId;
+            $this->enrollErrorMsg = $e->getMessage();
         }
     }
 
@@ -267,7 +284,7 @@ class Booking extends Component
 
         $trainers = User::role(['trainer', 'gestore'])->orderBy('name')->get();
 
-        $futurePtBookings = $member
+        $futurePtBookings = ($member && Feature::active('pt_bookings'))
             ? PtBooking::with('trainer')
                 ->where('member_id', $member->id)
                 ->where('booked_date', '>=', now()->toDateString())

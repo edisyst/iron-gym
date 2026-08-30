@@ -4,12 +4,14 @@ namespace App\Jobs;
 
 use App\Models\CommunicationLog;
 use App\Models\Member;
+use App\Models\Setting;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class SendCampaignMessages implements ShouldQueue
@@ -29,6 +31,12 @@ class SendCampaignMessages implements ShouldQueue
 
     public function handle(): void
     {
+        if (! Setting::bool('outbound_notifications_enabled', true)) {
+            Log::warning('[outbound_notifications] invio soppresso da interruttore', ['job' => static::class]);
+
+            return;
+        }
+
         $chunks = array_chunk($this->memberIds, 50);
 
         foreach ($chunks as $chunk) {

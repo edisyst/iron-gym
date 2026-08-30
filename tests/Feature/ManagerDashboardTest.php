@@ -1,8 +1,10 @@
 <?php
 
 use App\Livewire\Backoffice\Reports\ManagerDashboard as BackofficeManagerDashboard;
+use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Pennant\Feature;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
 
@@ -28,4 +30,13 @@ it('dashboard manager inizializza dateFrom e dateTo del mese corrente', function
 
     expect($component->get('dateFrom'))->toBe(now()->startOfMonth()->toDateString())
         ->and($component->get('dateTo'))->toBe(now()->endOfMonth()->toDateString());
+});
+
+it('gestore riceve 403 se financial_reports disattivo', function () {
+    Setting::write('financial_reports_enabled', false);
+    Feature::flushCache();
+
+    $this->actingAs($this->gestore)
+        ->get(route('backoffice.reports.manager'))
+        ->assertForbidden();
 });

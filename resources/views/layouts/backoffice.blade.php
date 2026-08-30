@@ -50,9 +50,9 @@
 
     {{ $slot }}
 
-    @if(config('features.in_app_feedback_enabled'))
+    @feature('in_app_feedback')
         @livewire('shared.in-app-feedback')
-    @endif
+    @endfeature
     </div>
 @stop
 

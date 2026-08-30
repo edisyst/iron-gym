@@ -184,10 +184,10 @@ URL: `/backoffice/reports/manager`
 
 URL: `/backoffice/reports/financial`
 
-> **Nota:** accessibile solo se feature flag `financial_reports` = ON (attivabile da Admin → Feature Flags).
+> **Nota:** accessibile solo se feature flag `financial_reports` = ON (attivabile da Impostazioni → Funzioni).
 
 - [ ] Con flag ON: pagina si carica con dati fatturato/abbonamenti
-- [ ] Con flag OFF: pagina vuota o messaggio feature non attiva
+- [ ] Con flag OFF: pagina restituisce 403
 
 ---
 
@@ -204,10 +204,10 @@ URL: `/backoffice/bookings`
 
 URL: `/backoffice/group-classes`
 
-> **Nota:** visibile nel menu solo se feature flag `group_classes` = ON (gate `view-group-classes`).
-> Con flag OFF la voce di menu è nascosta; la route rimane tecnicamente accessibile navigando direttamente.
+> **Nota:** visibile nel menu e accessibile solo se feature flag `group_classes` = ON
+> (gate `view-group-classes`). Con flag OFF la route restituisce **403** a tutti i ruoli.
 
-- [ ] Lista corsi si carica
+- [ ] Con flag ON: lista corsi si carica
 - [ ] Crea nuovo corso → salva
 
 ---
@@ -246,17 +246,41 @@ URL: `/backoffice/settings/opening-hours`
 
 ---
 
-## 18. Feature flags e feedback
+## 18. Impostazioni
 
-URL: `/backoffice/admin/feature-flags`
+URL: `/backoffice/settings`
 
-- [ ] Pagina si carica (solo gestore)
-- [ ] Toggle flag ON/OFF funziona
-- [ ] Cambiamento flag riflesso immediatamente nell'UI (es. gruppo classi nel menu)
+> **Nota:** accessibile solo al gestore (gate `access-admin-section`). Trainer e receptionist ricevono 403.
+> `/backoffice/admin/feature-flags` fa 301 redirect a `/backoffice/settings/feature-flags`.
+
+### Tab Funzioni (feature flags)
+
+URL: `/backoffice/settings/feature-flags`
+
+- [ ] Pagina si carica senza errori
+- [ ] Flag raggruppati in tre sezioni: Moduli, Sessione atleta, Sistema
+- [ ] Toggle `group_classes` da ON a OFF → voce "Corsi collettivi" scompare dalla sidebar
+- [ ] Toggle `group_classes` da OFF a ON → voce riappare in sidebar
+- [ ] Toggle `messaging` da ON a OFF → badge messaggi non letti scompare dalla navbar atleta
+- [ ] Tentativo accesso come trainer a `/backoffice/settings` → 403
+- [ ] Tentativo accesso come receptionist a `/backoffice/settings` → 403
+
+### Tab Manuale
+
+URL: `/backoffice/settings` (tab "Manuale")
+
+- [ ] Sezioni del manuale elencate nella sidebar sinistra
+- [ ] Click su sezione → contenuto Markdown renderizzato a destra
+- [ ] Sezioni con flag OFF mostrano badge "OFF" in sidebar e messaggio disabilitazione nel contenuto
+- [ ] Navigazione a slug inesistente (es. `/backoffice/settings?section=inesistente`) → messaggio 404 inline (non errore di pagina)
+
+### Feedback utenti
 
 URL: `/backoffice/admin/feedback`
 
-- [ ] Lista feedback in-app utenti visibile
+> **Nota:** visibile solo se feature flag `in_app_feedback` = ON.
+
+- [ ] Lista feedback in-app utenti visibile (con flag ON)
 
 ---
 
@@ -266,6 +290,50 @@ URL: `/backoffice/athletes/{id}/messages`
 
 - [ ] Messaggistica con atleta si carica
 - [ ] Invio messaggio → appare in lista
+
+---
+
+## 20. Check-in rapido (R24)
+
+URL: `/backoffice/checkin`
+
+- [ ] Pagina si carica senza errori
+- [ ] Campo ricerca tesserato: inserisci 2+ caratteri → lista suggerimenti appare
+- [ ] Seleziona tesserato con certificato valido e abbonamento attivo → bottone "Registra ingresso" attivo
+- [ ] Registra ingresso → comparazione cronologia accessi odierni aggiornata
+- [ ] Tesserato con certificato scaduto → messaggio di blocco visibile
+- [ ] Tesserato senza abbonamento attivo → messaggio di blocco visibile
+- [ ] Tesserato con accessi residui esauriti → messaggio di blocco visibile
+
+---
+
+## 21. Pannello scadenze (R22, R23)
+
+URL: `/backoffice/members/expiry`
+
+- [ ] Pagina si carica senza errori
+- [ ] Tabella "Certificati in scadenza" visibile con filtro finestra temporale (default 30gg)
+- [ ] Tabella "Abbonamenti in scadenza" visibile (default 7gg)
+- [ ] Ricerca per nome filtra entrambe le tabelle
+- [ ] Widget scadenze nella dashboard backoffice (`/backoffice/dashboard`): card con contatori visibile se ci sono scadenze imminenti
+
+---
+
+## 22. Export CSV (R29, R30)
+
+URL: `/backoffice/subscriptions` (pulsante Export)
+
+- [ ] Bottone "Esporta CSV" visibile nella lista abbonamenti
+- [ ] Click → download file CSV con BOM UTF-8 e separatore `;`
+- [ ] Filtro attivo rispettato nell'export (es. solo attivi)
+- [ ] Colonne: Cognome, Nome, Email, Piano, Inizio, Scadenza, Stato
+
+URL: `/backoffice/members` (pulsante Export)
+
+- [ ] Bottone "Esporta CSV" visibile nella lista tesserati
+- [ ] Click → download file CSV
+- [ ] Ricerca e filtro certificato rispettati nell'export
+- [ ] Colonne: Cognome, Nome, Email, Telefono, Abbonamento, Scadenza abb., Cert. medico, Attivo
 
 ---
 

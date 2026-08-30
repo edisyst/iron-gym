@@ -4,8 +4,10 @@ namespace App\Livewire\Backoffice\Reports;
 
 use App\Services\KpiService;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use Laravel\Pennant\Feature;
 use Livewire\Component;
 
 class ManagerDashboard extends Component
@@ -16,6 +18,7 @@ class ManagerDashboard extends Component
 
     public function mount(): void
     {
+        abort_unless(Feature::active('financial_reports'), 403);
         $this->dateFrom = now()->startOfMonth()->toDateString();
         $this->dateTo = now()->endOfMonth()->toDateString();
     }
@@ -66,28 +69,32 @@ class ManagerDashboard extends Component
         $trainerRevenue = $kpi->revenueByTrainer($from, $to);
 
         // Abbonati a rischio churn: scaduti da 0-30 giorni senza rinnovo
-        $atRiskMembers = DB::table('subscriptions as s')
-            ->join('members as m', 'm.id', '=', 's.member_id')
-            ->leftJoin('subscriptions as s2', function ($j) {
-                $j->on('s2.member_id', '=', 's.member_id')
-                    ->on('s2.id', '!=', 's.id')
-                    ->whereColumn('s2.started_at', '>', 's.expires_at');
-            })
-            ->whereNull('s2.id')
-            ->whereBetween('s.expires_at', [
-                now()->subDays(30)->toDateString(),
-                now()->toDateString(),
-            ])
-            ->select(
-                'm.id as member_id',
-                DB::raw(DB::connection()->getDriverName() === 'sqlite'
-                    ? "(m.first_name || ' ' || m.last_name) as nome"
-                    : "CONCAT(m.first_name, ' ', m.last_name) as nome"),
-                's.expires_at',
-                DB::raw('(SELECT MAX(checked_in_at) FROM access_logs WHERE member_id = m.id) as last_access'),
-            )
-            ->orderBy('s.expires_at')
-            ->get();
+        $atRiskMembers = Cache::remember('at_risk_members:'.now()->toDateString(), 300, function () {
+            return DB::table('subscriptions as s')
+                ->join('members as m', 'm.id', '=', 's.member_id')
+                ->leftJoin('subscriptions as s2', function ($j) {
+                    $j->on('s2.member_id', '=', 's.member_id')
+                        ->on('s2.id', '!=', 's.id')
+                        ->whereColumn('s2.started_at', '>', 's.expires_at');
+                })
+                ->leftJoin('access_logs as al', 'al.member_id', '=', 'm.id')
+                ->whereNull('s2.id')
+                ->whereBetween('s.expires_at', [
+                    now()->subDays(30)->toDateString(),
+                    now()->toDateString(),
+                ])
+                ->select(
+                    'm.id as member_id',
+                    DB::raw(DB::connection()->getDriverName() === 'sqlite'
+                        ? "(m.first_name || ' ' || m.last_name) as nome"
+                        : "CONCAT(m.first_name, ' ', m.last_name) as nome"),
+                    's.expires_at',
+                    DB::raw('MAX(al.checked_in_at) as last_access'),
+                )
+                ->groupBy('m.id', 'm.first_name', 'm.last_name', 's.id', 's.expires_at')
+                ->orderBy('s.expires_at')
+                ->get();
+        });
 
         $ptSessionsPerTrainer = DB::table('pt_bookings')
             ->join('users', 'users.id', '=', 'pt_bookings.trainer_id')

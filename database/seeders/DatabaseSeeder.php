@@ -22,18 +22,19 @@ class DatabaseSeeder extends Seeder
             DumbbellInventorySeeder::class,
             OpeningHoursSeeder::class,
             CommunicationTemplateSeeder::class,
+            SettingsFlagSeeder::class,
         ]);
 
         // Seeder solo in ambiente locale
         if (app()->isLocal()) {
             $this->call([
-                DemoSeeder::class,
-                DemoTemplatesSeeder::class,
-                TrainingHistorySeeder::class,
-                ActiveMesocycleSeeder::class,
-                ProgressDemoSeeder::class,
-                BookingDemoSeeder::class,
-                R09R31DemoSeeder::class,
+                CoreDemoSeeder::class,
+                TemplateSeeder::class,
+                TrainingDemoSeeder::class,
+                ClassDemoSeeder::class,
+                ScenarioDemoSeeder::class,
+                VolumeDemoSeeder::class,
+                FeedbackDemoSeeder::class,
             ]);
         }
     }

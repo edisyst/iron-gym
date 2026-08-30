@@ -1,5 +1,11 @@
 {{-- Gestione corsi collettivi: CRUD, pannello iscritti e presenza --}}
 <div>
+    @if(session('success'))
+    <div class="alert alert-success alert-dismissible">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        {{ session('success') }}
+    </div>
+    @endif
     <div class="row">
         {{-- Colonna lista occorrenze --}}
         <div class="{{ $showDetail ? 'col-md-7' : 'col-md-12' }}">
@@ -18,6 +24,19 @@
                         <input type="text" wire:model.live.debounce.300ms="search"
                                placeholder="Cerca corso..."
                                class="form-control form-control-sm mr-2 filter-w-sm">
+                        @role('gestore')
+                        <button wire:click="generateOccurrences()"
+                                wire:loading.attr="disabled"
+                                class="btn btn-sm btn-outline-secondary mr-1"
+                                title="Genera le occorrenze mancanti per i prossimi 28 giorni leggendo il palinsesto (ClassSchedule). Sicuro da eseguire più volte: non crea duplicati.">
+                            <span wire:loading.remove wire:target="generateOccurrences">
+                                <i class="fas fa-calendar-plus mr-1"></i> Genera occorrenze
+                            </span>
+                            <span wire:loading wire:target="generateOccurrences">
+                                <i class="fas fa-spinner fa-spin mr-1"></i> Generazione...
+                            </span>
+                        </button>
+                        @endrole
                         <button wire:click="openForm()" class="btn btn-sm btn-warning">
                             <i class="fas fa-plus mr-1"></i> Nuovo corso
                         </button>

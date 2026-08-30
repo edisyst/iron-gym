@@ -150,18 +150,25 @@ class KpiService
                 return 0.0;
             }
 
+            $memberIds = $expired->pluck('member_id')->unique()->values()->all();
+            $expiredIds = $expired->pluck('id')->values()->all();
+            $latestDeadline = Carbon::parse($toDate)->addDays(30)->toDateString();
+
+            $renewals = DB::table('subscriptions')
+                ->whereIn('member_id', $memberIds)
+                ->whereNotIn('id', $expiredIds)
+                ->where('started_at', '>', $fromDate)
+                ->where('started_at', '<=', $latestDeadline)
+                ->select('member_id', 'started_at')
+                ->get()
+                ->groupBy('member_id');
+
             $churned = 0;
             foreach ($expired as $sub) {
-                $expiredDate = Carbon::parse($sub->expires_at);
-                $renewalDeadline = $expiredDate->copy()->addDays(30)->toDateString();
-
-                $renewed = DB::table('subscriptions')
-                    ->where('member_id', $sub->member_id)
-                    ->where('id', '!=', $sub->id)
-                    ->where('started_at', '>', $sub->expires_at)
-                    ->where('started_at', '<=', $renewalDeadline)
-                    ->exists();
-
+                $renewalDeadline = Carbon::parse($sub->expires_at)->addDays(30)->toDateString();
+                $renewed = ($renewals->get($sub->member_id) ?? collect())
+                    ->filter(fn ($r) => $r->started_at > $sub->expires_at && $r->started_at <= $renewalDeadline)
+                    ->isNotEmpty();
                 if (! $renewed) {
                     $churned++;
                 }
@@ -255,51 +262,62 @@ class KpiService
                 ->select('id', 'name')
                 ->get();
 
+            $fromStr = $from->toDateString();
+            $toStr = $to->toDateString();
+
+            $allRecurring = DB::table('trainer_availability')
+                ->whereIn('trainer_id', $trainerIds)
+                ->whereNotNull('day_of_week')
+                ->where('is_available', true)
+                ->select('trainer_id', 'day_of_week')
+                ->get()
+                ->groupBy('trainer_id');
+
+            $extraAvail = DB::table('trainer_availability')
+                ->whereIn('trainer_id', $trainerIds)
+                ->whereNotNull('specific_date')
+                ->where('is_available', true)
+                ->whereBetween('specific_date', [$fromStr, $toStr])
+                ->selectRaw('trainer_id, COUNT(*) as cnt')
+                ->groupBy('trainer_id')
+                ->pluck('cnt', 'trainer_id');
+
+            $blocked = DB::table('trainer_availability')
+                ->whereIn('trainer_id', $trainerIds)
+                ->whereNotNull('specific_date')
+                ->where('is_available', false)
+                ->whereBetween('specific_date', [$fromStr, $toStr])
+                ->selectRaw('trainer_id, COUNT(*) as cnt')
+                ->groupBy('trainer_id')
+                ->pluck('cnt', 'trainer_id');
+
+            $bookedByTrainer = DB::table('pt_bookings')
+                ->whereIn('trainer_id', $trainerIds)
+                ->where('status', 'completed')
+                ->whereBetween('booked_date', [$fromStr, $toStr])
+                ->selectRaw('trainer_id, COUNT(*) as cnt')
+                ->groupBy('trainer_id')
+                ->pluck('cnt', 'trainer_id');
+
             $result = [];
             foreach ($trainers as $trainer) {
-                $recurringSlots = DB::table('trainer_availability')
-                    ->where('trainer_id', $trainer->id)
-                    ->whereNotNull('day_of_week')
-                    ->where('is_available', true)
-                    ->pluck('day_of_week')
-                    ->all();
-
+                $slots = $allRecurring->get($trainer->id, collect());
                 $slotsAvailable = 0;
-                foreach ($recurringSlots as $dow) {
-                    $slotsAvailable += $daysInPeriod[(int) $dow] ?? 0;
+                foreach ($slots as $slot) {
+                    $slotsAvailable += $daysInPeriod[(int) $slot->day_of_week] ?? 0;
                 }
+                $slotsAvailable += (int) ($extraAvail[$trainer->id] ?? 0);
+                $slotsAvailable = max(0, $slotsAvailable - (int) ($blocked[$trainer->id] ?? 0));
 
-                $slotsAvailable += DB::table('trainer_availability')
-                    ->where('trainer_id', $trainer->id)
-                    ->whereNotNull('specific_date')
-                    ->where('is_available', true)
-                    ->whereBetween('specific_date', [$from->toDateString(), $to->toDateString()])
-                    ->count();
-
-                $blockedDates = DB::table('trainer_availability')
-                    ->where('trainer_id', $trainer->id)
-                    ->whereNotNull('specific_date')
-                    ->where('is_available', false)
-                    ->whereBetween('specific_date', [$from->toDateString(), $to->toDateString()])
-                    ->count();
-
-                $slotsAvailable = max(0, $slotsAvailable - $blockedDates);
-
-                $slotsBooked = DB::table('pt_bookings')
-                    ->where('trainer_id', $trainer->id)
-                    ->where('status', 'completed')
-                    ->whereBetween('booked_date', [$from->toDateString(), $to->toDateString()])
-                    ->count();
-
-                $occupancyPct = $slotsAvailable > 0
-                    ? round(($slotsBooked / $slotsAvailable) * 100, 1)
-                    : 0.0;
+                $slotsBooked = (int) ($bookedByTrainer[$trainer->id] ?? 0);
 
                 $result[] = [
                     'trainer' => $trainer->name,
                     'slots_available' => $slotsAvailable,
                     'slots_booked' => $slotsBooked,
-                    'occupancy_pct' => $occupancyPct,
+                    'occupancy_pct' => $slotsAvailable > 0
+                        ? round(($slotsBooked / $slotsAvailable) * 100, 1)
+                        : 0.0,
                 ];
             }
 

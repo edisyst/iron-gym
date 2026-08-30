@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\Setting;
 use App\Models\TrainingSession;
 use App\Notifications\SessionReminderNotification;
 use Illuminate\Bus\Queueable;
@@ -10,6 +11,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class SendSessionReminders implements ShouldQueue
 {
@@ -17,6 +19,12 @@ class SendSessionReminders implements ShouldQueue
 
     public function handle(): void
     {
+        if (! Setting::bool('outbound_notifications_enabled', true)) {
+            Log::warning('[outbound_notifications] invio soppresso da interruttore', ['job' => static::class]);
+
+            return;
+        }
+
         $today = Carbon::today()->toDateString();
 
         TrainingSession::query()

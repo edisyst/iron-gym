@@ -47,7 +47,7 @@ URL: `/athlete`
 
 ## 4. Check readiness pre-sessione (R07)
 
-*Prerequisito: sessione in stato `planned`.*
+*Prerequisito: sessione in stato `planned`. Feature flag `readiness_check` = ON.*
 
 - [ ] Click su sessione planned → modale readiness appare (non si entra direttamente in sessione)
 - [ ] Modale ha 4 campi: Qualità sonno, Stress, Dolori muscolari, Stato articolare
@@ -100,6 +100,8 @@ URL: `/athlete/session/{id}`
 
 ### Sostituzione esercizio (R06)
 
+> *Feature flag `exercise_substitution` = ON richiesto per mostrare il bottone.*
+
 - [ ] Bottone "Sostituisci" visibile per ogni esercizio
 - [ ] Bottone disabilitato se ci sono set working completati
 - [ ] Click → bottom sheet con max 5 candidati compatibili
@@ -135,6 +137,8 @@ URL: `/athlete/session/{id}` (con form feedback embedded)
 
 ## 7. Riepilogo sessione (R08)
 
+> *Feature flag `session_recap` = ON richiesto per accedere alla pagina.*
+
 URL: `/athlete/session/{id}/recap`
 
 - [ ] Pagina si carica senza errori per sessione completata
@@ -166,6 +170,8 @@ URL: `/athlete/history`
 
 ## 9. Volume settimanale (R04)
 
+> *Feature flag `weekly_volume` = ON richiesto. Con flag OFF la pagina restituisce 403 (gate `view-weekly-volume`).*
+
 URL: `/athlete/volume`
 
 - [ ] Pagina si carica senza errori
@@ -180,6 +186,8 @@ URL: `/athlete/volume`
 
 ## 10. Record personali (R05)
 
+> *Feature flag `personal_records` = ON richiesto. Con flag OFF la pagina restituisce 403 (gate `view-personal-records`) e il toast PR in sessione non appare (PR sempre scritto in DB).*
+
 URL: `/athlete/records`
 
 - [ ] Pagina si carica senza errori
@@ -190,20 +198,7 @@ URL: `/athlete/records`
 
 ---
 
-## 11. Plate calculator (R02)
-
-*Accessibile dalla sessione (modale).*
-
-- [ ] Modale plate calculator accessibile in sessione
-- [ ] Selettore peso barra (10/15/20 kg)
-- [ ] Inserisci peso target → calcolo dischi per lato
-- [ ] Stack grafico dischi mostrato con colori e pesi
-- [ ] Se combinazione esatta: `delta_kg = 0`
-- [ ] Se non esatta: combinazione per difetto con delta mostrato
-
----
-
-## 12. Misurazioni corporee
+## 11. Misurazioni corporee
 
 URL: `/athlete/measurements`
 
@@ -213,7 +208,9 @@ URL: `/athlete/measurements`
 
 ---
 
-## 13. Prenotazioni PT
+## 12. Prenotazioni PT
+
+> *Feature flag `pt_bookings` = ON richiesto (gate `view-athlete-bookings`). Con entrambi `pt_bookings` e `group_classes` OFF la route `/athlete/bookings` restituisce 403.*
 
 URL: `/athlete/bookings`
 
@@ -225,7 +222,9 @@ URL: `/athlete/bookings`
 
 ---
 
-## 14. Messaggi
+## 13. Messaggi
+
+> *Feature flag `messaging` = ON richiesto. Con flag OFF la voce "Messaggi" scompare dalla nav e le richieste AJAX a `unread-count` non vengono emesse.*
 
 URL: `/athlete/messages`
 
@@ -236,7 +235,7 @@ URL: `/athlete/messages`
 
 ---
 
-## 15. Profilo
+## 14. Profilo
 
 URL: `/athlete/profile`
 
@@ -246,7 +245,7 @@ URL: `/athlete/profile`
 
 ---
 
-## 16. Offline (R03)
+## 15. Offline (R03)
 
 *Simulare connessione assente con DevTools → Network → Offline.*
 
@@ -254,6 +253,19 @@ URL: `/athlete/profile`
 - [ ] Ripristino connessione → operazioni si sincronizzano automaticamente
 - [ ] Pagina sessione navigabile offline (service worker fallback)
 - [ ] Badge ⏳ scompaiono dopo sync riuscita
+
+---
+
+## 16. Notifiche (R10)
+
+URL: `/athlete/notifications`
+
+- [ ] Pagina si carica senza errori
+- [ ] Lista notifiche in ordine cronologico inverso (più recenti in cima)
+- [ ] Notifiche non lette visivamente distinte
+- [ ] Click su notifica → segna come letta
+- [ ] Badge con conteggio non lette visibile nella sidebar / nav (aggiornato live)
+- [ ] Notifica di promemoria corso collettivo visibile (tipo `class_reminder`, richiede flag `group_classes` ON)
 
 ---
 

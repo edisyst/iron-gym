@@ -10,7 +10,7 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
-class DemoSeeder extends Seeder
+class CoreDemoSeeder extends Seeder
 {
     public function run(): void
     {
@@ -184,17 +184,19 @@ class DemoSeeder extends Seeder
             ]
         );
 
-        // 10 access log nell'ultima settimana
-        $activeSubs = [$sub1, $sub2];
-        for ($i = 0; $i < 10; $i++) {
-            $sub = $activeSubs[$i % 2];
-            AccessLog::create([
-                'member_id' => $sub->member_id,
-                'subscription_id' => $sub->id,
-                'checked_in_at' => now()->subDays(random_int(0, 6))->setHour(random_int(7, 21)),
-                'checked_in_by' => $receptionist?->id,
-            ]);
-            $sub->increment('accesses_used');
+        // Access log idempotenti: crea solo se non esistono gia'
+        if (! AccessLog::whereIn('member_id', [$sub1->member_id, $sub2->member_id])->exists()) {
+            $activeSubs = [$sub1, $sub2];
+            for ($i = 0; $i < 10; $i++) {
+                $sub = $activeSubs[$i % 2];
+                AccessLog::create([
+                    'member_id' => $sub->member_id,
+                    'subscription_id' => $sub->id,
+                    'checked_in_at' => now()->subDays(random_int(0, 6))->setHour(random_int(7, 21)),
+                    'checked_in_by' => $receptionist?->id,
+                ]);
+                $sub->increment('accesses_used');
+            }
         }
     }
 }

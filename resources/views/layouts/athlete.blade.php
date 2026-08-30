@@ -71,7 +71,7 @@
                 </svg>
                 Esercizi
             </a>
-            <a href="{{ route('athlete.volume') }}"
+            <a href="{{ \Laravel\Pennant\Feature::active('weekly_volume') ? route('athlete.volume') : route('athlete.measurements') }}"
                class="{{ request()->routeIs('athlete.volume', 'athlete.records', 'athlete.measurements', 'athlete.photos.*') ? 'active' : '' }}"
                aria-current="{{ request()->routeIs('athlete.volume', 'athlete.records', 'athlete.measurements', 'athlete.photos.*') ? 'page' : 'false' }}">
                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
@@ -81,6 +81,7 @@
                 </svg>
                 Progressi
             </a>
+            @feature('personal_records')
             <a href="{{ route('athlete.records') }}"
                class="{{ request()->routeIs('athlete.records') ? 'active' : '' }}"
                aria-current="{{ request()->routeIs('athlete.records') ? 'page' : 'false' }}"
@@ -91,6 +92,7 @@
                 </svg>
                 Record
             </a>
+            @endfeature
             <a href="{{ route('athlete.profile') }}"
                class="{{ request()->routeIs('athlete.profile', 'athlete.bookings*', 'athlete.messages*') ? 'active' : '' }}"
                aria-current="{{ request()->routeIs('athlete.profile', 'athlete.bookings*', 'athlete.messages*') ? 'page' : 'false' }}">
@@ -100,6 +102,7 @@
                 </svg>
                 Profilo
             </a>
+            @can('view-athlete-bookings')
             <a href="{{ route('athlete.bookings') }}"
                class="{{ request()->routeIs('athlete.bookings*') ? 'active' : '' }}"
                aria-current="{{ request()->routeIs('athlete.bookings*') ? 'page' : 'false' }}"
@@ -109,6 +112,8 @@
                 </svg>
                 Prenota
             </a>
+            @endcan
+            @feature('messaging')
             <a href="{{ route('athlete.messages') }}"
                class="{{ request()->routeIs('athlete.messages*') ? 'active' : '' }}"
                aria-current="{{ request()->routeIs('athlete.messages*') ? 'page' : 'false' }}"
@@ -121,6 +126,7 @@
                       x-text="$store.messages.unread > 9 ? '9+' : $store.messages.unread"
                       class="ig-badge ig-badge--danger" style="margin-left:auto;" aria-live="polite"></span>
             </a>
+            @endfeature
             <a href="{{ route('athlete.notifications') }}"
                class="{{ request()->routeIs('athlete.notifications*') ? 'active' : '' }}"
                aria-current="{{ request()->routeIs('athlete.notifications*') ? 'page' : 'false' }}"
@@ -219,6 +225,7 @@
     @endif
 
     {{-- Toast PR --}}
+    @feature('personal_records')
     <div
         x-data="{ show: false, exerciseName: '', e1rm: '' }"
         x-on:pr-achieved.window="exerciseName = $event.detail.exerciseName; e1rm = $event.detail.e1rm; show = true; setTimeout(() => show = false, 4000)"
@@ -249,6 +256,7 @@
             </div>
         </div>
     </div>
+    @endfeature
 
     @stack('scripts')
     @livewireScripts
@@ -273,11 +281,13 @@
         Alpine.store('messages', {
             unread: 0,
             init: function () {
+                @feature('messaging')
                 var self = this;
                 fetch('/athlete/messages-unread-count')
                     .then(function (r) { return r.ok ? r.json() : { count: 0 }; })
                     .then(function (d) { self.unread = d.count ?? 0; })
                     .catch(function () {});
+                @endfeature
             },
         });
 
@@ -294,9 +304,9 @@
     });
     </script>
 
-    @if(config('features.in_app_feedback_enabled'))
+    @feature('in_app_feedback')
         @livewire('shared.in-app-feedback')
-    @endif
+    @endfeature
 
     {{-- Registrazione service worker e permesso push --}}
     @auth

@@ -28,6 +28,15 @@
                         @endif
                     </div>
                 </div>
+
+                @can('access-training-section')
+                    <div class="ml-auto table-actions">
+                        <a href="{{ route('backoffice.athletes.volume-landmarks', $athleteId) }}"
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-sliders-h mr-1"></i> Volume landmarks
+                        </a>
+                    </div>
+                @endcan
             </div>
         </div>
     </div>
@@ -54,11 +63,13 @@
                 <i class="fas fa-mountain mr-1"></i> Volume landmarks
             </a>
         </li>
+        @feature('messaging')
         <li class="nav-item">
             <a class="nav-link" :class="{ active: tab === 'messaggi' }" href="#" @click.prevent="tab = 'messaggi'">
                 <i class="fas fa-comments mr-1"></i> Messaggi
             </a>
         </li>
+        @endfeature
     </ul>
 
     {{-- Tab content --}}
@@ -78,7 +89,9 @@
         @livewire('backoffice.mesocycles.volume-landmark-manager', ['athleteId' => $athleteId])
     </div>
 
+    @feature('messaging')
     <div x-show="tab === 'messaggi'" x-cloak>
         @livewire('backoffice.messages.message-thread', ['athleteId' => $athleteId])
     </div>
+    @endfeature
 </div>

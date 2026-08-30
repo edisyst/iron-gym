@@ -96,7 +96,15 @@ class MesocycleList extends Component
 
     public function render(): View
     {
+        $user = auth()->user();
+
         $mesocycles = Mesocycle::with(['athlete', 'trainer', 'template'])
+            // Il trainer vede solo i propri mesocicli: MesocycleDetail nega
+            // comunque l'accesso agli altri, ma senza questo filtro la lista
+            // mostrerebbe righe e pulsanti che portano a un 403.
+            ->when($user !== null && ! $user->hasRole('gestore'), function ($q) use ($user) {
+                $q->where('trainer_id', $user->id);
+            })
             ->when($this->search, function ($q) {
                 $q->where('name', 'like', '%'.$this->search.'%');
             })

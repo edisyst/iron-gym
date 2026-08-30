@@ -4,12 +4,14 @@ namespace App\Jobs;
 
 use App\Models\ClassBooking;
 use App\Models\ClassOccurrence;
+use App\Models\Setting;
 use App\Notifications\ClassOccurrenceCancelledNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class NotifyClassCancellation implements ShouldQueue
 {
@@ -19,6 +21,12 @@ class NotifyClassCancellation implements ShouldQueue
 
     public function handle(): void
     {
+        if (! Setting::bool('outbound_notifications_enabled', true)) {
+            Log::warning('[outbound_notifications] invio soppresso da interruttore', ['job' => static::class]);
+
+            return;
+        }
+
         $notification = new ClassOccurrenceCancelledNotification($this->occurrence);
 
         $this->occurrence->confirmedBookings()

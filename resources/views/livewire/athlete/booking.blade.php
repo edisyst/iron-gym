@@ -25,10 +25,12 @@
 
     {{-- Tab switcher --}}
     <div class="ig-tab-group">
+        @feature('pt_bookings')
         <button wire:click="$set('activeTab','pt')"
                 class="ig-tab {{ $activeTab === 'pt' ? 'ig-tab--active' : '' }}">
             Sessione PT
         </button>
+        @endfeature
         @feature('group_classes')
         <button wire:click="$set('activeTab','classes')"
                 class="ig-tab {{ $activeTab === 'classes' ? 'ig-tab--active' : '' }}">
@@ -40,6 +42,7 @@
     {{-- ============================================================ --}}
     {{-- Tab PT --}}
     {{-- ============================================================ --}}
+    @feature('pt_bookings')
     @if($activeTab === 'pt')
     <div>
         <div class="athlete-card">
@@ -137,6 +140,7 @@
         @endif
     </div>
     @endif
+    @endfeature
 
     {{-- ============================================================ --}}
     {{-- Tab Corsi --}}
@@ -197,6 +201,11 @@
                         {{ $occurrence->is_full ? "Iscriviti alla lista d'attesa" : 'Iscriviti' }}
                     </span>
                 </button>
+                @if($enrollErrorId === $occurrence->id && $enrollErrorMsg)
+                <div style="margin-top:8px;background:#ef4444;color:#fff;border-radius:6px;padding:8px 12px;font-size:13px;">
+                    {{ $enrollErrorMsg }}
+                </div>
+                @endif
             @endif
         </div>
         @empty

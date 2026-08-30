@@ -53,10 +53,12 @@
                          M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
             </svg>
             <p class="home-empty-title">Nessuna scheda attiva</p>
-            <p class="home-empty-body">Il tuo trainer non ha ancora assegnato un mesociclo. Contattalo via messaggi.</p>
+            <p class="home-empty-body">Il tuo trainer non ha ancora assegnato un mesociclo.</p>
+            @feature('messaging')
             <a href="{{ route('athlete.messages') }}" class="ig-btn ig-btn--secondary" style="margin-top:var(--ig-sp-4);">
                 Apri messaggi
             </a>
+            @endfeature
         </div>
 
     @else
@@ -180,11 +182,13 @@
                             </span>
                         @endif
                     </div>
+                    @feature('session_recap')
                     <a href="{{ route('athlete.session.recap', $lastSession) }}" class="home-last-link" aria-label="Vedi recap sessione">
                         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
                         </svg>
                     </a>
+                    @endfeature
                 </div>
             </div>
         @endif
@@ -237,6 +241,9 @@
                         PT
                         @if ($pt->trainer)
                             con {{ $pt->trainer->name }}
+                        @endif
+                        @if ($pt->status === 'pending')
+                            <span class="ig-badge ig-badge--warning">In attesa</span>
                         @endif
                     </span>
                     <span class="home-week-date">

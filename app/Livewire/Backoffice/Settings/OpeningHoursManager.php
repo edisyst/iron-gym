@@ -81,7 +81,7 @@ class OpeningHoursManager extends Component
 
         $overrides = OpeningHour::overrides()
             ->orderByRaw('is_annual DESC')
-            ->orderByRaw('MONTH(specific_date), DAY(specific_date)')
+            ->orderBy('specific_date')
             ->get();
 
         $daysOfWeek = [

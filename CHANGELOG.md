@@ -2,6 +2,405 @@
 
 ---
 
+## DOC02 — Allineamento documentazione post-SET01/PERF01 (2026-08-30)
+
+Audit documentazione con delta DOC01→v0.9+SET01+PERF01. Solo file `.md` toccati.
+
+**Fase 2 — Architettura/devops:**
+- `component-map.md`: 14 flag (non 13), seeder rinominati post 2026-08-28 (CoreDemoSeeder, TemplateSeeder, ScenarioDemoSeeder, ClassDemoSeeder, VolumeDemoSeeder, VolumeLandmarkDemoSeeder, DumbbellInventorySeeder), feature flags section riscritta con 3 gruppi.
+- `go-live-checklist.md`: roll-out aggiornato a 14 flag in 3 tabelle.
+- `ui-atleta.md`: documentata navigazione filtrata per flag (SET01 Step 2C): Progressi, Prenota, toast PR, fetch unread-count.
+- `docs/README.md`: 5 voci reviews/ aggiunte, note doc-audit aggiornata.
+
+**Fase 3-B — Piani test per ruolo:**
+- `01-gestore.md`: sez. 18 riscritta (Impostazioni: tab Funzioni + Manuale + Feedback utenti), aggiunte sez. 20-22 (Check-in rapido R24, Pannello scadenze R22/R23, Export CSV R29/R30).
+- `02-trainer.md`: rimossa sez. 11 errata (communications/campaign → 403 trainer, non accessibile), sez. 12 aggiornata con settings e redirect 301.
+- `03-receptionist.md`: nota group_classes corretta (403 con flag OFF anche navigando direttamente), sez. 9 aggiornata con /backoffice/settings.
+- `04-atleta.md`: rimossa sez. 11 plate calculator (UI eliminato in UX01), aggiunte note prerequisito flag in sez. 4/5/7/9/10/12/13, aggiunta sez. 16 notifiche (R10).
+
+**Fase 4 — Consolidamento:**
+- Fix B-03: URL `/backoffice/calendar/bookings` → `/backoffice/bookings` in manuale sez. 09 e 10.
+- `docs/review/` + `docs/audit/` → `docs/reviews/` (git mv, link aggiornati in README).
+- `docs/reviews/doc-audit/11-doc02-chiusura.md` scritto.
+
+**Suite:** 506 test (500 pass / 6 skipped). PHPStan: 0 errori. Pint: conforme.
+
+---
+
+## PERF01 — Audit prestazioni: 5 fix query (2026-08-30)
+
+Risolti tutti gli 8 finding del report `docs/reviews/perf-audit-2026-08-30.md` (i finding 1/3/4 erano già stati risolti nella sessione precedente).
+
+- **CRITICO-2** `KpiService::trainerOccupancy`: loop con 4 query per trainer → 4 query batch `GROUP BY trainer_id` + merge PHP. Costo O(1) indipendente dal numero trainer.
+- **IMPORTANTE-5** `ManagerDashboard::atRiskMembers`: subquery correlata `(SELECT MAX FROM access_logs WHERE member_id = m.id)` → `LEFT JOIN access_logs + MAX(al.checked_in_at) GROUP BY`. Query avvolta in `Cache::remember(300)` chiave data.
+- **IMPORTANTE-6** `TrainingReport::loadAthleteRows`: nessuna cache su query multi-JOIN → `Cache::remember(60)` chiave `from:to:trainer:mesoStatus`.
+- **MINORE-7** `PersonalRecordDetector::hasSufficientHistory`: 4-JOIN COUNT eseguita per ogni set completato → `Cache::remember(300)` chiave `pr_history:{athleteId}:{exerciseId}`.
+- **MINORE-8** `Backoffice\Dashboard`: 5 COUNT separate (`Member` ×3, `Subscription` ×2) → 2 query `DB::table` con `CASE WHEN` (già in `Cache::remember(300)`).
+
+**Suite:** 506 test (500 pass / 6 skipped). PHPStan: 0 errori. Pint: conforme.
+
+---
+
+## SET01 — Risoluzione scostamenti post-chiusura (2026-08-30)
+
+Tutti e cinque gli scostamenti identificati in Fase 3 risolti.
+
+- **S-01** (sezione 08 senza navigazione): aggiunta sezione "Come raggiungerla" in `08-progressione-volume.md` con percorso esplicito per dettaglio mesociclo e volume landmarks.
+- **S-02** (report finanziari senza voce sidebar): aggiunta voce "Report finanziario" in `config/adminlte.php` sotto TRAINING, `can: view-financial-reports` — nascosta automaticamente con flag OFF.
+- **S-03** ("Feedback utenti" senza manuale): aggiunta sottosezione in `12-comunicazione-campagne.md` con descrizione, accesso gestore, comportamento flag OFF.
+- **S-04** (route messaggistica errata in sezione 12): corretta a `/backoffice/athletes/{id}/messages` con percorso Tesserati → profilo atleta → tab Messaggi.
+- **S-05** (`Admin/FeatureFlagManager.php` dead code): file eliminato; unica implementazione attiva: `Settings\FeatureFlagManager`.
+
+**Suite:** 506 test (500 pass / 6 skipped). PHPStan: 0 errori. Pint: conforme.
+
+---
+
+## SET01 Fase 3 — Verifica finale e chiusura (2026-08-30)
+
+### Correzioni CLAUDE.md
+
+- `financial_reports` e `periodization_engine`: gruppo corretto da "Moduli" a "Sistema" (allineamento a `config/features.php`).
+- `outbound_notifications`: platea corretta da "Job di sistema" a "Tutta la palestra (flag globale)".
+
+### Fix Pint
+
+- `app/Services/ManualRenderer.php`: `concat_space`, `unary_operator_spaces`, `not_operator_with_successor_space`.
+- `app/Livewire/Backoffice/Settings/ManualViewer.php`: `binary_operator_spaces`.
+
+### component-map.md aggiornato
+
+- Route backoffice aggiunte: `members.expiry`, `checkin`, `settings.opening-hours`, `subscriptions.export`, `members.export`.
+- Componenti aggiunti: `Access\QuickCheckin`, `Members\ExpiryDashboard`, `Calendar\ClassScheduleManager`, `Calendar\GroupClassCatalog`, `Settings\SettingsHub`, `Settings\FeatureFlagManager`, `Settings\ManualViewer`, `Settings\OpeningHoursManager`.
+- `PtBookingObserver`: descrizione corretta (nessuna notifica inviata).
+- Comandi aggiunti: `classes:generate-occurrences`, `classes:send-reminders`.
+- Seeder aggiunti: `GroupClassSeeder`, `SettingsFlagSeeder`, `FeedbackDemoSeeder`, `FunctionalTestSeeder`.
+- `OpeningHoursSeeder`: riga deduplicata.
+
+### Scostamenti identificati (risolti nel blocco successivo)
+
+- S-01: sezione 08 senza navigazione esplicita.
+- S-02: report finanziari senza voce sidebar.
+- S-03: "Feedback utenti" in menu senza sezione manuale.
+- S-04: sezione 12 citava `/backoffice/messages` inesistente.
+- S-05: `Admin/FeatureFlagManager.php` dead code.
+
+**Suite:** 506 test (500 pass / 6 skipped). PHPStan: 0 errori. Pint: conforme.
+
+---
+
+## SET01 Step 4 — Manuale sezioni 7-16 + SECTION_FLAGS (2026-08-30)
+
+### Sezioni Markdown aggiunte (resources/docs/manual/)
+
+- `07-schede-mesocicli.md`: template e mesocicli — builder, duplica, assegnazione, stati, filtri.
+- `08-progressione-volume.md`: volume landmarks (MEV/MAV/MRV), progressione automatica, deload; flag `periodization_engine`.
+- `09-calendario-disponibilita.md`: slot ricorrenti trainer, override puntuali, flusso prenotazioni PT.
+- `10-prenotazioni-pt.md`: stati prenotazione, conferma/annulla/ripristina, filtri, report completate.
+- `11-corsi-collettivi.md`: struttura GroupClass/ClassSchedule/ClassOccurrence, flusso creazione, lista d'attesa, finestre prenotazione; gated `group_classes`.
+- `12-comunicazione-campagne.md`: campagne massa email/SMS, messaggistica one-to-one trainer-atleta, coda asincrona.
+- `13-report-allenamento.md`: panoramica atleti, drilldown sessioni, filtri periodo e stato mesociclo.
+- `14-report-finanziari.md`: KPI ricavi, occupazione PT, sessioni completate, cache Redis; gated `financial_reports`.
+- `15-inventario-dischi.md`: dischi e manubri, edit inline, PlateLoadoutCalculator.
+- `16-impostazioni-sistema.md`: tabella flag per gruppo (Moduli/Sessione atleta/Sistema), procedura toggle, avvertenze.
+
+### SECTION_FLAGS
+
+`ManualViewer::SECTION_FLAGS` popolato con due associazioni slug → flag:
+- `11-corsi-collettivi` → `group_classes`
+- `14-report-finanziari` → `financial_reports`
+
+Badge ON/OFF appaiono nella sidebar del manuale accanto ai titoli delle sezioni gated.
+
+**Suite:** 506 test (500 pass / 6 skipped). PHPStan: 0 errori. Pint: conforme. SET01 chiuso.
+
+---
+
+## SET01 Step 3 — Manualistica backoffice (2026-08-29)
+
+### Infrastruttura
+
+- `app/Services/ManualRenderer.php`: service che scopre file `.md` in `resources/docs/manual/`, ordina per nome, estrae titoli H1, renderizza con `Str::markdown()`, cache per mtime (`manual.{slug}.{mtime}`, TTL 1h). Slug validato come chiave di array — mai concatenato a path (path-traversal safe).
+- `app/Livewire/Backoffice/Settings/ManualViewer.php`: componente Livewire embedded in tab "Manuale" di SettingsHub. `selectSection(slug)` con validazione slug. `SECTION_FLAGS` vuoto (popolato in Step 4).
+- `resources/views/livewire/backoffice/settings/manual-viewer.blade.php`: sidebar sezioni con ricerca Alpine (`x-show` su `title.includes`), badge flag ON/OFF condizionale, contenuto renderizzato con stili `.manual-content` scoped.
+- `resources/views/livewire/backoffice/settings/settings-hub.blade.php`: tab "Manuale" aggiornato con `@livewire('backoffice.settings.manual-viewer')`.
+
+### Sezioni Markdown (resources/docs/manual/)
+
+- `01-dashboard.md`: contatori, widget scadenze, flusso operativo, errori comuni.
+- `02-tesserati.md`: registrazione, modifica, note interne, filtro certificati, export CSV.
+- `03-abbonamenti.md`: creazione, rinnovo rapido, filtri, sospensione/riattivazione (solo gestore), export CSV.
+- `04-accessi-checkin.md`: flusso check-in, 3 controlli (cert/abbonamento/ingressi), cronologia odierna, storico completo.
+- `05-scadenze.md`: due tabelle (cert + abbonamenti), finestra temporale, ricerca, widget dashboard, flusso operativo.
+- `06-esercizi.md`: filtri (nome/muscolo/meccanica/livello/attrezzatura), vincolo XOR pattern, soft-delete, cache tag.
+
+### Documentazione
+
+- `docs/manual-howto.md`: istruzioni per aggiungere, rinominare o rimuovere sezioni; sezione su SECTION_FLAGS badge.
+
+### Fix
+
+- `app/Livewire/Backoffice/Access/QuickCheckin.php` non toccato.
+- `app/Livewire/Backoffice/Settings/OpeningHoursManager.php`: `orderByRaw('MONTH(specific_date), DAY(specific_date)')` → `orderBy('specific_date')`. Fix SQL MySQL-specifico non portabile in SQLite (già incluso in FunctionalPlanGapTest).
+
+### Test
+
+- `tests/Feature/ManualViewerTest.php` (11 test): gestore → 200; receptionist/trainer/atleta → 403; slug path-traversal e slug inesistente → false da `slugExists`; tutte le sezioni renderizzano senza eccezioni; mount con prima sezione attiva; `selectSection` valido; `selectSection` con slug inesistente non modifica `currentSlug`.
+
+**Suite:** 506 test (500 pass / 6 skipped). PHPStan: 0 errori. Pint: conforme.
+
+---
+
+## Piano test funzionale R09+ — esecuzione automatizzata (2026-08-29)
+
+### Copertura automatizzata
+
+84 casi del piano `docs/testing/r09-plus-functional-test-plan.md` mappati alla suite esistente (484 test). Gap identificati e colmati:
+
+**Bug trovato e fixato:**
+- `OpeningHoursManager::render()`: `MONTH(specific_date), DAY(specific_date)` → SQL MySQL-specifico non compatibile SQLite in test. Fix: `->orderBy('specific_date')`. Comportamento identico in produzione (MySQL), test ora portabili.
+
+**Nuovi test (FunctionalPlanGapTest — 11 test):**
+- TC-OPH-001..007: `OpeningHoursManager` — visualizzazione slot ricorrenti, aggiunta, modifica inline, eliminazione, eccezione chiuso, validazione `end_time > start_time`, permesso negato atleta.
+- TC-CLS-018: atleta → `/backoffice/group-classes` → 403.
+- TC-CLS-019: receptionist → `deleteClass()` → 403.
+- TC-NOT-006: gestore e trainer → `/athlete/notifications` → 403.
+
+**Suite:** 495 test (489 pass / 6 skipped). PHPStan: 0 errori. Pint: conforme.
+
+---
+
+## SET01 Step 2C — Gating flag sessione atleta + navigazione filtrata (2026-08-29)
+
+### Navigazione filtrata
+
+- `athlete.blade.php`: sidebar "Progressi" href ora condizionale — `weekly_volume` attivo → `/athlete/volume`, altrimenti `/athlete/measurements`. Risolve link morto con flag spento.
+- `athlete.blade.php`: toast PR (`pr-achieved`) wrappato in `@feature('personal_records')/@endfeature`.
+- `dashboard.blade.php`: link chevron "Ultimo allenamento" → recap wrappato in `@feature('session_recap')/@endfeature`.
+
+### WorkoutSession — PersonalRecordDetector sempre attivo
+
+`WorkoutSession::completeSet()` e `quickLog()`: `PersonalRecordDetector::check()` ora eseguito sempre (anche con `personal_records` off). Il dispatch dell'evento `pr-achieved` (toast) rimane condizionale sul flag. I PR vengono scritti in DB anche durante test pilota con flag spento.
+
+### Flag plate_calculator
+
+Aggiunto a `config/features.php` managed_flags (gruppo "Sessione atleta") e `AppServiceProvider` (`Feature::define`). Nessun gating point lato atleta (rimosso in UX01). Toggle esposto in FeatureFlagManager per uso futuro. `PlateInventoryManager` backoffice accessibile a prescindere.
+
+### Test
+
+- `SessionFlagGatingTest` (10 test): `readiness_check` off abort 403; `exercise_substitution` off abort 403; `personal_records` off → route 403, toast assente, PR salvato in DB; `weekly_volume` off → route 403, sidebar href fallback; `session_recap` off → route 403, link recap assente in dashboard.
+
+### Fix preesistente
+
+- `FeedbackDemoSeeder.php`: fix Pint `concat_space` / `binary_operator_spaces`.
+
+**Suite:** 484 test (478 pass / 6 skipped). PHPStan: 0 errori. Pint: conforme.
+
+---
+
+## SET01 Step 2B — Gating completo messaging e pt_bookings (2026-08-29)
+
+**`messaging` — punto mancante:**
+- Alpine store `messages.init()` avvolge la `fetch('/athlete/messages-unread-count')` in `@feature('messaging')/@endfeature`: con il flag spento il browser non emette la chiamata HTTP a ogni pagina.
+- Link "Apri messaggi" nel dashboard empty-state (sezione "Nessuna scheda attiva") aggiunto a `@feature('messaging')`.
+
+**`pt_bookings` — gating completo:**
+- Nuovo gate `view-athlete-bookings`: true se `pt_bookings` OR `group_classes` attivo.
+- Route `/athlete/bookings` → middleware `can:view-athlete-bookings` (403 se entrambi i flag spenti).
+- `Booking::mount()`: se `pt_bookings` off → `activeTab='classes'` (evita tab PT attivo ma invisibile).
+- `booking.blade.php`: tab button "Sessione PT" e intero contenuto tab PT in `@feature('pt_bookings')`.
+- Bottom-nav atleta: link "Prenota" in `@can('view-athlete-bookings')/@endcan`.
+- `TrainerAvailabilityObserver` lasciato attivo: ricalcola slot (consistenza dati, non invio verso atleti).
+- Backoffice `BookingList` non toccato: trainer continua a gestire l'agenda PT esistente.
+
+**Matrice pt_bookings × group_classes:**
+| pt_bookings | group_classes | Pagina Prenota |
+|---|---|---|
+| ON | ON | Entrambi i tab visibili |
+| ON | OFF | Solo tab PT |
+| OFF | ON | Solo tab Corsi; mount forza activeTab='classes' |
+| OFF | OFF | 403; link Prenota assente |
+
+**Test:** 8 nuovi test in `ModuleFlagGatingTest` (fetch assente, link assenti, matrice 4 casi, activeTab). Suite: 474 test (468 pass / 6 skipped). PHPStan 0 errori. Pint conforme.
+
+---
+
+## SET01 Step 2 — Fix post-release (2026-08-29)
+
+**Log::warning nel kill switch:** ogni job `outbound_notifications` ora emette `Log::warning('[outbound_notifications] invio soppresso da interruttore', ['job' => ...])` prima di ritornare. Facilita il debug in produzione. Test aggiunto (`OutboundNotificationsKillSwitchTest` +1 → 8 test). Suite: 466 test (460 pass / 6 skipped).
+
+**Fix punto 4 SET01 Step 1 — SettingsHub embed:** il tab "Funzioni" ora embeds `@livewire('backoffice.settings.feature-flag-manager')` direttamente; rimosso il link "Gestisci funzioni" che richiedeva un click extra.
+
+**Fix punto 6 SET01 Step 1 — raggruppamento flag:** `financial_reports` e `periodization_engine` spostati dal gruppo "Moduli" a "Sistema" in `config/features.php` e `FeatureFlagManager`. Sidebar: "Feedback utenti" spostato da IMPOSTAZIONI a COMUNICAZIONE (posizione corretta accanto a Campagne).
+
+**Fix PHPStan — factory mancanti:** create `AthleteVolumeLandmarkFactory` e `SessionExerciseFeedbackFactory`; `database/factories` aggiunto ai path in `phpstan.neon`. PHPStan livello 6: 0 errori.
+
+**Docs:** corretto `PtBookingObserver` in CLAUDE.md — l'observer invalida cache slot trainer e tag KPI (non invia notifiche come documentato erroneamente).
+
+---
+
+## SET01 Step 2 — Gating completo 9 nuovi flag (2026-08-29)
+
+**Obiettivo:** chiudere GAP-03 e aggiungere kill switch a tutti i livelli per 9 nuovi flag: `messaging`, `pt_bookings`, `outbound_notifications`, `in_app_feedback`, `readiness_check`, `exercise_substitution`, `session_recap`, `personal_records`, `weekly_volume`.
+
+**GAP-03 chiuso:** route `/reports/manager` e `/reports/financial` protette da middleware `can:view-financial-reports` (defense-in-depth oltre al gate nei componenti Livewire).
+
+**Nuovi flag — livelli di applicazione:**
+- **Route middleware:** `can:view-messaging` su `/messages`, `can:view-session-recap` su `/session/recap`, `can:view-personal-records` su `/records`, `can:view-weekly-volume` su `/volume`.
+- **Livewire (PHP):** `WorkoutSession` — readiness_check gate su mount/skip/submit; exercise_substitution su openSubstitutionModal/confirmSubstitution; personal_records su rilevamento PR. `SessionFeedbackForm` — redirect condizionale session_recap. `Profile`, `Dashboard`, `Booking` — pt_bookings e personal_records gated sulle query.
+- **View Blade:** `@feature` su link sidenav messaggi, link sidenav record, tab profilo PT/record/messaggi, bottone sostituzione esercizio, feedback in-app in entrambi i layout.
+- **Job kill switch:** `outbound_notifications_enabled=false` → i 7 job di notifica (SendSubscriptionExpiryReminders, SendMedicalCertExpiryReminders, SendSessionReminders, SendClassReminders, NotifyClassCancellation, NotifyWaitlistPromotion, SendCampaignMessages) ritornano subito senza inviare.
+
+**FeatureFlagManager:** vista ristrutturata con una card per gruppo (Moduli / Sessione atleta / Sistema). Fix bug chiavi stringa perse da `->groupBy()` (sostituito con loop PHP nativo).
+
+**config/features.php:** 13 flag con campo `group`. `SettingsFlagSeeder` aggiornato.
+
+**Test:** 17 nuovi test — `FeatureFlagGatingTest` (10: flag-off/on per messaging, pt_bookings, session_recap, personal_records, weekly_volume, readiness_check), `OutboundNotificationsKillSwitchTest` (7: kill switch per ogni job). Aggiornati 5 test esistenti con `Feature::activate()` in beforeEach. Suite: 465 test (459 pass / 6 skipped). PHPStan 0 errori. Pint conforme.
+
+---
+
+## SET01 Step 1 — Sezione Impostazioni e unificazione feature flag (2026-08-29)
+
+**Obiettivo:** creare la sezione Impostazioni riservata al gestore, portarci la gestione dei flag, e chiudere DIFETTO-A e DIFETTO-B rilevati nell'assessment.
+
+**DIFETTO-A — Pattern uniforme per tutti i flag:**
+Tutti e quattro i flag gestibili da UI (`periodization_engine`, `push_notifications`, `group_classes`, `financial_reports`) usano ora il pattern `Setting::bool(key, default) && <condizione_scope>`. Il toggle scrive sempre su `settings` + `Feature::purge()`, mai `activateForEveryone/deactivateForEveryone`. Utenti che non avevano mai risolto un flag ora lo rileggono correttamente al prossimo accesso.
+
+**DIFETTO-B — UI mostra stato interruttore gym-wide:**
+`FeatureFlagManager::render()` non chiama più `Feature::active($flag)` (risolto sull'utente corrente). Legge direttamente `Setting::bool()`, indipendente dal ruolo del gestore. Corregge la visualizzazione di `push_notifications` (definer scope: atleta/trainer) che il gestore vedeva sempre spento.
+
+**Nuovi componenti:**
+- `Backoffice\Settings\SettingsHub` (`/backoffice/settings`) — hub con tab Funzioni e Manuale (segnaposto)
+- `Backoffice\Settings\FeatureFlagManager` (`/backoffice/settings/feature-flags`) — spostato da `Admin`, aggiornato
+
+**Route e redirect:**
+- Nuovo gruppo `can:access-admin-section` su `/backoffice/settings/*`
+- Redirect 301 da `/backoffice/admin/feature-flags` → `/backoffice/settings/feature-flags`
+
+**Sidebar:** header ADMIN soppresso, voci accorpate in IMPOSTAZIONI (Funzioni, Inventario Dischi, Feedback utenti).
+
+**SettingsFlagSeeder:** scrive le 4 chiavi `settings` con valori pilota; idempotente (`Setting::write`); escluso da prod; registrato in `DatabaseSeeder`. `PilotSeeder::seedFeatureFlags` delega a questo seeder.
+
+**config/features.php:** aggiunta chiave `managed_flags` con label, description, platea, settings_key e default per ogni flag. Fonte unica usata da `FeatureFlagManager` e dalla manualistica.
+
+**Test:** 11 nuovi test in `SettingsFeatureFlagsTest` (accesso 4 ruoli, redirect 301, DIFETTO-A per 4 flag, DIFETTO-B push_notifications). Import aggiornato in `GlobalFeatureFlagTest`. Suite: 448 test (442 pass / 6 skipped). PHPStan 0 errori. Pint conforme.
+
+---
+
+## FIX02 — Idempotenza seeder e overlap PT+corso atleta (2026-08-27)
+
+**F-01/F-04 — `OpeningHoursSeeder` idempotente** (`9b906a8`):
+- Sostituito `truncate()+create()` con `firstOrCreate` su chiave naturale:
+  slot settimanali su `(day_of_week, specific_date=null)`, festività/vigilie su
+  `(specific_date, is_annual=true)`. Rieseguibile N volte senza perdita dati.
+- F-04 risolto di conseguenza: il seeder e' ora sicuro in tutti gli ambienti,
+  niente da spostare in `DatabaseSeeder`.
+
+**F-02 — `ClassBookingService::enroll` controlla overlap PT+corso** (`4ecc742`):
+- Aggiunto check `PtBooking confirmed` stesso giorno/orario prima di iscrivere
+  il membro al corso collettivo. Eccezione: `"Hai già una sessione PT confermata
+  in questo orario."` Previene doppia prenotazione PT+corso sullo stesso slot.
+
+---
+
+## DOC02 — Piano test funzionali R09+ e seeder demo (2026-08-27)
+
+Attivita' di qualita' read-only: nessuna modifica al codice applicativo.
+
+**Assessment:** `docs/reviews/r09-plus-test-assessment.md` — perimetro reale R09→FIX01
+(158 commit, 182 file, 226 nuovi test automatici). 6 findings documentati, non corretti.
+
+**Piano di test manuale:** `docs/testing/r09-plus-functional-test-plan.md` — 109 casi
+in 14 aree funzionali (CLS, SCH, CAT, GEN, NOT, PRF, EXP, CHK, SUB, MBR, DBC, FLG, OPH, REG).
+Ogni caso: persona, account, precondizioni, step, risultato atteso verificabile in UI.
+
+**FunctionalTestSeeder** — 4 scenari demo idempotenti:
+- Yoga Full (occorrenza al completo + waitlist per TC-CLS-009/012)
+- Carlo Accessi — `carlo.accessi@functional-test.demo` / `demo1234` (TC-CHK-004)
+- Overlap trainer PT+corso (REG-003)
+- Occorrenza passata non completata (TC-CLS-015/016)
+
+**Divergenze codice/doc corrette in CLAUDE.md:**
+- Aggiunto `OpeningHoursManager` (`/backoffice/settings/opening-hours`) alla sezione componenti
+- Aggiunto warning F-01/F-04 su `OpeningHoursSeeder::truncate` e `DatabaseSeeder`
+
+**Findings aperti (non corretti — da pianificare):**
+- F-01: `OpeningHoursSeeder:13` usa `truncate()` — non idempotente
+- F-02: `ClassBookingService::enroll` non controlla overlap atleta PT+corso
+- F-04: `DatabaseSeeder` chiama `OpeningHoursSeeder` fuori da `isLocal()`
+
+---
+
+## FIX01 — Feature flag globali e autorizzazioni mesocicli (2026-08-26)
+
+Nato dal test funzionale R09-R14: quasi tutti i sintomi riportati (corsi
+invisibili all'atleta, catalogo senza link, promemoria non testabili) avevano
+un'unica causa.
+
+**Feature flag globale `group_classes`:**
+- Causa: `Feature::activateForEveryone()` aggiorna solo le righe gia' presenti in
+  `features`. Un utente che non aveva mai risolto il flag ricadeva sul definer
+  → `config` → `env` → `false`. Il toggle da backoffice era quindi inefficace,
+  e le righe memorizzate a `false` vincevano comunque sul definer.
+- Nuova tabella `settings` (key/value JSON) come sorgente di verita' per i flag
+  validi per l'intera palestra; `config/features.php` resta il default iniziale.
+- `Setting::bool()` / `Setting::write()` con cache invalidata in scrittura.
+- Definer `group_classes` legge da `settings`; `FeatureFlagManager` scrive in
+  `settings` ed esegue `Feature::purge()` cosi' il nuovo valore vale per tutti.
+- `FeatureFlagManager::confirmToggle()`: aggiunti guard `role:gestore` e
+  whitelist dei flag gestiti (prima nessun controllo di ruolo).
+- Migration cancella le righe stale `group_classes` da `features`.
+- Gli altri tre flag (`periodization_engine`, `push_notifications`,
+  `financial_reports`) restano per-utente, risolti per ruolo.
+
+**Fix query `Athlete\Dashboard`:** la card "prossimi corsi" faceva join fra
+`class_bookings` e `class_occurrences` senza qualificare `status` e `member_id`
+→ MySQL 1052 "Column 'status' in where clause is ambiguous", pagina `/athlete`
+in errore 500 con il flag attivo. Colonne ora qualificate, `whereHas` ridondante
+rimosso. Stessa classe di bug gia' corretta in R21.
+
+**Autorizzazioni mesocicli:**
+- `MesocycleList`: il trainer vede solo i propri mesocicli (prima vedeva quelli
+  di tutti, con pulsanti che portavano a un 403).
+- `MesocycleDetail`: `applyProgression()` e `forceDeload()` verificavano solo il
+  ruolo, non la proprieta'. Aggiunto `authorizeOwnership()` — `mount()` da solo
+  non basta, le action Livewire arrivano come richieste indipendenti.
+
+**Dati e comandi:**
+- `GroupClassSeeder` registrato in `DatabaseSeeder` prima di `BookingDemoSeeder`:
+  creava le uniche `ClassSchedule` del progetto ma non veniva mai eseguito
+  (`class_schedules` era vuota, pagina palinsesto senza dati).
+- Nuovo comando `classes:send-reminders [--sync]` che dispatcha
+  `SendClassReminders` (esisteva solo come job schedulato, non lanciabile a mano).
+- Alias route `/athlete/dashboard` → redirect a `athlete.dashboard`.
+- Link "Volume landmarks" nell'header di `AthleteProfile` backoffice: la route
+  esisteva senza alcun link nell'interfaccia.
+
+**Nota su R12:** `applyProgression` funziona correttamente. La progressione
+MEV→MRV agisce sul numero di **set** (`planned_sets_count`), non sui carichi:
+verificato su dati reali, `exercise_sets` 23 → 37 con `action=progressed`. I
+`planned_weight_kg` dei set esistenti restano invariati per design.
+
+**Dati demo atleti (`R09R31DemoSeeder`):**
+- `atleta@atleta.atleta` riceve una sessione PT **pending** futura: prima non ne
+  aveva, quindi l'annullamento dalla dashboard (R14) non era provabile.
+- `alessia.colombo@example.com` diventa il caso "abbonamento scaduto"
+  deterministico — `status=active` con `expires_at` nel passato, piu' certificato
+  medico scaduto. Copre il badge "Scaduto" (R13) e il blocco dei prerequisiti di
+  iscrizione ai corsi (R09 Step 2).
+- Nota: i due casi non possono coincidere sullo stesso atleta. Il profilo
+  distingue un abbonamento lapsed da uno assente filtrando su `status=active` e
+  calcolando il badge da `expires_at`; un atleta in quello stato fallisce
+  `Member::activeSubscription()` e non puo' iscriversi ai corsi.
+- Badge "In attesa" sulle sessioni PT pending nella dashboard atleta: la card
+  mostrava data e trainer ma non lo stato.
+
+**Test (16):** `GlobalFeatureFlagTest` (6), `MesocycleOwnershipTest` (5),
+`AthleteDashboardClassCardTest` (3), `AthleteDashboardPendingPtBadgeTest` (2).
+
+Suite: 429 pass / 6 skipped. PHPStan 0 errori. Pint OK.
+
+---
+
 ## R31 — Statistiche PT in ManagerDashboard (2026-08-24)
 
 **`ManagerDashboard` — sezione "Sessioni PT completate per trainer":**

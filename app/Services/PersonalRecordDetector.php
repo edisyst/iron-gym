@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\ExerciseSet;
 use App\Models\PersonalRecord;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class PersonalRecordDetector
@@ -80,7 +81,7 @@ class PersonalRecordDetector
     {
         $minSessions = config('pr.min_sessions_before_pr', 3);
 
-        $sessionCount = DB::table('exercise_sets as es')
+        $sessionCount = Cache::remember("pr_history:{$athleteId}:{$exerciseId}", 300, fn () => DB::table('exercise_sets as es')
             ->join('session_exercises as se', 'se.id', '=', 'es.session_exercise_id')
             ->join('training_sessions as ts', 'ts.id', '=', 'se.session_id')
             ->join('microcycle_weeks as mw', 'mw.id', '=', 'ts.microcycle_week_id')
@@ -89,7 +90,7 @@ class PersonalRecordDetector
             ->where('se.exercise_id', $exerciseId)
             ->where('ts.status', 'completed')
             ->distinct('ts.id')
-            ->count('ts.id');
+            ->count('ts.id'));
 
         return $sessionCount >= $minSessions;
     }

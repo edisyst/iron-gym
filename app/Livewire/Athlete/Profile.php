@@ -114,7 +114,7 @@ class Profile extends Component
         $upcomingPtBookings = collect();
         $pastPtBookings = collect();
 
-        if ($member) {
+        if ($member && Feature::active('pt_bookings')) {
             $upcomingPtBookings = PtBooking::with('trainer')
                 ->where('member_id', $member->id)
                 ->whereIn('status', ['pending', 'confirmed'])
@@ -138,12 +138,14 @@ class Profile extends Component
             ->limit(5)
             ->get();
 
-        $recentPrs = PersonalRecord::with('exercise')
-            ->where('athlete_id', Auth::id())
-            ->where('record_type', 'e1rm')
-            ->orderByDesc('achieved_at')
-            ->limit(5)
-            ->get();
+        $recentPrs = Feature::active('personal_records')
+            ? PersonalRecord::with('exercise')
+                ->where('athlete_id', Auth::id())
+                ->where('record_type', 'e1rm')
+                ->orderByDesc('achieved_at')
+                ->limit(5)
+                ->get()
+            : collect();
 
         $recentSessions = TrainingSession::whereHas(
             'week.mesocycle',
@@ -192,13 +194,18 @@ class Profile extends Component
 
         $userId = Auth::id();
 
-        $recentMessages = Message::with(['sender', 'receiver'])
-            ->where(fn ($q) => $q->where('sender_id', $userId)->orWhere('receiver_id', $userId))
-            ->orderByDesc('created_at')
-            ->limit(5)
-            ->get();
+        $recentMessages = collect();
+        $unreadMessagesCount = 0;
 
-        $unreadMessagesCount = Message::where('receiver_id', $userId)->unread()->count();
+        if (Feature::active('messaging')) {
+            $recentMessages = Message::with(['sender', 'receiver'])
+                ->where(fn ($q) => $q->where('sender_id', $userId)->orWhere('receiver_id', $userId))
+                ->orderByDesc('created_at')
+                ->limit(5)
+                ->get();
+
+            $unreadMessagesCount = Message::where('receiver_id', $userId)->unread()->count();
+        }
 
         return view('livewire.athlete.profile', compact(
             'subscription', 'upcomingPtBookings', 'pastPtBookings',

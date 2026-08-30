@@ -74,6 +74,7 @@ Gestionale palestra bodybuilding/fitness. Copre: anagrafica tesserati, abbonamen
 **Sistema:**
 - FeedbackSubmission: feedback in-app utenti
 - Feature (Pennant): feature flags per roll-out graduale
+- Setting: impostazioni globali key/value (PK stringa, value JSON). Sorgente di verità per i feature flag validi per l'intera palestra — `group_classes` — perché `Feature::activateForEveryone()` aggiorna solo le righe già esistenti in `features`. Helper `Setting::bool($key, $default)` e `Setting::write($key, $value)`
 - SyncOperation: tabella idempotenza sync offline (client_uuid UNIQUE, operation, processed_at)
 
 ## Servizi disponibili
@@ -97,7 +98,7 @@ Gestionale palestra bodybuilding/fitness. Copre: anagrafica tesserati, abbonamen
 Registrati in `AppServiceProvider`. Tutti in `app/Observers/`.
 
 - ExerciseObserver (Exercise): flush cache tag `exercises` su create/update/delete
-- PtBookingObserver (PtBooking): notifica atleta+trainer su conferma/cancellazione
+- PtBookingObserver (PtBooking): invalida cache slot trainer e tag KPI su saved/deleted. **Nota:** documentazione precedente ("notifica atleta+trainer") era errata — nessuna notifica viene inviata.
 - SubscriptionObserver (Subscription): invalida cache KPI tag `kpi` su create/update
 - TrainerAvailabilityObserver (TrainerAvailability): ricalcola slot disponibili su saved/deleted
 - TrainingSessionObserver (TrainingSession): aggiorna status, started_at, completed_at su update
@@ -121,6 +122,10 @@ gli observers, i seeder e gli artisan commands è in:
 
 Leggila prima di aggiungere nuovi componenti o route per evitare conflitti e
 seguire i pattern esistenti.
+
+**Componenti backoffice non nella component-map (trovati in codice):**
+- `OpeningHoursManager` (`/backoffice/settings/opening-hours`): CRUD orari apertura settimanali + eccezioni per data specifica. Accessibile a tutti i ruoli backoffice; modificabile da gestore e receptionist.
+- `GlobalSearch` (`/backoffice/search`): ricerca live atleti/trainer/template, min 2 caratteri.
 
 **Nota architetturale:** le view Livewire usano wrapper `<div>` (non `@extends`).
 Il layout è gestito con `->layout('layouts.backoffice')` nel `render()`. Questo
@@ -212,11 +217,33 @@ Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01
 
 **R31** completato: tabella "Sessioni PT completate per trainer" in `ManagerDashboard`; query `pt_bookings JOIN users` filtrata per periodo e `status=completed`, raggruppata per trainer. 3 nuovi test. R31 chiuso.
 
-**Suite corrente:** 413 pass / 6 skipped. **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
+**FIX01** (2026-08-26): flag globale `group_classes` spostato su tabella `settings` (`activateForEveryone` non copriva gli utenti mai risolti, il toggle da backoffice era inefficace); guard `role:gestore` + whitelist in `FeatureFlagManager`; fix colonna `status` ambigua in `Athlete\Dashboard`; `MesocycleList` filtrata per trainer e ownership check in `MesocycleDetail::applyProgression/forceDeload`; `GroupClassSeeder` registrato in `DatabaseSeeder`; comando `classes:send-reminders`; alias `/athlete/dashboard`; link "Volume landmarks" in AthleteProfile; dati demo: PT pending per `atleta@atleta.atleta`, abbonamento+certificato scaduti per `alessia.colombo@example.com`, badge "In attesa" in dashboard atleta. 16 nuovi test.
+
+**Suite corrente:** 495 test (489 pass / 6 skipped). **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
+
+**DOC02** (2026-08-27): assessment funzionale R09+ (`docs/reviews/r09-plus-test-assessment.md`), piano di test manuale 109 casi (`docs/testing/r09-plus-functional-test-plan.md`), `FunctionalTestSeeder` con 5 scenari demo (corsi collettivi + waitlist, notifiche, check-in ingressi esauriti, abbonamento in scadenza, orari apertura). Findings documentati: F-01/F-02/F-04 risolti in FIX02.
+
+**FIX02** (2026-08-27): `OpeningHoursSeeder` idempotente con `firstOrCreate` (risolve F-01/F-04); `ClassBookingService::enroll` controlla overlap atleta PT+corso (risolve F-02).
+
+**SET01 Step 1** (2026-08-29): sezione Impostazioni backoffice (`/backoffice/settings`), unificazione flag. `SettingsHub` + `FeatureFlagManager` (spostato da Admin → Settings). Pattern uniforme per tutti e 4 i flag: `Setting::bool(key, default) && <condizione_scope>`; toggle sempre `Setting::write` + `Feature::purge`. `SettingsFlagSeeder` idempotente. Redirect 301 da vecchia route. Sidebar: ADMIN soppresso, tutto in IMPOSTAZIONI. Chiude DIFETTO-A e DIFETTO-B. 448 test (442 pass / 6 skipped).
+
+**SET01 Step 2** (2026-08-29): chiude GAP-03 (route /reports/* con middleware `can:view-financial-reports`); aggiunge 9 nuovi flag globali con kill switch completo a tutti i livelli (route, Livewire, view, job). `config/features.php` ristrutturato con campo `group` (Moduli / Sessione atleta / Sistema). `FeatureFlagManager` ora raggruppa i 13 flag per gruppo. 17 nuovi test (FeatureFlagGatingTest 10, OutboundNotificationsKillSwitchTest 7). Suite: 465 test (459 pass / 6 skipped).
+
+**SET01 Step 2B** (2026-08-29): gating completo `messaging` e `pt_bookings`. `messaging`: Alpine store `messages.init()` non emette fetch a `unread-count` quando flag spento; link "Apri messaggi" in dashboard empty-state gated. `pt_bookings`: gate `view-athlete-bookings` (PT OR corsi collettivi); route `/athlete/bookings` gated; tab PT e contenuto tab PT in `@feature('pt_bookings')`; `Booking::mount()` forza `activeTab='classes'` se PT off; link "Prenota" in bottom-nav gated con `@can`. `TrainerAvailabilityObserver` lasciato attivo (consistenza dati, non invio). 8 nuovi test (ModuleFlagGatingTest). Suite: 474 test (468 pass / 6 skipped).
+
+**SET01 Step 2C** (2026-08-29): gating sei flag "Sessione atleta" + fix navigazione filtrata. Nav: sidebar "Progressi" href condizionale su `weekly_volume` (fallback a `athlete.measurements`); toast PR wrappato in `@feature('personal_records')`; link recap "Ultimo allenamento" in dashboard wrappato in `@feature('session_recap')`. Flag `plate_calculator` aggiunto a `config/features.php` managed_flags e `AppServiceProvider` (nessun gating point atleta, rimosso in UX01). `WorkoutSession::completeSet/quickLog`: `PersonalRecordDetector` ora sempre eseguito; dispatch evento `pr-achieved` condizionale su flag (PR sempre scritto in DB anche con flag off). `TrainerAvailabilityObserver` lasciato attivo. 10 nuovi test (SessionFlagGatingTest). Pint fix preesistente FeedbackDemoSeeder. Suite: 484 test (478 pass / 6 skipped).
+
+**SET01 Step 3** (2026-08-29): manualistica backoffice. `ManualRenderer` service (slug-safe, cache mtime, `Str::markdown()`); `ManualViewer` componente Livewire embedded in tab "Manuale" di SettingsHub; 6 sezioni Markdown (`resources/docs/manual/01-06`): Dashboard, Tesserati, Abbonamenti, Accessi e check-in, Scadenze, Esercizi. `docs/manual-howto.md` per aggiungere sezioni. Fix `OpeningHoursManager` SQL MySQL-specifico (`MONTH/DAY` → `orderBy`). 11 nuovi test (ManualViewerTest). Suite: 506 test (500 pass / 6 skipped).
+
+**SET01 Step 4** (2026-08-30): sezioni manuale 7-16: Schede template e mesocicli, Progressione e volume landmarks, Calendario e disponibilita', Prenotazioni PT, Corsi collettivi, Comunicazione e campagne, Report allenamento, Report finanziari, Inventario dischi, Impostazioni di sistema. `SECTION_FLAGS` in `ManualViewer` mappato: `11-corsi-collettivi → group_classes`, `14-report-finanziari → financial_reports`. Badge ON/OFF attivi in sidebar manuale per le sezioni gated. Suite: 506 test (500 pass / 6 skipped).
+
+**SET01 Chiusura** (2026-08-30): Fase 3 completata — tabella flag CLAUDE.md allineata a `config/features.php` (gruppi `financial_reports`/`periodization_engine` corretti da Moduli a Sistema; platea `outbound_notifications` corretta); `component-map.md` aggiornato (5 route, 8 componenti, observer, comandi, seeder mancanti); 5 scostamenti manuale/menu identificati e tutti risolti: S-01 navigazione sezione 08, S-02 voce sidebar "Report finanziario" (`can:view-financial-reports`), S-03 sottosezione feedback utenti in sezione 12, S-04 route messaggistica corretta, S-05 `Admin/FeatureFlagManager.php` eliminato. Pint fix su `ManualViewer` e `ManualRenderer`. Suite: 506 test (500 pass / 6 skipped). SET01 definitivamente chiuso.
 
 Storico completo release e audit: **`CHANGELOG.md`**.
 
-Prossima attività: raccogliere feedback dai primi atleti pilota dopo prima sessione.
+**DOC02** (2026-08-30): allineamento documentazione post-SET01/PERF01. Fix B-03 (route prenotazioni manuale sez. 09/10); piani test per ruolo aggiornati (sez. Impostazioni, plate calculator rimosso, note flag, notifiche R10); consolidamento `docs/review/` + `docs/audit/` → `docs/reviews/`; `11-doc02-chiusura.md`. 12 commit, solo `.md`.
+
+Prossima attività: da definire.
 
 ## Architettura offline
 
@@ -250,21 +277,48 @@ php artisan db:seed --class=PilotSeeder          # piani abbonamento + account g
 php artisan db:seed --class=PilotTemplateSeeder  # template PPL ipertrofia 4 sett.
 ```
 
+### Seeder test funzionali (idempotente, solo ambienti non-production)
+
+```bash
+php artisan db:seed --class=FunctionalTestSeeder
+```
+
+Crea 4 scenari per il piano di test `docs/testing/r09-plus-functional-test-plan.md`:
+- **Yoga Full**: occorrenza yoga `now+3` capacity=3, 3 confirmed + Federica in waitlist (TC-CLS-009/012)
+- **Carlo Accessi** (`carlo.accessi@functional-test.demo` / `demo1234`): abb. a ingressi con `accesses_remaining=0` (TC-CHK-004)
+- **Overlap trainer**: ClassOccurrence + PtBooking per Trainer 1 stesso slot `now+5` 14:00 (REG-003)
+- **Occorrenza passata**: `now-2` status=planned per test attendance (TC-CLS-015/016)
+
+`OpeningHoursSeeder` e' idempotente (usa `firstOrCreate`): sicuro da rieseguire in qualsiasi ambiente.
+
 ### Account pilota locale
 
 - Gestore: `gestore@iron-gym.test` / `changeme` (da `.env` PILOT_MANAGER_EMAIL/PASSWORD)
 - Trainer demo: `trainer@trainer.trainer`
 
-### Feature flags pilota (impostati via Pennant DB store)
+### Feature flags pilota (impostati via SettingsFlagSeeder)
 
-| Flag | Stato pilota | Quando attivare |
-|---|---|---|
-| `financial_reports` | ON | attivo da subito per gestore |
-| `periodization_engine` | ON | attivato via PilotSeeder (R12) |
-| `push_notifications` | OFF | dopo verifica service worker su dispositivo reale |
-| `group_classes` | OFF | solo se palestra usa corsi collettivi |
+Tutti i flag usano `Setting::bool(key, default) && <condizione_scope>`.
+Toggle sempre via `Setting::write` + `Feature::purge` (non `activateForEveryone`).
 
-Per modificare flags: backoffice → Admin → Feature Flags (solo gestore).
+| Flag | Chiave `settings` | Stato pilota | Platea (quando acceso) | Gruppo |
+|---|---|---|---|---|
+| `group_classes` | `group_classes_enabled` | ON | Tutta la palestra | Moduli |
+| `messaging` | `messaging_enabled` | ON | Tutta la palestra | Moduli |
+| `pt_bookings` | `pt_bookings_enabled` | ON | Tutta la palestra | Moduli |
+| `financial_reports` | `financial_reports_enabled` | ON | Solo gestore | Sistema |
+| `periodization_engine` | `periodization_engine_enabled` | ON | Gestore + trainer beta | Sistema |
+| `readiness_check` | `readiness_check_enabled` | ON | Atleti | Sessione atleta |
+| `exercise_substitution` | `exercise_substitution_enabled` | ON | Atleti | Sessione atleta |
+| `session_recap` | `session_recap_enabled` | ON | Atleti | Sessione atleta |
+| `personal_records` | `personal_records_enabled` | ON | Atleti | Sessione atleta |
+| `weekly_volume` | `weekly_volume_enabled` | ON | Atleti | Sessione atleta |
+| `plate_calculator` | `plate_calculator_enabled` | ON | Atleti (nessun gating point, riservato a usi futuri) | Sessione atleta |
+| `push_notifications` | `push_notifications_enabled` | OFF | Atleti e trainer | Sistema |
+| `outbound_notifications` | `outbound_notifications_enabled` | ON | Tutta la palestra (flag globale) | Sistema |
+| `in_app_feedback` | `in_app_feedback_enabled` | OFF | Tutti | Sistema |
+
+Per modificare flags: backoffice → Impostazioni → Funzioni (solo gestore).
 
 ### Procedura registrazione atleta pilota
 

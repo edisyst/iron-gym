@@ -3,8 +3,8 @@
 namespace App\Livewire\Backoffice;
 
 use App\Models\AccessLog;
-use App\Models\Member;
-use App\Models\Subscription;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Livewire\Component;
 
@@ -24,30 +24,49 @@ class Dashboard extends Component
 
     public function mount(): void
     {
-        $this->activeMembersCount = Member::where('is_active', true)->count();
+        $counts = Cache::remember('backoffice_dashboard_counts', 300, function () {
+            $cutoff30 = now()->addDays(30)->toDateString();
+            $cutoff7 = now()->addDays(7)->toDateString();
+            $today = today()->toDateString();
 
-        $this->expiringSoonCount = Subscription::expiringSoon(30)->count();
+            $memberStats = DB::table('members')
+                ->where('is_active', true)
+                ->selectRaw(
+                    'COUNT(*) as active_count,
+                    SUM(CASE WHEN medical_cert_expiry IS NULL OR medical_cert_expiry <= ? THEN 1 ELSE 0 END) as cert_issues,
+                    SUM(CASE WHEN medical_cert_expiry IS NOT NULL AND medical_cert_expiry >= ? AND medical_cert_expiry <= ? THEN 1 ELSE 0 END) as cert_expiring30',
+                    [$cutoff30, $today, $cutoff30]
+                )
+                ->first();
+
+            $subStats = DB::table('subscriptions')
+                ->where('status', 'active')
+                ->where('expires_at', '>=', $today)
+                ->where('expires_at', '<=', $cutoff30)
+                ->selectRaw(
+                    'COUNT(*) as expiring30, SUM(CASE WHEN expires_at <= ? THEN 1 ELSE 0 END) as expiring7',
+                    [$cutoff7]
+                )
+                ->first();
+
+            return [
+                'activeMembersCount' => (int) ($memberStats->active_count ?? 0),
+                'medicalCertIssuesCount' => (int) ($memberStats->cert_issues ?? 0),
+                'certExpiring30Count' => (int) ($memberStats->cert_expiring30 ?? 0),
+                'expiringSoonCount' => (int) ($subStats->expiring30 ?? 0),
+                'subExpiring7Count' => (int) ($subStats->expiring7 ?? 0),
+            ];
+        });
+
+        $this->activeMembersCount = $counts['activeMembersCount'];
+        $this->expiringSoonCount = $counts['expiringSoonCount'];
+        $this->subExpiring7Count = $counts['subExpiring7Count'];
+        $this->medicalCertIssuesCount = $counts['medicalCertIssuesCount'];
+        $this->certExpiring30Count = $counts['certExpiring30Count'];
 
         if (auth()->user()->can('view-access-logs')) {
             $this->accessesTodayCount = AccessLog::whereDate('checked_in_at', today())->count();
         }
-
-        // Tesserati attivi senza certificato o con cert in scadenza entro 30 giorni
-        $this->medicalCertIssuesCount = Member::where('is_active', true)
-            ->where(function ($q) {
-                $q->whereNull('medical_cert_expiry')
-                    ->orWhere('medical_cert_expiry', '<=', now()->addDays(30)->toDateString());
-            })
-            ->count();
-
-        // Certificati medici in scadenza nei prossimi 30 giorni (non già scaduti)
-        $this->certExpiring30Count = Member::where('is_active', true)
-            ->whereNotNull('medical_cert_expiry')
-            ->whereBetween('medical_cert_expiry', [today()->toDateString(), now()->addDays(30)->toDateString()])
-            ->count();
-
-        // Abbonamenti in scadenza nei prossimi 7 giorni
-        $this->subExpiring7Count = Subscription::expiringSoon(7)->count();
     }
 
     public function render(): View

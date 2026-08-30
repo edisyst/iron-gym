@@ -6,7 +6,6 @@ use App\Models\SubscriptionPlan;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Laravel\Pennant\Feature;
 
 class PilotSeeder extends Seeder
 {
@@ -59,10 +58,6 @@ class PilotSeeder extends Seeder
 
     private function seedFeatureFlags(): void
     {
-        Feature::activateForEveryone('financial_reports');
-        Feature::activateForEveryone('periodization_engine');
-        Feature::activateForEveryone('group_classes');
-
-        $this->command->info('Feature flags attivati: financial_reports, periodization_engine, group_classes.');
+        $this->call(SettingsFlagSeeder::class);
     }
 }

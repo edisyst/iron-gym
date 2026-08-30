@@ -9,21 +9,115 @@ use App\Models\WorkoutTemplate;
 use Illuminate\Database\Seeder;
 
 /**
- * Template dimostrativi per popolare la lista backoffice.
- * Idempotente: elimina e ricrea i template con gli stessi nomi.
+ * Template di allenamento: PPL pilota + 4 template dimostrativi.
+ * Idempotente: elimina e ricrea i template con lo stesso nome.
  */
-class DemoTemplatesSeeder extends Seeder
+class TemplateSeeder extends Seeder
 {
+    private const PPL_NAME = 'PPL Ipertrofia — Intermediato (4 sett.)';
+
+    private const PUSH_EXERCISES = [
+        [1,  8,  2, 180], // Panca piana bilanciere
+        [4,  10, 2, 150], // Panca inclinata manubri
+        [26, 8,  2, 150], // Military press OHP
+        [29, 15, 2, 90],  // Alzate laterali manubri
+        [45, 12, 2, 90],  // Push down cavi sbarra
+    ];
+
+    private const PULL_EXERCISES = [
+        [16, 8,  2, 180], // Lat machine avanti
+        [17, 10, 2, 150], // Pulley basso
+        [34, 15, 1, 90],  // Alzate posteriori cavi
+        [36, 10, 2, 90],  // Curl bilanciere
+        [39, 12, 2, 90],  // Hammer curl
+    ];
+
+    private const LEGS_EXERCISES = [
+        [53, 6,  2, 180], // Squat high-bar bilanciere
+        [56, 12, 2, 150], // Leg press 45°
+        [13, 10, 2, 150], // Stacco rumeno RDL
+        [59, 15, 1, 90],  // Leg extension
+        [60, 12, 2, 90],  // Leg curl sdraiato
+        [71, 20, 1, 60],  // Calf raise in piedi
+    ];
+
     public function run(): void
     {
         $trainer = User::role('trainer')->first();
         $creatorId = $trainer?->id;
 
+        $this->createPplTemplate($creatorId);
         $this->createStrengthTemplate($creatorId);
         $this->createFullBodyTemplate($creatorId);
         $this->createBeginnerTemplate($creatorId);
         $this->createCutTemplate($creatorId);
     }
+
+    // -------------------------------------------------------------------------
+    // PPL pilota — volume progressivo MEV→MRV, deload settimana 4
+    // -------------------------------------------------------------------------
+
+    private function createPplTemplate(?int $creatorId): void
+    {
+        WorkoutTemplate::where('name', self::PPL_NAME)->delete();
+
+        $template = WorkoutTemplate::create([
+            'name' => self::PPL_NAME,
+            'description' => 'Scheda Push/Pull/Legs per atleti intermedi. 3 sessioni settimanali, volume progressivo dalle 3 alle 4 serie per esercizio, deload automatico alla settimana 4.',
+            'goal' => 'hypertrophy',
+            'periodization_model' => 'linear',
+            'weeks_count' => 4,
+            'days_per_week' => 3,
+            'created_by' => $creatorId,
+            'is_active' => true,
+        ]);
+
+        for ($week = 1; $week <= 4; $week++) {
+            $this->createPilotSession($template->id, $week, 1, 'Push — Petto / Spalle / Tricipiti', self::PUSH_EXERCISES, $week);
+            $this->createPilotSession($template->id, $week, 2, 'Pull — Schiena / Bicipiti', self::PULL_EXERCISES, $week);
+            $this->createPilotSession($template->id, $week, 3, 'Legs — Gambe / Glutei / Polpacci', self::LEGS_EXERCISES, $week);
+        }
+
+        $sessions = 4 * 3;
+        $this->command->info("Template '".self::PPL_NAME."' creato: {$sessions} sessioni.");
+    }
+
+    /** @param array<int, array{0:int,1:int,2:int,3:int}> $exercises */
+    private function createPilotSession(int $templateId, int $weekNumber, int $orderInWeek, string $name, array $exercises, int $week): void
+    {
+        $session = TemplateSession::create([
+            'template_id' => $templateId,
+            'week_number' => $weekNumber,
+            'name' => $name,
+            'order_in_week' => $orderInWeek,
+        ]);
+
+        // Compound: 3 serie W1, 4 W2-W3, 2 W4 deload. Iso: 3 W1-W2, 4 W3, 2 W4.
+        $sets = $week <= 3 ? ($week === 1 ? 3 : 4) : 2;
+        $setsIso = $week <= 3 ? ($week === 3 ? 4 : 3) : 2;
+
+        foreach ($exercises as $i => [$exerciseId, $reps, $rir, $rest]) {
+            $isCompound = in_array($exerciseId, [1, 4, 26, 16, 17, 53, 56, 13], true);
+            TemplateSessionExercise::create([
+                'template_session_id' => $session->id,
+                'exercise_id' => $exerciseId,
+                'order_in_session' => $i + 1,
+                'technique_type' => 'straight',
+                'planned_sets_count' => $isCompound ? $sets : $setsIso,
+                'planned_reps' => $reps,
+                'planned_rir' => $week === 4 ? $rir + 1 : $rir,
+                'planned_rest_sec' => $rest,
+                'note' => null,
+                'group_key' => null,
+                'group_type' => null,
+                'tempo' => null,
+            ]);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Template dimostrativi
+    // -------------------------------------------------------------------------
 
     private function createStrengthTemplate(?int $creatorId): void
     {

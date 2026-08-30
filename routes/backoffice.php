@@ -2,7 +2,6 @@
 
 use App\Livewire\Backoffice\Access\AccessLogList;
 use App\Livewire\Backoffice\Access\QuickCheckin;
-use App\Livewire\Backoffice\Admin\FeatureFlagManager;
 use App\Livewire\Backoffice\Admin\FeedbackList;
 use App\Livewire\Backoffice\Admin\PlateInventoryManager;
 use App\Livewire\Backoffice\Athletes\AthleteAnalytics;
@@ -31,7 +30,9 @@ use App\Livewire\Backoffice\Reports\FinancialReport;
 use App\Livewire\Backoffice\Reports\ManagerDashboard;
 use App\Livewire\Backoffice\Reports\TrainingReport;
 use App\Livewire\Backoffice\Search\GlobalSearch;
+use App\Livewire\Backoffice\Settings\FeatureFlagManager;
 use App\Livewire\Backoffice\Settings\OpeningHoursManager;
+use App\Livewire\Backoffice\Settings\SettingsHub;
 use App\Livewire\Backoffice\Subscriptions\SubscriptionForm;
 use App\Livewire\Backoffice\Subscriptions\SubscriptionList;
 use App\Livewire\Backoffice\Templates\TemplateBuilder;
@@ -78,9 +79,13 @@ Route::prefix('backoffice')
         // Step 6 — prenotazioni e calendario
         Route::get('/calendar', TrainerCalendar::class)->name('calendar.index');
         Route::get('/bookings', BookingList::class)->name('bookings.index');
-        Route::get('/group-classes', GroupClassManager::class)->name('group-classes.index');
-        Route::get('/group-classes/schedules', ClassScheduleManager::class)->name('group-classes.schedules');
-        Route::get('/group-classes/catalog', GroupClassCatalog::class)->name('group-classes.catalog');
+
+        // Corsi collettivi — gated sul flag group_classes (via gate view-group-classes)
+        Route::middleware('can:view-group-classes')->group(function () {
+            Route::get('/group-classes', GroupClassManager::class)->name('group-classes.index');
+            Route::get('/group-classes/schedules', ClassScheduleManager::class)->name('group-classes.schedules');
+            Route::get('/group-classes/catalog', GroupClassCatalog::class)->name('group-classes.catalog');
+        });
 
         // Route riservate a trainer e gestore (mutano dati training o espongono dati medici)
         Route::middleware('role:gestore|trainer')->group(function () {
@@ -105,17 +110,19 @@ Route::prefix('backoffice')
             Route::get('/athletes/{athleteId}/analytics', AthleteAnalytics::class)->name('athletes.analytics');
             Route::get('/athletes/{athleteId}/profile', AthleteProfile::class)->name('athletes.profile');
 
-            // Step 7 — messaggistica con atleti
-            Route::get('/athletes/{athleteId}/messages', MessageThread::class)->name('athletes.messages');
+            // Step 7 — messaggistica con atleti (gated: feature messaging)
+            Route::get('/athletes/{athleteId}/messages', MessageThread::class)
+                ->middleware('can:view-messaging')
+                ->name('athletes.messages');
         });
 
-        // Step 8 — reportistica gestore
+        // Step 8 — reportistica gestore (gated: role + feature flag)
         Route::get('/reports/manager', ManagerDashboard::class)
-            ->middleware('role:gestore')
+            ->middleware(['role:gestore', 'can:view-financial-reports'])
             ->name('reports.manager');
 
         Route::get('/reports/financial', FinancialReport::class)
-            ->middleware('role:gestore')
+            ->middleware(['role:gestore', 'can:view-financial-reports'])
             ->name('reports.financial');
 
         Route::get('/reports/training', TrainingReport::class)
@@ -201,11 +208,19 @@ Route::prefix('backoffice')
 
         // Step 10 — admin tools e campagne comunicazione (solo gestore)
         Route::middleware('role:gestore')->group(function () {
-            Route::get('/admin/feature-flags', FeatureFlagManager::class)->name('admin.feature-flags');
             Route::get('/admin/feedback', FeedbackList::class)->name('admin.feedback');
             Route::get('/admin/plate-inventory', PlateInventoryManager::class)->name('admin.plate-inventory');
             Route::get('/communications/campaign', CommunicationCampaign::class)->name('communications.campaign');
         });
+
+        // Sezione Impostazioni — solo gestore (via gate access-admin-section)
+        Route::middleware('can:access-admin-section')->prefix('settings')->name('settings.')->group(function () {
+            Route::get('/', SettingsHub::class)->name('index');
+            Route::get('/feature-flags', FeatureFlagManager::class)->name('feature-flags');
+        });
+
+        // Redirect 301 dalla vecchia URL
+        Route::redirect('/admin/feature-flags', '/backoffice/settings/feature-flags', 301);
 
         Route::get('/reports/download/{file}', function (string $file) {
             // Sicurezza: solo nome file senza path traversal

@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\ClassBooking;
 use App\Models\ClassOccurrence;
+use App\Models\ClassSchedule;
 use App\Models\GroupClass;
 use App\Models\Member;
 use App\Models\PtBooking;
@@ -13,16 +14,24 @@ use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
-class BookingDemoSeeder extends Seeder
+/**
+ * Corsi collettivi, disponibilita' trainer, prenotazioni PT e booking demo.
+ * Fonde: GroupClassSeeder + BookingDemoSeeder.
+ * Idempotente: usa firstOrCreate per definizioni e occorrenze.
+ */
+class ClassDemoSeeder extends Seeder
 {
     public function run(): void
     {
-        // Recupera trainer esistenti (creati da DemoSeeder)
+        if (app()->isProduction()) {
+            return;
+        }
+
         $trainer1 = User::where('email', 'trainer@trainer.trainer')->first();
         $trainer2 = User::where('email', 'trainer2@trainer.trainer')->first();
 
-        if (! $trainer1 || ! $trainer2) {
-            $this->command->warn('Trainer non trovati. Esegui prima DemoSeeder.');
+        if (! $trainer1) {
+            $this->command->warn('Trainer non trovati. Esegui prima CoreDemoSeeder.');
 
             return;
         }
@@ -30,19 +39,128 @@ class BookingDemoSeeder extends Seeder
         $members = Member::orderBy('id')->take(6)->get();
 
         if ($members->count() < 3) {
-            $this->command->warn('Membri insufficienti. Esegui prima DemoSeeder.');
+            $this->command->warn('Membri insufficienti. Esegui prima CoreDemoSeeder.');
 
             return;
         }
 
+        $this->seedDefinitions($trainer1);
         $this->seedTrainerAvailability($trainer1, $trainer2);
         $this->seedPtBookings($trainer1, $trainer2, $members);
-        $this->seedGroupClasses($trainer1, $trainer2, $members);
+        $this->seedHistoricalOccurrences($trainer1, $trainer2, $members);
     }
 
-    private function seedTrainerAvailability(User $trainer1, User $trainer2): void
+    // -------------------------------------------------------------------------
+    // Definizioni corsi, palinsesto ricorrente e occorrenze future
+    // (ex GroupClassSeeder)
+    // -------------------------------------------------------------------------
+
+    private function seedDefinitions(User $trainer): void
     {
-        // Evita duplicati
+        $definitions = [
+            [
+                'name' => 'Yoga Flow',
+                'description' => 'Sessione di yoga per tutti i livelli. Migliora flessibilità e concentrazione.',
+                'duration_minutes' => 60,
+                'default_capacity' => 12,
+                'weekday' => 1, // martedì
+                'start_time' => '09:00:00',
+            ],
+            [
+                'name' => 'Functional Training',
+                'description' => 'Allenamento funzionale ad alta intensità con corpo libero e kettlebell.',
+                'duration_minutes' => 45,
+                'default_capacity' => 8,
+                'weekday' => 3, // giovedì
+                'start_time' => '18:30:00',
+            ],
+            [
+                'name' => 'Calisthenics',
+                'description' => 'Forza e controllo del corpo con esercizi a corpo libero progressivi.',
+                'duration_minutes' => 75,
+                'default_capacity' => 10,
+                'weekday' => 5, // sabato
+                'start_time' => '10:00:00',
+            ],
+            [
+                'name' => 'Pilates',
+                'description' => 'Rinforzo del core e postura. Adatto a ogni livello di fitness.',
+                'duration_minutes' => 60,
+                'default_capacity' => 15,
+                'weekday' => 2, // mercoledì
+                'start_time' => '07:00:00',
+            ],
+        ];
+
+        foreach ($definitions as $def) {
+            $slug = Str::slug($def['name']);
+
+            $groupClass = GroupClass::firstOrCreate(
+                ['slug' => $slug],
+                [
+                    'name' => $def['name'],
+                    'description' => $def['description'],
+                    'duration_minutes' => $def['duration_minutes'],
+                    'default_capacity' => $def['default_capacity'],
+                    'is_active' => true,
+                ]
+            );
+
+            $groupClass->trainers()->syncWithoutDetaching([$trainer->id]);
+
+            $schedule = ClassSchedule::firstOrCreate(
+                [
+                    'group_class_id' => $groupClass->id,
+                    'weekday' => $def['weekday'],
+                    'start_time' => $def['start_time'],
+                ],
+                [
+                    'trainer_id' => $trainer->id,
+                    'valid_from' => now()->toDateString(),
+                    'valid_until' => null,
+                    'is_active' => true,
+                ]
+            );
+
+            // Materializza occorrenze per le prossime 2 settimane
+            $endTime = Carbon::createFromTimeString($def['start_time'])
+                ->addMinutes($def['duration_minutes'])
+                ->format('H:i:s');
+
+            for ($week = 0; $week < 2; $week++) {
+                // Convenzione: 0=lunedì (Carbon::MONDAY=1 → offset = weekday)
+                $monday = Carbon::now()->startOfWeek(Carbon::MONDAY)->addWeeks($week);
+                $date = $monday->copy()->addDays($def['weekday']);
+
+                if ($date->isPast()) {
+                    continue;
+                }
+
+                ClassOccurrence::firstOrCreate(
+                    [
+                        'class_schedule_id' => $schedule->id,
+                        'date' => $date->toDateString(),
+                    ],
+                    [
+                        'group_class_id' => $groupClass->id,
+                        'start_time' => $def['start_time'],
+                        'end_time' => $endTime,
+                        'trainer_id' => $trainer->id,
+                        'capacity' => $def['default_capacity'],
+                        'status' => 'planned',
+                    ]
+                );
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Disponibilita' trainer
+    // (ex BookingDemoSeeder::seedTrainerAvailability)
+    // -------------------------------------------------------------------------
+
+    private function seedTrainerAvailability(User $trainer1, ?User $trainer2): void
+    {
         if (TrainerAvailability::where('trainer_id', $trainer1->id)->exists()) {
             return;
         }
@@ -69,6 +187,10 @@ class BookingDemoSeeder extends Seeder
             ]);
         }
 
+        if (! $trainer2) {
+            return;
+        }
+
         // Trainer2: Mar/Gio/Sab
         $slots2 = [
             [2, '09:00', '13:00'],
@@ -91,9 +213,14 @@ class BookingDemoSeeder extends Seeder
         }
     }
 
-    private function seedPtBookings(User $trainer1, User $trainer2, $members): void
+    // -------------------------------------------------------------------------
+    // Prenotazioni PT (ex BookingDemoSeeder::seedPtBookings)
+    // Guard rimosso: usa firstOrCreate per idempotenza granulare.
+    // -------------------------------------------------------------------------
+
+    private function seedPtBookings(User $trainer1, ?User $trainer2, $members): void
     {
-        if (PtBooking::exists()) {
+        if (! $trainer2) {
             return;
         }
 
@@ -123,29 +250,39 @@ class BookingDemoSeeder extends Seeder
         ];
 
         foreach ($bookings as [$trainer, $member, $date, $start, $end, $status]) {
-            PtBooking::create([
-                'trainer_id' => $trainer->id,
-                'member_id' => $member->id,
-                'session_id' => null,
-                'booked_date' => $date->toDateString(),
-                'start_time' => $start,
-                'end_time' => $end,
-                'status' => $status,
-                'cancelled_by' => null,
-                'cancellation_reason' => $status === 'cancelled' ? 'Impegno personale' : null,
-                'cancellation_deadline' => $date->copy()->subDay()->setTime(20, 0),
-                'notes' => null,
-            ]);
+            PtBooking::firstOrCreate(
+                [
+                    'trainer_id' => $trainer->id,
+                    'member_id' => $member->id,
+                    'booked_date' => $date->toDateString(),
+                    'start_time' => $start,
+                ],
+                [
+                    'end_time' => $end,
+                    'status' => $status,
+                    'session_id' => null,
+                    'cancelled_by' => null,
+                    'cancellation_reason' => $status === 'cancelled' ? 'Impegno personale' : null,
+                    'cancellation_deadline' => $date->copy()->subDay()->setTime(20, 0),
+                    'notes' => null,
+                ]
+            );
         }
     }
 
-    private function seedGroupClasses(User $trainer1, User $trainer2, $members): void
+    // -------------------------------------------------------------------------
+    // Occorrenze storiche con booking (ex BookingDemoSeeder::seedGroupClasses)
+    // Guard globale rimosso: usa firstOrCreate per idempotenza granulare.
+    // -------------------------------------------------------------------------
+
+    private function seedHistoricalOccurrences(User $trainer1, ?User $trainer2, $members): void
     {
-        if (ClassOccurrence::exists()) {
+        if (! $trainer2) {
             return;
         }
 
         $today = Carbon::today();
+        $definitionCache = [];
 
         $classes = [
             // Settimana scorsa
@@ -245,8 +382,6 @@ class BookingDemoSeeder extends Seeder
             ],
         ];
 
-        $definitionCache = [];
-
         foreach ($classes as $data) {
             $name = $data['name'];
             $slug = Str::slug($name);
@@ -270,25 +405,30 @@ class BookingDemoSeeder extends Seeder
             $scheduledAt = $data['scheduled_at'];
             $endTime = $scheduledAt->copy()->addMinutes($data['duration_minutes'])->format('H:i:s');
 
-            $occurrence = ClassOccurrence::create([
-                'group_class_id' => $groupClass->id,
-                'class_schedule_id' => null,
-                'date' => $scheduledAt->toDateString(),
-                'start_time' => $scheduledAt->format('H:i:s'),
-                'end_time' => $endTime,
-                'trainer_id' => $data['trainer']->id,
-                'capacity' => $data['max_participants'],
-                'status' => $data['status'],
-            ]);
+            $occurrence = ClassOccurrence::firstOrCreate(
+                [
+                    'group_class_id' => $groupClass->id,
+                    'date' => $scheduledAt->toDateString(),
+                    'start_time' => $scheduledAt->format('H:i:s'),
+                ],
+                [
+                    'class_schedule_id' => null,
+                    'end_time' => $endTime,
+                    'trainer_id' => $data['trainer']->id,
+                    'capacity' => $data['max_participants'],
+                    'status' => $data['status'],
+                ]
+            );
 
             foreach ($data['participants'] as $i => $member) {
                 $isWaitlist = $i >= $data['max_participants'];
-                ClassBooking::create([
-                    'class_occurrence_id' => $occurrence->id,
-                    'member_id' => $member->id,
-                    'status' => $isWaitlist ? 'waitlisted' : 'confirmed',
-                    'position' => $isWaitlist ? ($i - $data['max_participants'] + 1) : null,
-                ]);
+                ClassBooking::firstOrCreate(
+                    ['class_occurrence_id' => $occurrence->id, 'member_id' => $member->id],
+                    [
+                        'status' => $isWaitlist ? 'waitlisted' : 'confirmed',
+                        'position' => $isWaitlist ? ($i - $data['max_participants'] + 1) : null,
+                    ]
+                );
             }
         }
     }

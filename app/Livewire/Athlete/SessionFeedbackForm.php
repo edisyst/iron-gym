@@ -5,6 +5,7 @@ namespace App\Livewire\Athlete;
 use App\Models\SessionFeedback;
 use App\Models\TrainingSession;
 use Illuminate\View\View;
+use Laravel\Pennant\Feature;
 use Livewire\Component;
 
 class SessionFeedbackForm extends Component
@@ -79,7 +80,11 @@ class SessionFeedbackForm extends Component
 
         $this->dispatch('session-completed');
         $this->dispatch('toast', message: 'Feedback salvato!', type: 'success');
-        $this->redirect(route('athlete.session.recap', $this->sessionId));
+        $this->redirect(
+            Feature::active('session_recap')
+                ? route('athlete.session.recap', $this->sessionId)
+                : route('athlete.history')
+        );
     }
 
     /**
@@ -87,7 +92,11 @@ class SessionFeedbackForm extends Component
      */
     public function skip(): void
     {
-        $this->redirect(route('athlete.session.recap', $this->sessionId));
+        $this->redirect(
+            Feature::active('session_recap')
+                ? route('athlete.session.recap', $this->sessionId)
+                : route('athlete.history')
+        );
     }
 
     public function render(): View

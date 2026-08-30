@@ -15,10 +15,11 @@ non hanno accesso.
 
 ## Messaggistica interna trainer-atleta
 
-La messaggistica one-to-one tra trainer e atleta avviene nella sezione
-**Messaggi** (`/backoffice/messages`), accessibile a gestore e trainer. Qui
-si visualizzano e rispondono i thread di conversazione con i propri atleti.
-Questo modulo e' gated dal flag `messaging` (Impostazioni → Funzioni).
+La messaggistica one-to-one tra trainer e atleta avviene aprendo il profilo
+dell'atleta in backoffice (Tesserati → profilo atleta) e selezionando il tab
+**Messaggi**. La route e' `/backoffice/athletes/{id}/messages`, accessibile a
+gestore e trainer. Questo modulo e' gated dal flag `messaging`
+(Impostazioni → Funzioni): con il flag OFF il tab non appare.
 
 ## Flusso operativo: inviare una campagna
 

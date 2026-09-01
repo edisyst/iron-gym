@@ -38,6 +38,16 @@ class LoginForm extends Form
             ]);
         }
 
+        // Gli account di servizio API non possono accedere via browser.
+        if (Auth::user()?->is_service_account) {
+            Auth::logout();
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'form.email' => trans('auth.failed'),
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

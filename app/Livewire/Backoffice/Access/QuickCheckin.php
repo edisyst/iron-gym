@@ -4,7 +4,8 @@ namespace App\Livewire\Backoffice\Access;
 
 use App\Models\AccessLog;
 use App\Models\Member;
-use App\Models\Subscription;
+use App\Services\AccessService;
+use App\Services\CheckinFailure;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
 use Livewire\Attributes\Title;
@@ -46,44 +47,22 @@ class QuickCheckin extends Component
         }
 
         $member = Member::findOrFail($this->selectedMemberId);
+        $result = app(AccessService::class)->checkin($member, auth()->id());
 
-        if (! $member->has_medical_cert_valid) {
-            $this->errorMessage = 'Certificato medico scaduto o mancante.';
-
-            return;
-        }
-
-        $subscription = Subscription::where('member_id', $this->selectedMemberId)
-            ->active()
-            ->first();
-
-        if (! $subscription) {
-            $this->errorMessage = 'Nessun abbonamento attivo.';
+        if ($result->succeeded()) {
+            $this->successMessage = "Accesso registrato per {$member->full_name}.";
+            $this->search = '';
+            $this->selectedMemberId = null;
 
             return;
         }
 
-        if ($subscription->accesses_remaining !== null && $subscription->accesses_remaining <= 0) {
-            $this->errorMessage = 'Accessi esauriti.';
-
-            return;
-        }
-
-        $subscription->increment('accesses_used');
-        if ($subscription->accesses_remaining !== null) {
-            $subscription->decrement('accesses_remaining');
-        }
-
-        AccessLog::create([
-            'member_id' => $this->selectedMemberId,
-            'subscription_id' => $subscription->id,
-            'checked_in_at' => now(),
-            'checked_in_by' => auth()->id(),
-        ]);
-
-        $this->successMessage = "Accesso registrato per {$member->full_name}.";
-        $this->search = '';
-        $this->selectedMemberId = null;
+        $this->errorMessage = match ($result->failure) {
+            CheckinFailure::MedicalCertInvalid => 'Certificato medico scaduto o mancante.',
+            CheckinFailure::NoActiveSubscription => 'Nessun abbonamento attivo.',
+            CheckinFailure::NoAccessesLeft => 'Accessi esauriti.',
+            null => throw new \LogicException('CheckinResult senza failure né successo.'),
+        };
     }
 
     /** @return Collection<int, Member> */

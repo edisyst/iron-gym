@@ -219,6 +219,16 @@ Route::prefix('backoffice')
             Route::get('/', SettingsHub::class)->name('index');
             Route::get('/feature-flags', FeatureFlagManager::class)->name('feature-flags');
             Route::get('/artisan', ArtisanRunner::class)->name('artisan');
+
+            Route::get('/api-docs', function () {
+                return view('backoffice.settings.api-docs');
+            })->name('api-docs');
+
+            Route::get('/api-docs/openapi.yaml', function () {
+                return response()->file(base_path('docs/api/openapi.yaml'), [
+                    'Content-Type' => 'application/yaml',
+                ]);
+            })->name('api-docs.yaml');
         });
 
         // Redirect 301 dalla vecchia URL

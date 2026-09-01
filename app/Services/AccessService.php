@@ -13,6 +13,7 @@ class AccessService
         Member $member,
         int $performedBy,
         ?int $idempotencyWindowMinutes = null,
+        ?string $note = null,
     ): CheckinResult {
         if ($idempotencyWindowMinutes !== null) {
             $existing = AccessLog::where('member_id', $member->id)
@@ -29,7 +30,7 @@ class AccessService
             return new CheckinResult(accessLog: null, failure: CheckinFailure::MedicalCertInvalid);
         }
 
-        return DB::transaction(function () use ($member, $performedBy): CheckinResult {
+        return DB::transaction(function () use ($member, $performedBy, $note): CheckinResult {
             $subscription = Subscription::where('member_id', $member->id)
                 ->active()
                 ->lockForUpdate()
@@ -53,6 +54,7 @@ class AccessService
                 'subscription_id' => $subscription->id,
                 'checked_in_at' => now(),
                 'checked_in_by' => $performedBy,
+                'note' => $note,
             ]);
 
             return new CheckinResult(accessLog: $log, failure: null);

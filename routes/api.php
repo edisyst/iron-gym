@@ -45,6 +45,10 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function (): void {
         Route::get('/access-logs', [AccessLogController::class, 'index']);
     });
 
+    Route::middleware('abilities:access-logs:write')->group(function (): void {
+        Route::post('/access-logs', [AccessLogController::class, 'store']);
+    });
+
     Route::middleware('abilities:exercises:read')->group(function (): void {
         Route::get('/exercises', [ExerciseController::class, 'index']);
         Route::get('/exercises/{exercise}', [ExerciseController::class, 'show']);

@@ -22,7 +22,9 @@ class ApiIssueToken extends Command
         'members:read',
         'members:medical-read',
         'access-logs:read',
+        'access-logs:write',
         'exercises:read',
+        'group-classes:read',
     ];
 
     public function handle(): int

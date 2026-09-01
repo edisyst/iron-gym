@@ -29,6 +29,8 @@ Sette endpoint GET di sola lettura. Tutti richiedono `auth:sanctum` e il kill sw
 
 **Test:** 38 nuovi test (kill switch × 4, 401 × 4, 403 × 4, filtri, paginazione, N+1, medical conditional, soft-delete guard, whitelist command).
 
+**Fix PHPStan post-release:** 12 errori a zero. `AccessLog`, `Subscription`, `Muscle` mancavano di `@property` per i campi castati a `Carbon` e per `ExerciseMuscle $pivot`; `AccessLogResource`, `MemberDetailResource`, `SubscriptionResource` usavano `?->` su campi non-nullable. PHPStan livello 6: 0 errori.
+
 ---
 
 ## API01 — Foundation superficie API HTTP JSON (2026-09-01)

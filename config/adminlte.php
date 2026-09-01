@@ -451,9 +451,9 @@ return [
         ],
         ['header' => 'IMPOSTAZIONI', 'can' => 'access-admin-section'],
         [
-            'text' => 'Funzioni',
-            'url' => 'backoffice/settings/feature-flags',
-            'icon' => 'fas fa-toggle-on',
+            'text' => 'Impostazioni',
+            'url' => 'backoffice/settings',
+            'icon' => 'fas fa-cog',
             'can' => 'access-admin-section',
         ],
         [

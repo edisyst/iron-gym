@@ -138,5 +138,13 @@ return [
             'settings_key' => 'in_app_feedback_enabled',
             'default' => false,
         ],
+        'public_api' => [
+            'group' => 'Sistema',
+            'label' => 'API pubblica',
+            'description' => 'Superficie API HTTP JSON /api/v1 per integrazioni esterne e script interni. Spenta per default; richiede account di servizio con token Sanctum.',
+            'platea' => 'Account di servizio (api_client)',
+            'settings_key' => 'public_api_enabled',
+            'default' => false,
+        ],
     ],
 ];

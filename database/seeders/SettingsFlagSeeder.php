@@ -26,6 +26,7 @@ class SettingsFlagSeeder extends Seeder
         'push_notifications' => false,
         'outbound_notifications' => true,
         'in_app_feedback' => false,
+        'public_api' => false,
     ];
 
     public function run(): void

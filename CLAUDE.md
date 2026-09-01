@@ -219,7 +219,7 @@ Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01
 
 **FIX01** (2026-08-26): flag globale `group_classes` spostato su tabella `settings` (`activateForEveryone` non copriva gli utenti mai risolti, il toggle da backoffice era inefficace); guard `role:gestore` + whitelist in `FeatureFlagManager`; fix colonna `status` ambigua in `Athlete\Dashboard`; `MesocycleList` filtrata per trainer e ownership check in `MesocycleDetail::applyProgression/forceDeload`; `GroupClassSeeder` registrato in `DatabaseSeeder`; comando `classes:send-reminders`; alias `/athlete/dashboard`; link "Volume landmarks" in AthleteProfile; dati demo: PT pending per `atleta@atleta.atleta`, abbonamento+certificato scaduti per `alessia.colombo@example.com`, badge "In attesa" in dashboard atleta. 16 nuovi test.
 
-**Suite corrente:** 593 test (587 pass / 6 skipped). **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
+**Suite corrente:** 630 test (624 pass / 6 skipped). **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
 
 **DOC02** (2026-08-27): assessment funzionale R09+ (`docs/reviews/r09-plus-test-assessment.md`), piano di test manuale 109 casi (`docs/testing/r09-plus-functional-test-plan.md`), `FunctionalTestSeeder` con 5 scenari demo (corsi collettivi + waitlist, notifiche, check-in ingressi esauriti, abbonamento in scadenza, orari apertura). Findings documentati: F-01/F-02/F-04 risolti in FIX02.
 
@@ -252,7 +252,9 @@ Storico completo release e audit: **`CHANGELOG.md`**.
 
 **API03** (2026-09-01): 3 endpoint write/module. `POST /api/v1/access-logs` (check-in via totem API): 201+Location su successo, 200 su duplicato entro finestra idempotenza (5 min, configurabile), 422 con `code` stabile per cert/subscription/accesses, 404 per tesserato mancante/soft-deleted. `GET /api/v1/group-classes` e `GET /api/v1/class-occurrences`: gated su flag `group_classes` → 503 `module_disabled`; no N+1 (eager load confirmedBookings). `AccessService` estratto da QuickCheckin e AccessLogList (race condition fissa con `DB::transaction + lockForUpdate`; idempotency window come parametro esplicito). `CheckinResult` readonly class + `CheckinFailure` enum. 25 nuovi test (AccessServiceTest 13, ApiCheckinTest 12 + ApiGroupClassesTest 13). Suite: 593 test (587 pass / 6 skipped). PHPStan livello 6, 0 errori. Pint conforme.
 
-Prossima attività: API04 (prenotazioni corsi) o altra feature su richiesta.
+**API04** (2026-09-01): 3 endpoint prenotazioni corsi collettivi. `GET /api/v1/class-bookings` (filtri member_id/occurrence_id/status), `POST /api/v1/class-bookings` (enroll con idempotenza su AlreadyEnrolled → 200; 201 confirmed/waitlisted; 409 overlap atleta/PT; 422 finestra/abbonamento/cert), `DELETE /api/v1/class-bookings/{booking}` (cancel atleta; 204/409 deadline/stato). Fix bug `whereDate()` in `ClassBookingService::enroll()` PT overlap check (SQLite date format). 31 nuovi test. Suite: 624 test (624 pass / 6 skipped). PHPStan livello 6, 0 errori. Pint conforme.
+
+Prossima attività: API05 (abbonamenti write) o altra feature su richiesta.
 
 ## Architettura offline
 
@@ -506,8 +508,11 @@ Configurabile via `config/api.php` o env `API_RATE_LIMIT_AUTH` / `API_RATE_LIMIT
 | GET | /api/v1/exercises/{slug} | Bearer | `exercises:read` | Sì |
 | GET | /api/v1/group-classes | Bearer | `group-classes:read` | Sì + `group_classes` |
 | GET | /api/v1/class-occurrences | Bearer | `group-classes:read` | Sì + `group_classes` |
+| GET | /api/v1/class-bookings | Bearer | `class-bookings:read` | Sì + `group_classes` |
+| POST | /api/v1/class-bookings | Bearer | `class-bookings:write` | Sì + `group_classes` |
+| DELETE | /api/v1/class-bookings/{booking} | Bearer | `class-bookings:write` | Sì + `group_classes` |
 
-**Abilities whitelist** (`api:issue-token`): `subscription-plans:read`, `members:read`, `members:medical-read`, `access-logs:read`, `access-logs:write`, `exercises:read`, `group-classes:read`, `*` (test/staging only).  
+**Abilities whitelist** (`api:issue-token`): `subscription-plans:read`, `members:read`, `members:medical-read`, `access-logs:read`, `access-logs:write`, `exercises:read`, `group-classes:read`, `class-bookings:read`, `class-bookings:write`, `*` (test/staging only).  
 Riferimento completo: `docs/api/03-endpoints.md`.
 
 ## Comandi utili

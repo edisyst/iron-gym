@@ -354,6 +354,123 @@ Restituisce solo occorrenze con `status = planned` e `date >= date_from` (defaul
 
 ---
 
+## GET /api/v1/class-bookings
+
+**Ability:** `class-bookings:read`  
+**Modulo:** richiede flag `group_classes` → 503 `module_disabled` se spento.
+
+### Query string
+
+| Parametro | Tipo | Note |
+|---|---|---|
+| `member_id` | integer | Filtra per tesserato |
+| `occurrence_id` | integer | Filtra per occorrenza |
+| `status` | enum | `confirmed`, `waitlisted`, `cancelled_by_athlete`, `cancelled_by_gym`, `no_show` |
+| `per_page` | integer 1–100 | Default 25 |
+
+### Risposta 200
+
+```json
+{
+  "data": [
+    {
+      "id": 201,
+      "class_occurrence_id": 55,
+      "member_id": 42,
+      "member_name": "Mario Rossi",
+      "status": "confirmed",
+      "position": null,
+      "attended_at": null,
+      "created_at": "2026-09-01T08:00:00Z"
+    }
+  ],
+  "links": { "..." },
+  "meta": { "current_page": 1, "per_page": 25, "total": 8 }
+}
+```
+
+---
+
+## POST /api/v1/class-bookings
+
+**Ability:** `class-bookings:write`  
+**Modulo:** richiede flag `group_classes` → 503 `module_disabled` se spento.
+
+Iscrive un tesserato a un'occorrenza. Se l'occorrenza è piena lo mette in waitlist.  
+Idempotente: se il membro è già iscritto (confirmed/waitlisted) restituisce 200 con la prenotazione esistente.
+
+### Body JSON
+
+| Campo | Tipo | Note |
+|---|---|---|
+| `member_id` | integer, required | ID del tesserato |
+| `class_occurrence_id` | integer, required | ID dell'occorrenza |
+
+### Risposte
+
+**201 Created** — nuova iscrizione; header `Location: /api/v1/class-bookings/{id}`.
+
+```json
+{
+  "data": {
+    "id": 201,
+    "class_occurrence_id": 55,
+    "member_id": 42,
+    "member_name": "Mario Rossi",
+    "status": "confirmed",
+    "position": null,
+    "attended_at": null,
+    "created_at": "2026-09-01T08:00:00Z"
+  }
+}
+```
+
+**200 OK** — membro già iscritto (idempotente); restituisce la prenotazione esistente.
+
+**404** — tesserato o occorrenza non trovata: `{ "code": "not_found" }`.
+
+**422** — fallimento di dominio:
+
+| `code` | Causa |
+|---|---|
+| `booking_not_open` | Finestra prenotazioni non ancora aperta |
+| `booking_closed` | Finestra prenotazioni chiusa |
+| `occurrence_not_enrollable` | Occorrenza non in stato `planned` |
+| `subscription_inactive` | Nessun abbonamento attivo |
+| `cert_invalid` | Certificato medico scaduto o mancante |
+
+**409** — conflitto:
+
+| `code` | Causa |
+|---|---|
+| `athlete_overlap` | Membro ha già un corso confermato nello stesso orario |
+| `pt_overlap` | Membro ha già una sessione PT confermata nello stesso orario |
+
+---
+
+## DELETE /api/v1/class-bookings/{booking}
+
+**Ability:** `class-bookings:write`  
+**Modulo:** richiede flag `group_classes` → 503 `module_disabled` se spento.
+
+Cancella la prenotazione (cancellazione atleta, verifica deadline gratuita).  
+Se la prenotazione era `confirmed` e il corso è futuro, promuove automaticamente il primo in waitlist.
+
+### Risposte
+
+**204 No Content** — cancellazione eseguita.
+
+**404** — prenotazione non trovata.
+
+**409** — impossibile cancellare:
+
+| `code` | Causa |
+|---|---|
+| `cancel_deadline_exceeded` | Cancellazione oltre la deadline gratuita (`free_cancel_hours`) |
+| `booking_not_cancellable` | Prenotazione in stato non cancellabile (es. `no_show`) |
+
+---
+
 ## Codici di errore comuni
 
 | HTTP | `code` | Causa |

@@ -103,7 +103,7 @@ it('atleta non può cancellare iscrizione oltre free_cancel_hours', function () 
     ]);
 
     // Iscrivi direttamente tramite service (bypass window)
-    $booking = app(ClassBookingService::class)->enroll($occurrence, $this->member);
+    $booking = app(ClassBookingService::class)->enroll($occurrence, $this->member)->booking;
     expect($booking->status)->toBe('confirmed');
 
     Livewire::actingAs($this->athleteUser)
@@ -124,7 +124,7 @@ it('atleta può cancellare iscrizione entro la finestra gratuita', function () {
     ]);
 
     // Iscrivi direttamente tramite service
-    $booking = app(ClassBookingService::class)->enroll($occurrence, $this->member);
+    $booking = app(ClassBookingService::class)->enroll($occurrence, $this->member)->booking;
 
     Livewire::actingAs($this->athleteUser)
         ->test(Booking::class)

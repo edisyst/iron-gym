@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AccessLogController;
+use App\Http\Controllers\Api\V1\ClassBookingController;
 use App\Http\Controllers\Api\V1\ClassOccurrenceController;
 use App\Http\Controllers\Api\V1\ExerciseController;
 use App\Http\Controllers\Api\V1\GroupClassController;
@@ -54,6 +55,15 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function (): void {
     Route::middleware('abilities:group-classes:read')->group(function (): void {
         Route::get('/group-classes', [GroupClassController::class, 'index']);
         Route::get('/class-occurrences', [ClassOccurrenceController::class, 'index']);
+    });
+
+    Route::middleware('abilities:class-bookings:read')->group(function (): void {
+        Route::get('/class-bookings', [ClassBookingController::class, 'index']);
+    });
+
+    Route::middleware('abilities:class-bookings:write')->group(function (): void {
+        Route::post('/class-bookings', [ClassBookingController::class, 'store']);
+        Route::delete('/class-bookings/{booking}', [ClassBookingController::class, 'destroy']);
     });
 
     Route::middleware('abilities:exercises:read')->group(function (): void {

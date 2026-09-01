@@ -25,6 +25,8 @@ class ApiIssueToken extends Command
         'access-logs:write',
         'exercises:read',
         'group-classes:read',
+        'class-bookings:read',
+        'class-bookings:write',
     ];
 
     public function handle(): int

@@ -1,11 +1,11 @@
 <?php
 
 use App\Livewire\Backoffice\Calendar\GroupClassManager;
+use App\Models\ClassBooking;
 use App\Models\ClassOccurrence;
 use App\Models\Member;
 use App\Models\Subscription;
 use App\Models\User;
-use App\Services\ClassBookingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
@@ -45,9 +45,16 @@ beforeEach(function () {
         'status' => 'active',
     ]);
 
-    $svc = app(ClassBookingService::class);
-    $this->booking1 = $svc->enroll($this->occurrence, $this->member1);
-    $this->booking2 = $svc->enroll($this->occurrence, $this->member2);
+    $this->booking1 = ClassBooking::create([
+        'class_occurrence_id' => $this->occurrence->id,
+        'member_id' => $this->member1->id,
+        'status' => 'confirmed',
+    ]);
+    $this->booking2 = ClassBooking::create([
+        'class_occurrence_id' => $this->occurrence->id,
+        'member_id' => $this->member2->id,
+        'status' => 'confirmed',
+    ]);
 });
 
 it('completeOccurrence transiziona stato a completed e registra presenze', function () {

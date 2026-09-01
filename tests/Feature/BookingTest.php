@@ -10,6 +10,7 @@ use App\Models\Subscription;
 use App\Models\TrainerAvailability;
 use App\Models\User;
 use App\Services\ClassBookingService;
+use App\Services\EnrollFailure;
 use App\Services\PtBookingService;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
@@ -109,10 +110,10 @@ it('un membro viene messo in waitlist se il corso è pieno', function () {
     $member2 = ($this->memberWithPrereqs)();
 
     $this->classService->enroll($occurrence, $this->member);
-    $waitlisted = $this->classService->enroll($occurrence, $member2);
+    $result = $this->classService->enroll($occurrence, $member2);
 
-    expect($waitlisted->status)->toBe('waitlisted');
-    expect($waitlisted->position)->toBe(1);
+    expect($result->booking->status)->toBe('waitlisted');
+    expect($result->booking->position)->toBe(1);
 });
 
 it('cancellare una prenotazione confirmed promuove il primo in waitlist', function () {
@@ -130,10 +131,10 @@ it('cancellare una prenotazione confirmed promuove il primo in waitlist', functi
     $confirmed = $this->classService->enroll($occurrence, $this->member);
     $waitlisted = $this->classService->enroll($occurrence, $member2);
 
-    $this->classService->cancel($confirmed);
+    $this->classService->cancel($confirmed->booking);
 
-    expect($waitlisted->fresh()->status)->toBe('confirmed');
-    expect($waitlisted->fresh()->position)->toBeNull();
+    expect($waitlisted->booking->fresh()->status)->toBe('confirmed');
+    expect($waitlisted->booking->fresh()->position)->toBeNull();
 });
 
 it('la cancellation_deadline è 24 ore prima dell\'orario prenotato', function () {
@@ -151,7 +152,7 @@ it('la cancellation_deadline è 24 ore prima dell\'orario prenotato', function (
         ->toBe($expectedDeadline->toDateTimeString());
 });
 
-it('iscriversi due volte alla stessa occorrenza lancia BookingException', function () {
+it('iscriversi due volte alla stessa occorrenza restituisce AlreadyEnrolled', function () {
     $groupClass = GroupClass::factory()->create(['default_capacity' => 10]);
     $occurrence = ClassOccurrence::factory()->create([
         'group_class_id' => $groupClass->id,
@@ -162,9 +163,10 @@ it('iscriversi due volte alla stessa occorrenza lancia BookingException', functi
     ]);
 
     $this->classService->enroll($occurrence, $this->member);
+    $result = $this->classService->enroll($occurrence, $this->member);
 
-    expect(fn () => $this->classService->enroll($occurrence, $this->member))
-        ->toThrow(BookingException::class);
+    expect($result->succeeded())->toBeFalse();
+    expect($result->failure)->toBe(EnrollFailure::AlreadyEnrolled);
 });
 
 it('canBeCancelledFree restituisce true se now è prima della deadline', function () {
@@ -328,8 +330,10 @@ it('enroll fallisce senza abbonamento attivo', function () {
         'status' => 'planned',
     ]);
 
-    expect(fn () => $this->classService->enroll($occurrence, $memberNoPlan))
-        ->toThrow(BookingException::class, 'Nessun abbonamento attivo.');
+    $result = $this->classService->enroll($occurrence, $memberNoPlan);
+
+    expect($result->succeeded())->toBeFalse();
+    expect($result->failure)->toBe(EnrollFailure::NoSubscription);
 });
 
 it('enroll fallisce con abbonamento scaduto', function () {
@@ -348,8 +352,10 @@ it('enroll fallisce con abbonamento scaduto', function () {
         'status' => 'planned',
     ]);
 
-    expect(fn () => $this->classService->enroll($occurrence, $memberExpired))
-        ->toThrow(BookingException::class, 'Nessun abbonamento attivo.');
+    $result = $this->classService->enroll($occurrence, $memberExpired);
+
+    expect($result->succeeded())->toBeFalse();
+    expect($result->failure)->toBe(EnrollFailure::NoSubscription);
 });
 
 it('enroll fallisce senza certificato medico', function () {
@@ -368,8 +374,10 @@ it('enroll fallisce senza certificato medico', function () {
         'status' => 'planned',
     ]);
 
-    expect(fn () => $this->classService->enroll($occurrence, $memberNoCert))
-        ->toThrow(BookingException::class, 'Certificato medico scaduto o assente.');
+    $result = $this->classService->enroll($occurrence, $memberNoCert);
+
+    expect($result->succeeded())->toBeFalse();
+    expect($result->failure)->toBe(EnrollFailure::NoCert);
 });
 
 it('enroll fallisce con certificato medico scaduto', function () {
@@ -390,8 +398,10 @@ it('enroll fallisce con certificato medico scaduto', function () {
         'status' => 'planned',
     ]);
 
-    expect(fn () => $this->classService->enroll($occurrence, $memberExpiredCert))
-        ->toThrow(BookingException::class, 'Certificato medico scaduto o assente.');
+    $result = $this->classService->enroll($occurrence, $memberExpiredCert);
+
+    expect($result->succeeded())->toBeFalse();
+    expect($result->failure)->toBe(EnrollFailure::NoCert);
 });
 
 it('enroll ha successo con abbonamento attivo e certificato valido', function () {
@@ -402,10 +412,10 @@ it('enroll ha successo con abbonamento attivo e certificato valido', function ()
         'status' => 'planned',
     ]);
 
-    $booking = $this->classService->enroll($occurrence, $this->member);
+    $result = $this->classService->enroll($occurrence, $this->member);
 
-    expect($booking->status)->toBe('confirmed');
-    expect($booking->member_id)->toBe($this->member->id);
+    expect($result->booking->status)->toBe('confirmed');
+    expect($result->booking->member_id)->toBe($this->member->id);
 });
 
 // -------------------------------------------------------------------------
@@ -432,9 +442,10 @@ it('enroll fallisce se l\'atleta ha già un corso confermato nello stesso orario
     ]);
 
     $this->classService->enroll($occurrence1, $this->member);
+    $result = $this->classService->enroll($occurrence2, $this->member);
 
-    expect(fn () => $this->classService->enroll($occurrence2, $this->member))
-        ->toThrow(BookingException::class, 'Hai già un corso confermato in questo orario.');
+    expect($result->succeeded())->toBeFalse();
+    expect($result->failure)->toBe(EnrollFailure::AthleteOverlap);
 });
 
 it('enroll riesce se il secondo corso è in orario diverso lo stesso giorno', function () {
@@ -457,9 +468,9 @@ it('enroll riesce se il secondo corso è in orario diverso lo stesso giorno', fu
     ]);
 
     $this->classService->enroll($occurrence1, $this->member);
-    $booking2 = $this->classService->enroll($occurrence2, $this->member);
+    $result = $this->classService->enroll($occurrence2, $this->member);
 
-    expect($booking2->status)->toBe('confirmed');
+    expect($result->booking->status)->toBe('confirmed');
 });
 
 // -------------------------------------------------------------------------
@@ -516,12 +527,12 @@ it('re-iscrizione dopo cancellazione aggiorna il booking esistente invece di cre
         'status' => 'planned',
     ]);
 
-    $booking = $this->classService->enroll($occurrence, $this->member);
+    $booking = $this->classService->enroll($occurrence, $this->member)->booking;
     $originalId = $booking->id;
 
     $this->classService->cancel($booking);
 
-    $reEnrolled = $this->classService->enroll($occurrence, $this->member);
+    $reEnrolled = $this->classService->enroll($occurrence, $this->member)->booking;
 
     expect($reEnrolled->id)->toBe($originalId);
     expect($reEnrolled->status)->toBe('confirmed');
@@ -543,13 +554,13 @@ it('re-iscrizione in waitlist dopo cancellazione riutilizza il record esistente'
     $member2 = ($this->memberWithPrereqs)();
     $this->classService->enroll($occurrence, $member2);
 
-    $booking = $this->classService->enroll($occurrence, $this->member);
+    $booking = $this->classService->enroll($occurrence, $this->member)->booking;
     $originalId = $booking->id;
     expect($booking->status)->toBe('waitlisted');
 
     $this->classService->cancel($booking);
 
-    $reEnrolled = $this->classService->enroll($occurrence, $this->member);
+    $reEnrolled = $this->classService->enroll($occurrence, $this->member)->booking;
 
     expect($reEnrolled->id)->toBe($originalId);
     expect($reEnrolled->status)->toBe('waitlisted');

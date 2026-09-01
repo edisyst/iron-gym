@@ -2,6 +2,44 @@
 
 ---
 
+## API04 — Prenotazioni corsi collettivi (2026-09-01)
+
+Tre endpoint per gestione prenotazioni corsi collettivi via API. Consumer è account di servizio; `member_id` sempre esplicito nel body.
+
+**Endpoint aggiunti:**
+- `GET /api/v1/class-bookings` — lista prenotazioni paginata; filtri `member_id`, `occurrence_id`, `status`; gated su flag `group_classes`.
+- `POST /api/v1/class-bookings` — iscrizione a un'occorrenza; 201 su nuova prenotazione (confirmed/waitlisted); 200 idempotente su `AlreadyEnrolled`; 422 per finestra chiusa/abbonamento/cert/occorrenza; 409 per overlap atleta o PT.
+- `DELETE /api/v1/class-bookings/{booking}` — cancellazione atleta; 204 su successo; 409 `cancel_deadline_exceeded` / `booking_not_cancellable`.
+
+**Abilities aggiunte alla whitelist `api:issue-token`:** `class-bookings:read`, `class-bookings:write`.
+
+**Codici di errore nuovi:**
+
+| HTTP | `code` | Causa |
+|---|---|---|
+| 422 | `booking_not_open` | Finestra prenotazioni non ancora aperta |
+| 422 | `booking_closed` | Finestra prenotazioni chiusa |
+| 422 | `occurrence_not_enrollable` | Occorrenza non in stato `planned` |
+| 409 | `athlete_overlap` | Atleta ha già un corso confermato nello stesso orario |
+| 409 | `pt_overlap` | Atleta ha già una sessione PT confermata nello stesso orario |
+| 409 | `cancel_deadline_exceeded` | Cancellazione oltre la deadline gratuita |
+| 409 | `booking_not_cancellable` | Prenotazione in stato non cancellabile (es. `no_show`) |
+
+**Bug fix:** `ClassBookingService::enroll()` usava `where('booked_date', ...)` per il check PT overlap — falliva silenziosamente in SQLite (formato data 'Y-m-d H:i:s' ≠ 'Y-m-d'). Corretto con `whereDate()` (valido anche in MySQL).
+
+**File aggiunti:**
+- `app/Http/Resources/Api/V1/ClassBookingResource.php`
+- `app/Http/Requests/Api/V1/ClassBookingIndexRequest.php`, `ClassBookingStoreRequest.php`
+- `app/Http/Controllers/Api/V1/ClassBookingController.php`
+- `tests/Feature/Api/V1/ApiClassBookingsTest.php` (31 test)
+
+**Test non-regressione aggiornati:** `BookingTest.php`, `BookingWindowTest.php`, `ClassCancellationTest.php`, `AttendanceTest.php` — adattati alla firma `enroll() → EnrollResult`.
+
+**Test:** 31 nuovi test API04. Suite totale: 624 pass / 6 skipped.
+**PHPStan:** livello 6, 0 errori. **Pint:** conforme.
+
+---
+
 ## API03 — Check-in totem + corsi collettivi (2026-09-01)
 
 Fase 1 — Estrazione `AccessService` + primo endpoint di scrittura + lettura corsi.

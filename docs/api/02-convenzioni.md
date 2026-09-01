@@ -90,6 +90,13 @@ Tutti gli status di errore condividono le stesse chiavi:
 | 422 | `subscription_inactive` | Nessun abbonamento attivo (check-in) |
 | 422 | `accesses_exhausted` | Accessi residui esauriti (check-in) |
 | 429 | `rate_limited` | Rate limit superato (+ header `Retry-After`) |
+| 409 | `athlete_overlap` | Atleta ha già un corso confermato nello stesso orario |
+| 409 | `pt_overlap` | Atleta ha già una sessione PT nello stesso orario |
+| 409 | `cancel_deadline_exceeded` | Cancellazione oltre la deadline gratuita |
+| 409 | `booking_not_cancellable` | Prenotazione in stato non cancellabile |
+| 422 | `booking_not_open` | Finestra prenotazioni non ancora aperta |
+| 422 | `booking_closed` | Finestra prenotazioni chiusa |
+| 422 | `occurrence_not_enrollable` | Occorrenza non in stato `planned` |
 | 503 | `api_disabled` | Kill switch `public_api` spento |
 | 503 | `module_disabled` | Flag di modulo spento (es. `group_classes`) |
 | 500 | `error` | Errore generico (mai stack trace in produzione) |
@@ -133,12 +140,13 @@ Wildcard `*` concede tutte le abilities (usare solo per token di test/staging).
 | `exercises:read` | GET /exercises, GET /exercises/{slug} | API02 |
 | `access-logs:write` | POST /access-logs | API03 |
 | `group-classes:read` | GET /group-classes, GET /class-occurrences | API03 |
-| `class-bookings:write` | POST/DELETE /class-bookings | API04 (futuro) |
+| `class-bookings:read` | GET /class-bookings | API04 |
+| `class-bookings:write` | POST/DELETE /class-bookings | API04 |
 | `subscriptions:write` | POST /subscriptions | API05 (futuro) |
 
 ---
 
-## Endpoint disponibili (API01 + API02 + API03)
+## Endpoint disponibili (API01 + API02 + API03 + API04)
 
 | Metodo | Path | Auth | Ability | Kill switch |
 |---|---|---|---|---|
@@ -154,6 +162,9 @@ Wildcard `*` concede tutte le abilities (usare solo per token di test/staging).
 | GET | /api/v1/exercises/{slug} | Bearer | `exercises:read` | Sì |
 | GET | /api/v1/group-classes | Bearer | `group-classes:read` | Sì + `group_classes` |
 | GET | /api/v1/class-occurrences | Bearer | `group-classes:read` | Sì + `group_classes` |
+| GET | /api/v1/class-bookings | Bearer | `class-bookings:read` | Sì + `group_classes` |
+| POST | /api/v1/class-bookings | Bearer | `class-bookings:write` | Sì + `group_classes` |
+| DELETE | /api/v1/class-bookings/{booking} | Bearer | `class-bookings:write` | Sì + `group_classes` |
 
 ---
 

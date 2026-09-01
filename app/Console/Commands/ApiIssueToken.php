@@ -15,6 +15,16 @@ class ApiIssueToken extends Command
 
     protected $description = 'Emette un personal access token per un account di servizio. Il plain text e\' stampato una sola volta.';
 
+    /** Abilities rilasciabili. Il wildcard * bypassa il controllo. */
+    private const ALLOWED_ABILITIES = [
+        '*',
+        'subscription-plans:read',
+        'members:read',
+        'members:medical-read',
+        'access-logs:read',
+        'exercises:read',
+    ];
+
     public function handle(): int
     {
         $consumer = Str::slug((string) $this->argument('consumer'));
@@ -32,6 +42,15 @@ class ApiIssueToken extends Command
         $tokenName = $this->option('name') ?: "{$consumer}-".now()->format('Ymd');
         $abilitiesRaw = $this->option('abilities') ?: '*';
         $abilities = array_map('trim', explode(',', $abilitiesRaw));
+
+        $unknown = array_diff($abilities, self::ALLOWED_ABILITIES);
+
+        if ($unknown !== []) {
+            $this->error('Abilities non riconosciute: '.implode(', ', $unknown));
+            $this->line('Abilities consentite: '.implode(', ', self::ALLOWED_ABILITIES));
+
+            return self::FAILURE;
+        }
 
         $token = $user->createToken($tokenName, $abilities);
 

@@ -12,6 +12,16 @@
                 <i class="fas fa-book mr-1"></i> Manuale
             </a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ route('backoffice.settings.api-docs') }}" target="_blank">
+                <i class="fas fa-code mr-1"></i> API Reference
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ route('backoffice.settings.api-docs.yaml') }}" target="_blank">
+                <i class="fas fa-file-code mr-1"></i> OpenAPI YAML
+            </a>
+        </li>
     </ul>
 
     {{-- Tab: Funzioni --}}

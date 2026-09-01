@@ -17,7 +17,7 @@ class AccessLogResource extends JsonResource
             'member_id' => $this->member_id,
             'member_name' => $this->whenLoaded('member', fn () => $this->member->first_name.' '.$this->member->last_name),
             'subscription_id' => $this->subscription_id,
-            'checked_in_at' => $this->checked_in_at?->toIso8601ZuluString(),
+            'checked_in_at' => $this->checked_in_at->toIso8601ZuluString(),
             'note' => $this->note,
         ];
     }

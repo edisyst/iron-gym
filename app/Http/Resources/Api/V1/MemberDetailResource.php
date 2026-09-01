@@ -35,7 +35,7 @@ class MemberDetailResource extends JsonResource
                     'id' => $sub->id,
                     'plan_name' => $sub->plan->name ?? null,
                     'status' => $sub->status,
-                    'expires_at' => $sub->expires_at?->toDateString(),
+                    'expires_at' => $sub->expires_at->toDateString(),
                     'accesses_remaining' => $sub->accesses_remaining,
                 ];
             }),

@@ -248,6 +248,8 @@ Storico completo release e audit: **`CHANGELOG.md`**.
 
 **API01** (2026-09-01): foundation superficie API HTTP JSON. Sanctum v4, migration `personal_access_tokens` e `is_service_account` su users, flag `public_api` (Sistema, default false), rate limiter Redis (60/min auth, 10/min anon), middleware `EnsureApiEnabled` (kill switch), formato errori uniforme con chiave `code` stabile su tutti gli status, `GET /api/v1/ping` (esente da auth e flag), `GET /api/v1/me`, 3 comandi artisan (`api:create-service-account`, `api:issue-token`, `api:tokens`). Fix gate `view-training-reports` riscritto in positivo. 17 nuovi test. Suite: 523 test (517 pass / 6 skipped). PHPStan 0 errori. Pint conforme.
 
+**API02** (2026-09-01): 7 endpoint di lettura. `GET /api/v1/subscription-plans`, `GET /api/v1/members` (search + is_active + cert_expiry_before con ability guard), `GET /api/v1/members/{id}`, `GET /api/v1/members/{id}/subscription`, `GET /api/v1/access-logs` (filtri member_id + range date con cap 31 gg), `GET /api/v1/exercises` (filtri muscle/equipment/mechanic/measurement_type), `GET /api/v1/exercises/{slug}`. `medical_cert_expiry` assente senza `members:medical-read`. Soft-deleted mai esposti. Ability whitelist in `api:issue-token`. 7 JsonResource, 4 FormRequest, 5 controller, route con middleware `abilities:*`. Test: kill switch × 4 endpoint, 401 × 4, 403 × 4, filtri, paginazione, N+1, medical conditional, soft-delete guard, whitelist command. `docs/api/03-endpoints.md` creato.
+
 Prossima attività: API02 (lettura dati gestionali).
 
 ## Architettura offline
@@ -482,12 +484,22 @@ php artisan api:tokens --revoke=<token-id>
 **Rate limiting:** Redis, 60 req/min per token (autenticato) o 10 req/min per IP (anonimo).  
 Configurabile via `config/api.php` o env `API_RATE_LIMIT_AUTH` / `API_RATE_LIMIT_ANON`.
 
-**Endpoint disponibili (API01):**
+**Endpoint disponibili (API01 + API02):**
 
-| Metodo | Path | Auth | Kill switch |
-|---|---|---|---|
-| GET | /api/v1/ping | No | Esente |
-| GET | /api/v1/me | Bearer token | Sì |
+| Metodo | Path | Auth | Ability | Kill switch |
+|---|---|---|---|---|
+| GET | /api/v1/ping | No | — | Esente |
+| GET | /api/v1/me | Bearer | — | Sì |
+| GET | /api/v1/subscription-plans | Bearer | `subscription-plans:read` | Sì |
+| GET | /api/v1/members | Bearer | `members:read` | Sì |
+| GET | /api/v1/members/{id} | Bearer | `members:read` | Sì |
+| GET | /api/v1/members/{id}/subscription | Bearer | `members:read` | Sì |
+| GET | /api/v1/access-logs | Bearer | `access-logs:read` | Sì |
+| GET | /api/v1/exercises | Bearer | `exercises:read` | Sì |
+| GET | /api/v1/exercises/{slug} | Bearer | `exercises:read` | Sì |
+
+**Abilities whitelist** (`api:issue-token`): `subscription-plans:read`, `members:read`, `members:medical-read`, `access-logs:read`, `exercises:read`, `*` (test/staging only).  
+Riferimento completo: `docs/api/03-endpoints.md`.
 
 ## Comandi utili
 

@@ -122,25 +122,30 @@ Wildcard `*` concede tutte le abilities (usare solo per token di test/staging).
 
 | Ability | Endpoint | Note |
 |---|---|---|
-| `members:read` | GET /members, GET /members/{id} | API02 |
-| `members:medical-read` | medical_cert_expiry nei dettagli | API02, separato per minimizzare esposizione |
-| `subscriptions:read` | GET /members/{id}/subscription | API02 |
+| `subscription-plans:read` | GET /subscription-plans | API02 |
+| `members:read` | GET /members, GET /members/{id}, GET /members/{id}/subscription | API02 |
+| `members:medical-read` | Aggiunge `medical_cert_expiry` + abilita filtro `cert_expiry_before` | API02, separato per minimizzare esposizione |
 | `access-logs:read` | GET /access-logs | API02 |
-| `access-logs:write` | POST /access-logs (check-in) | API03 |
-| `plans:read` | GET /subscription-plans | API02 |
 | `exercises:read` | GET /exercises, GET /exercises/{slug} | API02 |
-| `group-classes:read` | GET /group-classes, GET /class-occurrences | API03 |
-| `class-bookings:write` | POST/DELETE /class-bookings | API04 |
-| `subscriptions:write` | POST /subscriptions | API05 |
+| `group-classes:read` | GET /group-classes, GET /class-occurrences | API03 (futuro) |
+| `class-bookings:write` | POST/DELETE /class-bookings | API04 (futuro) |
+| `subscriptions:write` | POST /subscriptions | API05 (futuro) |
 
 ---
 
-## Endpoint disponibili (API01)
+## Endpoint disponibili (API01 + API02)
 
-| Metodo | Path | Auth | Kill switch | Note |
+| Metodo | Path | Auth | Ability | Kill switch |
 |---|---|---|---|---|
-| GET | /api/v1/ping | No | Esente | Health check; risponde anche con flag spento |
-| GET | /api/v1/me | Bearer token | Sì | Identità consumer, ruoli, abilities del token |
+| GET | /api/v1/ping | No | — | Esente |
+| GET | /api/v1/me | Bearer | — | Sì |
+| GET | /api/v1/subscription-plans | Bearer | `subscription-plans:read` | Sì |
+| GET | /api/v1/members | Bearer | `members:read` | Sì |
+| GET | /api/v1/members/{id} | Bearer | `members:read` | Sì |
+| GET | /api/v1/members/{id}/subscription | Bearer | `members:read` | Sì |
+| GET | /api/v1/access-logs | Bearer | `access-logs:read` | Sì |
+| GET | /api/v1/exercises | Bearer | `exercises:read` | Sì |
+| GET | /api/v1/exercises/{slug} | Bearer | `exercises:read` | Sì |
 
 ---
 

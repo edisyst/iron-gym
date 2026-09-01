@@ -2,6 +2,35 @@
 
 ---
 
+## API02 — Endpoint di lettura (2026-09-01)
+
+Sette endpoint GET di sola lettura. Tutti richiedono `auth:sanctum` e il kill switch `public_api`.
+
+**Endpoint aggiunti:**
+- `GET /api/v1/subscription-plans` — lista piani abbonamento con filtro `active` e paginazione
+- `GET /api/v1/members` — lista tesserati con ricerca testuale, filtro `is_active`, filtro `cert_expiry_before` (richiede `members:medical-read`)
+- `GET /api/v1/members/{id}` — dettaglio tesserato con abbonamento attivo inline
+- `GET /api/v1/members/{id}/subscription` — abbonamento attivo del tesserato (404 se assente)
+- `GET /api/v1/access-logs` — registro accessi con filtri `member_id`, `date_from`, `date_to` (cap 31 giorni)
+- `GET /api/v1/exercises` — catalogo esercizi con filtri `muscle_slug`, `equipment_slug`, `mechanic`, `measurement_type`
+- `GET /api/v1/exercises/{slug}` — dettaglio esercizio (route binding su slug)
+
+**Sicurezza:**
+- `medical_cert_expiry` assente senza ability `members:medical-read`; filtro `cert_expiry_before` → 422 senza l'ability
+- Soft-deleted (Member, Exercise) mai esposti, nessun parametro per mostrarli
+- Abilities middleware `abilities:*` per ogni gruppo di route
+- `api:issue-token` valida la whitelist: `subscription-plans:read`, `members:read`, `members:medical-read`, `access-logs:read`, `exercises:read`, `*`
+
+**File aggiunti:**
+- 7 JsonResource (`app/Http/Resources/Api/V1/`)
+- 4 FormRequest (`app/Http/Requests/Api/V1/`)
+- 5 controller (`app/Http/Controllers/Api/V1/`)
+- `docs/api/03-endpoints.md` — reference completo endpoint API02
+
+**Test:** 38 nuovi test (kill switch × 4, 401 × 4, 403 × 4, filtri, paginazione, N+1, medical conditional, soft-delete guard, whitelist command).
+
+---
+
 ## API01 — Foundation superficie API HTTP JSON (2026-09-01)
 
 Infrastruttura completa per la superficie API v1. Nessun endpoint di dominio in questa release.

@@ -492,7 +492,7 @@ php artisan api:tokens --revoke=<token-id>
 **Rate limiting:** Redis, 60 req/min per token (autenticato) o 10 req/min per IP (anonimo).  
 Configurabile via `config/api.php` o env `API_RATE_LIMIT_AUTH` / `API_RATE_LIMIT_ANON`.
 
-**Endpoint disponibili (API01 + API02 + API03):**
+**Endpoint disponibili (API01 + API02 + API03 + API04):**
 
 | Metodo | Path | Auth | Ability | Kill switch |
 |---|---|---|---|---|

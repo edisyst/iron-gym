@@ -13,7 +13,7 @@ class ExerciseController extends Controller
 {
     public function index(ExerciseIndexRequest $request): AnonymousResourceCollection
     {
-        $query = Exercise::with('primaryMuscles')->orderBy('name');
+        $query = Exercise::with('primaryMuscles')->orderBy('name_it');
 
         if ($slug = $request->input('muscle_slug')) {
             $query->whereHas('muscles', fn ($q) => $q->where('slug', $slug));

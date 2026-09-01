@@ -2,6 +2,21 @@
 
 ---
 
+## DOC03 — Swagger UI e OpenAPI spec (2026-09-01)
+
+Documentazione interattiva API accessibile dal backoffice.
+
+**Aggiunto:**
+- `docs/api/openapi.yaml` — spec OpenAPI 3.0.3 completa: 15 endpoint, tutti gli schema riutilizzabili (`Member`, `ClassBooking`, `AccessLog`, ecc.), component `responses` condivisi, esempi per ogni `code` di errore stabile.
+- `GET /backoffice/settings/api-docs` — Swagger UI standalone, gated `can:access-admin-section` (solo gestore). Topbar Iron Gym brand, pulsante "Scarica YAML".
+- `GET /backoffice/settings/api-docs/openapi.yaml` — serve il file YAML (`Content-Type: application/yaml`) per download diretto o import URL in Insomnia.
+
+**Note operative:**
+- Try-it-out disabilitato di default (l'API accetta solo Sanctum Bearer token, non session auth backoffice).
+- Manutenzione: aggiornare `openapi.yaml` contestualmente a ogni nuova release API.
+
+---
+
 ## API04 — Prenotazioni corsi collettivi (2026-09-01)
 
 Tre endpoint per gestione prenotazioni corsi collettivi via API. Consumer è account di servizio; `member_id` sempre esplicito nel body.

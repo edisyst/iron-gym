@@ -254,6 +254,8 @@ Storico completo release e audit: **`CHANGELOG.md`**.
 
 **API04** (2026-09-01): 3 endpoint prenotazioni corsi collettivi. `GET /api/v1/class-bookings` (filtri member_id/occurrence_id/status), `POST /api/v1/class-bookings` (enroll con idempotenza su AlreadyEnrolled → 200; 201 confirmed/waitlisted; 409 overlap atleta/PT; 422 finestra/abbonamento/cert), `DELETE /api/v1/class-bookings/{booking}` (cancel atleta; 204/409 deadline/stato). Fix bug `whereDate()` in `ClassBookingService::enroll()` PT overlap check (SQLite date format). 31 nuovi test. Suite: 624 test (624 pass / 6 skipped). PHPStan livello 6, 0 errori. Pint conforme.
 
+**DOC03** (2026-09-01): Swagger UI + spec OpenAPI 3.0.3. `docs/api/openapi.yaml` (15 endpoint, tutti gli schema/response come component riutilizzabili, esempi errori). `GET /backoffice/settings/api-docs` gated `can:access-admin-section` — Swagger UI CDN standalone con topbar Iron Gym. `GET /backoffice/settings/api-docs/openapi.yaml` — download/import Insomnia. Try-it-out disabilitato (solo Bearer token). Pint conforme.
+
 Prossima attività: API05 (abbonamenti write) o altra feature su richiesta.
 
 ## Architettura offline
@@ -446,7 +448,8 @@ Layer CSS isolato e disattivabile sopra AdminLTE 3.x — nessun fork del tema.
 ## Superficie API HTTP JSON
 
 Prefisso: `/api/v1`. Auth: Sanctum personal access token (`Authorization: Bearer <token>`).  
-Documentazione: `docs/api/` (assessment, piano release, convenzioni).
+Documentazione: `docs/api/` (assessment, piano release, convenzioni, `openapi.yaml`).  
+Swagger UI interattivo: `/backoffice/settings/api-docs` (solo gestore). Download YAML: `/backoffice/settings/api-docs/openapi.yaml`.
 
 **Kill switch:** flag `public_api` in `config/features.php`, chiave settings `public_api_enabled`, default `false`.  
 Spento → tutte le route `/api/v1/*` rispondono 503 JSON tranne `/ping`.

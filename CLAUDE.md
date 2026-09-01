@@ -219,7 +219,7 @@ Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01
 
 **FIX01** (2026-08-26): flag globale `group_classes` spostato su tabella `settings` (`activateForEveryone` non copriva gli utenti mai risolti, il toggle da backoffice era inefficace); guard `role:gestore` + whitelist in `FeatureFlagManager`; fix colonna `status` ambigua in `Athlete\Dashboard`; `MesocycleList` filtrata per trainer e ownership check in `MesocycleDetail::applyProgression/forceDeload`; `GroupClassSeeder` registrato in `DatabaseSeeder`; comando `classes:send-reminders`; alias `/athlete/dashboard`; link "Volume landmarks" in AthleteProfile; dati demo: PT pending per `atleta@atleta.atleta`, abbonamento+certificato scaduti per `alessia.colombo@example.com`, badge "In attesa" in dashboard atleta. 16 nuovi test.
 
-**Suite corrente:** 495 test (489 pass / 6 skipped). **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
+**Suite corrente:** 593 test (587 pass / 6 skipped). **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
 
 **DOC02** (2026-08-27): assessment funzionale R09+ (`docs/reviews/r09-plus-test-assessment.md`), piano di test manuale 109 casi (`docs/testing/r09-plus-functional-test-plan.md`), `FunctionalTestSeeder` con 5 scenari demo (corsi collettivi + waitlist, notifiche, check-in ingressi esauriti, abbonamento in scadenza, orari apertura). Findings documentati: F-01/F-02/F-04 risolti in FIX02.
 
@@ -250,7 +250,9 @@ Storico completo release e audit: **`CHANGELOG.md`**.
 
 **API02** (2026-09-01): 7 endpoint di lettura. `GET /api/v1/subscription-plans`, `GET /api/v1/members` (search + is_active + cert_expiry_before con ability guard), `GET /api/v1/members/{id}`, `GET /api/v1/members/{id}/subscription`, `GET /api/v1/access-logs` (filtri member_id + range date con cap 31 gg), `GET /api/v1/exercises` (filtri muscle/equipment/mechanic/measurement_type), `GET /api/v1/exercises/{slug}`. `medical_cert_expiry` assente senza `members:medical-read`. Soft-deleted mai esposti. Ability whitelist in `api:issue-token`. 7 JsonResource, 4 FormRequest, 5 controller, route con middleware `abilities:*`. Test: kill switch × 4 endpoint, 401 × 4, 403 × 4, filtri, paginazione, N+1, medical conditional, soft-delete guard, whitelist command. `docs/api/03-endpoints.md` creato.
 
-Prossima attività: API02 (lettura dati gestionali).
+**API03** (2026-09-01): 3 endpoint write/module. `POST /api/v1/access-logs` (check-in via totem API): 201+Location su successo, 200 su duplicato entro finestra idempotenza (5 min, configurabile), 422 con `code` stabile per cert/subscription/accesses, 404 per tesserato mancante/soft-deleted. `GET /api/v1/group-classes` e `GET /api/v1/class-occurrences`: gated su flag `group_classes` → 503 `module_disabled`; no N+1 (eager load confirmedBookings). `AccessService` estratto da QuickCheckin e AccessLogList (race condition fissa con `DB::transaction + lockForUpdate`; idempotency window come parametro esplicito). `CheckinResult` readonly class + `CheckinFailure` enum. 25 nuovi test (AccessServiceTest 13, ApiCheckinTest 12 + ApiGroupClassesTest 13). Suite: 593 test (587 pass / 6 skipped). PHPStan livello 6, 0 errori. Pint conforme.
+
+Prossima attività: API04 (prenotazioni corsi) o altra feature su richiesta.
 
 ## Architettura offline
 
@@ -464,7 +466,11 @@ Mai delegare ai gate role-based dall'API.
 | `not_found` | 404 | Risorsa inesistente (mai "Server Error") |
 | `validation_failed` | 422 | Payload non valido |
 | `rate_limited` | 429 | Rate limit superato |
+| `cert_invalid` | 422 | Cert. medico scaduto/mancante (check-in) |
+| `subscription_inactive` | 422 | Nessun abbonamento attivo (check-in) |
+| `accesses_exhausted` | 422 | Accessi residui esauriti (check-in) |
 | `api_disabled` | 503 | Kill switch spento |
+| `module_disabled` | 503 | Flag di modulo spento (es. `group_classes`) |
 
 **Comandi artisan:**
 
@@ -484,7 +490,7 @@ php artisan api:tokens --revoke=<token-id>
 **Rate limiting:** Redis, 60 req/min per token (autenticato) o 10 req/min per IP (anonimo).  
 Configurabile via `config/api.php` o env `API_RATE_LIMIT_AUTH` / `API_RATE_LIMIT_ANON`.
 
-**Endpoint disponibili (API01 + API02):**
+**Endpoint disponibili (API01 + API02 + API03):**
 
 | Metodo | Path | Auth | Ability | Kill switch |
 |---|---|---|---|---|
@@ -495,10 +501,13 @@ Configurabile via `config/api.php` o env `API_RATE_LIMIT_AUTH` / `API_RATE_LIMIT
 | GET | /api/v1/members/{id} | Bearer | `members:read` | Sì |
 | GET | /api/v1/members/{id}/subscription | Bearer | `members:read` | Sì |
 | GET | /api/v1/access-logs | Bearer | `access-logs:read` | Sì |
+| POST | /api/v1/access-logs | Bearer | `access-logs:write` | Sì |
 | GET | /api/v1/exercises | Bearer | `exercises:read` | Sì |
 | GET | /api/v1/exercises/{slug} | Bearer | `exercises:read` | Sì |
+| GET | /api/v1/group-classes | Bearer | `group-classes:read` | Sì + `group_classes` |
+| GET | /api/v1/class-occurrences | Bearer | `group-classes:read` | Sì + `group_classes` |
 
-**Abilities whitelist** (`api:issue-token`): `subscription-plans:read`, `members:read`, `members:medical-read`, `access-logs:read`, `exercises:read`, `*` (test/staging only).  
+**Abilities whitelist** (`api:issue-token`): `subscription-plans:read`, `members:read`, `members:medical-read`, `access-logs:read`, `access-logs:write`, `exercises:read`, `group-classes:read`, `*` (test/staging only).  
 Riferimento completo: `docs/api/03-endpoints.md`.
 
 ## Comandi utili

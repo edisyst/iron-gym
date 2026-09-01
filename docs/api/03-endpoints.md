@@ -228,6 +228,132 @@ Aggiunge ai campi della lista: `description`, `execution_description`, `video_ur
 
 ---
 
+---
+
+## POST /api/v1/access-logs
+
+**Ability:** `access-logs:write`
+
+Registra un accesso (check-in). Idempotente entro la finestra configurata
+(`config/api.checkin_idempotency_window_minutes`, default 5 minuti).
+
+### Body JSON
+
+| Campo | Tipo | Note |
+|---|---|---|
+| `member_id` | integer, required | ID del tesserato |
+| `note` | string max 255, opzionale | Nota libera |
+
+### Risposte
+
+**201 Created** — accesso registrato; header `Location: /api/v1/access-logs/{id}`.
+
+```json
+{
+  "data": {
+    "id": 101,
+    "member_id": 42,
+    "member_name": "Mario Rossi",
+    "subscription_id": 10,
+    "checked_in_at": "2026-09-01T09:30:00Z",
+    "note": null
+  }
+}
+```
+
+**200 OK** — duplicato entro finestra (stesso `member_id`, `checked_in_at` entro N min);
+restituisce il log già esistente, nessun decremento aggiuntivo.
+
+**404** — tesserato non trovato o soft-deleted: `{ "code": "not_found" }`.
+
+**422** — fallimento di dominio; ciascuno ha un `code` stabile:
+
+| `code` | Causa |
+|---|---|
+| `cert_invalid` | Certificato medico scaduto o mancante |
+| `subscription_inactive` | Nessun abbonamento attivo |
+| `accesses_exhausted` | Accessi residui esauriti |
+| `validation_failed` | `member_id` assente o non intero (+ `errors`) |
+
+---
+
+## GET /api/v1/group-classes
+
+**Ability:** `group-classes:read`  
+**Modulo:** richiede flag `group_classes` → 503 `module_disabled` se spento.
+
+### Query string
+
+| Parametro | Tipo | Note |
+|---|---|---|
+| `per_page` | integer 1–100 | Default 25 |
+
+### Risposta 200
+
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "slug": "yoga",
+      "name": "Yoga",
+      "description": "Corso di yoga per tutti i livelli.",
+      "duration_minutes": 60,
+      "default_capacity": 20,
+      "room": "Sala A",
+      "color": "#A8D8A8",
+      "is_active": true
+    }
+  ],
+  "links": { "..." },
+  "meta": { "current_page": 1, "per_page": 25, "total": 5 }
+}
+```
+
+---
+
+## GET /api/v1/class-occurrences
+
+**Ability:** `group-classes:read`  
+**Modulo:** richiede flag `group_classes` → 503 `module_disabled` se spento.
+
+Restituisce solo occorrenze con `status = planned` e `date >= date_from` (default oggi).
+
+### Query string
+
+| Parametro | Tipo | Note |
+|---|---|---|
+| `date_from` | date Y-m-d | Default: oggi |
+| `date_to` | date Y-m-d | Max 31 giorni da `date_from` → 422 se superato |
+| `group_class_id` | integer | Filtra per corso |
+| `per_page` | integer 1–100 | Default 25 |
+
+### Risposta 200
+
+```json
+{
+  "data": [
+    {
+      "id": 55,
+      "group_class_id": 1,
+      "group_class_name": "Yoga",
+      "date": "2026-09-05",
+      "start_time": "10:00",
+      "end_time": "11:00",
+      "capacity": 20,
+      "available_spots": 17,
+      "status": "planned",
+      "trainer_id": 3,
+      "trainer_name": "Laura Bianchi"
+    }
+  ],
+  "links": { "..." },
+  "meta": { "current_page": 1, "per_page": 25, "total": 12 }
+}
+```
+
+---
+
 ## Codici di errore comuni
 
 | HTTP | `code` | Causa |
@@ -235,6 +361,7 @@ Aggiunge ai campi della lista: `description`, `execution_description`, `video_ur
 | 401 | `unauthenticated` | Token assente o revocato |
 | 403 | `forbidden` | Token privo dell'ability richiesta |
 | 404 | `not_found` | Risorsa inesistente |
-| 422 | `validation_error` | Parametri non validi (+ `errors`) |
+| 422 | `validation_failed` | Parametri non validi (+ `errors`) |
 | 429 | `rate_limited` | Superato limite richieste |
 | 503 | `api_disabled` | Kill switch `public_api` spento |
+| 503 | `module_disabled` | Flag di modulo spento (`group_classes`) |

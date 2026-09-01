@@ -2,6 +2,51 @@
 
 ---
 
+## API03 — Check-in totem + corsi collettivi (2026-09-01)
+
+Fase 1 — Estrazione `AccessService` + primo endpoint di scrittura + lettura corsi.
+
+**Refactor:**
+- Estrazione `AccessService::checkin()` da `QuickCheckin` e `AccessLogList`.
+  Risultato tipizzato (`CheckinResult` + enum `CheckinFailure`). Transazione con
+  `lockForUpdate` su abbonamento (risolve race TOCTOU). Idempotenza parametrica
+  via finestra temporale (null per Livewire, 5 min per API).
+
+**Endpoint aggiunti:**
+- `POST /api/v1/access-logs` — check-in; 201 + Location su successo; 200 su
+  duplicato entro finestra; 422 distinti per `cert_invalid` / `subscription_inactive`
+  / `accesses_exhausted`; 404 per tesserato assente o soft-deleted.
+- `GET /api/v1/group-classes` — definizioni corsi attivi; gated su flag
+  `group_classes` → 503 `module_disabled`.
+- `GET /api/v1/class-occurrences` — occorrenze future planned; filtri
+  `date_from`, `date_to` (cap 31 gg), `group_class_id`; eager load
+  `confirmedBookings` per available_spots senza N+1; gated su `group_classes`.
+
+**Abilities aggiunte alla whitelist `api:issue-token`:** `access-logs:write`,
+`group-classes:read`.
+
+**Codici di errore nuovi:**
+
+| HTTP | `code` | Causa |
+|---|---|---|
+| 422 | `cert_invalid` | Certificato medico scaduto o mancante |
+| 422 | `subscription_inactive` | Nessun abbonamento attivo |
+| 422 | `accesses_exhausted` | Accessi residui a zero |
+| 503 | `module_disabled` | Flag di modulo spento (distinto da `api_disabled`) |
+
+**File aggiunti:**
+- `app/Services/AccessService.php`, `CheckinResult.php`, `CheckinFailure.php`
+- `app/Http/Requests/Api/V1/AccessLogStoreRequest.php`, `ClassOccurrenceIndexRequest.php`
+- `app/Http/Resources/Api/V1/GroupClassResource.php`, `ClassOccurrenceResource.php`
+- `app/Http/Controllers/Api/V1/GroupClassController.php`, `ClassOccurrenceController.php`
+
+**Test:** 25 nuovi test su `AccessService` (13) + `POST /access-logs` (12) +
+`GET /group-classes` e `GET /class-occurrences` (13) = 38 test API03.
+Più 13 test di non regressione (`AccessServiceTest`). Suite totale: 593 pass / 6 skipped.
+**PHPStan:** livello 6, 0 errori. **Pint:** conforme.
+
+---
+
 ## API02 — Endpoint di lettura (2026-09-01)
 
 Sette endpoint GET di sola lettura. Tutti richiedono `auth:sanctum` e il kill switch `public_api`.

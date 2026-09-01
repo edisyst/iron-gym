@@ -86,8 +86,12 @@ Tutti gli status di errore condividono le stesse chiavi:
 | 403 | `forbidden` | Ability mancante sul token |
 | 404 | `not_found` | Risorsa non trovata (mai "Server Error") |
 | 422 | `validation_failed` | Payload non valido (+ campo `errors`) |
+| 422 | `cert_invalid` | Certificato medico scaduto o mancante (check-in) |
+| 422 | `subscription_inactive` | Nessun abbonamento attivo (check-in) |
+| 422 | `accesses_exhausted` | Accessi residui esauriti (check-in) |
 | 429 | `rate_limited` | Rate limit superato (+ header `Retry-After`) |
 | 503 | `api_disabled` | Kill switch `public_api` spento |
+| 503 | `module_disabled` | Flag di modulo spento (es. `group_classes`) |
 | 500 | `error` | Errore generico (mai stack trace in produzione) |
 
 ---
@@ -127,13 +131,14 @@ Wildcard `*` concede tutte le abilities (usare solo per token di test/staging).
 | `members:medical-read` | Aggiunge `medical_cert_expiry` + abilita filtro `cert_expiry_before` | API02, separato per minimizzare esposizione |
 | `access-logs:read` | GET /access-logs | API02 |
 | `exercises:read` | GET /exercises, GET /exercises/{slug} | API02 |
-| `group-classes:read` | GET /group-classes, GET /class-occurrences | API03 (futuro) |
+| `access-logs:write` | POST /access-logs | API03 |
+| `group-classes:read` | GET /group-classes, GET /class-occurrences | API03 |
 | `class-bookings:write` | POST/DELETE /class-bookings | API04 (futuro) |
 | `subscriptions:write` | POST /subscriptions | API05 (futuro) |
 
 ---
 
-## Endpoint disponibili (API01 + API02)
+## Endpoint disponibili (API01 + API02 + API03)
 
 | Metodo | Path | Auth | Ability | Kill switch |
 |---|---|---|---|---|
@@ -144,8 +149,11 @@ Wildcard `*` concede tutte le abilities (usare solo per token di test/staging).
 | GET | /api/v1/members/{id} | Bearer | `members:read` | Sì |
 | GET | /api/v1/members/{id}/subscription | Bearer | `members:read` | Sì |
 | GET | /api/v1/access-logs | Bearer | `access-logs:read` | Sì |
+| POST | /api/v1/access-logs | Bearer | `access-logs:write` | Sì |
 | GET | /api/v1/exercises | Bearer | `exercises:read` | Sì |
 | GET | /api/v1/exercises/{slug} | Bearer | `exercises:read` | Sì |
+| GET | /api/v1/group-classes | Bearer | `group-classes:read` | Sì + `group_classes` |
+| GET | /api/v1/class-occurrences | Bearer | `group-classes:read` | Sì + `group_classes` |
 
 ---
 

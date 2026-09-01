@@ -15,7 +15,8 @@ class SubscriptionPlanController extends Controller
         $query = SubscriptionPlan::orderBy('name');
 
         if ($request->has('active')) {
-            $query->where('is_active', $request->boolean('active'));
+            $active = filter_var($request->input('active'), FILTER_VALIDATE_BOOLEAN);
+            $query->where('is_active', $active);
         }
 
         $perPage = (int) $request->input('per_page', 25);

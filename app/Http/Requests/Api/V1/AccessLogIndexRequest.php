@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Api\V1;
 
+use Carbon\Carbon;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
@@ -26,10 +27,17 @@ class AccessLogIndexRequest extends FormRequest
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $v): void {
-            $from = $this->date('date_from') ?? now()->startOfDay();
-            $to = $this->date('date_to') ?? $from;
+            $fromInput = $this->input('date_from');
+            $toInput = $this->input('date_to');
 
-            if ($to->diffInDays($from) > 31) {
+            if (! $fromInput && ! $toInput) {
+                return;
+            }
+
+            $from = $fromInput ? Carbon::parse($fromInput) : now()->startOfDay();
+            $to = $toInput ? Carbon::parse($toInput) : $from;
+
+            if ($from->diffInDays($to) > 31) {
                 $v->errors()->add('date_to', 'Il range di date non può superare 31 giorni.');
             }
         });

@@ -9,7 +9,7 @@ Gestionale palestra bodybuilding/fitness. Copre: anagrafica tesserati, abbonamen
 - **App atleta:** stesse tecnologie, layout dedicato su prefisso /athlete
 - **Database:** MySQL 8.0 (database: `iron_gym`)
 - **Cache / code:** Redis 7
-- **Auth:** Laravel Breeze (stack Livewire)
+- **Auth:** Laravel Breeze (stack Livewire); API: Sanctum personal access token
 - **Permissions:** spatie/laravel-permission
 - **Static analysis:** Larastan livello 6
 - **Code style:** Laravel Pint
@@ -246,7 +246,9 @@ Storico completo release e audit: **`CHANGELOG.md`**.
 **v1.2.4** (2026-08-30): tag di allineamento post-SET01. `ArtisanRunner` — pagina comandi Artisan per il gestore (`/backoffice/settings/artisan`). develop allineato a master.
 **v1.2.4+** (2026-08-31): fix Pint `ordered_imports` + `fully_qualified_strict_types` in `routes/backoffice.php` (CI ripristinata).
 
-Prossima attività: da definire.
+**API01** (2026-09-01): foundation superficie API HTTP JSON. Sanctum v4, migration `personal_access_tokens` e `is_service_account` su users, flag `public_api` (Sistema, default false), rate limiter Redis (60/min auth, 10/min anon), middleware `EnsureApiEnabled` (kill switch), formato errori uniforme con chiave `code` stabile su tutti gli status, `GET /api/v1/ping` (esente da auth e flag), `GET /api/v1/me`, 3 comandi artisan (`api:create-service-account`, `api:issue-token`, `api:tokens`). Fix gate `view-training-reports` riscritto in positivo. 17 nuovi test. Suite: 523 test (517 pass / 6 skipped). PHPStan 0 errori. Pint conforme.
+
+Prossima attività: API02 (lettura dati gestionali).
 
 ## Architettura offline
 
@@ -320,6 +322,7 @@ Toggle sempre via `Setting::write` + `Feature::purge` (non `activateForEveryone`
 | `push_notifications` | `push_notifications_enabled` | OFF | Atleti e trainer | Sistema |
 | `outbound_notifications` | `outbound_notifications_enabled` | ON | Tutta la palestra (flag globale) | Sistema |
 | `in_app_feedback` | `in_app_feedback_enabled` | OFF | Tutti | Sistema |
+| `public_api` | `public_api_enabled` | OFF | Account di servizio (api_client) | Sistema |
 
 Per modificare flags: backoffice → Impostazioni → Funzioni (solo gestore).
 
@@ -433,6 +436,58 @@ Layer CSS isolato e disattivabile sopra AdminLTE 3.x — nessun fork del tema.
 - Non aggiungere colonne o tabelle senza discuterne prima.
 - Non usare emoji nel codice o nei commenti.
 - Non creare model Eloquent chiamati `Workout` o `WorkoutExercise`. `app/Livewire/Athlete/WorkoutSession.php` è un componente Livewire per il logging live della sessione, non un Model Eloquent: il nome simile non viola questo divieto.
+
+## Superficie API HTTP JSON
+
+Prefisso: `/api/v1`. Auth: Sanctum personal access token (`Authorization: Bearer <token>`).  
+Documentazione: `docs/api/` (assessment, piano release, convenzioni).
+
+**Kill switch:** flag `public_api` in `config/features.php`, chiave settings `public_api_enabled`, default `false`.  
+Spento → tutte le route `/api/v1/*` rispondono 503 JSON tranne `/ping`.
+
+**Account di servizio:** `is_service_account = true` su `users`, ruolo `api_client` senza permessi.  
+Non possono autenticarsi via browser (blocco in `LoginForm::authenticate()`).  
+Non compaiono nelle liste `User::role('atleta')`, `User::role('trainer')` ecc.
+
+**Abilities token:** namespace separato dai gate web (es. `members:read`, `access-logs:write`).  
+Mai delegare ai gate role-based dall'API.
+
+**Formato errori:** tutte le risposte di errore hanno `message` + `code` (stabile).  
+`errors` aggiunto solo per 422. Nessuno stack trace in produzione.
+
+| Code | HTTP | Causa |
+|---|---|---|
+| `unauthenticated` | 401 | Token assente/revocato |
+| `forbidden` | 403 | Ability mancante |
+| `not_found` | 404 | Risorsa inesistente (mai "Server Error") |
+| `validation_failed` | 422 | Payload non valido |
+| `rate_limited` | 429 | Rate limit superato |
+| `api_disabled` | 503 | Kill switch spento |
+
+**Comandi artisan:**
+
+```bash
+# Crea account di servizio per un consumer (idempotente)
+php artisan api:create-service-account <consumer-slug>
+
+# Emette token con abilities specifiche (plain text stampato una volta)
+php artisan api:issue-token <consumer-slug> --name="<desc>" --abilities="members:read"
+
+# Elenca token attivi; revoca singolo token
+php artisan api:tokens
+php artisan api:tokens --consumer=<slug>
+php artisan api:tokens --revoke=<token-id>
+```
+
+**Rate limiting:** Redis, 60 req/min per token (autenticato) o 10 req/min per IP (anonimo).  
+Configurabile via `config/api.php` o env `API_RATE_LIMIT_AUTH` / `API_RATE_LIMIT_ANON`.
+
+**Endpoint disponibili (API01):**
+
+| Metodo | Path | Auth | Kill switch |
+|---|---|---|---|
+| GET | /api/v1/ping | No | Esente |
+| GET | /api/v1/me | Bearer token | Sì |
 
 ## Comandi utili
 

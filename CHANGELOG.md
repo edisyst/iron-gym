@@ -2,6 +2,41 @@
 
 ---
 
+## API01 — Foundation superficie API HTTP JSON (2026-09-01)
+
+Infrastruttura completa per la superficie API v1. Nessun endpoint di dominio in questa release.
+
+**Dipendenze:**
+- `laravel/sanctum:^4.0` aggiunto a `composer.json`; migration `personal_access_tokens` pubblicata.
+
+**Migrations:**
+- `personal_access_tokens` (Sanctum)
+- `is_service_account boolean default false` su `users`
+
+**Flag:** `public_api` (Sistema, chiave `public_api_enabled`, default OFF) — kill switch per tutta la superficie API.
+
+**Auth:** Sanctum personal access token. Un account di servizio dedicato per consumer, ruolo `api_client` senza permessi web. Abilities in namespace separato dai gate web.
+
+**Endpoint:**
+- `GET /api/v1/ping` — health check, esente da auth e kill switch
+- `GET /api/v1/me` — identità consumer (id, name, email, is_service_account, roles, abilities)
+
+**Formato errori uniforme:** tutte le risposte di errore hanno `message` + `code` stabile; `errors` solo per 422. `ModelNotFoundException` su `api/*` → 404 JSON (mai "Server Error").
+
+**Rate limiting:** Redis, 60 req/min per token, 10 req/min per IP anonimo. Configurabile via `config/api.php`.
+
+**Comandi artisan:** `api:create-service-account`, `api:issue-token`, `api:tokens` (lista + revoca).
+
+**Sicurezza:**
+- Account di servizio bloccati dal login web (`LoginForm::authenticate` → logout + errore generico se `is_service_account=true`).
+- Gate `view-training-reports` riscritto in positivo (`hasAnyRole(['gestore','trainer'])`): prima `!hasRole('receptionist')` permetteva a utenti senza ruoli di passare.
+
+**Documentazione:** `docs/api/00-assessment.md`, `docs/api/01-piano-release.md` (rinumerato API01-API05), `docs/api/02-convenzioni.md`.
+
+**Suite:** 523 test (517 pass / 6 skipped). PHPStan: 0 errori. Pint: conforme.
+
+---
+
 ## v1.2.4 — Tag di allineamento post-SET01 (2026-08-30)
 
 - `ArtisanRunner`: pagina comandi Artisan per il gestore (`/backoffice/settings/artisan`). Whitelist comandi sicuri, output live via `Process`, log in sessione, accesso solo gestore.

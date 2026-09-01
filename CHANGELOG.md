@@ -2,6 +2,170 @@
 
 ---
 
+## DOC03 — Swagger UI e OpenAPI spec (2026-09-01)
+
+Documentazione interattiva API accessibile dal backoffice.
+
+**Aggiunto:**
+- `docs/api/openapi.yaml` — spec OpenAPI 3.0.3 completa: 15 endpoint, tutti gli schema riutilizzabili (`Member`, `ClassBooking`, `AccessLog`, ecc.), component `responses` condivisi, esempi per ogni `code` di errore stabile.
+- `GET /backoffice/settings/api-docs` — Swagger UI standalone, gated `can:access-admin-section` (solo gestore). Topbar Iron Gym brand, pulsante "Scarica YAML".
+- `GET /backoffice/settings/api-docs/openapi.yaml` — serve il file YAML (`Content-Type: application/yaml`) per download diretto o import URL in Insomnia.
+
+**Note operative:**
+- Try-it-out disabilitato di default (l'API accetta solo Sanctum Bearer token, non session auth backoffice).
+- Manutenzione: aggiornare `openapi.yaml` contestualmente a ogni nuova release API.
+
+---
+
+## API04 — Prenotazioni corsi collettivi (2026-09-01)
+
+Tre endpoint per gestione prenotazioni corsi collettivi via API. Consumer è account di servizio; `member_id` sempre esplicito nel body.
+
+**Endpoint aggiunti:**
+- `GET /api/v1/class-bookings` — lista prenotazioni paginata; filtri `member_id`, `occurrence_id`, `status`; gated su flag `group_classes`.
+- `POST /api/v1/class-bookings` — iscrizione a un'occorrenza; 201 su nuova prenotazione (confirmed/waitlisted); 200 idempotente su `AlreadyEnrolled`; 422 per finestra chiusa/abbonamento/cert/occorrenza; 409 per overlap atleta o PT.
+- `DELETE /api/v1/class-bookings/{booking}` — cancellazione atleta; 204 su successo; 409 `cancel_deadline_exceeded` / `booking_not_cancellable`.
+
+**Abilities aggiunte alla whitelist `api:issue-token`:** `class-bookings:read`, `class-bookings:write`.
+
+**Codici di errore nuovi:**
+
+| HTTP | `code` | Causa |
+|---|---|---|
+| 422 | `booking_not_open` | Finestra prenotazioni non ancora aperta |
+| 422 | `booking_closed` | Finestra prenotazioni chiusa |
+| 422 | `occurrence_not_enrollable` | Occorrenza non in stato `planned` |
+| 409 | `athlete_overlap` | Atleta ha già un corso confermato nello stesso orario |
+| 409 | `pt_overlap` | Atleta ha già una sessione PT confermata nello stesso orario |
+| 409 | `cancel_deadline_exceeded` | Cancellazione oltre la deadline gratuita |
+| 409 | `booking_not_cancellable` | Prenotazione in stato non cancellabile (es. `no_show`) |
+
+**Bug fix:** `ClassBookingService::enroll()` usava `where('booked_date', ...)` per il check PT overlap — falliva silenziosamente in SQLite (formato data 'Y-m-d H:i:s' ≠ 'Y-m-d'). Corretto con `whereDate()` (valido anche in MySQL).
+
+**File aggiunti:**
+- `app/Http/Resources/Api/V1/ClassBookingResource.php`
+- `app/Http/Requests/Api/V1/ClassBookingIndexRequest.php`, `ClassBookingStoreRequest.php`
+- `app/Http/Controllers/Api/V1/ClassBookingController.php`
+- `tests/Feature/Api/V1/ApiClassBookingsTest.php` (31 test)
+
+**Test non-regressione aggiornati:** `BookingTest.php`, `BookingWindowTest.php`, `ClassCancellationTest.php`, `AttendanceTest.php` — adattati alla firma `enroll() → EnrollResult`.
+
+**Test:** 31 nuovi test API04. Suite totale: 624 pass / 6 skipped.
+**PHPStan:** livello 6, 0 errori. **Pint:** conforme.
+
+---
+
+## API03 — Check-in totem + corsi collettivi (2026-09-01)
+
+Fase 1 — Estrazione `AccessService` + primo endpoint di scrittura + lettura corsi.
+
+**Refactor:**
+- Estrazione `AccessService::checkin()` da `QuickCheckin` e `AccessLogList`.
+  Risultato tipizzato (`CheckinResult` + enum `CheckinFailure`). Transazione con
+  `lockForUpdate` su abbonamento (risolve race TOCTOU). Idempotenza parametrica
+  via finestra temporale (null per Livewire, 5 min per API).
+
+**Endpoint aggiunti:**
+- `POST /api/v1/access-logs` — check-in; 201 + Location su successo; 200 su
+  duplicato entro finestra; 422 distinti per `cert_invalid` / `subscription_inactive`
+  / `accesses_exhausted`; 404 per tesserato assente o soft-deleted.
+- `GET /api/v1/group-classes` — definizioni corsi attivi; gated su flag
+  `group_classes` → 503 `module_disabled`.
+- `GET /api/v1/class-occurrences` — occorrenze future planned; filtri
+  `date_from`, `date_to` (cap 31 gg), `group_class_id`; eager load
+  `confirmedBookings` per available_spots senza N+1; gated su `group_classes`.
+
+**Abilities aggiunte alla whitelist `api:issue-token`:** `access-logs:write`,
+`group-classes:read`.
+
+**Codici di errore nuovi:**
+
+| HTTP | `code` | Causa |
+|---|---|---|
+| 422 | `cert_invalid` | Certificato medico scaduto o mancante |
+| 422 | `subscription_inactive` | Nessun abbonamento attivo |
+| 422 | `accesses_exhausted` | Accessi residui a zero |
+| 503 | `module_disabled` | Flag di modulo spento (distinto da `api_disabled`) |
+
+**File aggiunti:**
+- `app/Services/AccessService.php`, `CheckinResult.php`, `CheckinFailure.php`
+- `app/Http/Requests/Api/V1/AccessLogStoreRequest.php`, `ClassOccurrenceIndexRequest.php`
+- `app/Http/Resources/Api/V1/GroupClassResource.php`, `ClassOccurrenceResource.php`
+- `app/Http/Controllers/Api/V1/GroupClassController.php`, `ClassOccurrenceController.php`
+
+**Test:** 25 nuovi test su `AccessService` (13) + `POST /access-logs` (12) +
+`GET /group-classes` e `GET /class-occurrences` (13) = 38 test API03.
+Più 13 test di non regressione (`AccessServiceTest`). Suite totale: 593 pass / 6 skipped.
+**PHPStan:** livello 6, 0 errori. **Pint:** conforme.
+
+---
+
+## API02 — Endpoint di lettura (2026-09-01)
+
+Sette endpoint GET di sola lettura. Tutti richiedono `auth:sanctum` e il kill switch `public_api`.
+
+**Endpoint aggiunti:**
+- `GET /api/v1/subscription-plans` — lista piani abbonamento con filtro `active` e paginazione
+- `GET /api/v1/members` — lista tesserati con ricerca testuale, filtro `is_active`, filtro `cert_expiry_before` (richiede `members:medical-read`)
+- `GET /api/v1/members/{id}` — dettaglio tesserato con abbonamento attivo inline
+- `GET /api/v1/members/{id}/subscription` — abbonamento attivo del tesserato (404 se assente)
+- `GET /api/v1/access-logs` — registro accessi con filtri `member_id`, `date_from`, `date_to` (cap 31 giorni)
+- `GET /api/v1/exercises` — catalogo esercizi con filtri `muscle_slug`, `equipment_slug`, `mechanic`, `measurement_type`
+- `GET /api/v1/exercises/{slug}` — dettaglio esercizio (route binding su slug)
+
+**Sicurezza:**
+- `medical_cert_expiry` assente senza ability `members:medical-read`; filtro `cert_expiry_before` → 422 senza l'ability
+- Soft-deleted (Member, Exercise) mai esposti, nessun parametro per mostrarli
+- Abilities middleware `abilities:*` per ogni gruppo di route
+- `api:issue-token` valida la whitelist: `subscription-plans:read`, `members:read`, `members:medical-read`, `access-logs:read`, `exercises:read`, `*`
+
+**File aggiunti:**
+- 7 JsonResource (`app/Http/Resources/Api/V1/`)
+- 4 FormRequest (`app/Http/Requests/Api/V1/`)
+- 5 controller (`app/Http/Controllers/Api/V1/`)
+- `docs/api/03-endpoints.md` — reference completo endpoint API02
+
+**Test:** 38 nuovi test (kill switch × 4, 401 × 4, 403 × 4, filtri, paginazione, N+1, medical conditional, soft-delete guard, whitelist command).
+
+**Fix PHPStan post-release:** 12 errori a zero. `AccessLog`, `Subscription`, `Muscle` mancavano di `@property` per i campi castati a `Carbon` e per `ExerciseMuscle $pivot`; `AccessLogResource`, `MemberDetailResource`, `SubscriptionResource` usavano `?->` su campi non-nullable. PHPStan livello 6: 0 errori.
+
+---
+
+## API01 — Foundation superficie API HTTP JSON (2026-09-01)
+
+Infrastruttura completa per la superficie API v1. Nessun endpoint di dominio in questa release.
+
+**Dipendenze:**
+- `laravel/sanctum:^4.0` aggiunto a `composer.json`; migration `personal_access_tokens` pubblicata.
+
+**Migrations:**
+- `personal_access_tokens` (Sanctum)
+- `is_service_account boolean default false` su `users`
+
+**Flag:** `public_api` (Sistema, chiave `public_api_enabled`, default OFF) — kill switch per tutta la superficie API.
+
+**Auth:** Sanctum personal access token. Un account di servizio dedicato per consumer, ruolo `api_client` senza permessi web. Abilities in namespace separato dai gate web.
+
+**Endpoint:**
+- `GET /api/v1/ping` — health check, esente da auth e kill switch
+- `GET /api/v1/me` — identità consumer (id, name, email, is_service_account, roles, abilities)
+
+**Formato errori uniforme:** tutte le risposte di errore hanno `message` + `code` stabile; `errors` solo per 422. `ModelNotFoundException` su `api/*` → 404 JSON (mai "Server Error").
+
+**Rate limiting:** Redis, 60 req/min per token, 10 req/min per IP anonimo. Configurabile via `config/api.php`.
+
+**Comandi artisan:** `api:create-service-account`, `api:issue-token`, `api:tokens` (lista + revoca).
+
+**Sicurezza:**
+- Account di servizio bloccati dal login web (`LoginForm::authenticate` → logout + errore generico se `is_service_account=true`).
+- Gate `view-training-reports` riscritto in positivo (`hasAnyRole(['gestore','trainer'])`): prima `!hasRole('receptionist')` permetteva a utenti senza ruoli di passare.
+
+**Documentazione:** `docs/api/00-assessment.md`, `docs/api/01-piano-release.md` (rinumerato API01-API05), `docs/api/02-convenzioni.md`.
+
+**Suite:** 523 test (517 pass / 6 skipped). PHPStan: 0 errori. Pint: conforme.
+
+---
+
 ## v1.2.4 — Tag di allineamento post-SET01 (2026-08-30)
 
 - `ArtisanRunner`: pagina comandi Artisan per il gestore (`/backoffice/settings/artisan`). Whitelist comandi sicuri, output live via `Process`, log in sessione, accesso solo gestore.

@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Exceptions\BookingException;
 use App\Jobs\NotifyWaitlistPromotion;
 use App\Models\ClassBooking;
 use App\Models\ClassOccurrence;
@@ -17,18 +16,34 @@ class ClassBookingService
      * Iscrive un membro a un'occorrenza di corso collettivo.
      * Se l'occorrenza è piena, lo mette in waitlist con posizione progressiva.
      *
-     * @throws BookingException Se prerequisiti non soddisfatti, già iscritto o orario sovrapposto.
+     * Restituisce EnrollResult: succeeded()=true con il booking, oppure failure enum.
      */
-    public function enroll(ClassOccurrence $occurrence, Member $member): ClassBooking
+    public function enroll(ClassOccurrence $occurrence, Member $member): EnrollResult
     {
-        // Prerequisito 1: abbonamento attivo
-        if (! $member->activeSubscription()->exists()) {
-            throw new BookingException('Nessun abbonamento attivo.');
+        if ($occurrence->status !== 'planned') {
+            return new EnrollResult(booking: null, failure: EnrollFailure::OccurrenceNotEnrollable);
         }
 
-        // Prerequisito 2: certificato medico valido
+        $occurrenceStart = Carbon::parse(
+            $occurrence->date->toDateString().' '.substr($occurrence->start_time, 0, 8)
+        );
+        $opensAt = $occurrenceStart->copy()->subDays((int) config('classes.booking_opens_days', 7));
+        $closesAt = $occurrenceStart->copy()->subMinutes((int) config('classes.booking_closes_minutes', 30));
+
+        if (now()->lt($opensAt)) {
+            return new EnrollResult(booking: null, failure: EnrollFailure::NotOpenYet);
+        }
+
+        if (now()->gt($closesAt)) {
+            return new EnrollResult(booking: null, failure: EnrollFailure::BookingClosed);
+        }
+
+        if (! $member->activeSubscription()->exists()) {
+            return new EnrollResult(booking: null, failure: EnrollFailure::NoSubscription);
+        }
+
         if (! $member->has_medical_cert_valid) {
-            throw new BookingException('Certificato medico scaduto o assente.');
+            return new EnrollResult(booking: null, failure: EnrollFailure::NoCert);
         }
 
         $alreadyEnrolled = ClassBooking::where('class_occurrence_id', $occurrence->id)
@@ -37,12 +52,9 @@ class ClassBookingService
             ->exists();
 
         if ($alreadyEnrolled) {
-            throw new BookingException(
-                "Il membro è già iscritto o in lista d'attesa per questo corso."
-            );
+            return new EnrollResult(booking: null, failure: EnrollFailure::AlreadyEnrolled);
         }
 
-        // Overlap: membro già confermato in un corso sovrapposto lo stesso giorno
         $athleteOverlap = ClassBooking::where('member_id', $member->id)
             ->where('status', 'confirmed')
             ->whereHas('occurrence', function ($q) use ($occurrence) {
@@ -53,22 +65,21 @@ class ClassBookingService
             ->exists();
 
         if ($athleteOverlap) {
-            throw new BookingException('Hai già un corso confermato in questo orario.');
+            return new EnrollResult(booking: null, failure: EnrollFailure::AthleteOverlap);
         }
 
-        // Overlap: membro ha una sessione PT confermata nello stesso orario
         $ptOverlap = PtBooking::where('member_id', $member->id)
             ->where('status', 'confirmed')
-            ->where('booked_date', $occurrence->date->toDateString())
+            ->whereDate('booked_date', $occurrence->date->toDateString())
             ->where('start_time', '<', $occurrence->end_time)
             ->where('end_time', '>', $occurrence->start_time)
             ->exists();
 
         if ($ptOverlap) {
-            throw new BookingException('Hai già una sessione PT confermata in questo orario.');
+            return new EnrollResult(booking: null, failure: EnrollFailure::PtOverlap);
         }
 
-        return DB::transaction(function () use ($occurrence, $member) {
+        $booking = DB::transaction(function () use ($occurrence, $member): ClassBooking {
             $fresh = ClassOccurrence::lockForUpdate()->find($occurrence->id);
 
             $existing = ClassBooking::where('class_occurrence_id', $occurrence->id)
@@ -107,18 +118,36 @@ class ClassBookingService
                 'position' => $nextPosition,
             ]);
         });
+
+        return new EnrollResult(booking: $booking, failure: null);
     }
 
     /**
      * Cancella l'iscrizione di un membro a un corso.
-     * $byGym=true: cancellazione da staff (status = cancelled_by_gym, nessuna restrizione di finestra).
-     * $byGym=false (default): cancellazione atleta (status = cancelled_by_athlete).
-     * La verifica della finestra di cancellazione gratuita è responsabilità del chiamante (Livewire).
+     * $byGym=true: cancellazione da staff (nessun check deadline).
+     * $byGym=false (default): cancellazione atleta, verifica deadline free_cancel_hours.
+     * Restituisce null in caso di successo, CancelFailure in caso di fallimento.
      * Se era confermata e l'occorrenza è in futuro, promuove automaticamente il primo in waitlist.
      */
-    public function cancel(ClassBooking $booking, bool $byGym = false): void
+    public function cancel(ClassBooking $booking, bool $byGym = false): ?CancelFailure
     {
-        DB::transaction(function () use ($booking, $byGym) {
+        if (! in_array($booking->status, ['confirmed', 'waitlisted'], true)) {
+            return CancelFailure::NotCancellable;
+        }
+
+        if (! $byGym) {
+            $occurrence = $booking->occurrence;
+            $occurrenceStart = Carbon::parse(
+                $occurrence->date->toDateString().' '.substr($occurrence->start_time, 0, 8)
+            );
+            $freeCancelUntil = $occurrenceStart->copy()->subHours((int) config('classes.free_cancel_hours', 3));
+
+            if (now()->gt($freeCancelUntil)) {
+                return CancelFailure::DeadlineExceeded;
+            }
+        }
+
+        DB::transaction(function () use ($booking, $byGym): void {
             $wasConfirmed = $booking->status === 'confirmed';
 
             $booking->update(['status' => $byGym ? 'cancelled_by_gym' : 'cancelled_by_athlete']);
@@ -134,6 +163,8 @@ class ClassBookingService
                 }
             }
         });
+
+        return null;
     }
 
     private function promoteFirstWaitlisted(ClassOccurrence $occurrence): void

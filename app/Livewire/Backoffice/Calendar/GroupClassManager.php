@@ -209,6 +209,7 @@ class GroupClassManager extends Component
         abort_unless(Auth::user()->hasAnyRole(['gestore', 'trainer', 'receptionist']), 403);
 
         $booking = ClassBooking::findOrFail($bookingId);
+        // byGym=true: nessun check deadline; NotCancellable non raggiungibile dalla UI (solo confirmed/waitlisted visibili)
         app(ClassBookingService::class)->cancel($booking, byGym: true);
         session()->flash('success', 'Partecipante rimosso.');
     }

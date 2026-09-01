@@ -1,0 +1,1147 @@
+openapi: 3.0.3
+
+info:
+  title: Iron Gym API
+  description: |
+    API HTTP JSON per integrazioni esterne (totem check-in, app partner, ecc.).
+    Autenticazione: Sanctum personal access token via `Authorization: Bearer <token>`.
+    Tutti gli endpoint (eccetto `/ping`) sono soggetti al kill switch `public_api`.
+  version: "1.0"
+
+servers:
+  - url: /api/v1
+    description: Istanza corrente
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: Sistema
+    description: Health check e identità token
+  - name: Abbonamenti
+    description: Piani abbonamento
+  - name: Tesserati
+    description: Anagrafica e abbonamenti attivi
+  - name: Accessi
+    description: Registro ingressi e check-in
+  - name: Esercizi
+    description: Catalogo esercizi
+  - name: Corsi collettivi
+    description: Corsi e occorrenze (richiede flag group_classes)
+  - name: Prenotazioni corsi
+    description: Iscrizioni a occorrenze (richiede flag group_classes)
+
+components:
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      description: Token Sanctum emesso con `php artisan api:issue-token`
+
+  schemas:
+
+    Error:
+      type: object
+      required: [message, code]
+      properties:
+        message:
+          type: string
+          example: Risorsa non trovata.
+        code:
+          type: string
+          example: not_found
+
+    ValidationError:
+      allOf:
+        - $ref: '#/components/schemas/Error'
+        - type: object
+          properties:
+            errors:
+              type: object
+              additionalProperties:
+                type: array
+                items:
+                  type: string
+              example:
+                member_id: ["Il campo member id è obbligatorio."]
+
+    PaginationMeta:
+      type: object
+      properties:
+        current_page:
+          type: integer
+        last_page:
+          type: integer
+        per_page:
+          type: integer
+        total:
+          type: integer
+        from:
+          type: integer
+          nullable: true
+        to:
+          type: integer
+          nullable: true
+
+    PaginationLinks:
+      type: object
+      properties:
+        first:
+          type: string
+          nullable: true
+        last:
+          type: string
+          nullable: true
+        prev:
+          type: string
+          nullable: true
+        next:
+          type: string
+          nullable: true
+
+    SubscriptionPlan:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Mensile
+        description:
+          type: string
+          nullable: true
+        price_cents:
+          type: integer
+          example: 5000
+        duration_days:
+          type: integer
+          nullable: true
+          example: 30
+        max_accesses:
+          type: integer
+          nullable: true
+        is_active:
+          type: boolean
+
+    Member:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 42
+        first_name:
+          type: string
+          example: Mario
+        last_name:
+          type: string
+          example: Rossi
+        email:
+          type: string
+          example: mario.rossi@example.com
+        phone:
+          type: string
+          nullable: true
+        is_active:
+          type: boolean
+        medical_cert_valid:
+          type: boolean
+        medical_cert_expiry:
+          type: string
+          format: date
+          nullable: true
+          description: "Presente solo con ability members:medical-read"
+
+    MemberDetail:
+      allOf:
+        - $ref: '#/components/schemas/Member'
+        - type: object
+          properties:
+            active_subscription:
+              nullable: true
+              allOf:
+                - $ref: '#/components/schemas/SubscriptionSummary'
+
+    SubscriptionSummary:
+      type: object
+      properties:
+        plan_id:
+          type: integer
+        plan_name:
+          type: string
+        status:
+          type: string
+          enum: [active, expired, suspended]
+        started_at:
+          type: string
+          format: date
+        expires_at:
+          type: string
+          format: date
+
+    Subscription:
+      type: object
+      properties:
+        id:
+          type: integer
+        plan_id:
+          type: integer
+        plan_name:
+          type: string
+        status:
+          type: string
+          enum: [active, expired, suspended]
+        started_at:
+          type: string
+          format: date
+        expires_at:
+          type: string
+          format: date
+        accesses_used:
+          type: integer
+        accesses_remaining:
+          type: integer
+          nullable: true
+          description: null per abbonamenti illimitati
+        notes:
+          type: string
+          nullable: true
+
+    AccessLog:
+      type: object
+      properties:
+        id:
+          type: integer
+        member_id:
+          type: integer
+        member_name:
+          type: string
+        subscription_id:
+          type: integer
+          nullable: true
+        checked_in_at:
+          type: string
+          format: date-time
+          example: "2026-09-01T09:30:00Z"
+        note:
+          type: string
+          nullable: true
+
+    Exercise:
+      type: object
+      properties:
+        id:
+          type: integer
+        slug:
+          type: string
+          example: squat
+        name:
+          type: string
+          example: Squat
+        measurement_type:
+          type: string
+          enum: [reps_weight, reps_only, time, time_weight, isometric_hold]
+        mechanic:
+          type: string
+          enum: [compound, isolation]
+        skill_level:
+          type: string
+          example: beginner
+        pattern:
+          nullable: true
+          type: object
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+            category:
+              type: string
+              enum: [compound_pattern, joint_action]
+        primary_muscles:
+          type: array
+          items:
+            type: object
+            properties:
+              slug:
+                type: string
+              name:
+                type: string
+              contribution_pct:
+                type: integer
+
+    ExerciseDetail:
+      allOf:
+        - $ref: '#/components/schemas/Exercise'
+        - type: object
+          properties:
+            description:
+              type: string
+              nullable: true
+            execution_description:
+              type: string
+              nullable: true
+            video_url:
+              type: string
+              nullable: true
+            thumbnail_url:
+              type: string
+              nullable: true
+            muscles:
+              type: array
+              items:
+                type: object
+                properties:
+                  slug:
+                    type: string
+                  name:
+                    type: string
+                  role:
+                    type: string
+                    enum: [primary, secondary, stabilizer]
+                  contribution_pct:
+                    type: integer
+            equipment:
+              type: array
+              items:
+                type: object
+                properties:
+                  slug:
+                    type: string
+                  name:
+                    type: string
+
+    GroupClass:
+      type: object
+      properties:
+        id:
+          type: integer
+        slug:
+          type: string
+          example: yoga
+        name:
+          type: string
+          example: Yoga
+        description:
+          type: string
+          nullable: true
+        duration_minutes:
+          type: integer
+          example: 60
+        default_capacity:
+          type: integer
+          example: 20
+        room:
+          type: string
+          nullable: true
+        color:
+          type: string
+          nullable: true
+          example: "#A8D8A8"
+        is_active:
+          type: boolean
+
+    ClassOccurrence:
+      type: object
+      properties:
+        id:
+          type: integer
+        group_class_id:
+          type: integer
+        group_class_name:
+          type: string
+        date:
+          type: string
+          format: date
+        start_time:
+          type: string
+          example: "10:00"
+        end_time:
+          type: string
+          example: "11:00"
+        capacity:
+          type: integer
+        available_spots:
+          type: integer
+        status:
+          type: string
+          enum: [planned, cancelled, completed]
+        trainer_id:
+          type: integer
+          nullable: true
+        trainer_name:
+          type: string
+          nullable: true
+
+    ClassBooking:
+      type: object
+      properties:
+        id:
+          type: integer
+        class_occurrence_id:
+          type: integer
+        member_id:
+          type: integer
+        member_name:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [confirmed, waitlisted, cancelled_by_athlete, cancelled_by_gym, no_show]
+        position:
+          type: integer
+          nullable: true
+          description: Posizione in waitlist; null se confirmed
+        attended_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+  responses:
+
+    Unauthenticated:
+      description: Token assente, scaduto o revocato
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Non autenticato.
+            code: unauthenticated
+
+    Forbidden:
+      description: Ability mancante sul token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Accesso negato.
+            code: forbidden
+
+    NotFound:
+      description: Risorsa non trovata
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Risorsa non trovata.
+            code: not_found
+
+    ValidationError:
+      description: Validazione fallita
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationError'
+          example:
+            message: Dati non validi.
+            code: validation_failed
+            errors:
+              member_id: ["Il campo member id è obbligatorio."]
+
+    ApiDisabled:
+      description: Kill switch public_api spento
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: API non disponibile.
+            code: api_disabled
+
+    ModuleOrApiDisabled:
+      description: Kill switch API spento oppure flag modulo spento
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            api_disabled:
+              value:
+                message: API non disponibile.
+                code: api_disabled
+            module_disabled:
+              value:
+                message: Il modulo corsi collettivi non è attivo.
+                code: module_disabled
+
+paths:
+
+  /ping:
+    get:
+      summary: Health check
+      description: Non autenticato. Esente dal kill switch public_api.
+      tags: [Sistema]
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pong:
+                    type: boolean
+                    example: true
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /me:
+    get:
+      summary: Identità token corrente
+      tags: [Sistema]
+      responses:
+        '200':
+          description: Account di servizio e abilities del token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  email:
+                    type: string
+                  name:
+                    type: string
+                  abilities:
+                    type: array
+                    items:
+                      type: string
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '503':
+          $ref: '#/components/responses/ApiDisabled'
+
+  /subscription-plans:
+    get:
+      summary: Lista piani abbonamento
+      tags: [Abbonamenti]
+      parameters:
+        - name: active
+          in: query
+          schema:
+            type: boolean
+          description: Filtra per is_active
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 25
+      responses:
+        '200':
+          description: Lista paginata
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SubscriptionPlan'
+                  links:
+                    $ref: '#/components/schemas/PaginationLinks'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '503':
+          $ref: '#/components/responses/ApiDisabled'
+
+  /members:
+    get:
+      summary: Lista tesserati
+      tags: [Tesserati]
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+            maxLength: 100
+          description: Ricerca su cognome, nome, email
+        - name: is_active
+          in: query
+          schema:
+            type: boolean
+        - name: cert_expiry_before
+          in: query
+          schema:
+            type: string
+            format: date
+          description: "Richiede anche ability members:medical-read"
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 25
+      responses:
+        '200':
+          description: Lista paginata. medical_cert_expiry incluso solo con members:medical-read
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Member'
+                  links:
+                    $ref: '#/components/schemas/PaginationLinks'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '503':
+          $ref: '#/components/responses/ApiDisabled'
+
+  /members/{id}:
+    get:
+      summary: Dettaglio tesserato
+      tags: [Tesserati]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Tesserato con abbonamento attivo inline
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemberDetail'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '503':
+          $ref: '#/components/responses/ApiDisabled'
+
+  /members/{id}/subscription:
+    get:
+      summary: Abbonamento attivo del tesserato
+      description: Restituisce 404 se nessun abbonamento attivo.
+      tags: [Tesserati]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Abbonamento attivo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '503':
+          $ref: '#/components/responses/ApiDisabled'
+
+  /access-logs:
+    get:
+      summary: Lista accessi
+      tags: [Accessi]
+      parameters:
+        - name: member_id
+          in: query
+          schema:
+            type: integer
+        - name: date_from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: date_to
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Max 31 giorni da date_from
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 25
+      responses:
+        '200':
+          description: Lista paginata
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AccessLog'
+                  links:
+                    $ref: '#/components/schemas/PaginationLinks'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '503':
+          $ref: '#/components/responses/ApiDisabled'
+
+    post:
+      summary: Registra accesso (check-in totem)
+      description: |
+        Idempotente: se il membro ha già un accesso entro la finestra configurata
+        (default 5 min) restituisce 200 con il log esistente senza creare un duplicato.
+      tags: [Accessi]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [member_id]
+              properties:
+                member_id:
+                  type: integer
+                  example: 42
+                note:
+                  type: string
+                  maxLength: 255
+      responses:
+        '201':
+          description: Accesso registrato
+          headers:
+            Location:
+              schema:
+                type: string
+              description: /api/v1/access-logs/{id}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/AccessLog'
+        '200':
+          description: Duplicato entro finestra idempotenza
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/AccessLog'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          description: Fallimento di dominio
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                cert_invalid:
+                  value:
+                    message: Certificato medico scaduto o mancante.
+                    code: cert_invalid
+                subscription_inactive:
+                  value:
+                    message: Nessun abbonamento attivo.
+                    code: subscription_inactive
+                accesses_exhausted:
+                  value:
+                    message: Accessi residui esauriti.
+                    code: accesses_exhausted
+        '503':
+          $ref: '#/components/responses/ApiDisabled'
+
+  /exercises:
+    get:
+      summary: Catalogo esercizi
+      tags: [Esercizi]
+      parameters:
+        - name: muscle_slug
+          in: query
+          schema:
+            type: string
+          example: quadriceps
+        - name: equipment_slug
+          in: query
+          schema:
+            type: string
+          example: barbell
+        - name: measurement_type
+          in: query
+          schema:
+            type: string
+            enum: [reps_weight, reps_only, time, time_weight, isometric_hold]
+        - name: mechanic
+          in: query
+          schema:
+            type: string
+            enum: [compound, isolation]
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 25
+      responses:
+        '200':
+          description: Lista paginata
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Exercise'
+                  links:
+                    $ref: '#/components/schemas/PaginationLinks'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '503':
+          $ref: '#/components/responses/ApiDisabled'
+
+  /exercises/{slug}:
+    get:
+      summary: Dettaglio esercizio
+      tags: [Esercizi]
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          example: squat
+      responses:
+        '200':
+          description: Esercizio con muscoli completi e attrezzatura
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExerciseDetail'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '503':
+          $ref: '#/components/responses/ApiDisabled'
+
+  /group-classes:
+    get:
+      summary: Definizioni corsi collettivi attivi
+      tags: [Corsi collettivi]
+      parameters:
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 25
+      responses:
+        '200':
+          description: Lista paginata
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/GroupClass'
+                  links:
+                    $ref: '#/components/schemas/PaginationLinks'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '503':
+          $ref: '#/components/responses/ModuleOrApiDisabled'
+
+  /class-occurrences:
+    get:
+      summary: Occorrenze corsi (future, status planned)
+      tags: [Corsi collettivi]
+      parameters:
+        - name: date_from
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Default oggi
+        - name: date_to
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Max 31 giorni da date_from
+        - name: group_class_id
+          in: query
+          schema:
+            type: integer
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 25
+      responses:
+        '200':
+          description: Lista paginata
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ClassOccurrence'
+                  links:
+                    $ref: '#/components/schemas/PaginationLinks'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '503':
+          $ref: '#/components/responses/ModuleOrApiDisabled'
+
+  /class-bookings:
+    get:
+      summary: Lista prenotazioni corsi
+      tags: [Prenotazioni corsi]
+      parameters:
+        - name: member_id
+          in: query
+          schema:
+            type: integer
+        - name: occurrence_id
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [confirmed, waitlisted, cancelled_by_athlete, cancelled_by_gym, no_show]
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 25
+      responses:
+        '200':
+          description: Lista paginata
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ClassBooking'
+                  links:
+                    $ref: '#/components/schemas/PaginationLinks'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '503':
+          $ref: '#/components/responses/ModuleOrApiDisabled'
+
+    post:
+      summary: Iscrizione a un'occorrenza
+      description: |
+        Iscrive il membro all'occorrenza. Se piena va in waitlist (201).
+        **Idempotente:** se già iscritto (confirmed/waitlisted) restituisce 200.
+      tags: [Prenotazioni corsi]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [member_id, class_occurrence_id]
+              properties:
+                member_id:
+                  type: integer
+                  example: 42
+                class_occurrence_id:
+                  type: integer
+                  example: 55
+      responses:
+        '201':
+          description: Nuova iscrizione creata
+          headers:
+            Location:
+              schema:
+                type: string
+              description: /api/v1/class-bookings/{id}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ClassBooking'
+        '200':
+          description: Membro già iscritto (idempotente)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ClassBooking'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Conflitto di orario
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                athlete_overlap:
+                  value:
+                    message: "L'atleta ha già un corso confermato in questo orario."
+                    code: athlete_overlap
+                pt_overlap:
+                  value:
+                    message: "L'atleta ha già una sessione PT confermata in questo orario."
+                    code: pt_overlap
+        '422':
+          description: Fallimento di dominio
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                booking_not_open:
+                  value:
+                    message: Le prenotazioni non sono ancora aperte.
+                    code: booking_not_open
+                booking_closed:
+                  value:
+                    message: Prenotazioni chiuse.
+                    code: booking_closed
+                occurrence_not_enrollable:
+                  value:
+                    message: "L'occorrenza non è disponibile per prenotazione."
+                    code: occurrence_not_enrollable
+                subscription_inactive:
+                  value:
+                    message: Nessun abbonamento attivo.
+                    code: subscription_inactive
+                cert_invalid:
+                  value:
+                    message: Certificato medico scaduto o mancante.
+                    code: cert_invalid
+        '503':
+          $ref: '#/components/responses/ModuleOrApiDisabled'
+
+  /class-bookings/{booking}:
+    delete:
+      summary: Cancella prenotazione (atleta)
+      description: |
+        Cancellazione con verifica deadline gratuita (`free_cancel_hours`).
+        Se la prenotazione era `confirmed` e il corso è futuro, promuove automaticamente
+        il primo membro in waitlist.
+      tags: [Prenotazioni corsi]
+      parameters:
+        - name: booking
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID della prenotazione
+      responses:
+        '204':
+          description: Cancellazione eseguita
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Impossibile cancellare
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                cancel_deadline_exceeded:
+                  value:
+                    message: Cancellazione non disponibile oltre la deadline gratuita.
+                    code: cancel_deadline_exceeded
+                booking_not_cancellable:
+                  value:
+                    message: La prenotazione non è in uno stato cancellabile.
+                    code: booking_not_cancellable
+        '503':
+          $ref: '#/components/responses/ModuleOrApiDisabled'

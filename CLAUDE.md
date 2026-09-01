@@ -9,7 +9,7 @@ Gestionale palestra bodybuilding/fitness. Copre: anagrafica tesserati, abbonamen
 - **App atleta:** stesse tecnologie, layout dedicato su prefisso /athlete
 - **Database:** MySQL 8.0 (database: `iron_gym`)
 - **Cache / code:** Redis 7
-- **Auth:** Laravel Breeze (stack Livewire)
+- **Auth:** Laravel Breeze (stack Livewire); API: Sanctum personal access token
 - **Permissions:** spatie/laravel-permission
 - **Static analysis:** Larastan livello 6
 - **Code style:** Laravel Pint
@@ -219,7 +219,7 @@ Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01
 
 **FIX01** (2026-08-26): flag globale `group_classes` spostato su tabella `settings` (`activateForEveryone` non copriva gli utenti mai risolti, il toggle da backoffice era inefficace); guard `role:gestore` + whitelist in `FeatureFlagManager`; fix colonna `status` ambigua in `Athlete\Dashboard`; `MesocycleList` filtrata per trainer e ownership check in `MesocycleDetail::applyProgression/forceDeload`; `GroupClassSeeder` registrato in `DatabaseSeeder`; comando `classes:send-reminders`; alias `/athlete/dashboard`; link "Volume landmarks" in AthleteProfile; dati demo: PT pending per `atleta@atleta.atleta`, abbonamento+certificato scaduti per `alessia.colombo@example.com`, badge "In attesa" in dashboard atleta. 16 nuovi test.
 
-**Suite corrente:** 495 test (489 pass / 6 skipped). **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
+**Suite corrente:** 630 test (624 pass / 6 skipped). **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
 
 **DOC02** (2026-08-27): assessment funzionale R09+ (`docs/reviews/r09-plus-test-assessment.md`), piano di test manuale 109 casi (`docs/testing/r09-plus-functional-test-plan.md`), `FunctionalTestSeeder` con 5 scenari demo (corsi collettivi + waitlist, notifiche, check-in ingressi esauriti, abbonamento in scadenza, orari apertura). Findings documentati: F-01/F-02/F-04 risolti in FIX02.
 
@@ -246,7 +246,17 @@ Storico completo release e audit: **`CHANGELOG.md`**.
 **v1.2.4** (2026-08-30): tag di allineamento post-SET01. `ArtisanRunner` — pagina comandi Artisan per il gestore (`/backoffice/settings/artisan`). develop allineato a master.
 **v1.2.4+** (2026-08-31): fix Pint `ordered_imports` + `fully_qualified_strict_types` in `routes/backoffice.php` (CI ripristinata).
 
-Prossima attività: da definire.
+**API01** (2026-09-01): foundation superficie API HTTP JSON. Sanctum v4, migration `personal_access_tokens` e `is_service_account` su users, flag `public_api` (Sistema, default false), rate limiter Redis (60/min auth, 10/min anon), middleware `EnsureApiEnabled` (kill switch), formato errori uniforme con chiave `code` stabile su tutti gli status, `GET /api/v1/ping` (esente da auth e flag), `GET /api/v1/me`, 3 comandi artisan (`api:create-service-account`, `api:issue-token`, `api:tokens`). Fix gate `view-training-reports` riscritto in positivo. 17 nuovi test. Suite: 523 test (517 pass / 6 skipped). PHPStan 0 errori. Pint conforme.
+
+**API02** (2026-09-01): 7 endpoint di lettura. `GET /api/v1/subscription-plans`, `GET /api/v1/members` (search + is_active + cert_expiry_before con ability guard), `GET /api/v1/members/{id}`, `GET /api/v1/members/{id}/subscription`, `GET /api/v1/access-logs` (filtri member_id + range date con cap 31 gg), `GET /api/v1/exercises` (filtri muscle/equipment/mechanic/measurement_type), `GET /api/v1/exercises/{slug}`. `medical_cert_expiry` assente senza `members:medical-read`. Soft-deleted mai esposti. Ability whitelist in `api:issue-token`. 7 JsonResource, 4 FormRequest, 5 controller, route con middleware `abilities:*`. Test: kill switch × 4 endpoint, 401 × 4, 403 × 4, filtri, paginazione, N+1, medical conditional, soft-delete guard, whitelist command. `docs/api/03-endpoints.md` creato.
+
+**API03** (2026-09-01): 3 endpoint write/module. `POST /api/v1/access-logs` (check-in via totem API): 201+Location su successo, 200 su duplicato entro finestra idempotenza (5 min, configurabile), 422 con `code` stabile per cert/subscription/accesses, 404 per tesserato mancante/soft-deleted. `GET /api/v1/group-classes` e `GET /api/v1/class-occurrences`: gated su flag `group_classes` → 503 `module_disabled`; no N+1 (eager load confirmedBookings). `AccessService` estratto da QuickCheckin e AccessLogList (race condition fissa con `DB::transaction + lockForUpdate`; idempotency window come parametro esplicito). `CheckinResult` readonly class + `CheckinFailure` enum. 25 nuovi test (AccessServiceTest 13, ApiCheckinTest 12 + ApiGroupClassesTest 13). Suite: 593 test (587 pass / 6 skipped). PHPStan livello 6, 0 errori. Pint conforme.
+
+**API04** (2026-09-01): 3 endpoint prenotazioni corsi collettivi. `GET /api/v1/class-bookings` (filtri member_id/occurrence_id/status), `POST /api/v1/class-bookings` (enroll con idempotenza su AlreadyEnrolled → 200; 201 confirmed/waitlisted; 409 overlap atleta/PT; 422 finestra/abbonamento/cert), `DELETE /api/v1/class-bookings/{booking}` (cancel atleta; 204/409 deadline/stato). Fix bug `whereDate()` in `ClassBookingService::enroll()` PT overlap check (SQLite date format). 31 nuovi test. Suite: 624 test (624 pass / 6 skipped). PHPStan livello 6, 0 errori. Pint conforme.
+
+**DOC03** (2026-09-01): Swagger UI + spec OpenAPI 3.0.3. `docs/api/openapi.yaml` (15 endpoint, tutti gli schema/response come component riutilizzabili, esempi errori). `GET /backoffice/settings/api-docs` gated `can:access-admin-section` — Swagger UI CDN standalone con topbar Iron Gym. `GET /backoffice/settings/api-docs/openapi.yaml` — download/import Insomnia. Try-it-out disabilitato (solo Bearer token). Pint conforme.
+
+Prossima attività: API05 (abbonamenti write) o altra feature su richiesta.
 
 ## Architettura offline
 
@@ -320,6 +330,7 @@ Toggle sempre via `Setting::write` + `Feature::purge` (non `activateForEveryone`
 | `push_notifications` | `push_notifications_enabled` | OFF | Atleti e trainer | Sistema |
 | `outbound_notifications` | `outbound_notifications_enabled` | ON | Tutta la palestra (flag globale) | Sistema |
 | `in_app_feedback` | `in_app_feedback_enabled` | OFF | Tutti | Sistema |
+| `public_api` | `public_api_enabled` | OFF | Account di servizio (api_client) | Sistema |
 
 Per modificare flags: backoffice → Impostazioni → Funzioni (solo gestore).
 
@@ -433,6 +444,79 @@ Layer CSS isolato e disattivabile sopra AdminLTE 3.x — nessun fork del tema.
 - Non aggiungere colonne o tabelle senza discuterne prima.
 - Non usare emoji nel codice o nei commenti.
 - Non creare model Eloquent chiamati `Workout` o `WorkoutExercise`. `app/Livewire/Athlete/WorkoutSession.php` è un componente Livewire per il logging live della sessione, non un Model Eloquent: il nome simile non viola questo divieto.
+
+## Superficie API HTTP JSON
+
+Prefisso: `/api/v1`. Auth: Sanctum personal access token (`Authorization: Bearer <token>`).  
+Documentazione: `docs/api/` (assessment, piano release, convenzioni, `openapi.yaml`).  
+Swagger UI interattivo: `/backoffice/settings/api-docs` (solo gestore). Download YAML: `/backoffice/settings/api-docs/openapi.yaml`.
+
+**Kill switch:** flag `public_api` in `config/features.php`, chiave settings `public_api_enabled`, default `false`.  
+Spento → tutte le route `/api/v1/*` rispondono 503 JSON tranne `/ping`.
+
+**Account di servizio:** `is_service_account = true` su `users`, ruolo `api_client` senza permessi.  
+Non possono autenticarsi via browser (blocco in `LoginForm::authenticate()`).  
+Non compaiono nelle liste `User::role('atleta')`, `User::role('trainer')` ecc.
+
+**Abilities token:** namespace separato dai gate web (es. `members:read`, `access-logs:write`).  
+Mai delegare ai gate role-based dall'API.
+
+**Formato errori:** tutte le risposte di errore hanno `message` + `code` (stabile).  
+`errors` aggiunto solo per 422. Nessuno stack trace in produzione.
+
+| Code | HTTP | Causa |
+|---|---|---|
+| `unauthenticated` | 401 | Token assente/revocato |
+| `forbidden` | 403 | Ability mancante |
+| `not_found` | 404 | Risorsa inesistente (mai "Server Error") |
+| `validation_failed` | 422 | Payload non valido |
+| `rate_limited` | 429 | Rate limit superato |
+| `cert_invalid` | 422 | Cert. medico scaduto/mancante (check-in) |
+| `subscription_inactive` | 422 | Nessun abbonamento attivo (check-in) |
+| `accesses_exhausted` | 422 | Accessi residui esauriti (check-in) |
+| `api_disabled` | 503 | Kill switch spento |
+| `module_disabled` | 503 | Flag di modulo spento (es. `group_classes`) |
+
+**Comandi artisan:**
+
+```bash
+# Crea account di servizio per un consumer (idempotente)
+php artisan api:create-service-account <consumer-slug>
+
+# Emette token con abilities specifiche (plain text stampato una volta)
+php artisan api:issue-token <consumer-slug> --name="<desc>" --abilities="members:read"
+
+# Elenca token attivi; revoca singolo token
+php artisan api:tokens
+php artisan api:tokens --consumer=<slug>
+php artisan api:tokens --revoke=<token-id>
+```
+
+**Rate limiting:** Redis, 60 req/min per token (autenticato) o 10 req/min per IP (anonimo).  
+Configurabile via `config/api.php` o env `API_RATE_LIMIT_AUTH` / `API_RATE_LIMIT_ANON`.
+
+**Endpoint disponibili (API01 + API02 + API03 + API04):**
+
+| Metodo | Path | Auth | Ability | Kill switch |
+|---|---|---|---|---|
+| GET | /api/v1/ping | No | — | Esente |
+| GET | /api/v1/me | Bearer | — | Sì |
+| GET | /api/v1/subscription-plans | Bearer | `subscription-plans:read` | Sì |
+| GET | /api/v1/members | Bearer | `members:read` | Sì |
+| GET | /api/v1/members/{id} | Bearer | `members:read` | Sì |
+| GET | /api/v1/members/{id}/subscription | Bearer | `members:read` | Sì |
+| GET | /api/v1/access-logs | Bearer | `access-logs:read` | Sì |
+| POST | /api/v1/access-logs | Bearer | `access-logs:write` | Sì |
+| GET | /api/v1/exercises | Bearer | `exercises:read` | Sì |
+| GET | /api/v1/exercises/{slug} | Bearer | `exercises:read` | Sì |
+| GET | /api/v1/group-classes | Bearer | `group-classes:read` | Sì + `group_classes` |
+| GET | /api/v1/class-occurrences | Bearer | `group-classes:read` | Sì + `group_classes` |
+| GET | /api/v1/class-bookings | Bearer | `class-bookings:read` | Sì + `group_classes` |
+| POST | /api/v1/class-bookings | Bearer | `class-bookings:write` | Sì + `group_classes` |
+| DELETE | /api/v1/class-bookings/{booking} | Bearer | `class-bookings:write` | Sì + `group_classes` |
+
+**Abilities whitelist** (`api:issue-token`): `subscription-plans:read`, `members:read`, `members:medical-read`, `access-logs:read`, `access-logs:write`, `exercises:read`, `group-classes:read`, `class-bookings:read`, `class-bookings:write`, `*` (test/staging only).  
+Riferimento completo: `docs/api/03-endpoints.md`.
 
 ## Comandi utili
 

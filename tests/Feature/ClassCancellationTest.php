@@ -47,7 +47,7 @@ beforeEach(function () {
     ]);
 
     $svc = app(ClassBookingService::class);
-    $this->booking = $svc->enroll($this->occurrence, $this->member);
+    $this->booking = $svc->enroll($this->occurrence, $this->member)->booking;
 });
 
 // -------------------------------------------------------------------------
@@ -124,7 +124,7 @@ it('NotifyClassCancellation salta prenotazioni in waitlist', function () {
     ]);
 
     // Secondo enroll → waitlist
-    $waitlistBooking = app(ClassBookingService::class)->enroll($this->occurrence, $member2);
+    $waitlistBooking = app(ClassBookingService::class)->enroll($this->occurrence, $member2)->booking;
     expect($waitlistBooking->status)->toBe('waitlisted');
 
     $job = new NotifyClassCancellation($this->occurrence);

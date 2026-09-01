@@ -10,7 +10,9 @@ use App\Models\Mesocycle;
 use App\Models\PtBooking;
 use App\Models\TrainerAvailability;
 use App\Models\User;
+use App\Services\CancelFailure;
 use App\Services\ClassBookingService;
+use App\Services\EnrollFailure;
 use App\Services\PtBookingService;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -189,38 +191,33 @@ class Booking extends Component
 
         $occurrence = ClassOccurrence::findOrFail($occurrenceId);
 
-        // Finestra di prenotazione
-        $occurrenceStart = Carbon::parse($occurrence->date->toDateString().' '.substr($occurrence->start_time, 0, 8));
-        $opensAt = $occurrenceStart->copy()->subDays((int) config('classes.booking_opens_days', 7));
-        $closesAt = $occurrenceStart->copy()->subMinutes((int) config('classes.booking_closes_minutes', 30));
+        $result = app(ClassBookingService::class)->enroll($occurrence, $member);
 
-        if (now()->lt($opensAt)) {
-            $this->enrollErrorId = $occurrenceId;
-            $this->enrollErrorMsg = 'Le prenotazioni aprono il '.$opensAt->format('d/m/Y').'.';
-
-            return;
-        }
-
-        if (now()->gt($closesAt)) {
-            $this->enrollErrorId = $occurrenceId;
-            $this->enrollErrorMsg = 'Prenotazioni chiuse (entro '.
-                config('classes.booking_closes_minutes', 30)." min dall'inizio).";
-
-            return;
-        }
-
-        try {
-            $booking = app(ClassBookingService::class)->enroll($occurrence, $member);
-
-            $message = $booking->status === 'confirmed'
+        if ($result->succeeded()) {
+            $message = $result->booking->status === 'confirmed'
                 ? 'Iscrizione confermata!'
-                : "Sei in lista d'attesa (posizione {$booking->position}).";
+                : "Sei in lista d'attesa (posizione {$result->booking->position}).";
 
             session()->flash('success', $message);
-        } catch (BookingException $e) {
-            $this->enrollErrorId = $occurrenceId;
-            $this->enrollErrorMsg = $e->getMessage();
+
+            return;
         }
+
+        $occurrenceStart = Carbon::parse($occurrence->date->toDateString().' '.substr($occurrence->start_time, 0, 8));
+        $opensAt = $occurrenceStart->copy()->subDays((int) config('classes.booking_opens_days', 7));
+
+        $this->enrollErrorId = $occurrenceId;
+        $this->enrollErrorMsg = match ($result->failure) {
+            EnrollFailure::NotOpenYet => 'Le prenotazioni aprono il '.$opensAt->format('d/m/Y').'.',
+            EnrollFailure::BookingClosed => 'Prenotazioni chiuse (entro '.config('classes.booking_closes_minutes', 30)." min dall'inizio).",
+            EnrollFailure::OccurrenceNotEnrollable => 'Questo corso non è più disponibile per la prenotazione.',
+            EnrollFailure::NoSubscription => 'Nessun abbonamento attivo.',
+            EnrollFailure::NoCert => 'Certificato medico scaduto o assente.',
+            EnrollFailure::AlreadyEnrolled => "Il membro è già iscritto o in lista d'attesa per questo corso.",
+            EnrollFailure::AthleteOverlap => 'Hai già un corso confermato in questo orario.',
+            EnrollFailure::PtOverlap => 'Hai già una sessione PT confermata in questo orario.',
+            null => throw new \LogicException('EnrollResult senza failure né successo.'),
+        };
     }
 
     public function cancelClassBooking(int $bookingId): void
@@ -240,19 +237,18 @@ class Booking extends Component
             ->where('member_id', $member->id)
             ->firstOrFail();
 
-        $occurrence = $booking->occurrence;
-        $occurrenceStart = Carbon::parse($occurrence->date->toDateString().' '.substr($occurrence->start_time, 0, 8));
-        $freeCancelUntil = $occurrenceStart->copy()->subHours((int) config('classes.free_cancel_hours', 3));
+        $failure = app(ClassBookingService::class)->cancel($booking);
 
-        if (now()->gt($freeCancelUntil)) {
-            session()->flash('error', 'Cancellazione non disponibile (entro '.
-                config('classes.free_cancel_hours', 3).' ore dall\'inizio).');
+        if ($failure === null) {
+            session()->flash('success', 'Iscrizione annullata.');
 
             return;
         }
 
-        app(ClassBookingService::class)->cancel($booking);
-        session()->flash('success', 'Iscrizione annullata.');
+        session()->flash('error', match ($failure) {
+            CancelFailure::DeadlineExceeded => 'Cancellazione non disponibile (entro '.config('classes.free_cancel_hours', 3).' ore dall\'inizio).',
+            CancelFailure::NotCancellable => 'Prenotazione non cancellabile.',
+        });
     }
 
     // -------------------------------------------------------------------------

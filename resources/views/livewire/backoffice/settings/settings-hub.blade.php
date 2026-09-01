@@ -17,6 +17,21 @@
     {{-- Tab: Funzioni --}}
     <div x-show="tab === 'funzioni'">
         @livewire('backoffice.settings.feature-flag-manager')
+
+        <div class="card card-outline card-secondary mt-4">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-plug mr-1"></i> Documentazione API</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">Riferimento interattivo e specifica OpenAPI 3.0 per le integrazioni esterne.</p>
+                <a href="{{ route('backoffice.settings.api-docs') }}" target="_blank" class="btn btn-outline-primary btn-sm mr-2">
+                    <i class="fas fa-code mr-1"></i> API Reference (Swagger UI)
+                </a>
+                <a href="{{ route('backoffice.settings.api-docs.yaml') }}" target="_blank" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-file-code mr-1"></i> Scarica OpenAPI YAML
+                </a>
+            </div>
+        </div>
     </div>
 
     {{-- Tab: Manuale --}}

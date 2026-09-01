@@ -2,9 +2,13 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property Carbon $checked_in_at
+ */
 class AccessLog extends Model
 {
     // Log append-only: nessun updated_at, created_at gestito da checked_in_at

@@ -15,10 +15,13 @@ use App\Observers\PtBookingObserver;
 use App\Observers\SubscriptionObserver;
 use App\Observers\TrainerAvailabilityObserver;
 use App\Observers\TrainingSessionObserver;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Pennant\Feature;
 use Spatie\LaravelFlare\Facades\Flare;
@@ -42,6 +45,7 @@ class AppServiceProvider extends ServiceProvider
 
         $this->defineFeatureFlags();
         $this->defineGates();
+        $this->defineRateLimiters();
         $this->configureFlare();
         $this->registerBladeDirectives();
         $this->registerNotificationChannels();
@@ -99,6 +103,10 @@ class AppServiceProvider extends ServiceProvider
         Feature::define('weekly_volume', fn (): bool => Setting::bool('weekly_volume_enabled', true));
 
         Feature::define('plate_calculator', fn (): bool => Setting::bool('plate_calculator_enabled', true));
+
+        // --- Sistema ---
+
+        Feature::define('public_api', fn (): bool => Setting::bool('public_api_enabled', false));
     }
 
     private function defineGates(): void
@@ -106,8 +114,10 @@ class AppServiceProvider extends ServiceProvider
         // Gate usato da AdminLTE sidebar per la voce "Corsi collettivi"
         Gate::define('view-group-classes', fn () => Feature::active('group_classes'));
 
-        // Gate usato da AdminLTE sidebar per la voce "Report allenamento"
-        Gate::define('view-training-reports', fn (User $user) => ! $user->hasRole('receptionist'));
+        // Gate usato da AdminLTE sidebar per la voce "Report allenamento".
+        // Scritto in positivo: solo gestore e trainer possono accedere.
+        // Un utente senza ruoli noti (es. api_client) viene respinto.
+        Gate::define('view-training-reports', fn (User $user) => $user->hasAnyRole(['gestore', 'trainer']));
 
         // Gate usati da AdminLTE sidebar per voci riservate a trainer/gestore
         Gate::define('manage-trainer-availability', fn (User $user) => $user->hasAnyRole(['gestore', 'trainer']));
@@ -132,6 +142,22 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('view-session-recap', fn () => Feature::active('session_recap'));
         Gate::define('view-personal-records', fn () => Feature::active('personal_records'));
         Gate::define('view-weekly-volume', fn () => Feature::active('weekly_volume'));
+    }
+
+    private function defineRateLimiters(): void
+    {
+        // Limiter dedicato alla superficie API /api/v1.
+        // Valori in config/api.php; Redis come driver (predis configurato).
+        $authenticated = (int) config('api.rate_limit_authenticated', 60);
+        $anonymous = (int) config('api.rate_limit_anonymous', 10);
+
+        RateLimiter::for('api', function (Request $request) use ($authenticated, $anonymous): Limit {
+            if ($request->user()) {
+                return Limit::perMinute($authenticated)->by($request->user()->id);
+            }
+
+            return Limit::perMinute($anonymous)->by($request->ip());
+        });
     }
 
     private function configureFlare(): void

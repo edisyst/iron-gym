@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AccessLogController;
+use App\Http\Controllers\Api\V1\ClassOccurrenceController;
 use App\Http\Controllers\Api\V1\ExerciseController;
+use App\Http\Controllers\Api\V1\GroupClassController;
 use App\Http\Controllers\Api\V1\MeController;
 use App\Http\Controllers\Api\V1\MemberController;
 use App\Http\Controllers\Api\V1\MemberSubscriptionController;
@@ -47,6 +49,11 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function (): void {
 
     Route::middleware('abilities:access-logs:write')->group(function (): void {
         Route::post('/access-logs', [AccessLogController::class, 'store']);
+    });
+
+    Route::middleware('abilities:group-classes:read')->group(function (): void {
+        Route::get('/group-classes', [GroupClassController::class, 'index']);
+        Route::get('/class-occurrences', [ClassOccurrenceController::class, 'index']);
     });
 
     Route::middleware('abilities:exercises:read')->group(function (): void {

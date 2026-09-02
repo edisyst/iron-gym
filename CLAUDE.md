@@ -74,7 +74,7 @@ Gestionale palestra bodybuilding/fitness. Copre: anagrafica tesserati, abbonamen
 **Sistema:**
 - FeedbackSubmission: feedback in-app utenti
 - Feature (Pennant): feature flags per roll-out graduale
-- Setting: impostazioni globali key/value (PK stringa, value JSON). Sorgente di verità per i feature flag validi per l'intera palestra — `group_classes` — perché `Feature::activateForEveryone()` aggiorna solo le righe già esistenti in `features`. Helper `Setting::bool($key, $default)` e `Setting::write($key, $value)`
+- Setting: impostazioni globali key/value (PK stringa, value JSON). Sorgente di verità per i feature flag — `group_classes` — perché `Feature::activateForEveryone()` aggiorna solo le righe già esistenti in `features`. Helper `Setting::bool($key, $default)` e `Setting::write($key, $value)`
 - SyncOperation: tabella idempotenza sync offline (client_uuid UNIQUE, operation, processed_at)
 
 ## Servizi disponibili
@@ -92,13 +92,14 @@ Gestionale palestra bodybuilding/fitness. Copre: anagrafica tesserati, abbonamen
 - ExerciseSubstitutionFinder: find(Exercise) → Collection max 5 candidati; matching per stesso joint_action_id o compound_pattern_id + stesso measurement_type + non soft-deleted; overlap = somma min(pct_orig, pct_cand) su muscoli comuni; tie-break: stesso mechanic poi skill_level
 - ReadinessEvaluator: evaluate(SessionReadinessCheck) → ReadinessProposal; score 0-12 (somma 4 campi 0-3); soglie da config/readiness.php (high=9 none, 5-8 reduce_5pct, <5 reduce_10pct); applyReduction(float, int): float arrotondato a 2.5 kg
 - SessionRecapBuilder: build(TrainingSession, athleteId) → array con duration_minutes, tonnage_kg (set working completati, warmup esclusi), sets_completed/sets_prescribed, prs (PersonalRecord nel range started_at..completed_at), top_muscles (top 3 per SUM contribution_pct su set completati non-warmup). Cinque query, nessun N+1.
+- AccessService: check-in con `DB::transaction + lockForUpdate`; idempotency window configurabile; CheckinResult readonly + CheckinFailure enum.
 
 ## Observers
 
 Registrati in `AppServiceProvider`. Tutti in `app/Observers/`.
 
 - ExerciseObserver (Exercise): flush cache tag `exercises` su create/update/delete
-- PtBookingObserver (PtBooking): invalida cache slot trainer e tag KPI su saved/deleted. **Nota:** documentazione precedente ("notifica atleta+trainer") era errata — nessuna notifica viene inviata.
+- PtBookingObserver (PtBooking): invalida cache slot trainer e tag KPI su saved/deleted. Nessuna notifica inviata.
 - SubscriptionObserver (Subscription): invalida cache KPI tag `kpi` su create/update
 - TrainerAvailabilityObserver (TrainerAvailability): ricalcola slot disponibili su saved/deleted
 - TrainingSessionObserver (TrainingSession): aggiorna status, started_at, completed_at su update
@@ -120,16 +121,14 @@ gli observers, i seeder e gli artisan commands è in:
 
 **`docs/architecture/component-map.md`**
 
-Leggila prima di aggiungere nuovi componenti o route per evitare conflitti e
-seguire i pattern esistenti.
+Leggila prima di aggiungere nuovi componenti o route per evitare conflitti e seguire i pattern esistenti.
 
 **Componenti backoffice non nella component-map (trovati in codice):**
-- `OpeningHoursManager` (`/backoffice/settings/opening-hours`): CRUD orari apertura settimanali + eccezioni per data specifica. Accessibile a tutti i ruoli backoffice; modificabile da gestore e receptionist.
+- `OpeningHoursManager` (`/backoffice/settings/opening-hours`): CRUD orari apertura settimanali + eccezioni per data specifica.
 - `GlobalSearch` (`/backoffice/search`): ricerca live atleti/trainer/template, min 2 caratteri.
 
 **Nota architetturale:** le view Livewire usano wrapper `<div>` (non `@extends`).
-Il layout è gestito con `->layout('layouts.backoffice')` nel `render()`. Questo
-pattern è necessario per embeddare componenti via `@livewire` (es. in `AthleteProfile`).
+Il layout è gestito con `->layout('layouts.backoffice')` nel `render()`. Questo pattern è necessario per embeddare componenti via `@livewire` (es. in `AthleteProfile`).
 Exercise model usa `getRouteKeyName() = 'slug'` (route binding su slug).
 
 ## WorkoutSession — interazioni chiave (Release 01 + 06)
@@ -146,7 +145,6 @@ Exercise model usa `getRouteKeyName() = 'slug'` (route binding su slug).
 | `loadPreviousPerformance()` | Singola query aggregata, riempie `$previousPerformance[exercise_id][set_index]` |
 | `openSubstitutionModal($seId)` | Blocca se set working completati; chiama ExerciseSubstitutionFinder; popola `$substitutionCandidates` come array scalare |
 | `confirmSubstitution($slug)` | Aggiorna `exercise_id`, setta `substituted_from_exercise_id`; mantiene set e prescrizione invariati; blocco doppio su set completati |
-| `closeSubstitutionModal()` | Azzera `$substitutingSeId` e `$substitutionCandidates` |
 | `submitReadiness($sleep, $stress, $soreness, $joint, $note)` | Salva SessionReadinessCheck; calcola ReadinessProposal; traccia in `trainer_notes`; se outcome != none mostra `$modulationProposal` |
 | `skipReadiness()` | Salta check, chiama `startSession()` direttamente |
 | `acceptModulation()` | Aggiorna `planned_weight_kg` set non completati + elimina set extra (fascia low); poi `startSession()` |
@@ -154,107 +152,19 @@ Exercise model usa `getRouteKeyName() = 'slug'` (route binding su slug).
 | `startSession()` (private) | Transiziona `planned → in_progress` con `started_at` |
 | `completeSession()` | Transiziona `in_progress → completed` con `completed_at`; mostra `SessionFeedbackForm` embedded |
 
-**Flusso post-completamento (Release 08):**
-`completeSession()` → `$showFeedback=true` → `SessionFeedbackForm` (embedded) → `save()` o `skip()` → redirect `/athlete/session/{id}/recap` → `SessionRecap` mostra card + export PNG.
+**Flusso post-completamento:** `completeSession()` → `$showFeedback=true` → `SessionFeedbackForm` → `save()`/`skip()` → redirect `/athlete/session/{id}/recap` → `SessionRecap` mostra card + export PNG.
 
-**Alpine store `restTimer`** (definito in workout-session.blade.php): `start(sec)`, `skip()`, `fmt(s)`. Avvia vibrazione + Notification API allo scadere. Barra fissa bottom. Per cluster usa `intra_cluster_rest_sec`.
+**Alpine store `restTimer`** (workout-session.blade.php): `start(sec)`, `skip()`, `fmt(s)`. Vibrazione + Notification API allo scadere. Barra fissa bottom. Per cluster usa `intra_cluster_rest_sec`.
 
 **`$previousPerformance`**: proprietà pubblica array, serializzata Livewire, usata dal partial per mostrare "prec: Xkg × Y @ RIR Z" sotto ogni working set.
 
 ## Stato sviluppo
 
-Step 1-10 implementati. Release 01-08 completate. UX01-UX07 completate. Tag v0.9.0 (2026-07-05).
-**v1.2.3** (2026-08-24): fix Pint `binary_operator_spaces` in 4 file di test (AthleteProfileClassBookingsTest, AthleteProfileMessagesTest, AthleteProfilePersonalRecordsTest, AthleteProfileSessionsTest). Pipeline CI ripristinata.
-Audit sicurezza v2, audit receptionist, audit funzionale PWA atleta, HK01, DOC01 completati.
-**R09 Step 1** completato: schema GroupClass→ClassSchedule→ClassOccurrence, consumer adattati, test aggiornati.
-**R09 Step 2** completato: command `classes:generate-occurrences`, prerequisiti enroll (abbonamento+cert), overlap check atleta e trainer, 29 nuovi test.
-**R09 Step 3** completato: ClassScheduleManager (CRUD palinsesto), attendance tracking (completeOccurrence/markAttended/markNoShow), 13 nuovi test.
-**R09 Step 4** completato: ClassOccurrenceCancelledNotification + NotifyClassCancellation job, check-in receptionist, feature flag gate in Athlete\Booking, 7 nuovi test.
-**R09 Step 5** completato: GroupClassCatalog CRUD definizioni corsi (solo gestore), sidebar submenu a 3 voci (Occorrenze/Palinsesto/Catalogo), dashboard atleta card prossimi corsi collettivi, 8 nuovi test.
-**R09 Step 6** completato: finestra prenotazione (booking_opens_days/booking_closes_minutes in Athlete\Booking), finestra cancellazione gratuita (free_cancel_hours), removeParticipant → cancelled_by_gym, 5 nuovi test. R09 chiuso.
+Step 1-10 implementati. Release 01-31, UX01-07, API01-04 completate. **v1.2.4** (2026-08-30), **v1.2.4+** (2026-08-31), **API01-04** (2026-09-01).
 
-**R10** completato: centro notifiche atleta (`/athlete/notifications`), badge non lette in sidebar, endpoint `unread-count`, fix `route('athlete.booking')` → `athlete.bookings`, 7 nuovi test.
+**Suite corrente:** 624 test (624 pass / 6 skipped). **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
 
-**R11** completato: `ClassReminderNotification` (database + webpush) + `SendClassReminders` job schedulato `dailyAt('08:00')`, icona `class_reminder` in centro notifiche, 6 nuovi test.
-
-**R12** completato: `periodization_engine` attivato in PilotSeeder (`financial_reports` + `periodization_engine` on per default); test Livewire `MesocycleDetail` (applyProgression, forceDeload, role guards, 6 test); test Livewire `VolumeLandmarkManager` (save, resetToDefaults, auth trainer, 6 test).
-
-**R13** completato: sezione "Abbonamento" nel profilo atleta (piano, scadenza, badge stato), fix cross-db `CONCAT→||` in `TrainingReport` e `GlobalSearch`, 14 nuovi test (`AthleteProfileSubscriptionTest` 4, `TrainingReportTest` 6, `GlobalSearchTest` 4).
-
-**R14** completato: sessioni PT future nella dashboard atleta (`upcomingPtBookings`), fix `CONCAT→||` in `ManagerDashboard`, test `AthleteAnalytics` (auth isolation, 4 test), test `ManagerDashboard` (2 test), test `AthleteDashboardPtBooking` (4 test).
-
-**R15** completato: test `BookingList` (7 test: confirm/cancel/restore con isolamento ruoli), test `CommunicationCampaign` (4 test: send job, validazione body, filtro active), `group_classes` attivato in `PilotSeeder`. R15 chiuso.
-
-**R16** completato: tab "Sessioni PT" nel profilo atleta (prossime + storico ultimi 10), 5 nuovi test. R16 chiuso.
-
-**R17** completato: tab "Misurazioni" nel profilo atleta (ultime 5 con peso/BF%/vita/petto + link a pagina completa), 5 nuovi test. R17 chiuso.
-
-**R18** completato: tab "Record" nel profilo atleta (ultimi 5 e1RM con esercizio, valore, data + link a pagina completa), 5 nuovi test. R18 chiuso.
-
-**R19** completato: tab "Sessioni" nel profilo atleta (ultime 5 completed/skipped con nome, data, durata, badge + link a storico completo), 5 nuovi test. R19 chiuso.
-
-**R20** completato: tab "Messaggi" nel profilo atleta (ultimi 5 messaggi con contatto, anteprima, data, badge non letti + link a /athlete/messages), 5 nuovi test. R20 chiuso.
-
-**R21** completato: tab "Corsi" nel profilo atleta (gated `group_classes`, prossimi corsi prenotati + storico, badge Confermato/Lista d'attesa), 5 nuovi test. Fix SQL ambiguous column con qualifica `class_bookings.status`. R21 chiuso.
-
-**R22** completato: Pannello Scadenze backoffice (`/backoffice/members/expiry`), accessibile a gestore e receptionist. Due tabelle: certificati medici in scadenza (default 30gg) e abbonamenti in scadenza (default 7gg). Filtri live per ricerca e finestra temporale. Voce sidebar "Scadenze". 7 nuovi test. R22 chiuso.
-
-**R23** completato: widget "Scadenze imminenti" nella Dashboard backoffice. Card condizionale con contatori `certExpiring30Count` e `subExpiring7Count`; link diretto al pannello scadenze. Link small-box esistenti aggiornati a `members.expiry`. 4 nuovi test. R23 chiuso.
-
-**R24** completato: Check-in Rapido backoffice (`/backoffice/checkin`). Ricerca live tesserato, validazione cert+abbonamento+accessi, cronologia accessi odierni. Voce "Check-in" in sidebar. 7 nuovi test. R24 chiuso.
-
-**R25** completato: Rinnovo abbonamento rapido — bottone "Rinnova" in `SubscriptionList` (gestore/receptionist); `SubscriptionForm::mount()` pre-popola `member_id` e `plan_id` da query string e calcola `expires_at` automaticamente. 5 nuovi test. R25 chiuso.
-
-**R26** completato: tab "Accessi" nel profilo atleta (ultimi 5 ingressi con data, ora, piano, badge Entrata), 5 nuovi test. R26 chiuso.
-
-**R27** completato: sospensione/riattivazione abbonamento in `SubscriptionList` (solo gestore), guard 403/422, filtro "Sospesi", bottoni `fa-pause`/`fa-play` con `wire:confirm`. 5 nuovi test. R27 chiuso.
-
-**R28** completato: note interne sul tesserato — `MemberForm` già completo; aggiunta icona `fa-sticky-note` con tooltip in `MemberList` quando note presenti. 4 nuovi test. R28 chiuso.
-
-**R29** completato: Export CSV abbonamenti (`/backoffice/subscriptions/export?filter=X`), solo gestore. CSV UTF-8 con BOM, separatore `;`, rispetta filtro corrente. Bottone in `SubscriptionList`. 4 nuovi test. R29 chiuso.
-
-**R30** completato: Export CSV tesserati (`/backoffice/members/export?search=X&certFilter=Y`), solo gestore. Colonne: Cognome, Nome, Email, Telefono, Abbonamento, Scadenza abb., Cert. medico, Attivo. Bottone in `MemberList`. 4 nuovi test. R30 chiuso.
-
-**R31** completato: tabella "Sessioni PT completate per trainer" in `ManagerDashboard`; query `pt_bookings JOIN users` filtrata per periodo e `status=completed`, raggruppata per trainer. 3 nuovi test. R31 chiuso.
-
-**FIX01** (2026-08-26): flag globale `group_classes` spostato su tabella `settings` (`activateForEveryone` non copriva gli utenti mai risolti, il toggle da backoffice era inefficace); guard `role:gestore` + whitelist in `FeatureFlagManager`; fix colonna `status` ambigua in `Athlete\Dashboard`; `MesocycleList` filtrata per trainer e ownership check in `MesocycleDetail::applyProgression/forceDeload`; `GroupClassSeeder` registrato in `DatabaseSeeder`; comando `classes:send-reminders`; alias `/athlete/dashboard`; link "Volume landmarks" in AthleteProfile; dati demo: PT pending per `atleta@atleta.atleta`, abbonamento+certificato scaduti per `alessia.colombo@example.com`, badge "In attesa" in dashboard atleta. 16 nuovi test.
-
-**Suite corrente:** 630 test (624 pass / 6 skipped). **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
-
-**DOC02** (2026-08-27): assessment funzionale R09+ (`docs/reviews/r09-plus-test-assessment.md`), piano di test manuale 109 casi (`docs/testing/r09-plus-functional-test-plan.md`), `FunctionalTestSeeder` con 5 scenari demo (corsi collettivi + waitlist, notifiche, check-in ingressi esauriti, abbonamento in scadenza, orari apertura). Findings documentati: F-01/F-02/F-04 risolti in FIX02.
-
-**FIX02** (2026-08-27): `OpeningHoursSeeder` idempotente con `firstOrCreate` (risolve F-01/F-04); `ClassBookingService::enroll` controlla overlap atleta PT+corso (risolve F-02).
-
-**SET01 Step 1** (2026-08-29): sezione Impostazioni backoffice (`/backoffice/settings`), unificazione flag. `SettingsHub` + `FeatureFlagManager` (spostato da Admin → Settings). Pattern uniforme per tutti e 4 i flag: `Setting::bool(key, default) && <condizione_scope>`; toggle sempre `Setting::write` + `Feature::purge`. `SettingsFlagSeeder` idempotente. Redirect 301 da vecchia route. Sidebar: ADMIN soppresso, tutto in IMPOSTAZIONI. Chiude DIFETTO-A e DIFETTO-B. 448 test (442 pass / 6 skipped).
-
-**SET01 Step 2** (2026-08-29): chiude GAP-03 (route /reports/* con middleware `can:view-financial-reports`); aggiunge 9 nuovi flag globali con kill switch completo a tutti i livelli (route, Livewire, view, job). `config/features.php` ristrutturato con campo `group` (Moduli / Sessione atleta / Sistema). `FeatureFlagManager` ora raggruppa i 13 flag per gruppo. 17 nuovi test (FeatureFlagGatingTest 10, OutboundNotificationsKillSwitchTest 7). Suite: 465 test (459 pass / 6 skipped).
-
-**SET01 Step 2B** (2026-08-29): gating completo `messaging` e `pt_bookings`. `messaging`: Alpine store `messages.init()` non emette fetch a `unread-count` quando flag spento; link "Apri messaggi" in dashboard empty-state gated. `pt_bookings`: gate `view-athlete-bookings` (PT OR corsi collettivi); route `/athlete/bookings` gated; tab PT e contenuto tab PT in `@feature('pt_bookings')`; `Booking::mount()` forza `activeTab='classes'` se PT off; link "Prenota" in bottom-nav gated con `@can`. `TrainerAvailabilityObserver` lasciato attivo (consistenza dati, non invio). 8 nuovi test (ModuleFlagGatingTest). Suite: 474 test (468 pass / 6 skipped).
-
-**SET01 Step 2C** (2026-08-29): gating sei flag "Sessione atleta" + fix navigazione filtrata. Nav: sidebar "Progressi" href condizionale su `weekly_volume` (fallback a `athlete.measurements`); toast PR wrappato in `@feature('personal_records')`; link recap "Ultimo allenamento" in dashboard wrappato in `@feature('session_recap')`. Flag `plate_calculator` aggiunto a `config/features.php` managed_flags e `AppServiceProvider` (nessun gating point atleta, rimosso in UX01). `WorkoutSession::completeSet/quickLog`: `PersonalRecordDetector` ora sempre eseguito; dispatch evento `pr-achieved` condizionale su flag (PR sempre scritto in DB anche con flag off). `TrainerAvailabilityObserver` lasciato attivo. 10 nuovi test (SessionFlagGatingTest). Pint fix preesistente FeedbackDemoSeeder. Suite: 484 test (478 pass / 6 skipped).
-
-**SET01 Step 3** (2026-08-29): manualistica backoffice. `ManualRenderer` service (slug-safe, cache mtime, `Str::markdown()`); `ManualViewer` componente Livewire embedded in tab "Manuale" di SettingsHub; 6 sezioni Markdown (`resources/docs/manual/01-06`): Dashboard, Tesserati, Abbonamenti, Accessi e check-in, Scadenze, Esercizi. `docs/manual-howto.md` per aggiungere sezioni. Fix `OpeningHoursManager` SQL MySQL-specifico (`MONTH/DAY` → `orderBy`). 11 nuovi test (ManualViewerTest). Suite: 506 test (500 pass / 6 skipped).
-
-**SET01 Step 4** (2026-08-30): sezioni manuale 7-16: Schede template e mesocicli, Progressione e volume landmarks, Calendario e disponibilita', Prenotazioni PT, Corsi collettivi, Comunicazione e campagne, Report allenamento, Report finanziari, Inventario dischi, Impostazioni di sistema. `SECTION_FLAGS` in `ManualViewer` mappato: `11-corsi-collettivi → group_classes`, `14-report-finanziari → financial_reports`. Badge ON/OFF attivi in sidebar manuale per le sezioni gated. Suite: 506 test (500 pass / 6 skipped).
-
-**SET01 Chiusura** (2026-08-30): Fase 3 completata — tabella flag CLAUDE.md allineata a `config/features.php` (gruppi `financial_reports`/`periodization_engine` corretti da Moduli a Sistema; platea `outbound_notifications` corretta); `component-map.md` aggiornato (5 route, 8 componenti, observer, comandi, seeder mancanti); 5 scostamenti manuale/menu identificati e tutti risolti: S-01 navigazione sezione 08, S-02 voce sidebar "Report finanziario" (`can:view-financial-reports`), S-03 sottosezione feedback utenti in sezione 12, S-04 route messaggistica corretta, S-05 `Admin/FeatureFlagManager.php` eliminato. Pint fix su `ManualViewer` e `ManualRenderer`. Suite: 506 test (500 pass / 6 skipped). SET01 definitivamente chiuso.
-
-Storico completo release e audit: **`CHANGELOG.md`**.
-
-**DOC02** (2026-08-30): allineamento documentazione post-SET01/PERF01. Fix B-03 (route prenotazioni manuale sez. 09/10); piani test per ruolo aggiornati (sez. Impostazioni, plate calculator rimosso, note flag, notifiche R10); consolidamento `docs/review/` + `docs/audit/` → `docs/reviews/`; `11-doc02-chiusura.md`. 12 commit, solo `.md`.
-
-**v1.2.4** (2026-08-30): tag di allineamento post-SET01. `ArtisanRunner` — pagina comandi Artisan per il gestore (`/backoffice/settings/artisan`). develop allineato a master.
-**v1.2.4+** (2026-08-31): fix Pint `ordered_imports` + `fully_qualified_strict_types` in `routes/backoffice.php` (CI ripristinata).
-
-**API01** (2026-09-01): foundation superficie API HTTP JSON. Sanctum v4, migration `personal_access_tokens` e `is_service_account` su users, flag `public_api` (Sistema, default false), rate limiter Redis (60/min auth, 10/min anon), middleware `EnsureApiEnabled` (kill switch), formato errori uniforme con chiave `code` stabile su tutti gli status, `GET /api/v1/ping` (esente da auth e flag), `GET /api/v1/me`, 3 comandi artisan (`api:create-service-account`, `api:issue-token`, `api:tokens`). Fix gate `view-training-reports` riscritto in positivo. 17 nuovi test. Suite: 523 test (517 pass / 6 skipped). PHPStan 0 errori. Pint conforme.
-
-**API02** (2026-09-01): 7 endpoint di lettura. `GET /api/v1/subscription-plans`, `GET /api/v1/members` (search + is_active + cert_expiry_before con ability guard), `GET /api/v1/members/{id}`, `GET /api/v1/members/{id}/subscription`, `GET /api/v1/access-logs` (filtri member_id + range date con cap 31 gg), `GET /api/v1/exercises` (filtri muscle/equipment/mechanic/measurement_type), `GET /api/v1/exercises/{slug}`. `medical_cert_expiry` assente senza `members:medical-read`. Soft-deleted mai esposti. Ability whitelist in `api:issue-token`. 7 JsonResource, 4 FormRequest, 5 controller, route con middleware `abilities:*`. Test: kill switch × 4 endpoint, 401 × 4, 403 × 4, filtri, paginazione, N+1, medical conditional, soft-delete guard, whitelist command. `docs/api/03-endpoints.md` creato.
-
-**API03** (2026-09-01): 3 endpoint write/module. `POST /api/v1/access-logs` (check-in via totem API): 201+Location su successo, 200 su duplicato entro finestra idempotenza (5 min, configurabile), 422 con `code` stabile per cert/subscription/accesses, 404 per tesserato mancante/soft-deleted. `GET /api/v1/group-classes` e `GET /api/v1/class-occurrences`: gated su flag `group_classes` → 503 `module_disabled`; no N+1 (eager load confirmedBookings). `AccessService` estratto da QuickCheckin e AccessLogList (race condition fissa con `DB::transaction + lockForUpdate`; idempotency window come parametro esplicito). `CheckinResult` readonly class + `CheckinFailure` enum. 25 nuovi test (AccessServiceTest 13, ApiCheckinTest 12 + ApiGroupClassesTest 13). Suite: 593 test (587 pass / 6 skipped). PHPStan livello 6, 0 errori. Pint conforme.
-
-**API04** (2026-09-01): 3 endpoint prenotazioni corsi collettivi. `GET /api/v1/class-bookings` (filtri member_id/occurrence_id/status), `POST /api/v1/class-bookings` (enroll con idempotenza su AlreadyEnrolled → 200; 201 confirmed/waitlisted; 409 overlap atleta/PT; 422 finestra/abbonamento/cert), `DELETE /api/v1/class-bookings/{booking}` (cancel atleta; 204/409 deadline/stato). Fix bug `whereDate()` in `ClassBookingService::enroll()` PT overlap check (SQLite date format). 31 nuovi test. Suite: 624 test (624 pass / 6 skipped). PHPStan livello 6, 0 errori. Pint conforme.
-
-**DOC03** (2026-09-01): Swagger UI + spec OpenAPI 3.0.3. `docs/api/openapi.yaml` (15 endpoint, tutti gli schema/response come component riutilizzabili, esempi errori). `GET /backoffice/settings/api-docs` gated `can:access-admin-section` — Swagger UI CDN standalone con topbar Iron Gym. `GET /backoffice/settings/api-docs/openapi.yaml` — download/import Insomnia. Try-it-out disabilitato (solo Bearer token). Pint conforme.
+Storico completo release: **`CHANGELOG.md`**. Dettaglio per release: **`docs/architecture/stato-sviluppo.md`**.
 
 Prossima attività: API05 (abbonamenti write) o altra feature su richiesta.
 
@@ -277,8 +187,8 @@ Prossima attività: API05 (abbonamenti write) o altra feature su richiesta.
 - Ownership: `whereHas('sessionExercise.session.week.mesocycle', athlete_id)` su ogni set
 
 **Service worker v2:**
-- Statici: stale-while-revalidate (ritorna cache, aggiorna in background)
-- `/athlete/session/*`: network-first con fallback cache (pagina navigabile offline per tutta la sessione)
+- Statici: stale-while-revalidate
+- `/athlete/session/*`: network-first con fallback cache
 - Livewire e pagine dinamiche: network-only, nessuna cache
 
 ## Setup pilota — dati e procedure
@@ -288,21 +198,8 @@ Prossima attività: API05 (abbonamenti write) o altra feature su richiesta.
 ```bash
 php artisan db:seed --class=PilotSeeder          # piani abbonamento + account gestore
 php artisan db:seed --class=PilotTemplateSeeder  # template PPL ipertrofia 4 sett.
+php artisan db:seed --class=FunctionalTestSeeder # scenari test funzionale (non-production)
 ```
-
-### Seeder test funzionali (idempotente, solo ambienti non-production)
-
-```bash
-php artisan db:seed --class=FunctionalTestSeeder
-```
-
-Crea 4 scenari per il piano di test `docs/testing/r09-plus-functional-test-plan.md`:
-- **Yoga Full**: occorrenza yoga `now+3` capacity=3, 3 confirmed + Federica in waitlist (TC-CLS-009/012)
-- **Carlo Accessi** (`carlo.accessi@functional-test.demo` / `demo1234`): abb. a ingressi con `accesses_remaining=0` (TC-CHK-004)
-- **Overlap trainer**: ClassOccurrence + PtBooking per Trainer 1 stesso slot `now+5` 14:00 (REG-003)
-- **Occorrenza passata**: `now-2` status=planned per test attendance (TC-CLS-015/016)
-
-`OpeningHoursSeeder` e' idempotente (usa `firstOrCreate`): sicuro da rieseguire in qualsiasi ambiente.
 
 ### Account pilota locale
 
@@ -336,103 +233,75 @@ Per modificare flags: backoffice → Impostazioni → Funzioni (solo gestore).
 
 ### Procedura registrazione atleta pilota
 
-Sequenza completa — tutto via backoffice UI:
-
 **1. Crea tesserato + account** — Tesserati → Nuovo tesserato
    - Campi obbligatori: Cognome, Nome, Email, Scadenza cert. medico
-   - Spunta **"Crea account accesso app"** → inserisci password (min. 8 caratteri)
-   - Sistema crea User con ruolo `atleta` e collega `user_id` in automatico
+   - Spunta **"Crea account accesso app"** → password (min. 8 caratteri)
 
 **2. Crea abbonamento** — Abbonamenti → Nuovo abbonamento
-   - Seleziona tesserato + piano + data inizio → scadenza calcolata in automatico
-   - Nota: colonne DB sono `started_at` / `expires_at` (non start_date/end_date)
+   - Seleziona tesserato + piano + data inizio → scadenza calcolata automaticamente
+   - Colonne DB: `started_at` / `expires_at` (non start_date/end_date)
 
-**3. Assegna mesociclo PPL** — Mesocicli → Assegna mesociclo
-   - Seleziona atleta + template + data inizio → Avanti → Conferma
+**3. Assegna mesociclo PPL** — Mesocicli → Assegna → template + atleta + data inizio → Conferma
 
 ### Template PPL — struttura
 
 `database/seeders/PilotTemplateSeeder.php` — "PPL Ipertrofia — Intermediato (4 sett.)"
 
-- 3 sessioni/sett: Push (petto/spalle/tricipiti), Pull (schiena/bicipiti), Legs (gambe/glutei/polpacci)
-- W1: 3 serie compound + 3 iso | W2: 4+3 | W3: 4+4 | W4 deload: 2+2 @RIR+1
+- 3 sessioni/sett: Push / Pull / Legs
+- W1: 3+3 serie | W2: 4+3 | W3: 4+4 | W4 deload: 2+2 @RIR+1
 - 12 TemplateSession, 200 ExerciseSet per mesociclo istanziato
-
-**Flusso assegnazione:** backoffice → Mesocicli → Assegna → scegli template + atleta + data inizio.
 
 ## Catalogo esercizi — SQLite di riferimento
 
 `database/database.sqlite` contiene catalogo completo queryabile senza MySQL:
 - Tabelle: `movement_patterns` (27), `muscles` (26), `equipment` (14), `exercises` (83), `exercise_muscle` (259), `exercise_equipment` (108)
 - Colonna `execution_description` su `exercises` con testo esecuzione per tutti e 83
-- Script rigenerazione: `.claude/scripts/build_exercises_sqlite.py` (stdlib Python, nessuna dipendenza extra; sorgente unica: `exercises_seed.sql`)
+- Script rigenerazione: `.claude/scripts/build_exercises_sqlite.py` (stdlib Python, sorgente unica: `exercises_seed.sql`)
 
 Usare sqlite3 o DBeaver per interrogarlo. Non usato dai test (quelli usano `:memory:`).
 
 ## Documenti di dominio
 
-Disponibili in .claude/docs/domain/ ma NON caricati automaticamente per non saturare contesto. Richiedili esplicitamente quando servono:
-- .claude/docs/domain/step-0-discovery.md — ERD, schema SQL, regole progressione
-- .claude/docs/domain/exercises-catalog.md — catalogo 83 esercizi (tassonomia, muscoli, note metodologiche; SQL rimosso → dati in database.sqlite)
-- .claude/docs/domain/glossary.md — terminologia BB e tassonomia (documento corto, ok includerlo)
+Disponibili in `.claude/docs/domain/` ma NON caricati automaticamente. Richiedili esplicitamente:
+- `step-0-discovery.md` — ERD, schema SQL, regole progressione
+- `exercises-catalog.md` — catalogo 83 esercizi (tassonomia, muscoli; SQL rimosso → dati in database.sqlite)
+- `glossary.md` — terminologia BB e tassonomia (documento corto, ok includerlo)
 
 ## Brand identity PWA atleta (UX01)
 
-Layer CSS dedicato alla PWA atleta. Dark theme di default; light theme via toggle (localStorage + `data-theme` su `<html>`).
+Dark theme di default; light theme via toggle (localStorage + `data-theme` su `<html>`).
 
 **Layout:** `resources/views/layouts/athlete.blade.php` — NON usa AdminLTE. Standalone.
 
-**CSS entry point:** `public/css/athlete.css` (statico, caricato con `<link>` nel layout atleta).
-Struttura: design tokens → base → navigazione → componenti legacy → componenti `ig-*` → volume.
+**CSS entry point:** `public/css/athlete.css` (statico). Struttura: design tokens → base → navigazione → componenti legacy → componenti `ig-*` → volume. Documentazione design system: `docs/architecture/ui-atleta.md`.
 
-**Design tokens:** CSS custom properties su `:root` (dark default) e `[data-theme="light"]`.
-Token principali: `--ig-bg`, `--ig-surface`, `--ig-surface-raised`, `--ig-border`, `--ig-text-1/2/3`,
-`--ig-accent`, `--ig-success/warning/danger` + varianti `-subtle`,
-`--ig-touch-target` (56px), `--ig-touch-target-sm` (40px), `--ig-touch-target-xl` (64px — CTA sessione),
-`--ig-bottom-nav-h` (72px), `--ig-nav-icon` (26px),
-`--ig-font-sans`, `--ig-text-xs` (11px) `/sm` (13px) `/base` (16px) `/md` (22px) `/lg` (26px) `/xl` (34px) `/display` (48px),
-`--ig-sp-1..10`, `--ig-radius-sm/lg/full`.
-
-**Componenti Blade (namespace `x-athlete.*`):**
-Path: `resources/views/components/athlete/`
-- `x-athlete.button` — varianti primary/secondary/ghost/danger; min-height `--ig-touch-target`; spinner wire:loading integrato
+**Componenti Blade (namespace `x-athlete.*`, path `resources/views/components/athlete/`):**
+- `x-athlete.button` — varianti primary/secondary/ghost/danger; spinner wire:loading integrato
 - `x-athlete.card` — superficie base; props `padding`, `mb`, `tag`
 - `x-athlete.stat` — label + valore numerico grande; props `label`, `unit`
 - `x-athlete.badge` — status pill; prop `status` → classe `ig-badge--{status}`
 - `x-athlete.input-number` — input numerico con `inputmode`; prop `stepper` per bottoni +/−
 
-**Vite bundle atleta:** `@vite(['resources/css/app.css', 'resources/js/app.js'])` — `app.css` = solo
-Tailwind base utilities; `app.js` = vuoto. Il backoffice NON usa `@vite()`. Separazione de facto già esistente.
-
-**Documentazione design system:** `docs/architecture/ui-atleta.md`
-
----
+**Vite bundle atleta:** `@vite(['resources/css/app.css', 'resources/js/app.js'])` — `app.css` = solo Tailwind base utilities; `app.js` = vuoto. Il backoffice NON usa `@vite()`.
 
 ## Brand identity backoffice
 
-Layer CSS isolato e disattivabile sopra AdminLTE 3.x — nessun fork del tema.
+Layer CSS isolato sopra AdminLTE 3.x — nessun fork del tema.
 
-**Palette:**
-- Accent: `#E85D04` (arancio brand, shared con area atleta)
-- Sidebar: `#1A1A2E` (navy scuro)
-- Sidebar header: `#13132A`
-
-**Font (Google Fonts):**
-- Titoli / sidebar brand-text: `Oswald` 400/600/700
-- Corpo testo: `Inter` 400/500/600
+**Palette:** Accent `#E85D04` | Sidebar `#1A1A2E` | Sidebar header `#13132A`  
+**Font:** Titoli `Oswald` 400/600/700 | Corpo `Inter` 400/500/600
 
 **File:**
-- `public/css/iron-gym-brand.css` — override scoped su `body.iron-gym-brand` (CSS custom properties + override Bootstrap/AdminLTE)
+- `public/css/iron-gym-brand.css` — override scoped su `body.iron-gym-brand`
 - `public/css/backoffice.css` — utilities: `filter-w-xs/sm/md/lg`, `table-actions`, `.skip-link`
 - `public/images/iron-gym-logo.svg` — dumbbell icon 32×32 arancio
 
 **Attivazione:** `config/adminlte.php` → `'classes_body' => 'iron-gym-brand'`
-**Disattivazione:** cambiare in `''` — rimuove tutto il layer in 1 riga.
 
-**Convenzioni UI (post-audit 2026-06-28):**
-- Bottoni azione tabella: `btn-sm` (non `btn-xs`)
-- Errori form: `is-invalid` + `invalid-feedback` (non `text-danger small`)
-- Width filtri: classi `filter-w-*` (non inline `style="width:Npx"`)
+**Convenzioni UI:**
+- Bottoni azione tabella: `btn-sm`
+- Errori form: `is-invalid` + `invalid-feedback`
+- Width filtri: classi `filter-w-*`
 - Modali custom: `role="dialog"` + `aria-modal="true"` + `aria-labelledby`
 - Bottoni icon-only: `aria-label` obbligatorio
 
@@ -443,80 +312,64 @@ Layer CSS isolato e disattivabile sopra AdminLTE 3.x — nessun fork del tema.
 - Non introdurre multi-tenancy.
 - Non aggiungere colonne o tabelle senza discuterne prima.
 - Non usare emoji nel codice o nei commenti.
-- Non creare model Eloquent chiamati `Workout` o `WorkoutExercise`. `app/Livewire/Athlete/WorkoutSession.php` è un componente Livewire per il logging live della sessione, non un Model Eloquent: il nome simile non viola questo divieto.
+- Non creare model Eloquent chiamati `Workout` o `WorkoutExercise`. `app/Livewire/Athlete/WorkoutSession.php` è un componente Livewire, non un Model.
 
 ## Superficie API HTTP JSON
 
 Prefisso: `/api/v1`. Auth: Sanctum personal access token (`Authorization: Bearer <token>`).  
 Documentazione: `docs/api/` (assessment, piano release, convenzioni, `openapi.yaml`).  
-Swagger UI interattivo: `/backoffice/settings/api-docs` (solo gestore). Download YAML: `/backoffice/settings/api-docs/openapi.yaml`.
+Swagger UI: `/backoffice/settings/api-docs` (solo gestore). Download YAML: `/backoffice/settings/api-docs/openapi.yaml`.
 
-**Kill switch:** flag `public_api` in `config/features.php`, chiave settings `public_api_enabled`, default `false`.  
-Spento → tutte le route `/api/v1/*` rispondono 503 JSON tranne `/ping`.
+**Kill switch:** flag `public_api`, chiave settings `public_api_enabled`, default `false`. Spento → 503 JSON su tutte le route tranne `/ping`.
 
-**Account di servizio:** `is_service_account = true` su `users`, ruolo `api_client` senza permessi.  
-Non possono autenticarsi via browser (blocco in `LoginForm::authenticate()`).  
-Non compaiono nelle liste `User::role('atleta')`, `User::role('trainer')` ecc.
+**Account di servizio:** `is_service_account = true` su `users`, ruolo `api_client`. Non autenticabili via browser. Non compaiono nelle liste `User::role('atleta')` ecc.
 
-**Abilities token:** namespace separato dai gate web (es. `members:read`, `access-logs:write`).  
-Mai delegare ai gate role-based dall'API.
+**Abilities token:** namespace separato dai gate web (es. `members:read`, `access-logs:write`). Mai delegare ai gate role-based dall'API.
 
-**Formato errori:** tutte le risposte di errore hanno `message` + `code` (stabile).  
-`errors` aggiunto solo per 422. Nessuno stack trace in produzione.
+**Formato errori:** `message` + `code` stabile. `errors` solo per 422. Nessuno stack trace in produzione.
 
 | Code | HTTP | Causa |
 |---|---|---|
 | `unauthenticated` | 401 | Token assente/revocato |
 | `forbidden` | 403 | Ability mancante |
-| `not_found` | 404 | Risorsa inesistente (mai "Server Error") |
+| `not_found` | 404 | Risorsa inesistente |
 | `validation_failed` | 422 | Payload non valido |
 | `rate_limited` | 429 | Rate limit superato |
 | `cert_invalid` | 422 | Cert. medico scaduto/mancante (check-in) |
 | `subscription_inactive` | 422 | Nessun abbonamento attivo (check-in) |
 | `accesses_exhausted` | 422 | Accessi residui esauriti (check-in) |
 | `api_disabled` | 503 | Kill switch spento |
-| `module_disabled` | 503 | Flag di modulo spento (es. `group_classes`) |
+| `module_disabled` | 503 | Flag di modulo spento |
 
 **Comandi artisan:**
 
 ```bash
-# Crea account di servizio per un consumer (idempotente)
 php artisan api:create-service-account <consumer-slug>
-
-# Emette token con abilities specifiche (plain text stampato una volta)
 php artisan api:issue-token <consumer-slug> --name="<desc>" --abilities="members:read"
-
-# Elenca token attivi; revoca singolo token
-php artisan api:tokens
-php artisan api:tokens --consumer=<slug>
-php artisan api:tokens --revoke=<token-id>
+php artisan api:tokens [--consumer=<slug>] [--revoke=<token-id>]
 ```
 
-**Rate limiting:** Redis, 60 req/min per token (autenticato) o 10 req/min per IP (anonimo).  
-Configurabile via `config/api.php` o env `API_RATE_LIMIT_AUTH` / `API_RATE_LIMIT_ANON`.
+**Rate limiting:** Redis, 60 req/min autenticato / 10 req/min anonimo. Config: `config/api.php` o env `API_RATE_LIMIT_AUTH` / `API_RATE_LIMIT_ANON`.
 
-**Endpoint disponibili (API01 + API02 + API03 + API04):**
+**Endpoint disponibili (API01-04):** vedi `docs/api/03-endpoints.md` per lista completa con abilities e filtri.
 
-| Metodo | Path | Auth | Ability | Kill switch |
-|---|---|---|---|---|
-| GET | /api/v1/ping | No | — | Esente |
-| GET | /api/v1/me | Bearer | — | Sì |
-| GET | /api/v1/subscription-plans | Bearer | `subscription-plans:read` | Sì |
-| GET | /api/v1/members | Bearer | `members:read` | Sì |
-| GET | /api/v1/members/{id} | Bearer | `members:read` | Sì |
-| GET | /api/v1/members/{id}/subscription | Bearer | `members:read` | Sì |
-| GET | /api/v1/access-logs | Bearer | `access-logs:read` | Sì |
-| POST | /api/v1/access-logs | Bearer | `access-logs:write` | Sì |
-| GET | /api/v1/exercises | Bearer | `exercises:read` | Sì |
-| GET | /api/v1/exercises/{slug} | Bearer | `exercises:read` | Sì |
-| GET | /api/v1/group-classes | Bearer | `group-classes:read` | Sì + `group_classes` |
-| GET | /api/v1/class-occurrences | Bearer | `group-classes:read` | Sì + `group_classes` |
-| GET | /api/v1/class-bookings | Bearer | `class-bookings:read` | Sì + `group_classes` |
-| POST | /api/v1/class-bookings | Bearer | `class-bookings:write` | Sì + `group_classes` |
-| DELETE | /api/v1/class-bookings/{booking} | Bearer | `class-bookings:write` | Sì + `group_classes` |
-
-**Abilities whitelist** (`api:issue-token`): `subscription-plans:read`, `members:read`, `members:medical-read`, `access-logs:read`, `access-logs:write`, `exercises:read`, `group-classes:read`, `class-bookings:read`, `class-bookings:write`, `*` (test/staging only).  
-Riferimento completo: `docs/api/03-endpoints.md`.
+| Metodo | Path | Ability | Note |
+|---|---|---|---|
+| GET | /api/v1/ping | — | Esente da auth e kill switch |
+| GET | /api/v1/me | — | — |
+| GET | /api/v1/subscription-plans | `subscription-plans:read` | — |
+| GET | /api/v1/members | `members:read` | filtri: search, is_active, cert_expiry_before |
+| GET | /api/v1/members/{id} | `members:read` | — |
+| GET | /api/v1/members/{id}/subscription | `members:read` | — |
+| GET | /api/v1/access-logs | `access-logs:read` | cap 31 gg |
+| POST | /api/v1/access-logs | `access-logs:write` | idempotenza 5 min |
+| GET | /api/v1/exercises | `exercises:read` | filtri muscle/equipment/mechanic |
+| GET | /api/v1/exercises/{slug} | `exercises:read` | — |
+| GET | /api/v1/group-classes | `group-classes:read` | gated: `group_classes` |
+| GET | /api/v1/class-occurrences | `group-classes:read` | gated: `group_classes` |
+| GET | /api/v1/class-bookings | `class-bookings:read` | gated: `group_classes` |
+| POST | /api/v1/class-bookings | `class-bookings:write` | idempotente su AlreadyEnrolled |
+| DELETE | /api/v1/class-bookings/{booking} | `class-bookings:write` | cancel atleta |
 
 ## Comandi utili
 
@@ -536,12 +389,12 @@ php artisan migrate:fresh --seed
 ./vendor/bin/phpstan analyse --memory-limit=512M
 ./vendor/bin/pint --test
 
-# Go-live: inizializza piani abbonamento reali e account gestore
+# Go-live
 php artisan pilot:init
 
-# Genera icone PWA da resources/images/icon.png
+# PWA
 php artisan pwa:generate-icons
 
-# Rigenera SQLite di riferimento esercizi (AI/dev tool, non prod; stdlib Python)
+# SQLite esercizi (dev tool)
 python .claude/scripts/build_exercises_sqlite.py
 ```

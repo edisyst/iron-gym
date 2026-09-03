@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Backoffice\ExportController;
 use App\Livewire\Backoffice\Access\AccessLogList;
 use App\Livewire\Backoffice\Access\QuickCheckin;
 use App\Livewire\Backoffice\Admin\FeedbackList;
@@ -39,9 +40,6 @@ use App\Livewire\Backoffice\Subscriptions\SubscriptionList;
 use App\Livewire\Backoffice\Templates\TemplateBuilder;
 use App\Livewire\Backoffice\Templates\TemplateForm;
 use App\Livewire\Backoffice\Templates\TemplateList;
-use App\Models\Member;
-use App\Models\Subscription;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('backoffice')
@@ -131,81 +129,14 @@ Route::prefix('backoffice')
             ->name('reports.training');
 
         // Export CSV abbonamenti — solo gestore
-        Route::get('/subscriptions/export', function (Request $request) {
-            $filter = $request->query('filter', 'all');
-
-            $query = Subscription::with(['member', 'plan'])
-                ->when($filter === 'active', fn ($q) => $q->active())
-                ->when($filter === 'expired', fn ($q) => $q->where('status', 'expired'))
-                ->when($filter === 'expiring', fn ($q) => $q->expiringSoon(30))
-                ->when($filter === 'suspended', fn ($q) => $q->where('status', 'suspended'))
-                ->orderByDesc('created_at');
-
-            $subscriptions = $query->get();
-            $filename = 'abbonamenti-'.now()->format('Y-m-d').'.csv';
-
-            return response()->streamDownload(function () use ($subscriptions) {
-                $handle = fopen('php://output', 'w');
-                fwrite($handle, "\xEF\xBB\xBF"); // BOM per Excel
-                fputcsv($handle, ['Cognome', 'Nome', 'Email', 'Piano', 'Inizio', 'Scadenza', 'Stato'], ';');
-
-                foreach ($subscriptions as $sub) {
-                    fputcsv($handle, [
-                        $sub->member->last_name,
-                        $sub->member->first_name,
-                        $sub->member->email,
-                        $sub->plan->name,
-                        $sub->started_at->format('d/m/Y'),
-                        $sub->expires_at->format('d/m/Y'),
-                        $sub->status,
-                    ], ';');
-                }
-
-                fclose($handle);
-            }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
-        })->middleware('role:gestore')->name('subscriptions.export');
+        Route::get('/subscriptions/export', [ExportController::class, 'subscriptions'])
+            ->middleware('role:gestore')
+            ->name('subscriptions.export');
 
         // Export CSV tesserati — solo gestore
-        Route::get('/members/export', function (Request $request) {
-            $search = $request->query('search', '');
-            $certFilter = $request->query('certFilter', '');
-
-            $members = Member::with(['activeSubscription.plan'])
-                ->when($search, fn ($q) => $q->where(function ($q2) use ($search) {
-                    $q2->where('first_name', 'like', "%{$search}%")
-                        ->orWhere('last_name', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%");
-                }))
-                ->when($certFilter === 'missing', fn ($q) => $q->whereNull('medical_cert_expiry'))
-                ->when($certFilter === 'expired', fn ($q) => $q->whereNotNull('medical_cert_expiry')->where('medical_cert_expiry', '<', now()))
-                ->when($certFilter === 'expiring_soon', fn ($q) => $q->whereNotNull('medical_cert_expiry')->whereBetween('medical_cert_expiry', [now(), now()->addDays(30)]))
-                ->orderBy('last_name')->orderBy('first_name')
-                ->get();
-
-            $filename = 'tesserati-'.now()->format('Y-m-d').'.csv';
-
-            return response()->streamDownload(function () use ($members) {
-                $handle = fopen('php://output', 'w');
-                fwrite($handle, "\xEF\xBB\xBF"); // BOM per Excel
-                fputcsv($handle, ['Cognome', 'Nome', 'Email', 'Telefono', 'Abbonamento', 'Scadenza abb.', 'Cert. medico', 'Attivo'], ';');
-
-                foreach ($members as $member) {
-                    $sub = $member->activeSubscription;
-                    fputcsv($handle, [
-                        $member->last_name,
-                        $member->first_name,
-                        $member->email,
-                        $member->phone ?? '',
-                        $sub?->plan->name ?? '',
-                        $sub?->expires_at->format('d/m/Y') ?? '',
-                        $member->medical_cert_expiry?->format('d/m/Y') ?? '',
-                        $member->is_active ? 'Si' : 'No',
-                    ], ';');
-                }
-
-                fclose($handle);
-            }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
-        })->middleware('role:gestore')->name('members.export');
+        Route::get('/members/export', [ExportController::class, 'members'])
+            ->middleware('role:gestore')
+            ->name('members.export');
 
         // Step 10 — admin tools e campagne comunicazione (solo gestore)
         Route::middleware('role:gestore')->group(function () {

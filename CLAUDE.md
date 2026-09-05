@@ -198,7 +198,7 @@ Prossima attività: API05 (abbonamenti write) o altra feature su richiesta.
 ```bash
 php artisan db:seed --class=PilotSeeder          # piani abbonamento + account gestore
 php artisan db:seed --class=PilotTemplateSeeder  # template PPL ipertrofia 4 sett.
-php artisan db:seed --class=FunctionalTestSeeder # scenari test funzionale (non-production)
+php artisan db:seed --class=ScenarioDemoSeeder   # scenari test manuale (non-production)
 ```
 
 ### Account pilota locale

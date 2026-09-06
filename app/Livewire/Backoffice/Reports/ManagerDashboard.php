@@ -25,12 +25,16 @@ class ManagerDashboard extends Component
 
     private function from(): Carbon
     {
-        return Carbon::parse($this->dateFrom)->startOfDay();
+        return $this->dateFrom !== ''
+            ? Carbon::parse($this->dateFrom)->startOfDay()
+            : now()->startOfMonth()->startOfDay();
     }
 
     private function to(): Carbon
     {
-        return Carbon::parse($this->dateTo)->endOfDay();
+        return $this->dateTo !== ''
+            ? Carbon::parse($this->dateTo)->endOfDay()
+            : now()->endOfMonth()->endOfDay();
     }
 
     /** @return array<string, int> */
@@ -93,7 +97,9 @@ class ManagerDashboard extends Component
                 )
                 ->groupBy('m.id', 'm.first_name', 'm.last_name', 's.id', 's.expires_at')
                 ->orderBy('s.expires_at')
-                ->get();
+                ->get()
+                ->map(fn ($row) => (array) $row)
+                ->all();
         });
 
         $ptSessionsPerTrainer = DB::table('pt_bookings')

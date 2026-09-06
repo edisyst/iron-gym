@@ -52,8 +52,8 @@ Prefisso `/backoffice`, middleware `auth + role:gestore|trainer|receptionist`.
 | `backoffice.members.expiry` | `/backoffice/members/expiry` | `Backoffice\Members\ExpiryDashboard` | `gestore\|receptionist` |
 | `backoffice.checkin` | `/backoffice/checkin` | `Backoffice\Access\QuickCheckin` | |
 | `backoffice.settings.opening-hours` | `/backoffice/settings/opening-hours` | `Backoffice\Settings\OpeningHoursManager` | |
-| `backoffice.subscriptions.export` | `/backoffice/subscriptions/export` | closure CSV | `gestore` |
-| `backoffice.members.export` | `/backoffice/members/export` | closure CSV | `gestore` |
+| `backoffice.subscriptions.export` | `/backoffice/subscriptions/export` | `Backoffice\ExportController@subscriptions` | `gestore` |
+| `backoffice.members.export` | `/backoffice/members/export` | `Backoffice\ExportController@members` | `gestore` |
 
 Note: `/backoffice/admin/feature-flags` redirige con 301 a `/backoffice/settings/feature-flags`.
 

@@ -40,7 +40,7 @@ Indice di tutta la documentazione di progetto.
 - [02-trainer.md](test/02-trainer.md) — scenari test ruolo trainer *(rev. 2026-08-30)*
 - [03-receptionist.md](test/03-receptionist.md) — scenari test ruolo receptionist *(rev. 2026-08-30)*
 - [04-atleta.md](test/04-atleta.md) — scenari test ruolo atleta *(rev. 2026-08-30)*
-- [test-funzionali.md](test-funzionali.md) — guida scenari demo con FunctionalTestSeeder (FIX02/DOC02)
+- [test-funzionali.md](test-funzionali.md) — guida scenari demo con ScenarioDemoSeeder (FIX02/DOC02)
 - [testing/r09-plus-functional-test-plan.md](testing/r09-plus-functional-test-plan.md) — piano test manuale 109 casi R09+ (DOC02)
 
 ## Manuale operativo

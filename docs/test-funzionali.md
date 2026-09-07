@@ -8,10 +8,10 @@ Guida ai test manuali per verificare tutte le funzionalità introdotte da R09 a 
 php artisan migrate:fresh --seed
 ```
 
-Per i test manuali delle aree CLS/CHK/EXP/REG (piano `docs/testing/r09-plus-functional-test-plan.md`) aggiungere anche il seeder funzionale:
+Per i test manuali delle aree CLS/CHK/EXP/REG (piano `docs/testing/r09-plus-functional-test-plan.md`) aggiungere anche il seeder scenari:
 
 ```bash
-php artisan db:seed --class=FunctionalTestSeeder
+php artisan db:seed --class=ScenarioDemoSeeder
 ```
 
 **Account disponibili dopo il seed:**
@@ -29,7 +29,7 @@ php artisan db:seed --class=FunctionalTestSeeder
 | Federica Esposito | `federica.esposito@example.com` | `atleta` | in waitlist yoga |
 | Davide Martini | `davide.martini@example.com` | `atleta` | |
 
-**Account aggiuntivi da `FunctionalTestSeeder` (password: `demo1234`):**
+**Account aggiuntivi da `ScenarioDemoSeeder` (password: `demo1234`):**
 
 | Nome | Email | Scenario |
 |---|---|---|
@@ -237,7 +237,7 @@ php artisan db:seed --class=FunctionalTestSeeder
 
 - [ ] Profilo atleta → tab "Record"
 - [ ] Mostra ultimi 5 PR e1RM con: esercizio, valore (kg), data
-- [ ] I record devono includere Panca Piana, Stacco, Squat (dati dal seed R09R31DemoSeeder)
+- [ ] I record devono includere Panca Piana, Stacco, Squat (dati dal seed ScenarioDemoSeeder)
 - [ ] Link "Vedi tutti" porta a pagina completa PR
 
 > 🔐 Poi: `giovanni.ferrari@example.com` / `atleta`  *(nessun PR nel seed)*
@@ -384,7 +384,7 @@ php artisan db:seed --class=FunctionalTestSeeder
 
 > 🔐 Login: `admin@admin.admin` / `admin`
 
-- [ ] `/backoffice/subscriptions` → filtro "Sospesi" → mostra abbonamento sospeso dal seed R09R31DemoSeeder
+- [ ] `/backoffice/subscriptions` → filtro "Sospesi" → mostra abbonamento sospeso dal seed ScenarioDemoSeeder
 - [ ] Individua un abbonamento attivo → bottone pausa (`fa-pause`) → finestra `wire:confirm` → conferma
 - [ ] Status diventa `suspended`, icona cambia in `fa-play`
 - [ ] Premi `fa-play` su abbonamento sospeso → riattiva → status torna `active`
@@ -405,7 +405,7 @@ php artisan db:seed --class=FunctionalTestSeeder
 
 - [ ] `/backoffice/members` → Giovanni Ferrari → icona `fa-sticky-note` nella colonna azioni
 - [ ] Hover sull'icona → tooltip mostra "Note presenti"
-- [ ] Marco Ricci → stessa icona (note dal seed R09R31DemoSeeder)
+- [ ] Marco Ricci → stessa icona (note dal seed ScenarioDemoSeeder)
 - [ ] Atleta Test → NESSUNA icona note
 - [ ] Fai clic su "Modifica" per Giovanni Ferrari → campo "Note" pre-popolato con testo del seed
 - [ ] Modifica nota → Salva → verifica persistenza e icona ancora presente in lista
@@ -457,7 +457,7 @@ php artisan db:seed --class=FunctionalTestSeeder
 
 - [ ] `/backoffice/reports/manager` → scorrere in fondo alla pagina
 - [ ] Tabella "Sessioni PT completate per trainer" visibile
-- [ ] Luca Bianchi: 2 sessioni completate · Elena Russo: 1 sessione (dal seed BookingDemoSeeder)
+- [ ] Luca Bianchi: 2 sessioni completate · Elena Russo: 1 sessione (dal seed ClassDemoSeeder)
 - [ ] Cambia selettore "Dal / Al" a un mese senza sessioni → tabella mostra "Nessuna sessione PT nel periodo"
 - [ ] Sessioni con status `confirmed`, `pending`, `cancelled` → escluse dal conteggio
 
@@ -483,7 +483,7 @@ php artisan db:seed --class=FunctionalTestSeeder
 
 ### FIX02-B — Overlap PT + corso collettivo (F-02)
 
-> Prerequisito: `FunctionalTestSeeder` eseguito (crea occorrenza L: Trainer overlap `now+5` 14:00 con PtBooking trainer1)
+> Prerequisito: `ScenarioDemoSeeder` eseguito (crea occorrenza L: Trainer overlap `now+5` 14:00 con PtBooking trainer1)
 
 > 🔐 Login: `atleta@atleta.atleta` / `atleta`
 
@@ -550,14 +550,14 @@ php artisan db:seed --class=FunctionalTestSeeder
 ## Checklist pre-demo
 
 - [ ] `php artisan migrate:fresh --seed` completato senza errori
-- [ ] `php artisan db:seed --class=FunctionalTestSeeder` completato (scenari CLS/CHK/EXP/REG)
+- [ ] `php artisan db:seed --class=ScenarioDemoSeeder` completato (scenari CLS/CHK/EXP/REG)
 - [ ] `php artisan serve` attivo su porta 8000
 - [ ] Feature flags verificati: `financial_reports` ON, `periodization_engine` ON, `group_classes` ON
-- [ ] Almeno 1 abbonamento sospeso in DB (da R09R31DemoSeeder)
+- [ ] Almeno 1 abbonamento sospeso in DB (da ScenarioDemoSeeder)
 - [ ] Almeno 2 tesserati con note: Giovanni Ferrari, Marco Ricci
 - [ ] `atleta@atleta.atleta` ha PR, messaggi, notifiche, accessi, sessioni PT e corsi prenotati
 - [ ] `carlo.accessi@functional-test.demo` esiste con `accesses_remaining=0` (TC-CHK-004)
 - [ ] Occorrenza Yoga Full (`now+3`) con 3 confirmed + Federica in waitlist (TC-CLS-009/012)
 - [ ] Occorrenza L (`now+5` 14:00) con PtBooking trainer1 sovrapposta (REG-003 / FIX02-B)
-- [ ] Sessioni PT `completed` nel mese corrente per R31 (BookingDemoSeeder)
+- [ ] Sessioni PT `completed` nel mese corrente per R31 (ClassDemoSeeder)
 - [ ] Queue worker attivo: `php artisan queue:work redis --queue=default`

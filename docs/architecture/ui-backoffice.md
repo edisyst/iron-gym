@@ -85,25 +85,40 @@ Slot:
 |---|---|---|
 | `$slot` (default) | `card-body` | sempre |
 | `$actions` (named) | `card-tools` nel `card-header` | solo se non vuoto |
-| `$footer` (named) | dopo `card-body` | solo se non vuoto |
+| `$footer` (named) | renderizzato as-is dopo `card-body` | solo se non vuoto |
 
 L'header è renderizzato solo se `$title !== null` oppure `$actions` non è vuoto.
+
+**Contratto slot `footer`:** il componente NON aggiunge il wrapper `<div class="card-footer">`. È chi riempie lo slot a includerlo (es. `<div class="card-footer">...`) oppure a delegarlo a `x-bo.pagination` che lo produce autonomamente. Questo evita che un `x-bo.pagination` vuoto (quando `hasPages()` è false) lasci un `card-footer` vuoto nel DOM.
 
 **Convenzione `bodyClass`:**
 - Liste tabellari: `bodyClass="p-0"` (default)
 - Form: `bodyClass="p-3"`
 
+**Regola titolo — no duplicazione:** quando `page_title` è già presente nel content-header, la prop `title` di `x-bo.card` NON va passata. La card body non deve ripetere la stessa stringa. Passare `title` solo se la card ha un titolo autonomo distinto dal titolo di pagina (es. sezione secondaria, drill-down).
+
+**Canone tabella per liste:** sempre con wrapper `table-responsive` e classi `table table-sm table-striped table-hover mb-0`:
+
+```blade
+<div class="table-responsive">
+    <table class="table table-sm table-striped table-hover mb-0">
+        ...
+    </table>
+</div>
+```
+
 **Esempio — lista:**
 
 ```blade
-<x-bo.card title="Tesserati" bodyClass="p-0">
+<x-bo.card bodyClass="p-0">
     <x-slot name="actions">
         <a href="{{ route('...create') }}" class="btn btn-primary btn-sm">
             <i class="fas fa-plus"></i> Nuovo
         </a>
     </x-slot>
 
-    <table class="table table-hover table-striped mb-0">
+    <div class="table-responsive">
+    <table class="table table-sm table-striped table-hover mb-0">
         <thead>...</thead>
         <tbody>
             @forelse ($items as $item)
@@ -113,6 +128,7 @@ L'header è renderizzato solo se `$title !== null` oppure `$actions` non è vuot
             @endforelse
         </tbody>
     </table>
+    </div>
 
     <x-slot name="footer">
         <x-bo.pagination :paginator="$items" />
@@ -124,7 +140,7 @@ L'header è renderizzato solo se `$title !== null` oppure `$actions` non è vuot
 
 ```blade
 <form wire:submit="save">
-    <x-bo.card title="Nuovo elemento" bodyClass="p-3">
+    <x-bo.card bodyClass="p-3">
         <div class="form-group">
             <label>Nome</label>
             <input type="text" wire:model="name" class="form-control">

@@ -71,13 +71,13 @@ it('atleta non può iscriversi se prenotazione non ancora aperta', function () {
 
 it('atleta non può iscriversi se prenotazione è chiusa (entro booking_closes_minutes)', function () {
     // Corso inizia tra 10 minuti (< 30 min) → prenotazione chiusa
-    $start = now()->addMinutes(10)->format('H:i:s');
-    $end = now()->addMinutes(70)->format('H:i:s');
+    $startCarbon = now()->addMinutes(10);
+    $endCarbon = now()->addMinutes(70);
 
     $occurrence = ClassOccurrence::factory()->create([
-        'date' => today()->toDateString(),
-        'start_time' => $start,
-        'end_time' => $end,
+        'date' => $startCarbon->toDateString(),
+        'start_time' => $startCarbon->format('H:i:s'),
+        'end_time' => $endCarbon->format('H:i:s'),
         'status' => 'planned',
         'capacity' => 10,
     ]);
@@ -91,13 +91,13 @@ it('atleta non può iscriversi se prenotazione è chiusa (entro booking_closes_m
 
 it('atleta non può cancellare iscrizione oltre free_cancel_hours', function () {
     // Corso inizia tra 1 ora (< 3h) → cancellazione non disponibile
-    $start = now()->addHour()->format('H:i:s');
-    $end = now()->addHours(2)->format('H:i:s');
+    $startCarbon = now()->addHour();
+    $endCarbon = now()->addHours(2);
 
     $occurrence = ClassOccurrence::factory()->create([
-        'date' => today()->toDateString(),
-        'start_time' => $start,
-        'end_time' => $end,
+        'date' => $startCarbon->toDateString(),
+        'start_time' => $startCarbon->format('H:i:s'),
+        'end_time' => $endCarbon->format('H:i:s'),
         'status' => 'planned',
         'capacity' => 10,
     ]);

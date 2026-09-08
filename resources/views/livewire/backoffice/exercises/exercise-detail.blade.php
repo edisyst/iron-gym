@@ -1,16 +1,4 @@
 <div>
-    {{-- Azioni header --}}
-    <div class="mb-3 d-flex align-items-center justify-content-end">
-        <div>
-            <a href="{{ route('backoffice.exercises.index') }}" class="btn btn-default btn-sm">
-                <i class="fas fa-arrow-left"></i> Lista
-            </a>
-            <a href="{{ route('backoffice.exercises.edit', $exercise) }}" class="btn btn-primary btn-sm ml-1">
-                <i class="fas fa-edit"></i> Modifica
-            </a>
-        </div>
-    </div>
-
     <div class="row">
         {{-- Colonna sinistra --}}
         <div class="col-lg-8">
@@ -46,6 +34,14 @@
             <div class="card card-primary card-outline">
                 <div class="card-header">
                     <h3 class="card-title"><i class="fas fa-tags mr-1"></i> Identità e Classificazione</h3>
+                    <div class="card-tools">
+                        <a href="{{ route('backoffice.exercises.index') }}" class="btn btn-default btn-sm mr-1">
+                            <i class="fas fa-arrow-left"></i> Lista
+                        </a>
+                        <a href="{{ route('backoffice.exercises.edit', $exercise) }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-edit"></i> Modifica
+                        </a>
+                    </div>
                 </div>
                 <div class="card-body">
                     @php
@@ -192,7 +188,8 @@
                     <h3 class="card-title"><i class="fas fa-male mr-1"></i> Coinvolgimento Muscolare</h3>
                 </div>
                 <div class="card-body p-0">
-                    <table class="table table-sm mb-0">
+                    <div class="table-responsive">
+                    <table class="table table-sm table-striped table-hover mb-0">
                         <thead class="thead-light">
                             <tr>
                                 <th>Muscolo</th>
@@ -246,12 +243,11 @@
                                     </td>
                                 </tr>
                             @empty
-                                <tr>
-                                    <td colspan="3" class="text-center text-muted py-3">Nessun muscolo</td>
-                                </tr>
+                                <x-bo.empty :colspan="3">Nessun muscolo</x-bo.empty>
                             @endforelse
                         </tbody>
                     </table>
+                    </div>
                 </div>
             </div>
 

@@ -110,11 +110,7 @@
             </div>
         </div>
 
-        @if ($plates->hasPages())
-            <div class="card-footer">
-                {{ $plates->links() }}
-            </div>
-        @endif
+        <x-bo.pagination :paginator="$plates" />
     </div>
 
     {{-- Inventario Manubri --}}
@@ -221,10 +217,6 @@
             </div>
         </div>
 
-        @if ($dumbbells->hasPages())
-            <div class="card-footer">
-                {{ $dumbbells->links() }}
-            </div>
-        @endif
+        <x-bo.pagination :paginator="$dumbbells" />
     </div>
 </div>

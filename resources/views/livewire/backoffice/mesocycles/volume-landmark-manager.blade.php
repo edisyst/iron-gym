@@ -23,7 +23,8 @@
 
         <div class="card-body p-0">
             @foreach ($grouped as $group => $muscles)
-                <table class="table table-sm table-bordered mb-0">
+                <div class="table-responsive">
+                <table class="table table-sm table-striped table-hover mb-0">
                     <thead class="thead-light">
                         <tr>
                             <th colspan="5" class="text-uppercase small font-weight-bold text-muted py-1 px-3 bg-light">
@@ -57,6 +58,7 @@
                         @endforeach
                     </tbody>
                 </table>
+                </div>
             @endforeach
         </div>
     </div>

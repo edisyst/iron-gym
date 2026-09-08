@@ -1,13 +1,4 @@
 <div>
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="mb-0">Catalogo corsi collettivi</h4>
-        @role('gestore')
-        <button class="btn btn-primary btn-sm" wire:click="openForm()">
-            <i class="fas fa-plus mr-1"></i> Nuovo corso
-        </button>
-        @endrole
-    </div>
-
     @if (session('success'))
         <div class="alert alert-success alert-dismissible">
             <button type="button" class="close" data-dismiss="alert">&times;</button>
@@ -111,75 +102,79 @@
     @endif
 
     {{-- Tabella corsi --}}
-    <div class="card">
-        <div class="card-body p-0">
-            <table class="table table-hover mb-0">
-                <thead>
+    <x-bo.card bodyClass="p-0">
+        <x-slot name="actions">
+            @role('gestore')
+            <button class="btn btn-primary btn-sm" wire:click="openForm()">
+                <i class="fas fa-plus mr-1"></i> Nuovo corso
+            </button>
+            @endrole
+        </x-slot>
+
+        <div class="table-responsive">
+        <table class="table table-sm table-striped table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Durata</th>
+                    <th>Capienza</th>
+                    <th>Sala</th>
+                    <th>Prossimi</th>
+                    <th>Stato</th>
+                    <th class="text-right">Azioni</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse ($classes as $gc)
                     <tr>
-                        <th>Nome</th>
-                        <th>Durata</th>
-                        <th>Capienza</th>
-                        <th>Sala</th>
-                        <th>Prossimi</th>
-                        <th>Stato</th>
-                        <th class="text-right">Azioni</th>
+                        <td>
+                            <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:{{ $gc->color ?? '#E85D04' }};margin-right:6px;vertical-align:middle;"></span>
+                            <strong>{{ $gc->name }}</strong>
+                            @if ($gc->description)
+                                <small class="text-muted d-block">{{ Str::limit($gc->description, 60) }}</small>
+                            @endif
+                        </td>
+                        <td>{{ $gc->duration_minutes }} min</td>
+                        <td>{{ $gc->default_capacity }}</td>
+                        <td>{{ $gc->room ?? '—' }}</td>
+                        <td>
+                            <span class="badge badge-{{ $gc->future_count > 0 ? 'info' : 'secondary' }}">
+                                {{ $gc->future_count }}
+                            </span>
+                        </td>
+                        <td>
+                            @if ($gc->is_active)
+                                <span class="badge badge-success">Attivo</span>
+                            @else
+                                <span class="badge badge-secondary">Inattivo</span>
+                            @endif
+                        </td>
+                        <td class="text-right table-actions">
+                            @role('gestore')
+                            <button class="btn btn-sm btn-outline-primary"
+                                    wire:click="openForm({{ $gc->id }})"
+                                    aria-label="Modifica {{ $gc->name }}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-{{ $gc->is_active ? 'warning' : 'success' }}"
+                                    wire:click="toggleActive({{ $gc->id }})"
+                                    aria-label="{{ $gc->is_active ? 'Disattiva' : 'Attiva' }} {{ $gc->name }}">
+                                <i class="fas fa-{{ $gc->is_active ? 'pause' : 'play' }}"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger"
+                                    wire:click="deleteClass({{ $gc->id }})"
+                                    wire:confirm="Eliminare '{{ $gc->name }}'? L'operazione è irreversibile."
+                                    aria-label="Elimina {{ $gc->name }}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            @endrole
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-                    @forelse ($classes as $gc)
-                        <tr>
-                            <td>
-                                <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:{{ $gc->color ?? '#E85D04' }};margin-right:6px;vertical-align:middle;"></span>
-                                <strong>{{ $gc->name }}</strong>
-                                @if ($gc->description)
-                                    <small class="text-muted d-block">{{ Str::limit($gc->description, 60) }}</small>
-                                @endif
-                            </td>
-                            <td>{{ $gc->duration_minutes }} min</td>
-                            <td>{{ $gc->default_capacity }}</td>
-                            <td>{{ $gc->room ?? '—' }}</td>
-                            <td>
-                                <span class="badge badge-{{ $gc->future_count > 0 ? 'info' : 'secondary' }}">
-                                    {{ $gc->future_count }}
-                                </span>
-                            </td>
-                            <td>
-                                @if ($gc->is_active)
-                                    <span class="badge badge-success">Attivo</span>
-                                @else
-                                    <span class="badge badge-secondary">Inattivo</span>
-                                @endif
-                            </td>
-                            <td class="text-right table-actions">
-                                @role('gestore')
-                                <button class="btn btn-sm btn-outline-primary"
-                                        wire:click="openForm({{ $gc->id }})"
-                                        aria-label="Modifica {{ $gc->name }}">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-{{ $gc->is_active ? 'warning' : 'success' }}"
-                                        wire:click="toggleActive({{ $gc->id }})"
-                                        aria-label="{{ $gc->is_active ? 'Disattiva' : 'Attiva' }} {{ $gc->name }}">
-                                    <i class="fas fa-{{ $gc->is_active ? 'pause' : 'play' }}"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger"
-                                        wire:click="deleteClass({{ $gc->id }})"
-                                        wire:confirm="Eliminare '{{ $gc->name }}'? L'operazione è irreversibile."
-                                        aria-label="Elimina {{ $gc->name }}">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                                @endrole
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="7" class="text-center text-muted py-4">
-                                Nessun corso nel catalogo. Clicca "Nuovo corso" per iniziare.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                @empty
+                    <x-bo.empty :colspan="7">Nessun corso nel catalogo. Clicca "Nuovo corso" per iniziare.</x-bo.empty>
+                @endforelse
+            </tbody>
+        </table>
         </div>
-    </div>
+    </x-bo.card>
 </div>

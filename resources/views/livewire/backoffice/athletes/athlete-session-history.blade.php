@@ -284,7 +284,7 @@
                             </table>
                         </div>
                     @empty
-                        <p class="text-muted text-center py-4">Nessuna sessione precedente.</p>
+                        <x-bo.empty>Nessuna sessione precedente.</x-bo.empty>
                     @endforelse
                 </div>
             </div>

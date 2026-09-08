@@ -77,7 +77,7 @@
                         @if (!empty($drilldown['weekly_sessions']))
                             <canvas id="weeklyChart" height="120"></canvas>
                         @else
-                            <p class="text-muted">Nessuna sessione registrata.</p>
+                            <x-bo.empty>Nessuna sessione registrata.</x-bo.empty>
                         @endif
                     </div>
                     <div class="col-md-5">
@@ -121,7 +121,7 @@
                                 </tbody>
                             </table>
                         @else
-                            <p class="text-muted">Nessun feedback.</p>
+                            <x-bo.empty>Nessun feedback.</x-bo.empty>
                         @endif
                     </div>
                 </div>

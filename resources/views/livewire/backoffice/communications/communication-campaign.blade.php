@@ -139,7 +139,7 @@
                         @forelse ($this->recipientsList as $recipient)
                             <div class="py-1 border-bottom">{{ $recipient['name'] }}</div>
                         @empty
-                            <p class="text-muted mb-0">Nessun destinatario.</p>
+                            <x-bo.empty>Nessun destinatario.</x-bo.empty>
                         @endforelse
                     </div>
                     <div class="modal-footer">

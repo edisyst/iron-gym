@@ -2,6 +2,19 @@
 
 ---
 
+## BO01 Fase 2B — Migrazione liste divergenti (2026-09-08)
+
+Applicazione dei componenti `x-bo.*` a 5 view lista con markup divergente dal canone.
+
+**Modificato:**
+- `feedback-list`: render() old-style → new-style; `x-bo.filters` aggiunge header "Filtri" (mancante nell'originale); `table-bordered` → `table-striped table-hover`; `x-bo.empty` (py-3 → py-4); `x-bo.pagination`
+- `athlete-session-history`: sub-componente senza layout, nessuna conversione render(); `x-bo.filters` (card-secondary → card-primary canonico); `x-bo.card`; `table-striped` aggiunto; pannello dettaglio inline e modal storico esercizio invariati
+- `class-schedule-manager`: `card-outline card-warning` → `x-bo.card` neutro; `table-striped` + `table-responsive`; form inline invariata
+- `group-class-manager`: filtri (`filterStatus`, `search`) estratti dal `card-tools` in `x-bo.filters`; `card-warning` → `x-bo.card` neutro; pannello iscritti (card-info, col-md-5) invariato
+- `group-class-catalog`: heading `<h4>Catalogo corsi collettivi</h4>` rimosso (ripeteva page_title); CTA "Nuovo corso" → slot `actions`; nessun `x-bo.filters` (nessun controllo filtro); form card inline invariata
+
+---
+
 ## BO01 Fase 2A — Migrazione liste conformi al canone (2026-09-08)
 
 Applicazione dei componenti `x-bo.*` a 7 view lista backoffice.

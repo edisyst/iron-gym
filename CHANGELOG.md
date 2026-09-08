@@ -2,6 +2,21 @@
 
 ---
 
+## BO01 Fase 2A — Migrazione liste conformi al canone (2026-09-08)
+
+Applicazione dei componenti `x-bo.*` a 7 view lista backoffice.
+
+**Modificato:**
+- `access-log-list`: filtri in `x-bo.filters`, card in `x-bo.card`, tabella normalizzata (`table-sm table-striped`), paginazione condizionale via `x-bo.pagination`
+- `exercise-list`: idem; `table-responsive` aggiunto; `table-actions` e stili inline thumbnail preservati
+- `subscription-list`: idem; `table-sm table-striped` aggiunti
+- `template-list`: idem; `table-sm` aggiunto
+- `mesocycle-list`: render() convertito da old-style a new-style (`layoutData` separato); idem per componenti
+- `booking-list`: idem; card senza card-header (no title, no actions); paginazione già condizionale sostituita con `x-bo.pagination`
+- `training-report`: sezione principale "Atleti" in `x-bo.card title="Atleti"`; sezione drilldown esclusa dallo scope (markup custom)
+
+---
+
 ## BO01 Fase 1 — Componenti x-bo.* e view pilota (2026-09-08)
 
 Uniformità strutturale UI backoffice: componenti Blade canonici e applicazione alle view pilota.

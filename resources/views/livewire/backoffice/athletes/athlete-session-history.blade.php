@@ -1,253 +1,246 @@
 <div>
-    {{-- Filtro mesociclo --}}
-    <div class="card card-outline card-secondary mb-3">
-        <div class="card-body py-2">
-            <select wire:model.live="mesocycleId" class="form-control form-control-sm filter-w-lg">
-                <option value="">Tutti i mesocicli</option>
-                @foreach ($mesocycles as $meso)
-                    <option value="{{ $meso->id }}">{{ $meso->name }}</option>
-                @endforeach
-            </select>
-        </div>
-    </div>
+    <x-bo.filters>
+        <select wire:model.live="mesocycleId" class="form-control form-control-sm filter-w-lg">
+            <option value="">Tutti i mesocicli</option>
+            @foreach ($mesocycles as $meso)
+                <option value="{{ $meso->id }}">{{ $meso->name }}</option>
+            @endforeach
+        </select>
+    </x-bo.filters>
 
-    {{-- Tabella sessioni --}}
-    <div class="card">
-        <div class="card-body p-0">
-            <table class="table table-sm table-hover mb-0">
-                <thead>
+    <x-bo.card bodyClass="p-0">
+        <div class="table-responsive">
+        <table class="table table-sm table-striped table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Sessione</th>
+                    <th>Mesociclo</th>
+                    <th>Trainer</th>
+                    <th>Set</th>
+                    <th>Durata</th>
+                    <th>Feedback</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse ($sessions as $session)
                     <tr>
-                        <th>Data</th>
-                        <th>Sessione</th>
-                        <th>Mesociclo</th>
-                        <th>Trainer</th>
-                        <th>Set</th>
-                        <th>Durata</th>
-                        <th>Feedback</th>
-                        <th></th>
+                        <td>{{ $session->completed_at?->format('d/m/Y H:i') ?? '—' }}</td>
+                        <td>{{ $session->name }}</td>
+                        <td>{{ $session->week->mesocycle->name }}</td>
+                        <td>{{ $session->week->mesocycle->trainer?->name ?? '—' }}</td>
+                        <td>{{ $this->completedSetsCount($session) }} / {{ $this->totalSetsCount($session) }}</td>
+                        <td>{{ $this->duration($session) ?? '—' }}</td>
+                        <td>
+                            @if ($session->feedback)
+                                <i class="fas fa-comment-alt text-success"></i>
+                            @else
+                                <i class="fas fa-comment-alt text-muted"></i>
+                            @endif
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary"
+                                    wire:click="showDetail({{ $session->id }})">
+                                Dettaglio
+                            </button>
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-                    @forelse ($sessions as $session)
+
+                    {{-- Pannello dettaglio inline --}}
+                    @if ($selectedSessionId === $session->id && $this->selectedSession !== null)
                         <tr>
-                            <td>{{ $session->completed_at?->format('d/m/Y H:i') ?? '—' }}</td>
-                            <td>{{ $session->name }}</td>
-                            <td>{{ $session->week->mesocycle->name }}</td>
-                            <td>{{ $session->week->mesocycle->trainer?->name ?? '—' }}</td>
-                            <td>{{ $this->completedSetsCount($session) }} / {{ $this->totalSetsCount($session) }}</td>
-                            <td>{{ $this->duration($session) ?? '—' }}</td>
-                            <td>
-                                @if ($session->feedback)
-                                    <i class="fas fa-comment-alt text-success"></i>
-                                @else
-                                    <i class="fas fa-comment-alt text-muted"></i>
-                                @endif
-                            </td>
-                            <td>
-                                <button class="btn btn-sm btn-outline-primary"
-                                        wire:click="showDetail({{ $session->id }})">
-                                    Dettaglio
-                                </button>
-                            </td>
-                        </tr>
+                            <td colspan="8" class="bg-light">
+                                <div class="p-3">
+                                    @php $s = $this->selectedSession; @endphp
 
-                        {{-- Pannello dettaglio inline --}}
-                        @if ($selectedSessionId === $session->id && $this->selectedSession !== null)
-                            <tr>
-                                <td colspan="8" class="bg-light">
-                                    <div class="p-3">
-                                        @php $s = $this->selectedSession; @endphp
-
-                                        <div class="d-flex justify-content-between align-items-start mb-3">
-                                            <div>
-                                                <strong>{{ $s->name }}</strong>
-                                                <span class="text-muted ml-2">{{ $s->completed_at?->format('d/m/Y H:i') }}</span>
-                                                @if ($this->duration($s))
-                                                    <span class="text-muted ml-2">{{ $this->duration($s) }}</span>
-                                                @endif
-                                            </div>
-                                            <button class="btn btn-sm btn-secondary" wire:click="showDetail({{ $session->id }})">
-                                                Chiudi
-                                            </button>
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div>
+                                            <strong>{{ $s->name }}</strong>
+                                            <span class="text-muted ml-2">{{ $s->completed_at?->format('d/m/Y H:i') }}</span>
+                                            @if ($this->duration($s))
+                                                <span class="text-muted ml-2">{{ $this->duration($s) }}</span>
+                                            @endif
                                         </div>
+                                        <button class="btn btn-sm btn-secondary" wire:click="showDetail({{ $session->id }})">
+                                            Chiudi
+                                        </button>
+                                    </div>
 
-                                        {{-- Readiness pre-sessione --}}
-                                        @if ($s->readinessCheck)
-                                            @php
-                                                $rc = $s->readinessCheck;
-                                                $rcScore = $rc->score;
-                                                $rcBadge = match(true) {
-                                                    $rcScore >= 9 => 'success',
-                                                    $rcScore >= 5 => 'warning',
-                                                    default       => 'danger',
-                                                };
-                                                $rcLabel = match(true) {
-                                                    $rcScore >= 9 => 'ottimale',
-                                                    $rcScore >= 5 => 'moderata',
-                                                    default       => 'bassa',
-                                                };
-                                                $rcFields = [
-                                                    'sleep_quality'  => 'Sonno',
-                                                    'stress_level'   => 'Stress',
-                                                    'soreness_level' => 'Indolenzimento',
-                                                    'joint_status'   => 'Articolazioni',
-                                                ];
-                                            @endphp
-                                            <div class="mb-3">
-                                                <small class="text-muted text-uppercase font-weight-bold d-block mb-1">
-                                                    <i class="fas fa-heartbeat mr-1"></i>Readiness pre-sessione
-                                                </small>
-                                                <span class="badge badge-{{ $rcBadge }} mr-2">
-                                                    score {{ $rcScore }}/12 &mdash; {{ $rcLabel }}
+                                    {{-- Readiness pre-sessione --}}
+                                    @if ($s->readinessCheck)
+                                        @php
+                                            $rc = $s->readinessCheck;
+                                            $rcScore = $rc->score;
+                                            $rcBadge = match(true) {
+                                                $rcScore >= 9 => 'success',
+                                                $rcScore >= 5 => 'warning',
+                                                default       => 'danger',
+                                            };
+                                            $rcLabel = match(true) {
+                                                $rcScore >= 9 => 'ottimale',
+                                                $rcScore >= 5 => 'moderata',
+                                                default       => 'bassa',
+                                            };
+                                            $rcFields = [
+                                                'sleep_quality'  => 'Sonno',
+                                                'stress_level'   => 'Stress',
+                                                'soreness_level' => 'Indolenzimento',
+                                                'joint_status'   => 'Articolazioni',
+                                            ];
+                                        @endphp
+                                        <div class="mb-3">
+                                            <small class="text-muted text-uppercase font-weight-bold d-block mb-1">
+                                                <i class="fas fa-heartbeat mr-1"></i>Readiness pre-sessione
+                                            </small>
+                                            <span class="badge badge-{{ $rcBadge }} mr-2">
+                                                score {{ $rcScore }}/12 &mdash; {{ $rcLabel }}
+                                            </span>
+                                            @foreach ($rcFields as $field => $label)
+                                                <span class="mr-3">
+                                                    <small class="text-muted">{{ $label }}:</small>
+                                                    <strong>{{ $rc->$field }}</strong>
                                                 </span>
-                                                @foreach ($rcFields as $field => $label)
-                                                    <span class="mr-3">
-                                                        <small class="text-muted">{{ $label }}:</small>
-                                                        <strong>{{ $rc->$field }}</strong>
-                                                    </span>
-                                                @endforeach
-                                                @if ($rc->note)
-                                                    <p class="text-muted small mt-1 mb-0">
-                                                        <i class="fas fa-sticky-note mr-1"></i>{{ $rc->note }}
-                                                    </p>
-                                                @endif
-                                                @if ($s->trainer_notes)
-                                                    <p class="text-muted small mt-1 mb-0">
-                                                        <i class="fas fa-info-circle mr-1"></i>{{ $s->trainer_notes }}
-                                                    </p>
-                                                @endif
-                                            </div>
-                                        @endif
-
-                                        {{-- Feedback --}}
-                                        @if ($s->feedback)
-                                            @php
-                                                $fb = $s->feedback;
-                                                $badgeClass = fn($v) => match((int) $v) {
-                                                    0 => 'secondary',
-                                                    1 => 'success',
-                                                    2 => 'warning',
-                                                    3 => 'danger',
-                                                    default => 'secondary',
-                                                };
-                                                $feedbackFields = [
-                                                    'pump' => 'Pump',
-                                                    'soreness_prev' => 'Indolenzimento residuo',
-                                                    'perceived_effort' => 'Sforzo percepito',
-                                                    'joint_pain' => 'Dolore articolare',
-                                                    'performance' => 'Performance',
-                                                ];
-                                            @endphp
-                                            <div class="mb-3 d-flex flex-wrap gap-2">
-                                                @foreach ($feedbackFields as $field => $label)
-                                                    <div class="mr-3">
-                                                        <small class="text-muted d-block">{{ $label }}</small>
-                                                        @if ($fb->$field !== null)
-                                                            <span class="badge badge-{{ $badgeClass($fb->$field) }}">{{ $fb->$field }}</span>
-                                                        @else
-                                                            <span class="text-muted">—</span>
-                                                        @endif
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                            @if ($fb->note)
-                                                <p class="text-muted small mb-3">
-                                                    <i class="fas fa-sticky-note mr-1"></i>{{ $fb->note }}
+                                            @endforeach
+                                            @if ($rc->note)
+                                                <p class="text-muted small mt-1 mb-0">
+                                                    <i class="fas fa-sticky-note mr-1"></i>{{ $rc->note }}
                                                 </p>
                                             @endif
-                                        @else
-                                            <p class="text-muted small mb-3">Nessun feedback per questa sessione.</p>
-                                        @endif
+                                            @if ($s->trainer_notes)
+                                                <p class="text-muted small mt-1 mb-0">
+                                                    <i class="fas fa-info-circle mr-1"></i>{{ $s->trainer_notes }}
+                                                </p>
+                                            @endif
+                                        </div>
+                                    @endif
 
-                                        {{-- Esercizi --}}
-                                        @foreach ($s->sessionExercises as $exercise)
-                                            <div class="mb-3">
-                                                <button wire:click="showExerciseHistory({{ $exercise->exercise_id }}, '{{ addslashes($exercise->exercise->name_it) }}')"
-                                                        class="btn btn-link p-0 font-weight-bold mb-1 text-dark"
-                                                        style="text-decoration:underline dotted;text-underline-offset:3px;">
-                                                    {{ $exercise->exercise->name_it }}
-                                                </button>
-                                                <a href="{{ route('backoffice.exercises.show', $exercise->exercise) }}"
-                                                   class="ml-1 text-muted" title="Scheda esercizio" target="_blank">
-                                                    <i class="fas fa-external-link-alt fa-xs"></i>
-                                                </a>
-                                                @if ($exercise->substituted_from_exercise_id !== null && $exercise->substitutedFrom !== null)
-                                                    <span class="badge badge-warning ml-1" title="L'atleta ha sostituito l'esercizio originale in sessione">
-                                                        <i class="fas fa-exchange-alt fa-xs mr-1"></i>sost. da {{ $exercise->substitutedFrom->name_it }}
-                                                    </span>
-                                                @endif
-                                                <table class="table table-xs table-sm mb-0">
-                                                    <thead class="thead-light">
-                                                        <tr>
-                                                            <th style="width:40px">#</th>
-                                                            <th>Pianificato</th>
-                                                            <th></th>
-                                                            <th>Eseguito</th>
-                                                            <th>e1RM</th>
+                                    {{-- Feedback --}}
+                                    @if ($s->feedback)
+                                        @php
+                                            $fb = $s->feedback;
+                                            $badgeClass = fn($v) => match((int) $v) {
+                                                0 => 'secondary',
+                                                1 => 'success',
+                                                2 => 'warning',
+                                                3 => 'danger',
+                                                default => 'secondary',
+                                            };
+                                            $feedbackFields = [
+                                                'pump' => 'Pump',
+                                                'soreness_prev' => 'Indolenzimento residuo',
+                                                'perceived_effort' => 'Sforzo percepito',
+                                                'joint_pain' => 'Dolore articolare',
+                                                'performance' => 'Performance',
+                                            ];
+                                        @endphp
+                                        <div class="mb-3 d-flex flex-wrap gap-2">
+                                            @foreach ($feedbackFields as $field => $label)
+                                                <div class="mr-3">
+                                                    <small class="text-muted d-block">{{ $label }}</small>
+                                                    @if ($fb->$field !== null)
+                                                        <span class="badge badge-{{ $badgeClass($fb->$field) }}">{{ $fb->$field }}</span>
+                                                    @else
+                                                        <span class="text-muted">—</span>
+                                                    @endif
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                        @if ($fb->note)
+                                            <p class="text-muted small mb-3">
+                                                <i class="fas fa-sticky-note mr-1"></i>{{ $fb->note }}
+                                            </p>
+                                        @endif
+                                    @else
+                                        <p class="text-muted small mb-3">Nessun feedback per questa sessione.</p>
+                                    @endif
+
+                                    {{-- Esercizi --}}
+                                    @foreach ($s->sessionExercises as $exercise)
+                                        <div class="mb-3">
+                                            <button wire:click="showExerciseHistory({{ $exercise->exercise_id }}, '{{ addslashes($exercise->exercise->name_it) }}')"
+                                                    class="btn btn-link p-0 font-weight-bold mb-1 text-dark"
+                                                    style="text-decoration:underline dotted;text-underline-offset:3px;">
+                                                {{ $exercise->exercise->name_it }}
+                                            </button>
+                                            <a href="{{ route('backoffice.exercises.show', $exercise->exercise) }}"
+                                               class="ml-1 text-muted" title="Scheda esercizio" target="_blank">
+                                                <i class="fas fa-external-link-alt fa-xs"></i>
+                                            </a>
+                                            @if ($exercise->substituted_from_exercise_id !== null && $exercise->substitutedFrom !== null)
+                                                <span class="badge badge-warning ml-1" title="L'atleta ha sostituito l'esercizio originale in sessione">
+                                                    <i class="fas fa-exchange-alt fa-xs mr-1"></i>sost. da {{ $exercise->substitutedFrom->name_it }}
+                                                </span>
+                                            @endif
+                                            <table class="table table-xs table-sm mb-0">
+                                                <thead class="thead-light">
+                                                    <tr>
+                                                        <th style="width:40px">#</th>
+                                                        <th>Pianificato</th>
+                                                        <th></th>
+                                                        <th>Eseguito</th>
+                                                        <th>e1RM</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach ($exercise->sets->sortBy('set_index') as $set)
+                                                        @php
+                                                            $isWarmup = $set->is_warmup ?? false;
+                                                            $isDone = $set->completed_at !== null;
+                                                            $e1rm = $isDone
+                                                                ? \App\Services\E1rmCalculator::epley($set->actual_weight_kg, $set->actual_reps)
+                                                                : null;
+                                                        @endphp
+                                                        <tr class="{{ $isWarmup ? 'text-muted' : '' }}{{ !$isDone ? ' text-muted' : '' }}">
+                                                            <td>
+                                                                {{ $set->set_index }}
+                                                                @if ($isWarmup)
+                                                                    <small class="text-muted">(risc.)</small>
+                                                                @endif
+                                                            </td>
+                                                            <td class="text-muted small">
+                                                                {{ $set->planned_reps ?? '—' }}
+                                                                @if ($set->planned_weight_kg) × {{ $set->planned_weight_kg }} kg @endif
+                                                                @if ($set->planned_rir !== null) @ RIR{{ $set->planned_rir }} @endif
+                                                            </td>
+                                                            <td class="text-muted">→</td>
+                                                            <td>
+                                                                @if ($isDone)
+                                                                    {{ $set->actual_reps ?? '—' }}
+                                                                    @if ($set->actual_weight_kg) × {{ $set->actual_weight_kg }} kg @endif
+                                                                    @if ($set->actual_rir !== null) @ RIR{{ $set->actual_rir }} @endif
+                                                                @else
+                                                                    <span class="text-muted">—</span>
+                                                                @endif
+                                                            </td>
+                                                            <td>
+                                                                @if ($e1rm !== null)
+                                                                    <span class="text-primary">{{ $e1rm }} kg</span>
+                                                                @else
+                                                                    —
+                                                                @endif
+                                                            </td>
                                                         </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        @foreach ($exercise->sets->sortBy('set_index') as $set)
-                                                            @php
-                                                                $isWarmup = $set->is_warmup ?? false;
-                                                                $isDone = $set->completed_at !== null;
-                                                                $e1rm = $isDone
-                                                                    ? \App\Services\E1rmCalculator::epley($set->actual_weight_kg, $set->actual_reps)
-                                                                    : null;
-                                                            @endphp
-                                                            <tr class="{{ $isWarmup ? 'text-muted' : '' }}{{ !$isDone ? ' text-muted' : '' }}">
-                                                                <td>
-                                                                    {{ $set->set_index }}
-                                                                    @if ($isWarmup)
-                                                                        <small class="text-muted">(risc.)</small>
-                                                                    @endif
-                                                                </td>
-                                                                <td class="text-muted small">
-                                                                    {{ $set->planned_reps ?? '—' }}
-                                                                    @if ($set->planned_weight_kg) × {{ $set->planned_weight_kg }} kg @endif
-                                                                    @if ($set->planned_rir !== null) @ RIR{{ $set->planned_rir }} @endif
-                                                                </td>
-                                                                <td class="text-muted">→</td>
-                                                                <td>
-                                                                    @if ($isDone)
-                                                                        {{ $set->actual_reps ?? '—' }}
-                                                                        @if ($set->actual_weight_kg) × {{ $set->actual_weight_kg }} kg @endif
-                                                                        @if ($set->actual_rir !== null) @ RIR{{ $set->actual_rir }} @endif
-                                                                    @else
-                                                                        <span class="text-muted">—</span>
-                                                                    @endif
-                                                                </td>
-                                                                <td>
-                                                                    @if ($e1rm !== null)
-                                                                        <span class="text-primary">{{ $e1rm }} kg</span>
-                                                                    @else
-                                                                        —
-                                                                    @endif
-                                                                </td>
-                                                            </tr>
-                                                        @endforeach
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                </td>
-                            </tr>
-                        @endif
-                    @empty
-                        <tr>
-                            <td colspan="8" class="text-center text-muted py-4">Nessuna sessione completata.</td>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </td>
                         </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                    @endif
+                @empty
+                    <x-bo.empty :colspan="8">Nessuna sessione completata.</x-bo.empty>
+                @endforelse
+            </tbody>
+        </table>
         </div>
-        @if ($sessions->hasPages())
-            <div class="card-footer">
-                {{ $sessions->links() }}
-            </div>
-        @endif
-    </div>
+
+        <x-slot name="footer">
+            <x-bo.pagination :paginator="$sessions" />
+        </x-slot>
+    </x-bo.card>
 
     {{-- Modal storico esercizio --}}
     @if ($exerciseHistoryId !== null)

@@ -129,6 +129,7 @@ class MesocycleList extends Component
             'mesocycles' => $mesocycles,
             'trainers' => $trainers,
             'athletes' => $athletes,
-        ])->layout('layouts.backoffice', ['page_title' => 'Mesocicli']);
+        ])->layout('layouts.backoffice')
+            ->layoutData(['page_title' => 'Mesocicli']);
     }
 }

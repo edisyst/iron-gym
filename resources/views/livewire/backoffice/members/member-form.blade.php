@@ -1,6 +1,6 @@
 <div>
     <form wire:submit="save">
-        <x-bo.card title="{{ $memberId ? 'Modifica tesserato' : 'Nuovo tesserato' }}" bodyClass="p-3">
+        <x-bo.card bodyClass="p-3">
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-group">

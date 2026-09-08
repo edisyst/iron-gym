@@ -17,7 +17,7 @@
         </div>
     </x-bo.filters>
 
-    <x-bo.card title="Tesserati" bodyClass="p-0">
+    <x-bo.card bodyClass="p-0">
         <x-slot name="actions">
             @role('gestore')
             <a href="{{ route('backoffice.members.export', ['search' => $search, 'certFilter' => $certFilter]) }}"
@@ -33,7 +33,8 @@
             @endcan
         </x-slot>
 
-        <table class="table table-hover table-striped mb-0">
+        <div class="table-responsive">
+        <table class="table table-sm table-striped table-hover mb-0">
             <thead>
                 <tr>
                     <th>Cognome / Nome</th>
@@ -108,6 +109,7 @@
                 @endforelse
             </tbody>
         </table>
+        </div>
 
         <x-slot name="footer">
             <x-bo.pagination :paginator="$members" />

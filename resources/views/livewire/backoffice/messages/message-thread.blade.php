@@ -37,7 +37,7 @@
                     </div>
                 </div>
             @empty
-                <p class="text-muted text-center mt-4">Nessun messaggio ancora. Scrivi il primo!</p>
+                <x-bo.empty>Nessun messaggio ancora. Scrivi il primo!</x-bo.empty>
             @endforelse
         </div>
 

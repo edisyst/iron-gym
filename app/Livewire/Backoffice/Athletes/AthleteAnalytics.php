@@ -181,6 +181,7 @@ class AthleteAnalytics extends Component
     {
         return view('livewire.backoffice.athletes.athlete-analytics')
             ->with('athlete', User::findOrFail($this->athleteId))
-            ->layout('layouts.backoffice', ['page_title' => 'Analytics atleta']);
+            ->layout('layouts.backoffice')
+            ->layoutData(['page_title' => 'Analytics atleta']);
     }
 }

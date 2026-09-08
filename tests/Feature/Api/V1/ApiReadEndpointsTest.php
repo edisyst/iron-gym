@@ -218,8 +218,8 @@ it('members espone medical_cert_expiry con ability medical-read', function () {
 });
 
 it('members filtra per ricerca testuale', function () {
-    Member::factory()->create(['last_name' => 'Rossi', 'first_name' => 'Mario']);
-    Member::factory()->create(['last_name' => 'Bianchi', 'first_name' => 'Luca']);
+    Member::factory()->create(['last_name' => 'Rossi', 'first_name' => 'Mario', 'email' => 'mario.rossi@test.local']);
+    Member::factory()->create(['last_name' => 'Bianchi', 'first_name' => 'Luca', 'email' => 'luca.bianchi@test.local']);
     $token = tokenWith($this->serviceUser, ['members:read']);
 
     $response = $this->withToken($token)->getJson('/api/v1/members?search=Rossi');

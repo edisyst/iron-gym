@@ -14,7 +14,7 @@
 
 @section('content_header')
     <div class="d-flex justify-content-between align-items-center">
-        <h1>{{ $page_title ?? 'Dashboard' }}</h1>
+        <h1>{{ $page_title ?? 'Iron Gym' }}</h1>
         @livewire('backoffice.shared.notification-bell')
     </div>
 @stop

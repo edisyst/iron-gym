@@ -274,42 +274,40 @@
                     @endforeach
                 </div>
             @endforeach
-        </x-bo.card>
-
-        {{-- Bottoni azione --}}
-        <div class="d-flex align-items-center gap-2 mb-4">
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-save"></i> Salva
-            </button>
-            <a href="{{ route('backoffice.exercises.index') }}" class="btn btn-default ml-2">
-                Annulla
-            </a>
-
-            @if ($exerciseId)
-                {{-- Modale archivio con Alpine --}}
-                <div x-data="{ open: false }" class="ml-auto">
-                    <button type="button" class="btn btn-danger btn-sm" @click="open = true">
-                        <i class="fas fa-archive"></i> Archivia
+            <x-slot name="footer">
+                <div class="card-footer d-flex align-items-center gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Salva
                     </button>
-                    <div x-show="open" x-cloak style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center;">
-                        <div class="modal-dialog mb-0" style="max-width: 400px;">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Conferma archiviazione</h5>
-                                </div>
-                                <div class="modal-body">
-                                    <p>Vuoi archiviare l'esercizio <strong>{{ $nameIt }}</strong>? Sarà nascosto dal catalogo ma i dati storici saranno preservati.</p>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-default" @click="open = false">Annulla</button>
-                                    <button type="button" class="btn btn-danger" wire:click="archive">Conferma archiviazione</button>
+                    <a href="{{ route('backoffice.exercises.index') }}" class="btn btn-default ml-2">
+                        Annulla
+                    </a>
+                    @if ($exerciseId)
+                        <div x-data="{ open: false }" class="ml-auto">
+                            <button type="button" class="btn btn-danger btn-sm" @click="open = true">
+                                <i class="fas fa-archive"></i> Archivia
+                            </button>
+                            <div x-show="open" x-cloak style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center;">
+                                <div class="modal-dialog mb-0" style="max-width: 400px;">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Conferma archiviazione</h5>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>Vuoi archiviare l'esercizio <strong>{{ $nameIt }}</strong>? Sarà nascosto dal catalogo ma i dati storici saranno preservati.</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-default" @click="open = false">Annulla</button>
+                                            <button type="button" class="btn btn-danger" wire:click="archive">Conferma archiviazione</button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    @endif
                 </div>
-            @endif
-        </div>
+            </x-slot>
+        </x-bo.card>
 
     </form>
 </div>

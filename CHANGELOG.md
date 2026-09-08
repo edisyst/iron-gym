@@ -2,6 +2,24 @@
 
 ---
 
+## BO01 Fase 1 — Componenti x-bo.* e view pilota (2026-09-08)
+
+Uniformità strutturale UI backoffice: componenti Blade canonici e applicazione alle view pilota.
+
+**Aggiunto:**
+- `x-bo.filters` — box filtri standard (`card-outline card-primary mb-3`)
+- `x-bo.card` — contenitore corpo con slot `actions` (→ `card-tools`) e `footer`
+- `x-bo.empty` — empty state unificato per tabelle e view non-tabella
+- `x-bo.pagination` — footer paginazione condizionale (`hasPages()`)
+- `docs/architecture/ui-backoffice.md` — standard BO01, signature componenti, esempi, view esentate
+
+**Modificato:**
+- `member-list`: filtri in `x-bo.filters`, card in `x-bo.card`, paginazione condizionale via `x-bo.pagination` (fix card-footer always-on)
+- `member-form`: card in `x-bo.card bodyClass="p-3"`, bottoni submit/annulla in slot `footer`
+- Layout backoffice: fallback `page_title` da "Dashboard" a "Iron Gym"
+
+---
+
 ## DOC03 — Swagger UI e OpenAPI spec (2026-09-01)
 
 Documentazione interattiva API accessibile dal backoffice.

@@ -7,6 +7,7 @@ Indice di tutta la documentazione di progetto.
 - [component-map.md](architecture/component-map.md) — mappa completa componenti Livewire, route, observers, seeder, artisan commands *(rev. 2026-08-30)*
 - [body-map-svg.md](architecture/body-map-svg.md) — struttura SVG body map muscolare (WeeklyVolume)
 - [ui-atleta.md](architecture/ui-atleta.md) — design system PWA atleta: token CSS, componenti x-athlete.*, gestione tema dark/light
+- [ui-backoffice.md](architecture/ui-backoffice.md) — standard strutturale backoffice BO01: componenti x-bo.*, canone layout, view esentate
 
 ## Dominio
 

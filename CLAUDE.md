@@ -304,6 +304,15 @@ Layer CSS isolato sopra AdminLTE 3.x — nessun fork del tema.
 - Width filtri: classi `filter-w-*`
 - Modali custom: `role="dialog"` + `aria-modal="true"` + `aria-labelledby`
 - Bottoni icon-only: `aria-label` obbligatorio
+- Layout `render()`: sempre new-style `->layout('layouts.backoffice')->layoutData(['page_title' => '...'])`
+
+**Componenti Blade backoffice (x-bo.*)** — `resources/views/components/bo/`:
+- `x-bo.filters` — box filtri standard (`card-outline card-primary mb-3`); prop `title` (default "Filtri")
+- `x-bo.card` — contenitore corpo; prop `title`, `bodyClass` (default `p-0`); slot `actions` (→ `card-tools`), `footer`
+- `x-bo.empty` — empty state unificato; prop `colspan` (se valorizzato → `<tr><td>`, altrimenti `<div>`)
+- `x-bo.pagination` — footer paginazione condizionale (`hasPages()`); prop `paginator`; usare nello slot `footer` di `x-bo.card`
+
+Documentazione completa e lista view esentate: `docs/architecture/ui-backoffice.md`
 
 ## Cosa NON fare
 

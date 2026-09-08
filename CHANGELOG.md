@@ -2,6 +2,21 @@
 
 ---
 
+## BO01 Fase 2C — Migrazione form (2026-09-08)
+
+Applicazione dei componenti `x-bo.*` a 4 view form backoffice. Pattern canonico: `<form>` wrappa `<x-bo.card bodyClass="p-3">`, bottoni submit nel footer slot.
+
+**Modificato:**
+- `subscription-form`: `<form>` spostato fuori dalla card a wrappare `x-bo.card`; bottoni (Salva/Annulla) in footer slot come `card-footer`; no `title` (= page_title)
+- `template-form`: `style="max-width:680px"` rimosso; `<form>` spostato a wrappare `x-bo.card`; bottoni estratti dal `card-body` in footer slot; errori globali restano nel default slot
+- `exercise-form`: 6 sezioni → 6 `<x-bo.card title="..." bodyClass="p-3">` sezionati; `<form>` wrappa tutte le card; bottoni azione (Salva/Archivia/Annulla) in `<div>` standalone dopo l'ultima card; `x-data` del "Pattern motorio" → wrapper div interno; modal archivio Alpine invariata
+- `body-measurement-form`: render() old-style → new-style; colonna form: `card-primary` → `x-bo.card title="Nuova misurazione"`; colonna history: `x-bo.card title="Ultime 5 misurazioni"` con `table-responsive` e `x-bo.empty :colspan=4`
+
+**Aggiornato:**
+- `docs/architecture/ui-backoffice.md`: canone multi-card (form complessi) documentato con esempio; nota body-measurement-form aggiornata
+
+---
+
 ## BO01 Fase 2B — Migrazione liste divergenti (2026-09-08)
 
 Applicazione dei componenti `x-bo.*` a 5 view lista con markup divergente dal canone.

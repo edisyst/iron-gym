@@ -158,6 +158,25 @@ L'header è renderizzato solo se `$title !== null` oppure `$actions` non è vuot
 
 Nota: nei form, il tag `<form>` wrappa l'intera `x-bo.card`. Il bottone `type="submit"` nel footer slot è dentro il form e funziona correttamente.
 
+**Caso multi-card (form complessi):** per form con sezioni dati eterogenee (es. `exercise-form`), ogni sezione diventa un `<x-bo.card title="..." bodyClass="p-3">` separato. Il tag `<form>` avvolge tutte le card. I bottoni azione (Salva/Annulla/Archivia) stanno in un `<div>` standalone dopo l'ultima card, non in un footer slot. Il `title` è obbligatorio su ogni sezione (titoli distinti da page_title e tra loro).
+
+```blade
+<form wire:submit="save">
+    <x-bo.card title="Sezione A" bodyClass="p-3">
+        ... campi A ...
+    </x-bo.card>
+
+    <x-bo.card title="Sezione B" bodyClass="p-3">
+        ... campi B ...
+    </x-bo.card>
+
+    <div class="d-flex align-items-center gap-2 mb-4">
+        <button type="submit" class="btn btn-primary">Salva</button>
+        <a href="{{ route('...index') }}" class="btn btn-default ml-2">Annulla</a>
+    </div>
+</form>
+```
+
 ---
 
 ### `x-bo.empty`
@@ -246,7 +265,7 @@ Le seguenti view hanno struttura non standard per ragioni di dominio — non app
 | `dashboard` | Widget `small-box` + KPI card — layout composito AdminLTE |
 | `athlete-profile` | Nav tabs + sub-componenti `@livewire` |
 | `athlete-analytics` | Layout multi-card grafico |
-| `body-measurement-form` | Due colonne: form + history |
+| `body-measurement-form` | Due colonne affiancate (form + history) — usa x-bo.card in entrambe le colonne ma non la struttura a card unica full-width |
 | `trainer-calendar` | FullCalendar — card con padding specifico |
 | `communication-campaign` | Card sezionata con sub-card |
 | `financial-report` / `manager-dashboard` | KPI row + chart + tabelle — layout composito |

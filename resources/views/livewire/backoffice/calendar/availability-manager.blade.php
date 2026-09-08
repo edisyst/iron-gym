@@ -47,7 +47,8 @@
             </div>
             @endif
 
-            <table class="table table-sm table-hover mb-0">
+            <div class="table-responsive">
+            <table class="table table-sm table-striped table-hover mb-0">
                 <thead>
                     <tr>
                         <th>Giorno</th>
@@ -71,14 +72,11 @@
                         </td>
                     </tr>
                     @empty
-                    <tr>
-                        <td colspan="4" class="text-center text-muted py-3">
-                            Nessuno slot ricorrente configurato.
-                        </td>
-                    </tr>
+                        <x-bo.empty :colspan="4">Nessuno slot ricorrente configurato.</x-bo.empty>
                     @endforelse
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 
@@ -137,7 +135,8 @@
             </div>
             @endif
 
-            <table class="table table-sm table-hover mb-0">
+            <div class="table-responsive">
+            <table class="table table-sm table-striped table-hover mb-0">
                 <thead>
                     <tr>
                         <th>Data</th>
@@ -171,14 +170,11 @@
                         </td>
                     </tr>
                     @empty
-                    <tr>
-                        <td colspan="6" class="text-center text-muted py-3">
-                            Nessuna eccezione configurata.
-                        </td>
-                    </tr>
+                        <x-bo.empty :colspan="6">Nessuna eccezione configurata.</x-bo.empty>
                     @endforelse
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 </div>

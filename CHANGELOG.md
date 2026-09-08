@@ -2,6 +2,27 @@
 
 ---
 
+## BO02 — Chiusura release uniformità UI backoffice (2026-09-09)
+
+Release BO02 chiusa. Tutti gli item del backlog BO01 risolti o verificati già conformi.
+
+**Implementati:**
+- A1: breadcrumb su 39 view full-page (layout + layoutData); gerarchia Home > Area > Pagina con link dinamici
+- A3: plate-inventory-manager — 2 istanze paginazione raw → x-bo.pagination
+- B1: exercise-form — bottoni Salva/Annulla/Archivia spostati in card-footer
+- B3: volume-landmark-manager — card-header d-flex → card-title + card-tools canonico
+- B4: 4 istanze empty state raw (`<p class="text-muted">`) → x-bo.empty in drilldown (athlete-session-history, training-report ×2, communication-campaign)
+
+**Già conformi alla verifica (no modifica):**
+- A2: nessuna view con render() old-style residua (già migrate in BO01)
+- B2: tutti i filter box usano x-bo.filters correttamente
+- B5: nessun py-2 né max-width anomalo trovato
+- C1/C2/C3: py-4 uniforme via x-bo.empty, paginazione always-on convertita, template-form full-width
+
+**QA:** 624 test pass / 6 skipped, 0 errori PHPStan livello 6, Pint conforme.
+
+---
+
 ## BO01 — Chiusura release uniformità UI backoffice (2026-09-08)
 
 Release BO01 chiusa. Tutte le fasi di migrazione completate e verificate. Documentazione aggiornata, backlog BO02 aperto.

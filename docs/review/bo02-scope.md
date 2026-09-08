@@ -1,6 +1,9 @@
 # BO02 — Backlog uniformità UI backoffice
 
-**Aperto:** 2026-09-08
+> **CHIUSO (2026-09-09)** — Release BO02 completata. Tutti gli item A e B risolti; item C risultati già conformi alla verifica. Documento punto di partenza storico.
+
+**Aperto:** 2026-09-08  
+**Chiuso:** 2026-09-09  
 **Prerequisito:** BO01 completato e chiuso
 
 ---

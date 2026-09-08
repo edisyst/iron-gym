@@ -2,6 +2,46 @@
 
 ---
 
+## BO01 Fase 3 — View non standard (2026-09-08)
+
+Applicazione parziale del canone BO01 a 15 view con struttura non standard (tab, wizard, calendario, builder, strumenti operativi, comunicazione, ricerca, landmark). render() new-style su tutti i componenti; tabelle, empty state e card-primary in scope dove applicabile.
+
+**Modificato:**
+
+*Gruppo A — tab/profili:*
+- `settings-hub`: render() old-style → new-style
+- `athlete-profile`: card-primary header atleta → card-outline neutro
+
+*Gruppo B — calendario/prenotazioni:*
+- `mesocycle-assign`: render() old-style → new-style (staging anticipato in commit B)
+- `availability-manager`: 2 tabelle → `table-responsive` + `table-striped`; 2 empty state → `x-bo.empty :colspan="4/6"`
+
+*Gruppo C — wizard/builder:*
+- `template-builder`: empty state sessione → `x-bo.empty` (div, no colspan)
+
+*Gruppo D — strumenti operativi:*
+- `plate-inventory-manager`: aggiunto `page_title 'Inventario dischi'`; 2 `card-primary` → neutro; 2 tabelle → `table-responsive` + `table-striped`; 2 empty state → `x-bo.empty :colspan="5"` (tag `<code>` rimossi per compatibilità `{{ $slot }}`)
+- `artisan-runner`: render() old-style → new-style (solo PHP, corpo limitato per scelta)
+- `feature-flag-manager`: render() old-style → new-style (solo PHP, corpo limitato per scelta)
+- `quick-checkin`: tabella → `table-responsive` + `table-striped`; empty state (`@if` branch) → `x-bo.empty` (div)
+- `opening-hours-manager`: 2 tabelle → `table-responsive` + `table-striped`; 2 empty state con colspan dinamico → `x-bo.empty :colspan="$canEdit ? 4 : 3"` / `"$canEdit ? 6 : 5"`
+
+*Gruppo E — comunicazione/ricerca:*
+- `global-search`: render() old-style → new-style; 4 empty state di categoria → `x-bo.empty` (div)
+- `message-thread`: empty state chat → `x-bo.empty` (div)
+- `communication-campaign`: render() già new-style, nessuna modifica
+
+*Gruppo F — landmark:*
+- `volume-landmark-manager`: render() old-style → new-style; tabelle gruppo muscolare → `table-responsive` + `table-striped table-hover` (sostituisce `table-bordered`)
+
+**Invariato per scelta:**
+- `trainer-calendar`: render() già new-style; card-primary OUT OF SCOPE (solo athlete-profile e plate-inventory-manager in scope)
+- `volume-landmark-manager` heading `<h3>`: mantenuto — funge da card-title nel contesto embedded di `athlete-profile` (rimozione romperebbe la view embeddida)
+- `artisan-runner` / `feature-flag-manager` body: tabelle con `table-bordered` non toccate — istruzione esplicita (render() only)
+- `api-docs`: fuori scope — pagina Swagger standalone senza layout backoffice
+
+---
+
 ## BO01 Fase 2D — Dettagli, dashboard e report (2026-09-08)
 
 Applicazione parziale dei componenti `x-bo.*` a 7 view di tipo dettaglio, dashboard e report. Il corpo multi-card di queste view è esentato dal canone; si applicano solo: render(), box filtri, CTA, tabelle interne ed empty state.

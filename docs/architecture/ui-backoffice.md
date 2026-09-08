@@ -317,6 +317,29 @@ Una nuova view rientra fra le esentate **solo se il suo corpo richiede struttura
 
 ---
 
+## View con applicazione del canone limitata per scelta
+
+Le seguenti view hanno il `render()` new-style e `page_title` corretti, ma il corpo è stato deliberatamente non toccato:
+
+| View | Motivo |
+|---|---|
+| `artisan-runner` | Corpo operativo (tabella comandi con `table-bordered`) — istruzione esplicita BO01 Fase 3: solo render() |
+| `feature-flag-manager` | Corpo operativo (tabella flag con `table-bordered`) — istruzione esplicita BO01 Fase 3: solo render() |
+
+## View fuori scope
+
+| View | Motivo |
+|---|---|
+| `api-docs` | Pagina Swagger standalone — non usa `layouts.backoffice`, nessuna logica di layout condivisa |
+
+## Decisioni di non-intervento documentate (Fase 3)
+
+- **`volume-landmark-manager` heading `<h3 class="card-title">`:** non rimosso perché la view è embeddita via `@livewire` in `athlete-profile`. In quel contesto non è disponibile `page_title`, quindi l'heading funge da titolo visibile nella tab. La rimozione romperebbe la view embedded.
+- **`trainer-calendar` card-primary:** non modificato — solo `athlete-profile` e `plate-inventory-manager` erano in scope per la conversione card-primary → neutro.
+- **Empty state `plate-inventory-manager`:** tag `<code>` rimossi perché `x-bo.empty` usa `{{ $slot }}` che esegue HTML-escape. Il testo del comando artisan è ora plain text.
+
+---
+
 ## Note di migrazione BO01
 
 - **Breadcrumb:** rinviato a BO02. Nessuna view implementa `@section('breadcrumb')`.

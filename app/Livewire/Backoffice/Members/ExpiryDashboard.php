@@ -43,6 +43,7 @@ class ExpiryDashboard extends Component
         return view('livewire.backoffice.members.expiry-dashboard', [
             'expiringCerts' => $certQuery,
             'expiringSubs' => $subQuery,
-        ])->layout('layouts.backoffice');
+        ])->layout('layouts.backoffice')
+            ->layoutData(['page_title' => 'Scadenze']);
     }
 }

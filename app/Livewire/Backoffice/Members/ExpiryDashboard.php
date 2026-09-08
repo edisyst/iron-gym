@@ -44,6 +44,10 @@ class ExpiryDashboard extends Component
             'expiringCerts' => $certQuery,
             'expiringSubs' => $subQuery,
         ])->layout('layouts.backoffice')
-            ->layoutData(['page_title' => 'Scadenze']);
+            ->layoutData(['page_title' => 'Scadenze', 'breadcrumbs' => [
+                ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                ['label' => 'Tesserati', 'url' => route('backoffice.members.index')],
+                ['label' => 'Scadenze certificati', 'url' => null],
+            ]]);
     }
 }

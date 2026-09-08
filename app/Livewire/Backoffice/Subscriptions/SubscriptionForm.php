@@ -93,6 +93,10 @@ class SubscriptionForm extends Component
             'members' => Member::where('is_active', true)->orderBy('last_name')->orderBy('first_name')->get(),
             'plans' => SubscriptionPlan::where('is_active', true)->orderBy('name')->get(),
         ])->layout('layouts.backoffice')
-            ->layoutData(['page_title' => 'Nuovo abbonamento']);
+            ->layoutData(['page_title' => 'Nuovo abbonamento', 'breadcrumbs' => [
+                ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                ['label' => 'Abbonamenti', 'url' => route('backoffice.subscriptions.index')],
+                ['label' => 'Nuovo abbonamento', 'url' => null],
+            ]]);
     }
 }

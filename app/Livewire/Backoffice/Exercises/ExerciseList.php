@@ -100,6 +100,12 @@ class ExerciseList extends Component
             'exercises' => $query->paginate(20),
             'allEquipment' => $allEquipment,
         ])->layout('layouts.backoffice')
-            ->layoutData(['page_title' => 'Libreria esercizi']);
+            ->layoutData([
+                'page_title' => 'Libreria esercizi',
+                'breadcrumbs' => [
+                    ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                    ['label' => 'Esercizi', 'url' => null],
+                ],
+            ]);
     }
 }

@@ -103,6 +103,13 @@ class CommunicationCampaign extends Component
 
         return view('livewire.backoffice.communications.communication-campaign', compact('templates'))
             ->layout('layouts.backoffice')
-            ->layoutData(['page_title' => 'Campagna di comunicazione']);
+            ->layoutData([
+                'page_title' => 'Campagna di comunicazione',
+                'breadcrumbs' => [
+                    ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                    ['label' => 'Comunicazioni', 'url' => null],
+                    ['label' => 'Campagne', 'url' => null],
+                ],
+            ]);
     }
 }

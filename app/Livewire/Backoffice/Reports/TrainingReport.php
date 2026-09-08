@@ -65,7 +65,14 @@ class TrainingReport extends Component
 
         return view('livewire.backoffice.reports.training-report', compact('athleteRows', 'drilldown'))
             ->layout('layouts.backoffice')
-            ->layoutData(['page_title' => 'Report allenamento']);
+            ->layoutData([
+                'page_title' => 'Report allenamento',
+                'breadcrumbs' => [
+                    ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                    ['label' => 'Report', 'url' => null],
+                    ['label' => 'Allenamento', 'url' => null],
+                ],
+            ]);
     }
 
     /**

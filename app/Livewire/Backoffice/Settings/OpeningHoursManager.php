@@ -98,7 +98,11 @@ class OpeningHoursManager extends Component
 
         return view('livewire.backoffice.settings.opening-hours-manager', compact(
             'slots', 'overrides', 'daysOfWeek', 'canEdit'
-        ))->layout('layouts.backoffice')->layoutData(['page_title' => 'Orari di apertura']);
+        ))->layout('layouts.backoffice')->layoutData(['page_title' => 'Orari di apertura', 'breadcrumbs' => [
+            ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+            ['label' => 'Impostazioni', 'url' => route('backoffice.settings.index')],
+            ['label' => 'Orari apertura', 'url' => null],
+        ]]);
     }
 
     // -------------------------------------------------------------------------

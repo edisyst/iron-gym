@@ -111,6 +111,12 @@ class AccessLogList extends Component
             'logs' => $logs,
             'modalMembers' => $modalMembers,
         ])->layout('layouts.backoffice')
-            ->layoutData(['page_title' => 'Registro accessi']);
+            ->layoutData([
+                'page_title' => 'Registro accessi',
+                'breadcrumbs' => [
+                    ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                    ['label' => 'Accessi', 'url' => null],
+                ],
+            ]);
     }
 }

@@ -169,6 +169,12 @@ class BookingList extends Component
 
         return view('livewire.backoffice.calendar.booking-list', compact(
             'bookings', 'trainers', 'statusLabels'
-        ))->layout('layouts.backoffice')->layoutData(['page_title' => 'Prenotazioni PT']);
+        ))->layout('layouts.backoffice')->layoutData([
+            'page_title' => 'Prenotazioni PT',
+            'breadcrumbs' => [
+                ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                ['label' => 'Prenotazioni', 'url' => null],
+            ],
+        ]);
     }
 }

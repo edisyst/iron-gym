@@ -286,6 +286,12 @@ class GroupClassManager extends Component
             'classes' => $occurrences,
             'trainers' => $trainers,
             'selectedClass' => $selectedClass,
-        ])->layout('layouts.backoffice')->layoutData(['page_title' => 'Corsi collettivi']);
+        ])->layout('layouts.backoffice')->layoutData([
+            'page_title' => 'Corsi collettivi',
+            'breadcrumbs' => [
+                ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                ['label' => 'Corsi', 'url' => null],
+            ],
+        ]);
     }
 }

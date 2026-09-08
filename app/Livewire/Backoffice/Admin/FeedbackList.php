@@ -53,7 +53,13 @@ class FeedbackList extends Component
 
         return view('livewire.backoffice.admin.feedback-list', [
             'feedbacks' => $query->paginate(20),
-        ])->layout('layouts.backoffice')
-            ->layoutData(['page_title' => 'Feedback ricevuti']);
+        ])->layout('layouts.backoffice')->layoutData([
+            'page_title' => 'Feedback ricevuti',
+            'breadcrumbs' => [
+                ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                ['label' => 'Admin', 'url' => null],
+                ['label' => 'Feedback', 'url' => null],
+            ],
+        ]);
     }
 }

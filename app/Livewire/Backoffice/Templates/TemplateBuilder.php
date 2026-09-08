@@ -304,6 +304,13 @@ class TemplateBuilder extends Component
             'sessions' => $sessions,
             'exerciseSearchResults' => $this->exerciseSearchResults(),
         ])->layout('layouts.backoffice')
-            ->layoutData(['page_title' => 'Builder: '.$this->template->name]);
+            ->layoutData([
+                'page_title' => 'Builder: '.$this->template->name,
+                'breadcrumbs' => [
+                    ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                    ['label' => 'Schede', 'url' => route('backoffice.templates.index')],
+                    ['label' => $this->template->name, 'url' => null],
+                ],
+            ]);
     }
 }

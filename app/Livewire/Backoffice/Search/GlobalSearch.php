@@ -73,6 +73,12 @@ class GlobalSearch extends Component
             'trainers' => $trainers,
             'templates' => $templates,
             'mesocycles' => $mesocycles,
-        ])->layout('layouts.backoffice')->layoutData(['page_title' => 'Ricerca']);
+        ])->layout('layouts.backoffice')->layoutData([
+            'page_title' => 'Ricerca',
+            'breadcrumbs' => [
+                ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                ['label' => 'Ricerca', 'url' => null],
+            ],
+        ]);
     }
 }

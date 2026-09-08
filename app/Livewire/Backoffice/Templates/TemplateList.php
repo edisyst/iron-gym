@@ -112,6 +112,12 @@ class TemplateList extends Component
         return view('livewire.backoffice.templates.template-list', [
             'templates' => $query->paginate(15),
         ])->layout('layouts.backoffice')
-            ->layoutData(['page_title' => 'Template di scheda']);
+            ->layoutData([
+                'page_title' => 'Template di scheda',
+                'breadcrumbs' => [
+                    ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                    ['label' => 'Schede', 'url' => null],
+                ],
+            ]);
     }
 }

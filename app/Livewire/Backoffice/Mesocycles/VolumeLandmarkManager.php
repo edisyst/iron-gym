@@ -127,6 +127,14 @@ class VolumeLandmarkManager extends Component
         return view('livewire.backoffice.mesocycles.volume-landmark-manager', [
             'athlete' => $athlete,
             'grouped' => $grouped,
-        ])->layout('layouts.backoffice')->layoutData(['page_title' => 'Volume landmarks — '.$athlete->name]);
+        ])->layout('layouts.backoffice')->layoutData([
+            'page_title' => 'Volume landmarks — '.$athlete->name,
+            'breadcrumbs' => [
+                ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                ['label' => 'Atleti', 'url' => null],
+                ['label' => $athlete->name, 'url' => route('backoffice.athletes.profile', $this->athleteId)],
+                ['label' => 'Volume landmarks', 'url' => null],
+            ],
+        ]);
     }
 }

@@ -122,6 +122,13 @@ class ManagerDashboard extends Component
             'trainerRevenue' => $trainerRevenue,
             'atRiskMembers' => $atRiskMembers,
             'ptSessionsPerTrainer' => $ptSessionsPerTrainer,
-        ])->layout('layouts.backoffice')->layoutData(['page_title' => 'Dashboard gestore']);
+        ])->layout('layouts.backoffice')->layoutData([
+            'page_title' => 'Dashboard gestore',
+            'breadcrumbs' => [
+                ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                ['label' => 'Report', 'url' => null],
+                ['label' => 'Dashboard gestore', 'url' => null],
+            ],
+        ]);
     }
 }

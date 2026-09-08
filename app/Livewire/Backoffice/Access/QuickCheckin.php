@@ -96,6 +96,13 @@ class QuickCheckin extends Component
             'searchResults' => $this->searchResults(),
             'todayLogs' => $todayLogs,
         ])->layout('layouts.backoffice')
-            ->layoutData(['page_title' => 'Check-in Rapido']);
+            ->layoutData([
+                'page_title' => 'Check-in Rapido',
+                'breadcrumbs' => [
+                    ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                    ['label' => 'Accessi', 'url' => route('backoffice.access-logs.index')],
+                    ['label' => 'Check-in', 'url' => null],
+                ],
+            ]);
     }
 }

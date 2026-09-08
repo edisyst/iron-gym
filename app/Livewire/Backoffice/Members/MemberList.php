@@ -50,6 +50,9 @@ class MemberList extends Component
         return view('livewire.backoffice.members.member-list', [
             'members' => $query->paginate(15),
         ])->layout('layouts.backoffice')
-            ->layoutData(['page_title' => 'Tesserati']);
+            ->layoutData(['page_title' => 'Tesserati', 'breadcrumbs' => [
+                ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                ['label' => 'Tesserati', 'url' => null],
+            ]]);
     }
 }

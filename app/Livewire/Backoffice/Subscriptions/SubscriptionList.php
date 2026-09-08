@@ -54,6 +54,9 @@ class SubscriptionList extends Component
         return view('livewire.backoffice.subscriptions.subscription-list', [
             'subscriptions' => $query->paginate(15),
         ])->layout('layouts.backoffice')
-            ->layoutData(['page_title' => 'Abbonamenti']);
+            ->layoutData(['page_title' => 'Abbonamenti', 'breadcrumbs' => [
+                ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                ['label' => 'Abbonamenti', 'url' => null],
+            ]]);
     }
 }

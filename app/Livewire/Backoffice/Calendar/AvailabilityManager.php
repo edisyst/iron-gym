@@ -81,7 +81,14 @@ class AvailabilityManager extends Component
 
         return view('livewire.backoffice.calendar.availability-manager', compact(
             'slots', 'overrides', 'daysOfWeek'
-        ))->layout('layouts.backoffice')->layoutData(['page_title' => 'Gestione disponibilità']);
+        ))->layout('layouts.backoffice')->layoutData([
+            'page_title' => 'Gestione disponibilità',
+            'breadcrumbs' => [
+                ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                ['label' => 'Calendario', 'url' => route('backoffice.calendar.index')],
+                ['label' => 'Disponibilità', 'url' => null],
+            ],
+        ]);
     }
 
     // -------------------------------------------------------------------------

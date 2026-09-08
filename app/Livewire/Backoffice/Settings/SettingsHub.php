@@ -11,6 +11,9 @@ class SettingsHub extends Component
     {
         return view('livewire.backoffice.settings.settings-hub')
             ->layout('layouts.backoffice')
-            ->layoutData(['page_title' => 'Impostazioni']);
+            ->layoutData(['page_title' => 'Impostazioni', 'breadcrumbs' => [
+                ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                ['label' => 'Impostazioni', 'url' => null],
+            ]]);
     }
 }

@@ -104,6 +104,13 @@ class PlateInventoryManager extends Component
 
         return view('livewire.backoffice.admin.plate-inventory-manager', compact('plates', 'dumbbells'))
             ->layout('layouts.backoffice')
-            ->layoutData(['page_title' => 'Inventario dischi']);
+            ->layoutData([
+                'page_title' => 'Inventario dischi',
+                'breadcrumbs' => [
+                    ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                    ['label' => 'Admin', 'url' => null],
+                    ['label' => 'Inventario dischi', 'url' => null],
+                ],
+            ]);
     }
 }

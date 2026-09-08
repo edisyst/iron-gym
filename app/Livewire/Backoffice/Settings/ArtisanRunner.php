@@ -147,6 +147,10 @@ class ArtisanRunner extends Component
 
         return view('livewire.backoffice.settings.artisan-runner', [
             'groups' => $groups,
-        ])->layout('layouts.backoffice')->layoutData(['page_title' => 'Comandi Artisan']);
+        ])->layout('layouts.backoffice')->layoutData(['page_title' => 'Comandi Artisan', 'breadcrumbs' => [
+            ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+            ['label' => 'Impostazioni', 'url' => route('backoffice.settings.index')],
+            ['label' => 'Artisan', 'url' => null],
+        ]]);
     }
 }

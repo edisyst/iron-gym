@@ -58,6 +58,13 @@ class FinancialReport extends Component
 
         return view('livewire.backoffice.reports.financial-report', compact('rows', 'totalCents'))
             ->layout('layouts.backoffice')
-            ->layoutData(['page_title' => "Report finanziario {$this->year}"]);
+            ->layoutData([
+                'page_title' => "Report finanziario {$this->year}",
+                'breadcrumbs' => [
+                    ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                    ['label' => 'Report', 'url' => null],
+                    ['label' => 'Finanziario', 'url' => null],
+                ],
+            ]);
     }
 }

@@ -1,74 +1,65 @@
 <div>
-    {{-- Filtri --}}
-    <div class="card card-outline card-primary">
-        <div class="card-header">
-            <h3 class="card-title">Filtri</h3>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-3">
-                    <label class="small">Dal</label>
-                    <input type="date" class="form-control form-control-sm" wire:model.live="dateFrom">
-                </div>
-                <div class="col-md-3">
-                    <label class="small">Al</label>
-                    <input type="date" class="form-control form-control-sm" wire:model.live="dateTo">
-                </div>
-                <div class="col-md-3">
-                    <label class="small">Stato mesociclo</label>
-                    <select class="form-control form-control-sm" wire:model.live="mesoStatus">
-                        <option value="all">Tutti</option>
-                        <option value="active">Solo attivi</option>
-                        <option value="completed">Solo completati</option>
-                    </select>
-                </div>
+    <x-bo.filters>
+        <div class="row">
+            <div class="col-md-3">
+                <label class="small">Dal</label>
+                <input type="date" class="form-control form-control-sm" wire:model.live="dateFrom">
+            </div>
+            <div class="col-md-3">
+                <label class="small">Al</label>
+                <input type="date" class="form-control form-control-sm" wire:model.live="dateTo">
+            </div>
+            <div class="col-md-3">
+                <label class="small">Stato mesociclo</label>
+                <select class="form-control form-control-sm" wire:model.live="mesoStatus">
+                    <option value="all">Tutti</option>
+                    <option value="active">Solo attivi</option>
+                    <option value="completed">Solo completati</option>
+                </select>
             </div>
         </div>
-    </div>
+    </x-bo.filters>
 
     {{-- Tabella atleti --}}
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">Atleti</h3>
-        </div>
-        <div class="card-body p-0">
-            <table class="table table-sm table-hover mb-0">
-                <thead>
+    <x-bo.card bodyClass="p-0" title="Atleti">
+        <div class="table-responsive">
+        <table class="table table-sm table-striped table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Atleta</th>
+                    <th>Mesociclo attivo</th>
+                    <th>Sessioni completate</th>
+                    <th>Sessioni saltate</th>
+                    <th>Adherence %</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse ($athleteRows as $row)
                     <tr>
-                        <th>Atleta</th>
-                        <th>Mesociclo attivo</th>
-                        <th>Sessioni completate</th>
-                        <th>Sessioni saltate</th>
-                        <th>Adherence %</th>
-                        <th></th>
+                        <td>{{ $row->nome }}</td>
+                        <td>{{ $row->mesociclo ?? '—' }}</td>
+                        <td>{{ $row->sessioni_completate }}</td>
+                        <td>{{ $row->sessioni_saltate }}</td>
+                        <td>
+                            @php $pct = $row->adherence_rate; @endphp
+                            <span class="badge badge-{{ $pct >= 80 ? 'success' : ($pct >= 50 ? 'warning' : 'danger') }}">
+                                {{ $pct }}%
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-info" wire:click="openDrilldown({{ $row->athlete_id }})">
+                                Dettaglio
+                            </button>
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-                    @forelse ($athleteRows as $row)
-                        <tr>
-                            <td>{{ $row->nome }}</td>
-                            <td>{{ $row->mesociclo ?? '—' }}</td>
-                            <td>{{ $row->sessioni_completate }}</td>
-                            <td>{{ $row->sessioni_saltate }}</td>
-                            <td>
-                                @php $pct = $row->adherence_rate; @endphp
-                                <span class="badge badge-{{ $pct >= 80 ? 'success' : ($pct >= 50 ? 'warning' : 'danger') }}">
-                                    {{ $pct }}%
-                                </span>
-                            </td>
-                            <td>
-                                <button class="btn btn-sm btn-outline-info" wire:click="openDrilldown({{ $row->athlete_id }})">
-                                    Dettaglio
-                                </button>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="6" class="text-center text-muted">Nessun dato nel periodo.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
+                @empty
+                    <x-bo.empty :colspan="6">Nessun dato nel periodo.</x-bo.empty>
+                @endforelse
+            </tbody>
+        </table>
         </div>
-    </div>
+    </x-bo.card>
 
     {{-- Drilldown atleta --}}
     @if ($drilldown !== null)

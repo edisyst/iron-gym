@@ -284,6 +284,39 @@ Le seguenti view hanno struttura non standard per ragioni di dominio — non app
 
 ---
 
+## Conformità parziale — view esentate dal corpo canonico
+
+Alcune view hanno un corpo che non segue la struttura `x-bo.card` singola. Questa non è una difformità da correggere: è la loro natura architetturale.
+
+### Criteri di esenzione
+
+Una view rientra fra le esentate se soddisfa almeno uno di questi criteri:
+
+- **KPI compositi:** contiene widget AdminLTE (`small-box`, `info-box`) o un layout a righe di card affiancate che rappresenta un cruscotto dati aggregati
+- **Multi-card sezionato:** il corpo è diviso in sezioni funzionalmente distinte (es. due sezioni operative indipendenti, form + history affiancati), ciascuna con card propria
+- **Layout speciale:** builder, calendario FullCalendar, chat con altezza fissa, nav-tabs con sub-componenti `@livewire`
+- **Grafici:** card contenitrice di un canvas Chart.js — il padding è vincolato dalla libreria
+
+### Cosa vale comunque per le view esentate
+
+Il canone si applica **parzialmente** anche alle view esentate:
+
+| Punto canone | Si applica? | Note |
+|---|---|---|
+| `render()` new-style + `page_title` | ✅ sempre | Nessuna eccezione |
+| `x-bo.filters` per box filtri | ✅ sempre | Il colore card-primary è uno solo |
+| CTA in `card-tools` della card a cui si riferiscono | ✅ sempre | Mai fuori da ogni card |
+| `table-responsive` + `table table-sm table-striped table-hover mb-0` | ✅ sempre | Anche per tabelle interne a card sezionate |
+| `x-bo.empty` per empty state | ✅ sempre | Con o senza `:colspan` secondo il contesto |
+| Corpo avvolto in `x-bo.card` singola | ❌ esentato | Il corpo multi-card resta com'è |
+| `x-bo.pagination` | ✅ se la view è paginata | — |
+
+### Decidere se una nuova view è esentata
+
+Una nuova view rientra fra le esentate **solo se il suo corpo richiede strutturalmente più card di primo livello** per ragioni di dominio, non per comodità di sviluppo. Se la view ha un'unica area dati principale (lista, form, dettaglio a card singola), usa il canone completo. Se il corpo è composto da KPI + grafici + tabelle o da sezioni operative affiancate, documenta la ragione e aggiungila alla lista sopra.
+
+---
+
 ## Note di migrazione BO01
 
 - **Breadcrumb:** rinviato a BO02. Nessuna view implementa `@section('breadcrumb')`.

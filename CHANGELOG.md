@@ -2,6 +2,21 @@
 
 ---
 
+## BO01 Fase 2D — Dettagli, dashboard e report (2026-09-08)
+
+Applicazione parziale dei componenti `x-bo.*` a 7 view di tipo dettaglio, dashboard e report. Il corpo multi-card di queste view è esentato dal canone; si applicano solo: render(), box filtri, CTA, tabelle interne ed empty state.
+
+**Modificato:**
+- `athlete-analytics`: render() old-style → new-style; 3 empty state (`<p py-3>`, `<tr><td>` senza py) → `x-bo.empty`; 2 tabelle → `table-responsive` + `table-hover`; corpo multi-card e grafici intatti
+- `exercise-detail`: CTA (Lista/Modifica) spostate da `d-flex` esterno a `card-tools` della card "Identità e Classificazione"; tabella muscoli → `table-responsive` + `table-striped table-hover`; empty state muscoli → `x-bo.empty :colspan="3"`; render() già new-style, invariato
+- `mesocycle-detail`: render() old-style → new-style; card-header ristrutturato da `d-flex` a `card-title` + `card-tools`; selettore settimana e bottoni azione (incluso gate `periodization_engine`) in card-tools; tabella volume → `table-responsive`, `table-bordered` → `table-striped table-hover`; empty state → `x-bo.empty`
+- `expiry-dashboard`: aggiunto `page_title 'Scadenze'` (view muta); box filtri `card-warning` → `x-bo.filters`; 2 tabelle refactored con `@forelse/@empty` → `x-bo.empty :colspan="6"` + `table-responsive` + `table-sm`
+- `financial-report`: box filtri (card senza header) → `x-bo.filters`; bottoni export spostati da filter bar a `card-tools` della card dati; tabella → `table-responsive` + `table-hover`; empty state → `x-bo.empty :colspan="6"`; render() già new-style, invariato
+- `manager-dashboard`: box filtri → `x-bo.filters`; input date `d-inline-block w-auto` → `filter-w-sm`; 3 tabelle → `table-responsive` + `table-hover`; 3 empty state → `x-bo.empty` (:colspan 4/4/2); render() già new-style, invariato
+- `dashboard`: nessuna modifica — render() già new-style, corpo small-box KPI esente, widget scadenze privo di tabella
+
+---
+
 ## BO01 Fase 2C — Migrazione form (2026-09-08)
 
 Applicazione dei componenti `x-bo.*` a 4 view form backoffice. Pattern canonico: `<form>` wrappa `<x-bo.card bodyClass="p-3">`, bottoni submit nel footer slot.

@@ -1,20 +1,18 @@
 <div>
 @feature('financial_reports')
     {{-- Selettore date --}}
-    <div class="card card-outline card-primary mb-3">
-        <div class="card-body py-2">
-            <div class="row align-items-center">
-                <div class="col-auto">
-                    <label class="mb-0 mr-1">Dal</label>
-                    <input type="date" class="form-control form-control-sm d-inline-block w-auto" wire:model.live="dateFrom">
-                </div>
-                <div class="col-auto">
-                    <label class="mb-0 mr-1">Al</label>
-                    <input type="date" class="form-control form-control-sm d-inline-block w-auto" wire:model.live="dateTo">
-                </div>
+    <x-bo.filters>
+        <div class="row">
+            <div class="col-auto">
+                <label class="small mb-0">Dal</label>
+                <input type="date" class="form-control form-control-sm filter-w-sm" wire:model.live="dateFrom">
+            </div>
+            <div class="col-auto">
+                <label class="small mb-0">Al</label>
+                <input type="date" class="form-control form-control-sm filter-w-sm" wire:model.live="dateTo">
             </div>
         </div>
-    </div>
+    </x-bo.filters>
 
     {{-- Info-box KPI --}}
     <div class="row">
@@ -96,7 +94,8 @@
             <h3 class="card-title">Fatturato per trainer</h3>
         </div>
         <div class="card-body p-0">
-            <table class="table table-sm table-striped mb-0">
+            <div class="table-responsive">
+            <table class="table table-sm table-striped table-hover mb-0">
                 <thead>
                     <tr>
                         <th>Trainer</th>
@@ -117,10 +116,11 @@
                             <td>{{ $occ ? $occ['occupancy_pct'].'%' : '—' }}</td>
                         </tr>
                     @empty
-                        <tr><td colspan="4" class="text-center text-muted">Nessun dato nel periodo.</td></tr>
+                        <x-bo.empty :colspan="4">Nessun dato nel periodo.</x-bo.empty>
                     @endforelse
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 
@@ -130,7 +130,8 @@
             <h3 class="card-title">Tesserati a rischio churn (abbonamento scaduto 0-30 giorni, non rinnovato)</h3>
         </div>
         <div class="card-body p-0">
-            <table class="table table-sm table-striped mb-0">
+            <div class="table-responsive">
+            <table class="table table-sm table-striped table-hover mb-0">
                 <thead>
                     <tr>
                         <th>Tesserato</th>
@@ -152,10 +153,11 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="4" class="text-center text-muted">Nessun tesserato a rischio.</td></tr>
+                        <x-bo.empty :colspan="4">Nessun tesserato a rischio.</x-bo.empty>
                     @endforelse
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 
@@ -165,7 +167,8 @@
             <h3 class="card-title">Sessioni PT completate per trainer</h3>
         </div>
         <div class="card-body p-0">
-            <table class="table table-sm table-striped mb-0">
+            <div class="table-responsive">
+            <table class="table table-sm table-striped table-hover mb-0">
                 <thead>
                     <tr>
                         <th>Trainer</th>
@@ -179,10 +182,11 @@
                             <td>{{ $row->sessions_count }}</td>
                         </tr>
                     @empty
-                        <tr><td colspan="2" class="text-center text-muted">Nessuna sessione PT nel periodo.</td></tr>
+                        <x-bo.empty :colspan="2">Nessuna sessione PT nel periodo.</x-bo.empty>
                     @endforelse
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 

@@ -173,6 +173,7 @@ class MesocycleDetail extends Component
             'mesocycle' => $mesocycle,
             'deloadSignal' => $deloadSignal,
             'lastProgressionResult' => $lastProgressionResult,
-        ])->layout('layouts.backoffice', ['page_title' => 'Mesociclo: '.$mesocycle->name]);
+        ])->layout('layouts.backoffice')
+            ->layoutData(['page_title' => 'Mesociclo: '.$mesocycle->name]);
     }
 }

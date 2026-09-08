@@ -23,18 +23,15 @@
 
     {{-- Selettore settimana --}}
     <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <div>
-                <h5 class="mb-0 font-weight-bold">Atleta: {{ $mesocycle->athlete->name }} — Trainer: {{ $mesocycle->trainer->name }}</h5>
-                <div class="mt-1">
-                    <a href="{{ route('backoffice.athletes.profile', ['athleteId' => $mesocycle->athlete_id]) }}"
-                       class="btn btn-sm btn-outline-secondary">
-                        <i class="fas fa-user mr-1"></i> Vedi profilo completo atleta
-                    </a>
-                </div>
-            </div>
-            <div class="d-flex align-items-center flex-wrap" style="gap:0.75rem">
-                <select wire:model.live="selectedWeekNumber" wire:change="loadVolume" class="form-control form-control-sm" style="width:auto">
+        <div class="card-header">
+            <h3 class="card-title">Atleta: {{ $mesocycle->athlete->name }} — Trainer: {{ $mesocycle->trainer->name }}</h3>
+            <div class="card-tools">
+                <a href="{{ route('backoffice.athletes.profile', ['athleteId' => $mesocycle->athlete_id]) }}"
+                   class="btn btn-sm btn-outline-secondary mr-1">
+                    <i class="fas fa-user mr-1"></i> Vedi profilo atleta
+                </a>
+                <select wire:model.live="selectedWeekNumber" wire:change="loadVolume"
+                        class="form-control form-control-sm d-inline-block mr-1" style="width:auto">
                     @foreach ($mesocycle->weeks->sortBy('week_number') as $week)
                         <option value="{{ $week->week_number }}">
                             Settimana {{ $week->week_number }}
@@ -45,19 +42,19 @@
                 @feature('periodization_engine')
                 <button wire:click="applyProgression"
                         wire:confirm="Applicare la progressione alla settimana {{ $selectedWeekNumber + 1 }}?"
-                        class="btn btn-success btn-sm">
+                        class="btn btn-success btn-sm mr-1">
                     <i class="fas fa-arrow-up mr-1"></i> Applica progressione sett. {{ $selectedWeekNumber + 1 }}
                 </button>
                 @endfeature
                 <button wire:click="forceDeload"
                         wire:confirm="Forzare il deload sulla settimana {{ $selectedWeekNumber + 1 }}?"
-                        class="btn btn-warning btn-sm">
+                        class="btn btn-warning btn-sm mr-1">
                     <i class="fas fa-bed mr-1"></i> Forza deload
                 </button>
+                <a href="{{ route('backoffice.mesocycles.index') }}" class="btn btn-sm btn-outline-secondary" aria-label="Torna all'elenco mesocicli">
+                    <i class="fas fa-arrow-left mr-1"></i> Elenco
+                </a>
             </div>
-            <a href="{{ route('backoffice.mesocycles.index') }}" class="btn btn-sm btn-outline-secondary ml-auto" aria-label="Torna all'elenco mesocicli">
-                <i class="fas fa-arrow-left mr-1"></i> Elenco mesocicli
-            </a>
         </div>
 
         {{-- Legenda lettura sezione volume --}}
@@ -95,9 +92,10 @@
         {{-- Tabella volume per muscolo --}}
         <div class="card-body p-0">
             @if (empty($volumeData))
-                <div class="p-3 text-muted">Nessuna sessione completata in questa settimana.</div>
+                <x-bo.empty>Nessuna sessione completata in questa settimana.</x-bo.empty>
             @else
-                <table class="table table-sm table-bordered mb-0">
+                <div class="table-responsive">
+                <table class="table table-sm table-striped table-hover mb-0">
                     <thead class="thead-light">
                         <tr>
                             <th>Muscolo</th>
@@ -155,6 +153,7 @@
                         @endforeach
                     </tbody>
                 </table>
+                </div>
             @endif
         </div>
     </div>

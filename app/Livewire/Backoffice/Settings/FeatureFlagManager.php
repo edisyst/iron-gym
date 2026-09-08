@@ -52,6 +52,6 @@ class FeatureFlagManager extends Component
         return view('livewire.backoffice.settings.feature-flag-manager', [
             'managedFlags' => $managedFlags,
             'statuses' => $statuses,
-        ])->layout('layouts.backoffice', ['page_title' => 'Funzioni']);
+        ])->layout('layouts.backoffice')->layoutData(['page_title' => 'Funzioni']);
     }
 }

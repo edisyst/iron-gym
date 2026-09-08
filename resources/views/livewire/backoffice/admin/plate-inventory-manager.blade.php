@@ -7,7 +7,7 @@
     @endif
 
     {{-- Inventario Dischi --}}
-    <div class="card card-outline card-primary mb-4">
+    <div class="card card-outline mb-4">
         <div class="card-header">
             <h3 class="card-title">
                 <i class="fas fa-circle mr-2"></i>
@@ -19,7 +19,8 @@
         </div>
 
         <div class="card-body p-0">
-            <table class="table table-hover table-sm mb-0">
+            <div class="table-responsive">
+            <table class="table table-sm table-striped table-hover mb-0">
                 <thead>
                     <tr>
                         <th style="width:100px;">Peso (kg)</th>
@@ -102,14 +103,11 @@
                             @endif
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="5" class="text-center text-muted py-4">
-                                Nessun disco in inventario. Esegui <code>php artisan db:seed --class=PlateInventorySeeder</code>.
-                            </td>
-                        </tr>
+                        <x-bo.empty :colspan="5">Nessun disco in inventario. Esegui php artisan db:seed --class=PlateInventorySeeder</x-bo.empty>
                     @endforelse
                 </tbody>
             </table>
+            </div>
         </div>
 
         @if ($plates->hasPages())
@@ -120,7 +118,7 @@
     </div>
 
     {{-- Inventario Manubri --}}
-    <div class="card card-outline card-primary">
+    <div class="card card-outline">
         <div class="card-header">
             <h3 class="card-title">
                 <i class="fas fa-dumbbell mr-2"></i>
@@ -132,7 +130,8 @@
         </div>
 
         <div class="card-body p-0">
-            <table class="table table-hover table-sm mb-0">
+            <div class="table-responsive">
+            <table class="table table-sm table-striped table-hover mb-0">
                 <thead>
                     <tr>
                         <th style="width:100px;">Peso (kg)</th>
@@ -215,14 +214,11 @@
                             @endif
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="5" class="text-center text-muted py-4">
-                                Nessun manubrio in inventario. Esegui <code>php artisan db:seed --class=DumbbellInventorySeeder</code>.
-                            </td>
-                        </tr>
+                        <x-bo.empty :colspan="5">Nessun manubrio in inventario. Esegui php artisan db:seed --class=DumbbellInventorySeeder</x-bo.empty>
                     @endforelse
                 </tbody>
             </table>
+            </div>
         </div>
 
         @if ($dumbbells->hasPages())

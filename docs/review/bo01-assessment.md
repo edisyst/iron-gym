@@ -1,5 +1,7 @@
 # BO01 — Assessment Uniformità Strutturale UI Backoffice
 
+> **CHIUSO (2026-09-08)** — Release BO01 completata. Questo documento è il punto di partenza storico. Il risultato finale è in `docs/review/bo01-conformita-finale.md`. Il backlog di follow-up è in `docs/review/bo02-scope.md`.
+
 **Data:** 2026-09-08  
 **Scope:** READ-ONLY — nessuna modifica applicata  
 **Autore:** assessment automatico (Claude Code)

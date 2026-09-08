@@ -2,6 +2,25 @@
 
 ---
 
+## BO01 — Chiusura release uniformità UI backoffice (2026-09-08)
+
+Release BO01 chiusa. Tutte le fasi di migrazione completate e verificate. Documentazione aggiornata, backlog BO02 aperto.
+
+**Conformità finale:**
+- P1 `page_title`: 40 / 40 (100%) — +20 rispetto al baseline reale pre-BO01
+- P9 render() new-style: 40 / 40 (100%) — +14 rispetto al baseline
+- View pienamente conformi: 11 / 40 (27,5%)
+- View esentate (struttura non-standard documentata, punti applicabili OK): 16 / 40 (40%)
+- View con difformità residue: 13 / 40 (32,5%) — rinviate a BO02
+
+**Documenti prodotti:**
+- `docs/review/bo01-conformita-finale.md` — verifica finale 40 view × 9 punti
+- `docs/review/bo02-scope.md` — backlog BO02
+
+**QA:** 624 test pass / 6 skipped, 0 errori PHPStan livello 6, Pint conforme.
+
+---
+
 ## BO01 Fase 3 — View non standard (2026-09-08)
 
 Applicazione parziale del canone BO01 a 15 view con struttura non standard (tab, wizard, calendario, builder, strumenti operativi, comunicazione, ricerca, landmark). render() new-style su tutti i componenti; tabelle, empty state e card-primary in scope dove applicabile.

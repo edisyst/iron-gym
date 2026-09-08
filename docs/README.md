@@ -17,6 +17,11 @@ Indice di tutta la documentazione di progetto.
 
 ## Review e audit
 
+**BO01 — Uniformità UI backoffice (2026-09-08):**
+- [bo01-assessment.md](review/bo01-assessment.md) — assessment iniziale: inventario 40 view, anatomia strutturale, matrice conformità pre-migrazione
+- [bo01-conformita-finale.md](review/bo01-conformita-finale.md) — verifica finale post-migrazione: 40 view × 9 punti, difformità residue, debito adozione
+- [bo02-scope.md](review/bo02-scope.md) — backlog BO02: difformità residue da BO01 + breadcrumb + adozione componenti
+
 - [audit-codice.md](reviews/audit-codice.md) — security/performance audit codice (2026-06-28); 15 fix applicati
 - [audit-grafica.md](reviews/audit-grafica.md) — audit grafico backoffice (2026-06-28); brand identity + coerenza UI
 - [audit-receptionist-2026-08-19.md](reviews/audit-receptionist-2026-08-19.md) — audit ruolo receptionist (2026-08-19); 17 finding, 11 fix applicati

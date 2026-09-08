@@ -7,9 +7,9 @@
     @endif
 
     <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="card-header">
             <h3 class="card-title">Volume landmarks — {{ $athlete->name }}</h3>
-            <div>
+            <div class="card-tools">
                 <button wire:click="save" class="btn btn-primary btn-sm">
                     <i class="fas fa-save mr-1"></i> Salva
                 </button>

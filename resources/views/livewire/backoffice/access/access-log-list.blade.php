@@ -55,64 +55,55 @@
         <div class="modal-backdrop fade show"></div>
     @endif
 
-    {{-- Filtri --}}
-    <div class="card card-outline card-primary">
-        <div class="card-header">
-            <h3 class="card-title">Filtri</h3>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-3">
-                    <label class="small">Data</label>
-                    <input type="date" wire:model.live="dateFilter" class="form-control form-control-sm">
-                </div>
-                <div class="col-md-5">
-                    <label class="small">Cerca tesserato</label>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Nome o cognome..." class="form-control form-control-sm">
-                </div>
+    <x-bo.filters>
+        <div class="row">
+            <div class="col-md-3">
+                <label class="small">Data</label>
+                <input type="date" wire:model.live="dateFilter" class="form-control form-control-sm">
+            </div>
+            <div class="col-md-5">
+                <label class="small">Cerca tesserato</label>
+                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Nome o cognome..." class="form-control form-control-sm">
             </div>
         </div>
-    </div>
+    </x-bo.filters>
 
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">Registro accessi</h3>
-            <div class="card-tools">
-                <button class="btn btn-primary btn-sm" wire:click="openModal" wire:loading.attr="disabled">
-                    <span wire:loading wire:target="openModal" class="spinner-border spinner-border-sm mr-1"></span>
-                    <i class="fas fa-sign-in-alt" wire:loading.remove wire:target="openModal"></i>
-                    Registra accesso
-                </button>
-            </div>
-        </div>
-        <div class="card-body p-0">
-            <table class="table table-hover mb-0">
-                <thead>
+    <x-bo.card bodyClass="p-0">
+        <x-slot name="actions">
+            <button class="btn btn-primary btn-sm" wire:click="openModal" wire:loading.attr="disabled">
+                <span wire:loading wire:target="openModal" class="spinner-border spinner-border-sm mr-1"></span>
+                <i class="fas fa-sign-in-alt" wire:loading.remove wire:target="openModal"></i>
+                Registra accesso
+            </button>
+        </x-slot>
+
+        <div class="table-responsive">
+        <table class="table table-sm table-striped table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Data / Ora</th>
+                    <th>Tesserato</th>
+                    <th>Piano</th>
+                    <th>Receptionist</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse ($logs as $log)
                     <tr>
-                        <th>Data / Ora</th>
-                        <th>Tesserato</th>
-                        <th>Piano</th>
-                        <th>Receptionist</th>
+                        <td>{{ $log->checked_in_at->format('d/m/Y H:i') }}</td>
+                        <td>{{ $log->member->last_name }} {{ $log->member->first_name }}</td>
+                        <td>{{ $log->subscription?->plan->name ?? '—' }}</td>
+                        <td>{{ $log->checkedInBy?->name ?? 'Sistema' }}</td>
                     </tr>
-                </thead>
-                <tbody>
-                    @forelse ($logs as $log)
-                        <tr>
-                            <td>{{ $log->checked_in_at->format('d/m/Y H:i') }}</td>
-                            <td>{{ $log->member->last_name }} {{ $log->member->first_name }}</td>
-                            <td>{{ $log->subscription?->plan->name ?? '—' }}</td>
-                            <td>{{ $log->checkedInBy?->name ?? 'Sistema' }}</td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="4" class="text-center text-muted py-4">Nessun accesso trovato.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                @empty
+                    <x-bo.empty :colspan="4">Nessun accesso trovato.</x-bo.empty>
+                @endforelse
+            </tbody>
+        </table>
         </div>
-        <div class="card-footer">
-            {{ $logs->links() }}
-        </div>
-    </div>
+
+        <x-slot name="footer">
+            <x-bo.pagination :paginator="$logs" />
+        </x-slot>
+    </x-bo.card>
 </div>

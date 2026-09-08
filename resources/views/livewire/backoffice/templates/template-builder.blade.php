@@ -220,9 +220,7 @@
                     </div>
                 </div>
             @empty
-                <div class="text-center text-muted py-4">
-                    Nessuna sessione per la settimana {{ $activeWeek }}.
-                </div>
+                <x-bo.empty>Nessuna sessione per la settimana {{ $activeWeek }}.</x-bo.empty>
             @endforelse
 
             <button type="button" class="btn btn-outline-secondary" wire:click="addSession">

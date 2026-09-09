@@ -78,3 +78,16 @@ Allineamento documentazione post-SET01: fix route prenotazioni manuale, consolid
 ## DOC03 (2026-09-01)
 
 Swagger UI + openapi.yaml (15 endpoint, tutti i component riutilizzabili). `/backoffice/settings/api-docs` (gestore). Download YAML. Try-it-out disabilitato.
+
+## BO01-BO06 — Uniformità UI backoffice (2026-09-08/09)
+
+Revisione grafica completa del backoffice: struttura canonica x-bo.* su tutte le 42 view, breadcrumb, accessibilità ARIA, wire:loading, resetFilters.
+
+- **BO01**: componenti x-bo.* (card, filters, empty, pagination); migrazione 30+ view a canone strutturale; render() new-style + page_title su 40/40 view; documentazione standard in `docs/architecture/ui-backoffice.md`.
+- **BO02**: breadcrumb su 39 view full-page; plate-inventory-manager paginazione → x-bo.pagination; exercise-form bottoni in card-footer; volume-landmark-manager card-tools canonico; 4 empty state raw → x-bo.empty.
+- **BO03**: rimossi 14 blocchi flash inline da 11 view; wire:loading + spinner su 4 bottoni; modal ARIA su exercise-form; aria-label icon-only; table-actions su 5 th Azioni.
+- **BO04**: wire:loading.attr="disabled" su ~12 bottoni in 7 view; aria-label su 4 bottoni; 2 th vuoti → table-actions in availability-manager; alert auto-dismiss communication-campaign; wire:confirm su booking-list.
+- **BO05**: fix ExerciseList `session('status')` → `session('success')`; resetFilters() + pulsante in 6 view (ExerciseList, MesocycleList, BookingList, FeedbackList, MemberList, AccessLogList); th Azioni table-actions in 7 posizioni; aria-label textarea feedback-list.
+- **BO06**: mesocycle-assign + group-class-catalog form + training-report drilldown: raw card → x-bo.card; resetFilters() + pulsante in 5 view mancanti (GroupClassManager, TemplateList, TrainingReport, SubscriptionList, AthleteSessionHistory); subscription-list td → table-actions; eliminato file orfano admin/feature-flag-manager.blade.php.
+
+**Suite finale:** 624 test pass / 6 skipped. PHPStan livello 6: 0 errori. Pint conforme.

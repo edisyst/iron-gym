@@ -2,6 +2,22 @@
 
 ---
 
+## BO06 — Chiusura release uniformità UI backoffice (2026-09-09)
+
+Release BO06 chiusa. Completata uniformità strutturale backoffice: ultime raw card convertite, resetFilters esteso a tutte le view con filtri, file orfano rimosso.
+
+**Implementati:**
+- A1: mesocycle-assign — raw card → x-bo.card con title dinamico wizard (step 1/2), badge wizard in card-tools
+- A2: group-class-catalog — form card condizionale (`$showForm`) → x-bo.card, footer slot con card-footer
+- C1: training-report — drilldown raw card → x-bo.card, pulsante Chiudi in card-tools
+- B1-B5: resetFilters() + pulsante "Azzera filtri" nelle 5 view mancanti (GroupClassManager, TemplateList, TrainingReport, SubscriptionList, AthleteSessionHistory)
+- D1: subscription-list — td azioni: inline style `white-space:nowrap` → classe `table-actions`
+- E1: eliminato `admin/feature-flag-manager.blade.php` (orfano, mai routato — la route punta a Settings\FeatureFlagManager)
+
+**QA:** 624 test pass / 6 skipped, 0 errori Blade, 0 errori PHPStan livello 6, Pint conforme.
+
+---
+
 ## BO05 — Chiusura release bug feedback, reset filtri, th Azioni (2026-09-09)
 
 Release BO05 chiusa.

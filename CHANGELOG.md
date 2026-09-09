@@ -2,6 +2,20 @@
 
 ---
 
+## BO05 — Chiusura release bug feedback, reset filtri, th Azioni (2026-09-09)
+
+Release BO05 chiusa.
+
+**Implementati:**
+- A1: BUG ExerciseList — `session('status')` → `session('success')`, feedback delete ora visibile
+- B1: `resetFilters()` + bottone "Azzera filtri" in 6 componenti (ExerciseList, MesocycleList, BookingList, FeedbackList, MemberList, AccessLogList)
+- B2: `<th class="text-right table-actions">` in 7 view (member-list, mesocycle-list, subscription-list, template-list, training-report, manager-dashboard, expiry-dashboard ×2)
+- C1: `aria-label="Note interne"` su textarea feedback-list
+
+**QA:** 624 test pass / 6 skipped, 0 errori PHPStan livello 6, Pint conforme.
+
+---
+
 ## BO04 — Chiusura release wire:loading inline e ARIA (2026-09-09)
 
 Release BO04 chiusa. wire:loading, aria-label e conformità th/td uniformati su tutta la backoffice.

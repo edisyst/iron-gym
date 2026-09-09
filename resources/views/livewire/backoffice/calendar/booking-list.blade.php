@@ -89,7 +89,7 @@
                             —
                         @endif
                     </td>
-                    <td class="text-right">
+                    <td class="text-right table-actions">
                         @if(auth()->user()->hasRole('gestore') || auth()->id() === $booking->trainer_id)
                             @if($booking->status === 'pending')
                                 <button wire:click="confirm({{ $booking->id }})"

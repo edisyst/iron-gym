@@ -96,9 +96,12 @@
                             <button
                                 wire:click="send"
                                 wire:confirm="Inviare la campagna a {{ $this->recipientsCount }} destinatari?"
+                                wire:loading.attr="disabled"
+                                wire:target="send"
                                 class="btn btn-primary"
                                 @if ($this->recipientsCount === 0) disabled @endif
                             >
+                                <span wire:loading wire:target="send" class="spinner-border spinner-border-sm mr-1"></span>
                                 <i class="fas fa-paper-plane mr-1"></i>
                                 Invia campagna
                             </button>

@@ -1,11 +1,4 @@
 <div>
-    @if (session('success'))
-        <div class="alert alert-success alert-dismissible">
-            <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
-            {{ session('success') }}
-        </div>
-    @endif
-
     <x-bo.filters>
         <div class="col-auto">
             <label class="small mb-0 mr-1">Anno fiscale</label>

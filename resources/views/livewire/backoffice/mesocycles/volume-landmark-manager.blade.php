@@ -1,11 +1,4 @@
 <div>
-    @if (session('success'))
-        <div class="alert alert-success alert-dismissible">
-            <button type="button" class="close" data-dismiss="alert">&times;</button>
-            {{ session('success') }}
-        </div>
-    @endif
-
     <div class="card">
         <div class="card-header">
             <h3 class="card-title">Volume landmarks — {{ $athlete->name }}</h3>

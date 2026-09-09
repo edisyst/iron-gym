@@ -1,11 +1,4 @@
 <div>
-    @if (session('success'))
-        <div class="alert alert-success alert-dismissible">
-            <button type="button" class="close" data-dismiss="alert">&times;</button>
-            {{ session('success') }}
-        </div>
-    @endif
-
     {{-- Inventario Dischi --}}
     <div class="card card-outline mb-4">
         <div class="card-header">

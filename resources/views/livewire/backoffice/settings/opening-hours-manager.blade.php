@@ -1,12 +1,5 @@
 {{-- Orari di apertura palestra: slot settimanali e eccezioni/festività --}}
 <div>
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible">
-            <button type="button" class="close" data-dismiss="alert">&times;</button>
-            {{ session('success') }}
-        </div>
-    @endif
-
     {{-- ============================================================ --}}
     {{-- Slot settimanali ricorrenti --}}
     {{-- ============================================================ --}}

@@ -1,12 +1,5 @@
 {{-- Gestione corsi collettivi: CRUD, pannello iscritti e presenza --}}
 <div>
-    @if(session('success'))
-    <div class="alert alert-success alert-dismissible">
-        <button type="button" class="close" data-dismiss="alert">&times;</button>
-        {{ session('success') }}
-    </div>
-    @endif
-
     <x-bo.filters>
         <div class="row">
             <div class="col-auto">

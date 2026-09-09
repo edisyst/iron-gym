@@ -1,7 +1,10 @@
 # BO04 — Backlog wire:loading inline, ARIA, th Azioni
 
 **Aperto:** 2026-09-09
+**Chiuso:** 2026-09-09
 **Prerequisito:** BO03 completato e chiuso
+
+> Tutti gli item implementati. Suite 624 pass / 6 skipped, PHPStan livello 6 OK, Pint conforme.
 
 ---
 

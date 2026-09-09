@@ -2,6 +2,23 @@
 
 ---
 
+## BO04 — Chiusura release wire:loading inline e ARIA (2026-09-09)
+
+Release BO04 chiusa. wire:loading, aria-label e conformità th/td uniformati su tutta la backoffice.
+
+**Implementati:**
+- A1: communication-campaign bottone Invia — wire:loading.attr="disabled" + spinner
+- A2: booking-list td Azioni — aggiunta classe table-actions
+- B1: wire:loading.attr="disabled" su ~12 bottoni azione inline in 7 view (group-class-catalog, class-schedule-manager, booking-list, group-class-manager, availability-manager, template-builder, exercise-list)
+- B2: aria-label su 4 bottoni icon-only (deleteSlot, deleteOverride in availability-manager; removeSession, removeExercise in template-builder)
+- B3: availability-manager — 2 th vuoti → `<th class="text-right table-actions">Azioni</th>`
+- C1: communication-campaign `$sent` alert — Alpine auto-dismiss 4s (coerente col layout)
+- C2: booking-list — wire:confirm su bottoni confirm e restore prenotazione
+
+**QA:** 624 test pass / 6 skipped, 0 errori PHPStan livello 6, Pint conforme.
+
+---
+
 ## BO03 — Chiusura release UX e accessibilità UI backoffice (2026-09-09)
 
 Release BO03 chiusa. UX e accessibilità backoffice uniformate.

@@ -22,6 +22,7 @@ Indice di tutta la documentazione di progetto.
 - [bo01-conformita-finale.md](review/bo01-conformita-finale.md) — verifica finale post-migrazione: 40 view × 9 punti, difformità residue, debito adozione
 - [bo02-scope.md](review/bo02-scope.md) — backlog BO02: difformità residue da BO01 + breadcrumb + adozione componenti
 - [bo03-scope.md](review/bo03-scope.md) — backlog BO03: flash inline, wire:loading, ARIA, icon-only aria-label
+- [bo04-scope.md](review/bo04-scope.md) — backlog BO04: wire:loading inline actions, ARIA icon-only, th Azioni
 
 - [audit-codice.md](reviews/audit-codice.md) — security/performance audit codice (2026-06-28); 15 fix applicati
 - [audit-grafica.md](reviews/audit-grafica.md) — audit grafico backoffice (2026-06-28); brand identity + coerenza UI

@@ -3,7 +3,8 @@
         <div class="card-header">
             <h3 class="card-title">Volume landmarks — {{ $athlete->name }}</h3>
             <div class="card-tools">
-                <button wire:click="save" class="btn btn-primary btn-sm">
+                <button wire:click="save" class="btn btn-primary btn-sm" wire:loading.attr="disabled" wire:target="save">
+                    <span wire:loading wire:target="save" class="spinner-border spinner-border-sm mr-1"></span>
                     <i class="fas fa-save mr-1"></i> Salva
                 </button>
                 <button wire:click="resetToDefaults"

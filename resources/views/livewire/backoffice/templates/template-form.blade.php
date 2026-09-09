@@ -78,7 +78,8 @@
 
             <x-slot name="footer">
                 <div class="card-footer">
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-primary" wire:loading.attr="disabled">
+                        <span wire:loading class="spinner-border spinner-border-sm mr-1"></span>
                         <i class="fas fa-tools"></i> Crea e apri builder
                     </button>
                     <a href="{{ route('backoffice.templates.index') }}" class="btn btn-default ml-2">

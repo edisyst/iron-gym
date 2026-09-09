@@ -276,7 +276,8 @@
             @endforeach
             <x-slot name="footer">
                 <div class="card-footer d-flex align-items-center gap-2">
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-primary" wire:loading.attr="disabled">
+                        <span wire:loading class="spinner-border spinner-border-sm mr-1"></span>
                         <i class="fas fa-save"></i> Salva
                     </button>
                     <a href="{{ route('backoffice.exercises.index') }}" class="btn btn-default ml-2">
@@ -287,11 +288,11 @@
                             <button type="button" class="btn btn-danger btn-sm" @click="open = true">
                                 <i class="fas fa-archive"></i> Archivia
                             </button>
-                            <div x-show="open" x-cloak style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center;">
+                            <div x-show="open" x-cloak role="dialog" aria-modal="true" aria-labelledby="archiveModalTitle" style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center;">
                                 <div class="modal-dialog mb-0" style="max-width: 400px;">
                                     <div class="modal-content">
                                         <div class="modal-header">
-                                            <h5 class="modal-title">Conferma archiviazione</h5>
+                                            <h5 class="modal-title" id="archiveModalTitle">Conferma archiviazione</h5>
                                         </div>
                                         <div class="modal-body">
                                             <p>Vuoi archiviare l'esercizio <strong>{{ $nameIt }}</strong>? Sarà nascosto dal catalogo ma i dati storici saranno preservati.</p>

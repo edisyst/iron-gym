@@ -37,7 +37,7 @@
                         @error('newEndTime') <span class="text-danger small">{{ $message }}</span> @enderror
                     </div>
                     <div class="col-md-3">
-                        <button wire:click="addSlot" class="btn btn-sm btn-success mr-1">
+                        <button wire:click="addSlot" wire:loading.attr="disabled" wire:target="addSlot" class="btn btn-sm btn-success mr-1">
                             <span wire:loading wire:target="addSlot" class="spinner-border spinner-border-sm"></span>
                             Salva
                         </button>
@@ -54,7 +54,7 @@
                         <th>Giorno</th>
                         <th>Dalle</th>
                         <th>Alle</th>
-                        <th></th>
+                        <th class="text-right table-actions">Azioni</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -66,6 +66,9 @@
                         <td class="text-right">
                             <button wire:click="deleteSlot({{ $slot->id }})"
                                     wire:confirm="Eliminare questo slot?"
+                                    wire:loading.attr="disabled"
+                                    wire:target="deleteSlot({{ $slot->id }})"
+                                    aria-label="Elimina slot"
                                     class="btn btn-sm btn-danger">
                                 <i class="fas fa-trash"></i>
                             </button>
@@ -125,7 +128,7 @@
                                placeholder="Opzionale">
                     </div>
                     <div class="col-md-2">
-                        <button wire:click="addOverride" class="btn btn-sm btn-warning mr-1">
+                        <button wire:click="addOverride" wire:loading.attr="disabled" wire:target="addOverride" class="btn btn-sm btn-warning mr-1">
                             <span wire:loading wire:target="addOverride" class="spinner-border spinner-border-sm"></span>
                             Salva
                         </button>
@@ -144,7 +147,7 @@
                         <th>Alle</th>
                         <th>Tipo</th>
                         <th>Note</th>
-                        <th></th>
+                        <th class="text-right table-actions">Azioni</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -164,6 +167,9 @@
                         <td class="text-right">
                             <button wire:click="deleteOverride({{ $override->id }})"
                                     wire:confirm="Eliminare questa eccezione?"
+                                    wire:loading.attr="disabled"
+                                    wire:target="deleteOverride({{ $override->id }})"
+                                    aria-label="Elimina eccezione"
                                     class="btn btn-sm btn-danger">
                                 <i class="fas fa-trash"></i>
                             </button>

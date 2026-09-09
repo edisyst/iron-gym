@@ -82,7 +82,7 @@
                 </div>
             </div>
             <div class="d-flex gap-2 mt-2">
-                <button wire:click="save" class="btn btn-sm btn-warning mr-1">
+                <button wire:click="save" wire:loading.attr="disabled" class="btn btn-sm btn-warning mr-1">
                     <span wire:loading wire:target="save" class="spinner-border spinner-border-sm"></span>
                     Salva
                 </button>
@@ -128,6 +128,7 @@
                     </td>
                     <td class="text-right table-actions">
                         <button wire:click="toggleActive({{ $schedule->id }})"
+                                wire:loading.attr="disabled"
                                 class="btn btn-sm {{ $schedule->is_active ? 'btn-outline-secondary' : 'btn-outline-success' }} mr-1"
                                 title="{{ $schedule->is_active ? 'Disattiva' : 'Attiva' }}"
                                 aria-label="{{ $schedule->is_active ? 'Disattiva' : 'Attiva' }} palinsesto {{ $schedule->groupClass->name }}">
@@ -140,6 +141,7 @@
                             <i class="fas fa-edit" aria-hidden="true"></i>
                         </button>
                         <button wire:click="deleteSchedule({{ $schedule->id }})"
+                                wire:loading.attr="disabled"
                                 wire:confirm="Eliminare questo palinsesto? Le occorrenze già create non vengono rimosse."
                                 class="btn btn-sm btn-danger"
                                 title="Elimina"

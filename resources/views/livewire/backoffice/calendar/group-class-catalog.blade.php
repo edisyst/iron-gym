@@ -144,11 +144,13 @@
                             </button>
                             <button class="btn btn-sm btn-outline-{{ $gc->is_active ? 'warning' : 'success' }}"
                                     wire:click="toggleActive({{ $gc->id }})"
+                                    wire:loading.attr="disabled"
                                     aria-label="{{ $gc->is_active ? 'Disattiva' : 'Attiva' }} {{ $gc->name }}">
                                 <i class="fas fa-{{ $gc->is_active ? 'pause' : 'play' }}"></i>
                             </button>
                             <button class="btn btn-sm btn-outline-danger"
                                     wire:click="deleteClass({{ $gc->id }})"
+                                    wire:loading.attr="disabled"
                                     wire:confirm="Eliminare '{{ $gc->name }}'? L'operazione è irreversibile."
                                     aria-label="Elimina {{ $gc->name }}">
                                 <i class="fas fa-trash"></i>

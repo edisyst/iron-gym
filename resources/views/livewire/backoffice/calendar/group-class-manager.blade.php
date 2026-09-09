@@ -96,7 +96,7 @@
                         </div>
                     </div>
                     <div class="d-flex gap-2">
-                        <button wire:click="save" class="btn btn-sm btn-warning mr-1">
+                        <button wire:click="save" wire:loading.attr="disabled" class="btn btn-sm btn-warning mr-1">
                             <span wire:loading wire:target="save" class="spinner-border spinner-border-sm"></span>
                             Salva
                         </button>
@@ -157,6 +157,7 @@
                                 </button>
                                 @endif
                                 <button wire:click="deleteClass({{ $occ->id }})"
+                                        wire:loading.attr="disabled"
                                         wire:confirm="Eliminare/cancellare questo corso?"
                                         class="btn btn-sm btn-danger" title="Elimina" aria-label="Elimina {{ $occ->groupClass->name }}">
                                     <i class="fas fa-trash" aria-hidden="true"></i>
@@ -234,6 +235,7 @@
                                     @endif
                                     @if($selectedClass->status === 'planned')
                                     <button wire:click="removeParticipant({{ $booking->id }})"
+                                            wire:loading.attr="disabled"
                                             wire:confirm="Rimuovere questo partecipante?"
                                             class="btn btn-sm btn-outline-danger"
                                             aria-label="Rimuovi {{ $booking->member?->full_name }}">
@@ -278,6 +280,7 @@
                                     {{ $waitlisted->member?->full_name }}
                                 </span>
                                 <button wire:click="removeParticipant({{ $waitlisted->id }})"
+                                        wire:loading.attr="disabled"
                                         wire:confirm="Rimuovere dalla lista d'attesa?"
                                         class="btn btn-sm btn-outline-danger"
                                         aria-label="Rimuovi {{ $waitlisted->member?->full_name }} dalla lista d'attesa">

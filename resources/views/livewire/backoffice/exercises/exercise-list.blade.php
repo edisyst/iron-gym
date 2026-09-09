@@ -145,6 +145,7 @@
                                 <button
                                     type="button"
                                     wire:click="deleteExercise({{ $exercise->id }})"
+                                    wire:loading.attr="disabled"
                                     wire:confirm="Eliminare l'esercizio '{{ $exercise->name_it }}'?"
                                     class="btn btn-sm btn-primary"
                                     aria-label="Elimina {{ $exercise->name_it }}"

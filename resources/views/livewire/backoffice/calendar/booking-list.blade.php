@@ -93,6 +93,7 @@
                         @if(auth()->user()->hasRole('gestore') || auth()->id() === $booking->trainer_id)
                             @if($booking->status === 'pending')
                                 <button wire:click="confirm({{ $booking->id }})"
+                                        wire:confirm="Confermare la prenotazione?"
                                         wire:loading.attr="disabled"
                                         class="btn btn-sm btn-success mr-1" title="Conferma" aria-label="Conferma prenotazione">
                                     <i class="fas fa-check" aria-hidden="true"></i>
@@ -106,6 +107,7 @@
                             @endif
                             @if($booking->status === 'cancelled')
                                 <button wire:click="restore({{ $booking->id }})"
+                                        wire:confirm="Ripristinare la prenotazione?"
                                         wire:loading.attr="disabled"
                                         class="btn btn-sm btn-warning" title="Ripristina" aria-label="Ripristina prenotazione">
                                     <i class="fas fa-undo" aria-hidden="true"></i>

@@ -1,6 +1,6 @@
 <div>
     @if ($sent)
-        <div class="alert alert-success">
+        <div class="alert alert-success" x-data x-init="setTimeout(() => $el.remove(), 4000)">
             <i class="fas fa-check-circle mr-2"></i>
             Campagna inviata in coda. Verrà elaborata dal worker Redis.
         </div>

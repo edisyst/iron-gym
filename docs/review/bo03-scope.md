@@ -1,7 +1,10 @@
 # BO03 — Backlog UX e accessibilità UI backoffice
 
 **Aperto:** 2026-09-09
+**Chiuso:** 2026-09-09
 **Prerequisito:** BO02 completato e chiuso
+
+> Tutti gli item implementati. Suite 624 pass / 6 skipped, PHPStan livello 6 OK, Pint conforme.
 
 ---
 

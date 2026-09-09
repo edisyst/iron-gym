@@ -2,6 +2,21 @@
 
 ---
 
+## BO03 — Chiusura release UX e accessibilità UI backoffice (2026-09-09)
+
+Release BO03 chiusa. UX e accessibilità backoffice uniformate.
+
+**Implementati:**
+- A1: rimossi 14 blocchi flash inline da 11 view (layout gestisce già session flash con Alpine auto-dismiss)
+- B1: wire:loading.attr="disabled" + spinner su 4 bottoni submit/save (template-form, exercise-form, volume-landmark-manager, message-thread)
+- B2: exercise-form modal archiviazione — aggiunti role="dialog" aria-modal="true" aria-labelledby per conformità ARIA
+- B3: message-thread bottone icon-only — aggiunto aria-label="Invia messaggio"
+- C1: table-actions su th Azioni in 5 view (group-class-manager, group-class-catalog, class-schedule-manager, booking-list, exercise-list)
+
+**QA:** 624 test pass / 6 skipped, 0 errori PHPStan livello 6, Pint conforme.
+
+---
+
 ## BO02 — Chiusura release uniformità UI backoffice (2026-09-09)
 
 Release BO02 chiusa. Tutti gli item del backlog BO01 risolti o verificati già conformi.

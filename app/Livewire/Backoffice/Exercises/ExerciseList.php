@@ -60,7 +60,7 @@ class ExerciseList extends Component
 
         Exercise::findOrFail($exerciseId)->delete();
 
-        session()->flash('status', 'Esercizio eliminato.');
+        session()->flash('success', 'Esercizio eliminato.');
     }
 
     public function render(): View

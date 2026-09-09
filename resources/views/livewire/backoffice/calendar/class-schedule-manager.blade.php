@@ -101,7 +101,7 @@
                     <th>Trainer</th>
                     <th>Validità</th>
                     <th>Stato</th>
-                    <th class="text-right">Azioni</th>
+                    <th class="text-right table-actions">Azioni</th>
                 </tr>
             </thead>
             <tbody>

@@ -61,7 +61,7 @@
                     <th>Pattern</th>
                     <th>Meccanica</th>
                     <th>Livello</th>
-                    <th></th>
+                    <th class="text-right table-actions">Azioni</th>
                 </tr>
             </thead>
             <tbody>

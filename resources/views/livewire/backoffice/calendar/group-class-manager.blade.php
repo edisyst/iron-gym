@@ -114,7 +114,7 @@
                             <th>Trainer</th>
                             <th>Iscritti</th>
                             <th>Status</th>
-                            <th class="text-right">Azioni</th>
+                            <th class="text-right table-actions">Azioni</th>
                         </tr>
                     </thead>
                     <tbody>

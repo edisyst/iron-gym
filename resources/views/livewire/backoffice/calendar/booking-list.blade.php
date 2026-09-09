@@ -45,7 +45,7 @@
                     <th>Atleta</th>
                     <th>Status</th>
                     <th>Deadline cancel.</th>
-                    <th class="text-right">Azioni</th>
+                    <th class="text-right table-actions">Azioni</th>
                 </tr>
             </thead>
             <tbody>

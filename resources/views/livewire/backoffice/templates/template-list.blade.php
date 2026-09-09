@@ -1,7 +1,7 @@
 <div>
     <x-bo.filters>
         <div class="row">
-            <div class="col-md-5">
+            <div class="col-md-4">
                 <label class="small">Cerca</label>
                 <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cerca template..." class="form-control form-control-sm">
             </div>
@@ -17,13 +17,18 @@
                     <option value="general">Generale</option>
                 </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="small">Stato</label>
                 <select wire:model.live="active" class="form-control form-control-sm">
                     <option value="">Tutti</option>
                     <option value="1">Attivi</option>
                     <option value="0">Archiviati</option>
                 </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button wire:click="resetFilters" class="btn btn-default btn-sm">
+                    <i class="fas fa-times mr-1"></i> Azzera filtri
+                </button>
             </div>
         </div>
     </x-bo.filters>

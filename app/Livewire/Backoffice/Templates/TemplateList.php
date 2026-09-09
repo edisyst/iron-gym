@@ -36,6 +36,12 @@ class TemplateList extends Component
         $this->resetPage();
     }
 
+    public function resetFilters(): void
+    {
+        $this->reset(['search', 'goal', 'active']);
+        $this->resetPage();
+    }
+
     public function duplicate(int $templateId): void
     {
         $source = WorkoutTemplate::with([

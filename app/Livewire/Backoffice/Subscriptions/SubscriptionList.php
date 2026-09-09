@@ -21,6 +21,12 @@ class SubscriptionList extends Component
         $this->resetPage();
     }
 
+    public function resetFilters(): void
+    {
+        $this->reset(['filter']);
+        $this->resetPage();
+    }
+
     public function suspend(int $id): void
     {
         abort_unless(auth()->user()->hasRole('gestore'), 403);

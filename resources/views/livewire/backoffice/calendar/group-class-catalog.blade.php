@@ -1,11 +1,7 @@
 <div>
     {{-- Form creazione / modifica --}}
     @if ($showForm)
-        <div class="card card-outline card-primary mb-4">
-            <div class="card-header">
-                <h5 class="card-title mb-0">{{ $editingId ? 'Modifica corso' : 'Nuovo corso' }}</h5>
-            </div>
-            <div class="card-body">
+        <x-bo.card :title="$editingId ? 'Modifica corso' : 'Nuovo corso'" bodyClass="p-3" class="mb-4">
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
@@ -76,15 +72,16 @@
                         <label class="custom-control-label" for="formIsActive">Corso attivo</label>
                     </div>
                 </div>
-            </div>
-            <div class="card-footer d-flex gap-2">
-                <button class="btn btn-primary btn-sm" wire:click="save()" wire:loading.attr="disabled">
-                    <span wire:loading wire:target="save" class="spinner-border spinner-border-sm mr-1"></span>
-                    Salva
-                </button>
-                <button class="btn btn-secondary btn-sm" wire:click="cancelForm()">Annulla</button>
-            </div>
-        </div>
+            <x-slot name="footer">
+                <div class="card-footer d-flex gap-2">
+                    <button class="btn btn-primary btn-sm" wire:click="save()" wire:loading.attr="disabled">
+                        <span wire:loading wire:target="save" class="spinner-border spinner-border-sm mr-1"></span>
+                        Salva
+                    </button>
+                    <button class="btn btn-secondary btn-sm" wire:click="cancelForm()">Annulla</button>
+                </div>
+            </x-slot>
+        </x-bo.card>
     @endif
 
     {{-- Tabella corsi --}}

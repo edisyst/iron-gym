@@ -67,6 +67,12 @@ class GroupClassManager extends Component
         $this->resetPage();
     }
 
+    public function resetFilters(): void
+    {
+        $this->reset(['search', 'filterStatus']);
+        $this->resetPage();
+    }
+
     // -------------------------------------------------------------------------
     // Form CRUD
     // -------------------------------------------------------------------------

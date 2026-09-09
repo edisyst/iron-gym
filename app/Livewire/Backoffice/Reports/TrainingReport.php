@@ -47,6 +47,13 @@ class TrainingReport extends Component
         $this->drilldownAthleteId = null;
     }
 
+    public function resetFilters(): void
+    {
+        $this->dateFrom = now()->startOfMonth()->toDateString();
+        $this->dateTo = now()->endOfMonth()->toDateString();
+        $this->mesoStatus = 'all';
+    }
+
     public function render(): View
     {
         $from = Carbon::parse($this->dateFrom)->startOfDay();

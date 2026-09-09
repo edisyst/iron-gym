@@ -1,11 +1,16 @@
 <div>
     <x-bo.filters>
-        <select wire:model.live="mesocycleId" class="form-control form-control-sm filter-w-lg">
-            <option value="">Tutti i mesocicli</option>
-            @foreach ($mesocycles as $meso)
-                <option value="{{ $meso->id }}">{{ $meso->name }}</option>
-            @endforeach
-        </select>
+        <div class="d-flex align-items-center gap-2">
+            <select wire:model.live="mesocycleId" class="form-control form-control-sm filter-w-lg">
+                <option value="">Tutti i mesocicli</option>
+                @foreach ($mesocycles as $meso)
+                    <option value="{{ $meso->id }}">{{ $meso->name }}</option>
+                @endforeach
+            </select>
+            <button wire:click="resetFilters" class="btn btn-default btn-sm">
+                <i class="fas fa-times mr-1"></i> Azzera filtri
+            </button>
+        </div>
     </x-bo.filters>
 
     <x-bo.card bodyClass="p-0">

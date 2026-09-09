@@ -15,6 +15,11 @@
                        placeholder="Cerca corso..."
                        class="form-control form-control-sm filter-w-sm">
             </div>
+            <div class="col-auto d-flex align-items-center">
+                <button wire:click="resetFilters" class="btn btn-default btn-sm">
+                    <i class="fas fa-times mr-1"></i> Azzera filtri
+                </button>
+            </div>
         </div>
     </x-bo.filters>
 

@@ -17,6 +17,11 @@
                     <option value="completed">Solo completati</option>
                 </select>
             </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button wire:click="resetFilters" class="btn btn-default btn-sm">
+                    <i class="fas fa-times mr-1"></i> Azzera filtri
+                </button>
+            </div>
         </div>
     </x-bo.filters>
 
@@ -63,15 +68,12 @@
 
     {{-- Drilldown atleta --}}
     @if ($drilldown !== null)
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Dettaglio — {{ $drilldown['athlete_name'] }}</h3>
-                <div class="card-tools">
-                    <button class="btn btn-sm btn-secondary" wire:click="closeDrilldown">Chiudi</button>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="row">
+        <x-bo.card :title="'Dettaglio — ' . $drilldown['athlete_name']" bodyClass="p-3">
+            <x-slot name="actions">
+                <button class="btn btn-sm btn-secondary" wire:click="closeDrilldown">Chiudi</button>
+            </x-slot>
+
+            <div class="row">
                     <div class="col-md-7">
                         <h6>Sessioni completate per settimana (ultimi 8 mesocicli)</h6>
                         @if (!empty($drilldown['weekly_sessions']))
@@ -125,8 +127,7 @@
                         @endif
                     </div>
                 </div>
-            </div>
-        </div>
+        </x-bo.card>
 
         @push('js')
         <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>

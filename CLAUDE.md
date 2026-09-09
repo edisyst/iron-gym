@@ -160,7 +160,7 @@ Exercise model usa `getRouteKeyName() = 'slug'` (route binding su slug).
 
 ## Stato sviluppo
 
-Step 1-10 implementati. Release 01-31, UX01-07, API01-04 completate. **v1.2.4** (2026-08-30), **v1.2.4+** (2026-08-31), **API01-04** (2026-09-01).
+Step 1-10 implementati. Release 01-31, UX01-07, API01-04 completate. **v1.2.4** (2026-08-30), **v1.2.4+** (2026-08-31), **API01-04** (2026-09-01). **BO01-BO06** (2026-09-08/09): revisione grafica completa backoffice.
 
 **Suite corrente:** 624 test (624 pass / 6 skipped). **PHPStan:** livello 6, 0 errori. **Pint:** conforme.
 

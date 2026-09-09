@@ -61,6 +61,7 @@
                                 rows="2"
                                 class="form-control form-control-sm"
                                 placeholder="Note interne…"
+                                aria-label="Note interne"
                             >{{ $fb->internal_notes }}</textarea>
                         </td>
                     </tr>

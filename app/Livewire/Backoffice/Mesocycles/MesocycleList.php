@@ -45,6 +45,13 @@ class MesocycleList extends Component
         $this->resetPage();
     }
 
+    /** Azzera tutti i filtri e riporta alla prima pagina. */
+    public function resetFilters(): void
+    {
+        $this->reset(['search', 'statusFilter', 'trainerFilter', 'athleteFilter']);
+        $this->resetPage();
+    }
+
     /**
      * Label italiane per l'obiettivo del mesociclo
      */

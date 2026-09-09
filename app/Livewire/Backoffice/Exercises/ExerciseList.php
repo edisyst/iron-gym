@@ -54,6 +54,13 @@ class ExerciseList extends Component
         $this->resetPage();
     }
 
+    /** Azzera tutti i filtri e riporta alla prima pagina. */
+    public function resetFilters(): void
+    {
+        $this->reset(['search', 'muscleGroup', 'mechanic', 'skillLevel', 'equipmentFilter']);
+        $this->resetPage();
+    }
+
     public function deleteExercise(int $exerciseId): void
     {
         abort_unless(auth()->user()?->hasRole('gestore'), 403);

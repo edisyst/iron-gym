@@ -34,6 +34,11 @@
                 </select>
             </div>
         </div>
+        <div class="form-group mb-0 mt-2">
+            <button wire:click="resetFilters" class="btn btn-default btn-sm">
+                <i class="fas fa-times mr-1"></i> Azzera filtri
+            </button>
+        </div>
     </x-bo.filters>
 
     <x-bo.card bodyClass="p-0">
@@ -54,7 +59,7 @@
                     <th>Data inizio</th>
                     <th>Status</th>
                     <th>Trainer</th>
-                    <th></th>
+                    <th class="text-right table-actions">Azioni</th>
                 </tr>
             </thead>
             <tbody>

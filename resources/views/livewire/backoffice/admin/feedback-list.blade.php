@@ -19,6 +19,11 @@
                 <input type="date" wire:model.live="filterTo" class="form-control form-control-sm d-inline-block w-auto">
             </div>
         </div>
+        <div class="form-group mb-0 mt-2">
+            <button wire:click="resetFilters" class="btn btn-default btn-sm">
+                <i class="fas fa-times mr-1"></i> Azzera filtri
+            </button>
+        </div>
     </x-bo.filters>
 
     <x-bo.card bodyClass="p-0">

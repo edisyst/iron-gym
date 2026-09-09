@@ -32,6 +32,13 @@ class FeedbackList extends Component
         $this->resetPage();
     }
 
+    /** Azzera tutti i filtri e riporta alla prima pagina. */
+    public function resetFilters(): void
+    {
+        $this->reset(['filterType', 'filterFrom', 'filterTo']);
+        $this->resetPage();
+    }
+
     public function saveNotes(int $id, string $notes): void
     {
         FeedbackSubmission::whereKey($id)->update(['internal_notes' => $notes]);

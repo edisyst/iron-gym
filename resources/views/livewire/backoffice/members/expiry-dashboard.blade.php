@@ -48,7 +48,7 @@
                         <th>Scadenza cert.</th>
                         <th>Giorni rimanenti</th>
                         <th>Abbonamento</th>
-                        <th></th>
+                        <th class="text-right table-actions">Azioni</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -117,7 +117,7 @@
                         <th>Piano</th>
                         <th>Scadenza abb.</th>
                         <th>Giorni rimanenti</th>
-                        <th></th>
+                        <th class="text-right table-actions">Azioni</th>
                     </tr>
                 </thead>
                 <tbody>

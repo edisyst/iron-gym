@@ -54,6 +54,14 @@ class BookingList extends Component
         $this->resetPage();
     }
 
+    /** Azzera tutti i filtri e riporta alla prima pagina. */
+    public function resetFilters(): void
+    {
+        $this->reset(['filterDate', 'filterStatus', 'search']);
+        $this->filterTrainerId = 0;
+        $this->resetPage();
+    }
+
     /**
      * Conferma una prenotazione pending.
      */

@@ -46,7 +46,7 @@
                     <th>Giorni/sett.</th>
                     <th>Creatore</th>
                     <th>Stato</th>
-                    <th></th>
+                    <th class="text-right table-actions">Azioni</th>
                 </tr>
             </thead>
             <tbody>

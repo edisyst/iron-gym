@@ -31,7 +31,7 @@
                     <th>Sessioni completate</th>
                     <th>Sessioni saltate</th>
                     <th>Adherence %</th>
-                    <th></th>
+                    <th class="text-right table-actions">Dettaglio</th>
                 </tr>
             </thead>
             <tbody>

@@ -137,7 +137,7 @@
                         <th>Tesserato</th>
                         <th>Scadenza abbonamento</th>
                         <th>Ultimo accesso</th>
-                        <th></th>
+                        <th class="text-right table-actions">Contatta</th>
                     </tr>
                 </thead>
                 <tbody>

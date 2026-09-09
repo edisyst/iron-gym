@@ -36,6 +36,13 @@ class AccessLogList extends Component
         $this->resetPage();
     }
 
+    /** Azzera i filtri di ricerca e riporta alla prima pagina. */
+    public function resetFilters(): void
+    {
+        $this->reset(['dateFilter', 'search']);
+        $this->resetPage();
+    }
+
     public function openModal(): void
     {
         $this->checkinSearch = '';

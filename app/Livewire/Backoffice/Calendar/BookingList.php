@@ -54,6 +54,14 @@ class BookingList extends Component
         $this->resetPage();
     }
 
+    /** Azzera tutti i filtri e riporta alla prima pagina. */
+    public function resetFilters(): void
+    {
+        $this->reset(['filterDate', 'filterStatus', 'search']);
+        $this->filterTrainerId = 0;
+        $this->resetPage();
+    }
+
     /**
      * Conferma una prenotazione pending.
      */
@@ -169,6 +177,12 @@ class BookingList extends Component
 
         return view('livewire.backoffice.calendar.booking-list', compact(
             'bookings', 'trainers', 'statusLabels'
-        ))->layout('layouts.backoffice')->layoutData(['page_title' => 'Prenotazioni PT']);
+        ))->layout('layouts.backoffice')->layoutData([
+            'page_title' => 'Prenotazioni PT',
+            'breadcrumbs' => [
+                ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                ['label' => 'Prenotazioni', 'url' => null],
+            ],
+        ]);
     }
 }

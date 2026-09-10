@@ -54,6 +54,13 @@ class AthleteProfile extends Component
             'currentWeek' => $currentWeek,
         ])
             ->layout('layouts.backoffice')
-            ->layoutData(['page_title' => 'Profilo atleta — '.$athleteName]);
+            ->layoutData([
+                'page_title' => 'Profilo atleta — '.$athleteName,
+                'breadcrumbs' => [
+                    ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                    ['label' => 'Atleti', 'url' => null],
+                    ['label' => $athleteName, 'url' => null],
+                ],
+            ]);
     }
 }

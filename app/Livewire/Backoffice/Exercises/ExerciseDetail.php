@@ -28,6 +28,13 @@ class ExerciseDetail extends Component
     {
         return view('livewire.backoffice.exercises.exercise-detail')
             ->layout('layouts.backoffice')
-            ->layoutData(['page_title' => $this->exercise->name_it]);
+            ->layoutData([
+                'page_title' => $this->exercise->name_it,
+                'breadcrumbs' => [
+                    ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                    ['label' => 'Esercizi', 'url' => route('backoffice.exercises.index')],
+                    ['label' => $this->exercise->name_it, 'url' => null],
+                ],
+            ]);
     }
 }

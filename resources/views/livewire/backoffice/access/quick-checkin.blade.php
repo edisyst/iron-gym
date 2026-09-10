@@ -103,9 +103,10 @@
                 </div>
                 <div class="card-body p-0">
                     @if ($todayLogs->isEmpty())
-                        <p class="text-muted p-3 mb-0">Nessun accesso registrato oggi.</p>
+                        <x-bo.empty>Nessun accesso registrato oggi.</x-bo.empty>
                     @else
-                        <table class="table table-hover table-sm mb-0">
+                        <div class="table-responsive">
+                        <table class="table table-sm table-striped table-hover mb-0">
                             <thead>
                                 <tr>
                                     <th>Tesserato</th>
@@ -143,6 +144,7 @@
                                 @endforeach
                             </tbody>
                         </table>
+                        </div>
                     @endif
                 </div>
             </div>

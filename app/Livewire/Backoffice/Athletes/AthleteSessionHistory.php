@@ -35,6 +35,13 @@ class AthleteSessionHistory extends Component
         $this->selectedSessionId = null;
     }
 
+    public function resetFilters(): void
+    {
+        $this->reset(['mesocycleId']);
+        $this->resetPage();
+        $this->selectedSessionId = null;
+    }
+
     public function showExerciseHistory(int $exerciseId, string $name): void
     {
         if ($this->exerciseHistoryId === $exerciseId) {

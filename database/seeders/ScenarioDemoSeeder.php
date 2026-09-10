@@ -23,7 +23,7 @@ use Spatie\Permission\Models\Role;
 
 /**
  * Dati scenario per test manuali.
- * Fonde: R09R31DemoSeeder + FunctionalTestSeeder (senza scenarioOrariApertura,
+ * Fonde: R09R31DemoSeeder + scenari ex-FunctionalTestSeeder (senza scenarioOrariApertura,
  * gia' coperto da OpeningHoursSeeder nel gruppo base).
  * Idempotente: controlla esistenza prima di inserire.
  */
@@ -350,7 +350,7 @@ class ScenarioDemoSeeder extends Seeder
     }
 
     // =========================================================================
-    // Scenari test funzionali (ex FunctionalTestSeeder)
+    // Scenari test funzionali
     // scenarioOrariApertura rimosso: gia' coperto da OpeningHoursSeeder.
     // =========================================================================
 

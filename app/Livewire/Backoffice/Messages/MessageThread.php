@@ -67,6 +67,14 @@ class MessageThread extends Component
 
         return view('livewire.backoffice.messages.message-thread', compact('messages', 'athlete'))
             ->layout('layouts.backoffice')
-            ->layoutData(['page_title' => 'Messaggi — '.($athlete->name ?? '')]);
+            ->layoutData([
+                'page_title' => 'Messaggi — '.($athlete->name ?? ''),
+                'breadcrumbs' => [
+                    ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                    ['label' => 'Atleti', 'url' => null],
+                    ['label' => $athlete->name ?? 'Atleta', 'url' => route('backoffice.athletes.profile', $this->athleteId)],
+                    ['label' => 'Messaggi', 'url' => null],
+                ],
+            ]);
     }
 }

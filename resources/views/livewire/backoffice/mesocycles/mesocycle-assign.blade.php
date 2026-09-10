@@ -1,28 +1,10 @@
 <div>
-    {{-- Flash success --}}
-    @if (session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
-        </div>
-    @endif
-
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">
-                @if ($step === 1)
-                    Step 1 di 2 &mdash; Seleziona atleta e template
-                @else
-                    Step 2 di 2 &mdash; Parametri mesociclo
-                @endif
-            </h3>
+    <x-bo.card :title="$step === 1 ? 'Step 1 di 2 — Seleziona atleta e template' : 'Step 2 di 2 — Parametri mesociclo'" bodyClass="p-3">
+        <x-slot name="actions">
             {{-- Indicatore wizard --}}
-            <div class="card-tools">
-                <span class="badge badge-{{ $step === 1 ? 'primary' : 'secondary' }} mr-1">1</span>
-                <span class="badge badge-{{ $step === 2 ? 'primary' : 'secondary' }}">2</span>
-            </div>
-        </div>
-        <div class="card-body">
+            <span class="badge badge-{{ $step === 1 ? 'primary' : 'secondary' }} mr-1">1</span>
+            <span class="badge badge-{{ $step === 2 ? 'primary' : 'secondary' }}">2</span>
+        </x-slot>
 
             {{-- ======================== STEP 1 ======================== --}}
             @if ($step === 1)
@@ -197,6 +179,5 @@
                 </div>
             @endif
 
-        </div>
-    </div>
+    </x-bo.card>
 </div>

@@ -36,6 +36,12 @@ class TemplateList extends Component
         $this->resetPage();
     }
 
+    public function resetFilters(): void
+    {
+        $this->reset(['search', 'goal', 'active']);
+        $this->resetPage();
+    }
+
     public function duplicate(int $templateId): void
     {
         $source = WorkoutTemplate::with([
@@ -112,6 +118,12 @@ class TemplateList extends Component
         return view('livewire.backoffice.templates.template-list', [
             'templates' => $query->paginate(15),
         ])->layout('layouts.backoffice')
-            ->layoutData(['page_title' => 'Template di scheda']);
+            ->layoutData([
+                'page_title' => 'Template di scheda',
+                'breadcrumbs' => [
+                    ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                    ['label' => 'Schede', 'url' => null],
+                ],
+            ]);
     }
 }

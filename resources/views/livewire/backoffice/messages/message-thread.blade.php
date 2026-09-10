@@ -37,7 +37,7 @@
                     </div>
                 </div>
             @empty
-                <p class="text-muted text-center mt-4">Nessun messaggio ancora. Scrivi il primo!</p>
+                <x-bo.empty>Nessun messaggio ancora. Scrivi il primo!</x-bo.empty>
             @endforelse
         </div>
 
@@ -52,8 +52,9 @@
                     autocomplete="off"
                     @keydown.enter.prevent="$wire.sendMessage()"
                 >
-                <button type="submit" class="btn btn-primary btn-sm ml-2">
-                    <i class="fas fa-paper-plane"></i>
+                <button type="submit" class="btn btn-primary btn-sm ml-2" wire:loading.attr="disabled" aria-label="Invia messaggio">
+                    <span wire:loading class="spinner-border spinner-border-sm"></span>
+                    <span wire:loading.remove><i class="fas fa-paper-plane"></i></span>
                 </button>
             </form>
             @error('newMessage')

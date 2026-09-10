@@ -132,6 +132,10 @@ class MemberForm extends Component
 
         return view('livewire.backoffice.members.member-form')
             ->layout('layouts.backoffice')
-            ->layoutData(['page_title' => $title]);
+            ->layoutData(['page_title' => $title, 'breadcrumbs' => [
+                ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                ['label' => 'Tesserati', 'url' => route('backoffice.members.index')],
+                ['label' => $this->memberId ? 'Modifica tesserato' : 'Nuovo tesserato', 'url' => null],
+            ]]);
     }
 }

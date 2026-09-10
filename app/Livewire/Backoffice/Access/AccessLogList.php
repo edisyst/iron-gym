@@ -36,6 +36,13 @@ class AccessLogList extends Component
         $this->resetPage();
     }
 
+    /** Azzera i filtri di ricerca e riporta alla prima pagina. */
+    public function resetFilters(): void
+    {
+        $this->reset(['dateFilter', 'search']);
+        $this->resetPage();
+    }
+
     public function openModal(): void
     {
         $this->checkinSearch = '';
@@ -111,6 +118,12 @@ class AccessLogList extends Component
             'logs' => $logs,
             'modalMembers' => $modalMembers,
         ])->layout('layouts.backoffice')
-            ->layoutData(['page_title' => 'Registro accessi']);
+            ->layoutData([
+                'page_title' => 'Registro accessi',
+                'breadcrumbs' => [
+                    ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                    ['label' => 'Accessi', 'url' => null],
+                ],
+            ]);
     }
 }

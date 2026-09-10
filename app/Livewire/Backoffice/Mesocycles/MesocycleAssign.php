@@ -188,6 +188,13 @@ class MesocycleAssign extends Component
 
         return view('livewire.backoffice.mesocycles.mesocycle-assign', [
             'athletes' => $athletes,
-        ])->layout('layouts.backoffice', ['page_title' => 'Assegna mesociclo']);
+        ])->layout('layouts.backoffice')->layoutData([
+            'page_title' => 'Assegna mesociclo',
+            'breadcrumbs' => [
+                ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                ['label' => 'Mesocicli', 'url' => route('backoffice.mesocycles.index')],
+                ['label' => 'Assegna mesociclo', 'url' => null],
+            ],
+        ]);
     }
 }

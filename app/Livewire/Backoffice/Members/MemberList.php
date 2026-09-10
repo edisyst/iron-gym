@@ -25,6 +25,13 @@ class MemberList extends Component
         $this->resetPage();
     }
 
+    /** Azzera tutti i filtri e riporta alla prima pagina. */
+    public function resetFilters(): void
+    {
+        $this->reset(['search', 'certFilter']);
+        $this->resetPage();
+    }
+
     public function render(): View
     {
         $query = Member::with(['activeSubscription.plan'])
@@ -50,6 +57,9 @@ class MemberList extends Component
         return view('livewire.backoffice.members.member-list', [
             'members' => $query->paginate(15),
         ])->layout('layouts.backoffice')
-            ->layoutData(['page_title' => 'Tesserati']);
+            ->layoutData(['page_title' => 'Tesserati', 'breadcrumbs' => [
+                ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                ['label' => 'Tesserati', 'url' => null],
+            ]]);
     }
 }

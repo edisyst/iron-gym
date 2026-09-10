@@ -1,16 +1,10 @@
 <div>
-    @if (session('success'))
-        <div class="alert alert-success alert-dismissible">
-            <button type="button" class="close" data-dismiss="alert">&times;</button>
-            {{ session('success') }}
-        </div>
-    @endif
-
     <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="card-header">
             <h3 class="card-title">Volume landmarks — {{ $athlete->name }}</h3>
-            <div>
-                <button wire:click="save" class="btn btn-primary btn-sm">
+            <div class="card-tools">
+                <button wire:click="save" class="btn btn-primary btn-sm" wire:loading.attr="disabled" wire:target="save">
+                    <span wire:loading wire:target="save" class="spinner-border spinner-border-sm mr-1"></span>
                     <i class="fas fa-save mr-1"></i> Salva
                 </button>
                 <button wire:click="resetToDefaults"
@@ -23,7 +17,8 @@
 
         <div class="card-body p-0">
             @foreach ($grouped as $group => $muscles)
-                <table class="table table-sm table-bordered mb-0">
+                <div class="table-responsive">
+                <table class="table table-sm table-striped table-hover mb-0">
                     <thead class="thead-light">
                         <tr>
                             <th colspan="5" class="text-uppercase small font-weight-bold text-muted py-1 px-3 bg-light">
@@ -57,6 +52,7 @@
                         @endforeach
                     </tbody>
                 </table>
+                </div>
             @endforeach
         </div>
     </div>

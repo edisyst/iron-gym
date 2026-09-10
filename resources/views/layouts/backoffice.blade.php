@@ -14,9 +14,20 @@
 
 @section('content_header')
     <div class="d-flex justify-content-between align-items-center">
-        <h1>{{ $page_title ?? 'Dashboard' }}</h1>
+        <h1>{{ $page_title ?? 'Iron Gym' }}</h1>
         @livewire('backoffice.shared.notification-bell')
     </div>
+    @isset($breadcrumbs)
+        <ol class="breadcrumb mt-1 mb-0">
+            @foreach($breadcrumbs as $crumb)
+                @if(!$loop->last)
+                    <li class="breadcrumb-item"><a href="{{ $crumb['url'] }}">{{ $crumb['label'] }}</a></li>
+                @else
+                    <li class="breadcrumb-item active">{{ $crumb['label'] }}</li>
+                @endif
+            @endforeach
+        </ol>
+    @endisset
 @stop
 
 @section('content')

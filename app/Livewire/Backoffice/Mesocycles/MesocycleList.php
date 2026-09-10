@@ -45,6 +45,13 @@ class MesocycleList extends Component
         $this->resetPage();
     }
 
+    /** Azzera tutti i filtri e riporta alla prima pagina. */
+    public function resetFilters(): void
+    {
+        $this->reset(['search', 'statusFilter', 'trainerFilter', 'athleteFilter']);
+        $this->resetPage();
+    }
+
     /**
      * Label italiane per l'obiettivo del mesociclo
      */
@@ -129,6 +136,13 @@ class MesocycleList extends Component
             'mesocycles' => $mesocycles,
             'trainers' => $trainers,
             'athletes' => $athletes,
-        ])->layout('layouts.backoffice', ['page_title' => 'Mesocicli']);
+        ])->layout('layouts.backoffice')
+            ->layoutData([
+                'page_title' => 'Mesocicli',
+                'breadcrumbs' => [
+                    ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                    ['label' => 'Mesocicli', 'url' => null],
+                ],
+            ]);
     }
 }

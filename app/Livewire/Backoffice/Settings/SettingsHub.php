@@ -10,6 +10,10 @@ class SettingsHub extends Component
     public function render(): View
     {
         return view('livewire.backoffice.settings.settings-hub')
-            ->layout('layouts.backoffice', ['page_title' => 'Impostazioni']);
+            ->layout('layouts.backoffice')
+            ->layoutData(['page_title' => 'Impostazioni', 'breadcrumbs' => [
+                ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                ['label' => 'Impostazioni', 'url' => null],
+            ]]);
     }
 }

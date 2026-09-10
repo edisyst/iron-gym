@@ -169,6 +169,13 @@ class ClassScheduleManager extends Component
 
         return view('livewire.backoffice.calendar.class-schedule-manager', compact(
             'schedules', 'groupClasses', 'trainers', 'weekdayLabels'
-        ))->layout('layouts.backoffice')->layoutData(['page_title' => 'Palinsesto corsi']);
+        ))->layout('layouts.backoffice')->layoutData([
+            'page_title' => 'Palinsesto corsi',
+            'breadcrumbs' => [
+                ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                ['label' => 'Corsi', 'url' => route('backoffice.group-classes.index')],
+                ['label' => 'Palinsesti', 'url' => null],
+            ],
+        ]);
     }
 }

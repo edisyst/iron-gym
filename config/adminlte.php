@@ -326,6 +326,52 @@ return [
             'topnav_right' => true,
         ],
 
+        // Navbar sinistra: voci riservate al gestore
+        [
+            'text' => 'Amministrazione',
+            'icon' => 'fas fa-user-shield',
+            'topnav' => true,
+            'can' => 'access-admin-section',
+            'submenu' => [
+                [
+                    'text' => 'Report finanziario',
+                    'url' => 'backoffice/reports/manager',
+                    'icon' => 'fas fa-euro-sign',
+                    'can' => 'view-financial-reports',
+                ],
+                [
+                    'text' => 'Campagne',
+                    'url' => 'backoffice/communications/campaign',
+                    'icon' => 'fas fa-bullhorn',
+                    'can' => 'send-campaigns',
+                ],
+                [
+                    'text' => 'Feedback utenti',
+                    'url' => 'backoffice/admin/feedback',
+                    'icon' => 'fas fa-comment-alt',
+                    'can' => 'send-campaigns',
+                ],
+                [
+                    'text' => 'Inventario Dischi',
+                    'url' => 'backoffice/admin/plate-inventory',
+                    'icon' => 'fas fa-dumbbell',
+                    'can' => 'access-admin-section',
+                ],
+                [
+                    'text' => 'Impostazioni',
+                    'url' => 'backoffice/settings',
+                    'icon' => 'fas fa-cog',
+                    'can' => 'access-admin-section',
+                ],
+                [
+                    'text' => 'Comandi Artisan',
+                    'url' => 'backoffice/settings/artisan',
+                    'icon' => 'fas fa-terminal',
+                    'can' => 'access-admin-section',
+                ],
+            ],
+        ],
+
         // Sidebar
         [
             'type' => 'sidebar-menu-search',
@@ -389,12 +435,6 @@ return [
             'icon' => 'fas fa-chart-bar',
             'can' => 'view-training-reports',
         ],
-        [
-            'text' => 'Report finanziario',
-            'url' => 'backoffice/reports/manager',
-            'icon' => 'fas fa-euro-sign',
-            'can' => 'view-financial-reports',
-        ],
         ['header' => 'CALENDARIO'],
         [
             'text' => 'Calendario',
@@ -435,38 +475,6 @@ return [
             'url' => 'backoffice/group-classes',
             'icon' => 'fas fa-calendar-check',
             'can' => 'view-group-classes',
-        ],
-        ['header' => 'COMUNICAZIONE', 'can' => 'send-campaigns'],
-        [
-            'text' => 'Campagne',
-            'url' => 'backoffice/communications/campaign',
-            'icon' => 'fas fa-bullhorn',
-            'can' => 'send-campaigns',
-        ],
-        [
-            'text' => 'Feedback utenti',
-            'url' => 'backoffice/admin/feedback',
-            'icon' => 'fas fa-comment-alt',
-            'can' => 'send-campaigns',
-        ],
-        ['header' => 'IMPOSTAZIONI', 'can' => 'access-admin-section'],
-        [
-            'text' => 'Impostazioni',
-            'url' => 'backoffice/settings',
-            'icon' => 'fas fa-cog',
-            'can' => 'access-admin-section',
-        ],
-        [
-            'text' => 'Comandi Artisan',
-            'url' => 'backoffice/settings/artisan',
-            'icon' => 'fas fa-terminal',
-            'can' => 'access-admin-section',
-        ],
-        [
-            'text' => 'Inventario Dischi',
-            'url' => 'backoffice/admin/plate-inventory',
-            'icon' => 'fas fa-dumbbell',
-            'can' => 'access-admin-section',
         ],
     ],
 

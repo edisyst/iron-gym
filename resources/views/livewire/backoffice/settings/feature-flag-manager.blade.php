@@ -1,11 +1,4 @@
 <div>
-    @if (session('success'))
-        <div class="alert alert-success alert-dismissible">
-            <button type="button" class="close" data-dismiss="alert">&times;</button>
-            {{ session('success') }}
-        </div>
-    @endif
-
     {{-- Modale conferma --}}
     @if ($confirmActive)
         <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="modal-flag-title" style="background:rgba(0,0,0,.5)">

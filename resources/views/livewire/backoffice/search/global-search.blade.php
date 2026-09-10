@@ -51,7 +51,7 @@
                     </div>
                     <div class="card-body p-0">
                         @if($athletes->isEmpty())
-                            <p class="text-muted p-3 mb-0">Nessun atleta trovato.</p>
+                            <x-bo.empty>Nessun atleta trovato.</x-bo.empty>
                         @else
                             <ul class="list-group list-group-flush">
                                 @foreach($athletes as $member)
@@ -89,7 +89,7 @@
                     </div>
                     <div class="card-body p-0">
                         @if($trainers->isEmpty())
-                            <p class="text-muted p-3 mb-0">Nessun PT trovato.</p>
+                            <x-bo.empty>Nessun PT trovato.</x-bo.empty>
                         @else
                             <ul class="list-group list-group-flush">
                                 @foreach($trainers as $trainer)
@@ -125,7 +125,7 @@
                     </div>
                     <div class="card-body p-0">
                         @if($templates->isEmpty())
-                            <p class="text-muted p-3 mb-0">Nessun template trovato.</p>
+                            <x-bo.empty>Nessun template trovato.</x-bo.empty>
                         @else
                             <ul class="list-group list-group-flush">
                                 @foreach($templates as $template)
@@ -174,7 +174,7 @@
                     </div>
                     <div class="card-body p-0">
                         @if($mesocycles->isEmpty())
-                            <p class="text-muted p-3 mb-0">Nessun mesociclo trovato.</p>
+                            <x-bo.empty>Nessun mesociclo trovato.</x-bo.empty>
                         @else
                             <ul class="list-group list-group-flush">
                                 @foreach($mesocycles as $mesocycle)

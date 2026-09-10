@@ -1,12 +1,5 @@
 {{-- Orari di apertura palestra: slot settimanali e eccezioni/festività --}}
 <div>
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible">
-            <button type="button" class="close" data-dismiss="alert">&times;</button>
-            {{ session('success') }}
-        </div>
-    @endif
-
     {{-- ============================================================ --}}
     {{-- Slot settimanali ricorrenti --}}
     {{-- ============================================================ --}}
@@ -56,7 +49,8 @@
             </div>
             @endif
 
-            <table class="table table-sm table-hover mb-0">
+            <div class="table-responsive">
+            <table class="table table-sm table-striped table-hover mb-0">
                 <thead>
                     <tr>
                         <th>Giorno</th>
@@ -118,14 +112,11 @@
                         </tr>
                         @endif
                     @empty
-                    <tr>
-                        <td colspan="{{ $canEdit ? 4 : 3 }}" class="text-center text-muted py-3">
-                            Nessun orario settimanale configurato.
-                        </td>
-                    </tr>
+                        <x-bo.empty :colspan="$canEdit ? 4 : 3">Nessun orario settimanale configurato.</x-bo.empty>
                     @endforelse
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 
@@ -189,7 +180,8 @@
             </div>
             @endif
 
-            <table class="table table-sm table-hover mb-0">
+            <div class="table-responsive">
+            <table class="table table-sm table-striped table-hover mb-0">
                 <thead>
                     <tr>
                         <th>Data</th>
@@ -277,14 +269,11 @@
                         </tr>
                         @endif
                     @empty
-                    <tr>
-                        <td colspan="{{ $canEdit ? 6 : 5 }}" class="text-center text-muted py-3">
-                            Nessuna eccezione configurata.
-                        </td>
-                    </tr>
+                        <x-bo.empty :colspan="$canEdit ? 6 : 5">Nessuna eccezione configurata.</x-bo.empty>
                     @endforelse
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 </div>

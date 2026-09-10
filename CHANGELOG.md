@@ -2,6 +2,241 @@
 
 ---
 
+## BO07 — Dropdown Amministrazione in navbar (2026-09-10)
+
+Le voci di menu visibili al solo gestore escono dalla sidebar e confluiscono in un dropdown `Amministrazione` nella navbar superiore, lato sinistro.
+
+**Implementati:**
+- `config/adminlte.php`: nuovo item navbar (`topnav => true`, `can => access-admin-section`, icona `fas fa-user-shield`) con submenu di 6 voci: Report finanziario, Campagne, Feedback utenti, Inventario Dischi, Impostazioni, Comandi Artisan
+- Rimosse dalla sidebar le stesse 6 voci e gli header ora vuoti `COMUNICAZIONE` e `IMPOSTAZIONI`
+- In sidebar restano solo le voci condivise con trainer e receptionist
+- `tests/Feature/NavbarAdminDropdownTest.php`: 3 test (gestore vede il dropdown, trainer e receptionist no)
+- Documentazione: sezione BO07 in `docs/architecture/ui-backoffice.md`, nota navigazione in `CLAUDE.md`
+
+**Nota tecnica:** il menu AdminLTE è memoizzato per processo. Presenza e assenza del dropdown vanno asserite in test separati, non nello stesso test con ruoli diversi.
+
+**QA:** 633 test pass / 6 skipped, Pint conforme.
+
+---
+
+## BO06 — Chiusura release uniformità UI backoffice (2026-09-09)
+
+Release BO06 chiusa. Completata uniformità strutturale backoffice: ultime raw card convertite, resetFilters esteso a tutte le view con filtri, file orfano rimosso.
+
+**Implementati:**
+- A1: mesocycle-assign — raw card → x-bo.card con title dinamico wizard (step 1/2), badge wizard in card-tools
+- A2: group-class-catalog — form card condizionale (`$showForm`) → x-bo.card, footer slot con card-footer
+- C1: training-report — drilldown raw card → x-bo.card, pulsante Chiudi in card-tools
+- B1-B5: resetFilters() + pulsante "Azzera filtri" nelle 5 view mancanti (GroupClassManager, TemplateList, TrainingReport, SubscriptionList, AthleteSessionHistory)
+- D1: subscription-list — td azioni: inline style `white-space:nowrap` → classe `table-actions`
+- E1: eliminato `admin/feature-flag-manager.blade.php` (orfano, mai routato — la route punta a Settings\FeatureFlagManager)
+
+**QA:** 624 test pass / 6 skipped, 0 errori Blade, 0 errori PHPStan livello 6, Pint conforme.
+
+---
+
+## BO05 — Chiusura release bug feedback, reset filtri, th Azioni (2026-09-09)
+
+Release BO05 chiusa.
+
+**Implementati:**
+- A1: BUG ExerciseList — `session('status')` → `session('success')`, feedback delete ora visibile
+- B1: `resetFilters()` + bottone "Azzera filtri" in 6 componenti (ExerciseList, MesocycleList, BookingList, FeedbackList, MemberList, AccessLogList)
+- B2: `<th class="text-right table-actions">` in 7 view (member-list, mesocycle-list, subscription-list, template-list, training-report, manager-dashboard, expiry-dashboard ×2)
+- C1: `aria-label="Note interne"` su textarea feedback-list
+
+**QA:** 624 test pass / 6 skipped, 0 errori PHPStan livello 6, Pint conforme.
+
+---
+
+## BO04 — Chiusura release wire:loading inline e ARIA (2026-09-09)
+
+Release BO04 chiusa. wire:loading, aria-label e conformità th/td uniformati su tutta la backoffice.
+
+**Implementati:**
+- A1: communication-campaign bottone Invia — wire:loading.attr="disabled" + spinner
+- A2: booking-list td Azioni — aggiunta classe table-actions
+- B1: wire:loading.attr="disabled" su ~12 bottoni azione inline in 7 view (group-class-catalog, class-schedule-manager, booking-list, group-class-manager, availability-manager, template-builder, exercise-list)
+- B2: aria-label su 4 bottoni icon-only (deleteSlot, deleteOverride in availability-manager; removeSession, removeExercise in template-builder)
+- B3: availability-manager — 2 th vuoti → `<th class="text-right table-actions">Azioni</th>`
+- C1: communication-campaign `$sent` alert — Alpine auto-dismiss 4s (coerente col layout)
+- C2: booking-list — wire:confirm su bottoni confirm e restore prenotazione
+
+**QA:** 624 test pass / 6 skipped, 0 errori PHPStan livello 6, Pint conforme.
+
+---
+
+## BO03 — Chiusura release UX e accessibilità UI backoffice (2026-09-09)
+
+Release BO03 chiusa. UX e accessibilità backoffice uniformate.
+
+**Implementati:**
+- A1: rimossi 14 blocchi flash inline da 11 view (layout gestisce già session flash con Alpine auto-dismiss)
+- B1: wire:loading.attr="disabled" + spinner su 4 bottoni submit/save (template-form, exercise-form, volume-landmark-manager, message-thread)
+- B2: exercise-form modal archiviazione — aggiunti role="dialog" aria-modal="true" aria-labelledby per conformità ARIA
+- B3: message-thread bottone icon-only — aggiunto aria-label="Invia messaggio"
+- C1: table-actions su th Azioni in 5 view (group-class-manager, group-class-catalog, class-schedule-manager, booking-list, exercise-list)
+
+**QA:** 624 test pass / 6 skipped, 0 errori PHPStan livello 6, Pint conforme.
+
+---
+
+## BO02 — Chiusura release uniformità UI backoffice (2026-09-09)
+
+Release BO02 chiusa. Tutti gli item del backlog BO01 risolti o verificati già conformi.
+
+**Implementati:**
+- A1: breadcrumb su 39 view full-page (layout + layoutData); gerarchia Home > Area > Pagina con link dinamici
+- A3: plate-inventory-manager — 2 istanze paginazione raw → x-bo.pagination
+- B1: exercise-form — bottoni Salva/Annulla/Archivia spostati in card-footer
+- B3: volume-landmark-manager — card-header d-flex → card-title + card-tools canonico
+- B4: 4 istanze empty state raw (`<p class="text-muted">`) → x-bo.empty in drilldown (athlete-session-history, training-report ×2, communication-campaign)
+
+**Già conformi alla verifica (no modifica):**
+- A2: nessuna view con render() old-style residua (già migrate in BO01)
+- B2: tutti i filter box usano x-bo.filters correttamente
+- B5: nessun py-2 né max-width anomalo trovato
+- C1/C2/C3: py-4 uniforme via x-bo.empty, paginazione always-on convertita, template-form full-width
+
+**QA:** 624 test pass / 6 skipped, 0 errori PHPStan livello 6, Pint conforme.
+
+---
+
+## BO01 — Chiusura release uniformità UI backoffice (2026-09-08)
+
+Release BO01 chiusa. Tutte le fasi di migrazione completate e verificate. Documentazione aggiornata, backlog BO02 aperto.
+
+**Conformità finale:**
+- P1 `page_title`: 40 / 40 (100%) — +20 rispetto al baseline reale pre-BO01
+- P9 render() new-style: 40 / 40 (100%) — +14 rispetto al baseline
+- View pienamente conformi: 11 / 40 (27,5%)
+- View esentate (struttura non-standard documentata, punti applicabili OK): 16 / 40 (40%)
+- View con difformità residue: 13 / 40 (32,5%) — rinviate a BO02
+
+**Documenti prodotti:**
+- `docs/review/bo01-conformita-finale.md` — verifica finale 40 view × 9 punti
+- `docs/review/bo02-scope.md` — backlog BO02
+
+**QA:** 624 test pass / 6 skipped, 0 errori PHPStan livello 6, Pint conforme.
+
+---
+
+## BO01 Fase 3 — View non standard (2026-09-08)
+
+Applicazione parziale del canone BO01 a 15 view con struttura non standard (tab, wizard, calendario, builder, strumenti operativi, comunicazione, ricerca, landmark). render() new-style su tutti i componenti; tabelle, empty state e card-primary in scope dove applicabile.
+
+**Modificato:**
+
+*Gruppo A — tab/profili:*
+- `settings-hub`: render() old-style → new-style
+- `athlete-profile`: card-primary header atleta → card-outline neutro
+
+*Gruppo B — calendario/prenotazioni:*
+- `mesocycle-assign`: render() old-style → new-style (staging anticipato in commit B)
+- `availability-manager`: 2 tabelle → `table-responsive` + `table-striped`; 2 empty state → `x-bo.empty :colspan="4/6"`
+
+*Gruppo C — wizard/builder:*
+- `template-builder`: empty state sessione → `x-bo.empty` (div, no colspan)
+
+*Gruppo D — strumenti operativi:*
+- `plate-inventory-manager`: aggiunto `page_title 'Inventario dischi'`; 2 `card-primary` → neutro; 2 tabelle → `table-responsive` + `table-striped`; 2 empty state → `x-bo.empty :colspan="5"` (tag `<code>` rimossi per compatibilità `{{ $slot }}`)
+- `artisan-runner`: render() old-style → new-style (solo PHP, corpo limitato per scelta)
+- `feature-flag-manager`: render() old-style → new-style (solo PHP, corpo limitato per scelta)
+- `quick-checkin`: tabella → `table-responsive` + `table-striped`; empty state (`@if` branch) → `x-bo.empty` (div)
+- `opening-hours-manager`: 2 tabelle → `table-responsive` + `table-striped`; 2 empty state con colspan dinamico → `x-bo.empty :colspan="$canEdit ? 4 : 3"` / `"$canEdit ? 6 : 5"`
+
+*Gruppo E — comunicazione/ricerca:*
+- `global-search`: render() old-style → new-style; 4 empty state di categoria → `x-bo.empty` (div)
+- `message-thread`: empty state chat → `x-bo.empty` (div)
+- `communication-campaign`: render() già new-style, nessuna modifica
+
+*Gruppo F — landmark:*
+- `volume-landmark-manager`: render() old-style → new-style; tabelle gruppo muscolare → `table-responsive` + `table-striped table-hover` (sostituisce `table-bordered`)
+
+**Invariato per scelta:**
+- `trainer-calendar`: render() già new-style; card-primary OUT OF SCOPE (solo athlete-profile e plate-inventory-manager in scope)
+- `volume-landmark-manager` heading `<h3>`: mantenuto — funge da card-title nel contesto embedded di `athlete-profile` (rimozione romperebbe la view embeddida)
+- `artisan-runner` / `feature-flag-manager` body: tabelle con `table-bordered` non toccate — istruzione esplicita (render() only)
+- `api-docs`: fuori scope — pagina Swagger standalone senza layout backoffice
+
+---
+
+## BO01 Fase 2D — Dettagli, dashboard e report (2026-09-08)
+
+Applicazione parziale dei componenti `x-bo.*` a 7 view di tipo dettaglio, dashboard e report. Il corpo multi-card di queste view è esentato dal canone; si applicano solo: render(), box filtri, CTA, tabelle interne ed empty state.
+
+**Modificato:**
+- `athlete-analytics`: render() old-style → new-style; 3 empty state (`<p py-3>`, `<tr><td>` senza py) → `x-bo.empty`; 2 tabelle → `table-responsive` + `table-hover`; corpo multi-card e grafici intatti
+- `exercise-detail`: CTA (Lista/Modifica) spostate da `d-flex` esterno a `card-tools` della card "Identità e Classificazione"; tabella muscoli → `table-responsive` + `table-striped table-hover`; empty state muscoli → `x-bo.empty :colspan="3"`; render() già new-style, invariato
+- `mesocycle-detail`: render() old-style → new-style; card-header ristrutturato da `d-flex` a `card-title` + `card-tools`; selettore settimana e bottoni azione (incluso gate `periodization_engine`) in card-tools; tabella volume → `table-responsive`, `table-bordered` → `table-striped table-hover`; empty state → `x-bo.empty`
+- `expiry-dashboard`: aggiunto `page_title 'Scadenze'` (view muta); box filtri `card-warning` → `x-bo.filters`; 2 tabelle refactored con `@forelse/@empty` → `x-bo.empty :colspan="6"` + `table-responsive` + `table-sm`
+- `financial-report`: box filtri (card senza header) → `x-bo.filters`; bottoni export spostati da filter bar a `card-tools` della card dati; tabella → `table-responsive` + `table-hover`; empty state → `x-bo.empty :colspan="6"`; render() già new-style, invariato
+- `manager-dashboard`: box filtri → `x-bo.filters`; input date `d-inline-block w-auto` → `filter-w-sm`; 3 tabelle → `table-responsive` + `table-hover`; 3 empty state → `x-bo.empty` (:colspan 4/4/2); render() già new-style, invariato
+- `dashboard`: nessuna modifica — render() già new-style, corpo small-box KPI esente, widget scadenze privo di tabella
+
+---
+
+## BO01 Fase 2C — Migrazione form (2026-09-08)
+
+Applicazione dei componenti `x-bo.*` a 4 view form backoffice. Pattern canonico: `<form>` wrappa `<x-bo.card bodyClass="p-3">`, bottoni submit nel footer slot.
+
+**Modificato:**
+- `subscription-form`: `<form>` spostato fuori dalla card a wrappare `x-bo.card`; bottoni (Salva/Annulla) in footer slot come `card-footer`; no `title` (= page_title)
+- `template-form`: `style="max-width:680px"` rimosso; `<form>` spostato a wrappare `x-bo.card`; bottoni estratti dal `card-body` in footer slot; errori globali restano nel default slot
+- `exercise-form`: 6 sezioni → 6 `<x-bo.card title="..." bodyClass="p-3">` sezionati; `<form>` wrappa tutte le card; bottoni azione (Salva/Archivia/Annulla) in `<div>` standalone dopo l'ultima card; `x-data` del "Pattern motorio" → wrapper div interno; modal archivio Alpine invariata
+- `body-measurement-form`: render() old-style → new-style; colonna form: `card-primary` → `x-bo.card title="Nuova misurazione"`; colonna history: `x-bo.card title="Ultime 5 misurazioni"` con `table-responsive` e `x-bo.empty :colspan=4`
+
+**Aggiornato:**
+- `docs/architecture/ui-backoffice.md`: canone multi-card (form complessi) documentato con esempio; nota body-measurement-form aggiornata
+
+---
+
+## BO01 Fase 2B — Migrazione liste divergenti (2026-09-08)
+
+Applicazione dei componenti `x-bo.*` a 5 view lista con markup divergente dal canone.
+
+**Modificato:**
+- `feedback-list`: render() old-style → new-style; `x-bo.filters` aggiunge header "Filtri" (mancante nell'originale); `table-bordered` → `table-striped table-hover`; `x-bo.empty` (py-3 → py-4); `x-bo.pagination`
+- `athlete-session-history`: sub-componente senza layout, nessuna conversione render(); `x-bo.filters` (card-secondary → card-primary canonico); `x-bo.card`; `table-striped` aggiunto; pannello dettaglio inline e modal storico esercizio invariati
+- `class-schedule-manager`: `card-outline card-warning` → `x-bo.card` neutro; `table-striped` + `table-responsive`; form inline invariata
+- `group-class-manager`: filtri (`filterStatus`, `search`) estratti dal `card-tools` in `x-bo.filters`; `card-warning` → `x-bo.card` neutro; pannello iscritti (card-info, col-md-5) invariato
+- `group-class-catalog`: heading `<h4>Catalogo corsi collettivi</h4>` rimosso (ripeteva page_title); CTA "Nuovo corso" → slot `actions`; nessun `x-bo.filters` (nessun controllo filtro); form card inline invariata
+
+---
+
+## BO01 Fase 2A — Migrazione liste conformi al canone (2026-09-08)
+
+Applicazione dei componenti `x-bo.*` a 7 view lista backoffice.
+
+**Modificato:**
+- `access-log-list`: filtri in `x-bo.filters`, card in `x-bo.card`, tabella normalizzata (`table-sm table-striped`), paginazione condizionale via `x-bo.pagination`
+- `exercise-list`: idem; `table-responsive` aggiunto; `table-actions` e stili inline thumbnail preservati
+- `subscription-list`: idem; `table-sm table-striped` aggiunti
+- `template-list`: idem; `table-sm` aggiunto
+- `mesocycle-list`: render() convertito da old-style a new-style (`layoutData` separato); idem per componenti
+- `booking-list`: idem; card senza card-header (no title, no actions); paginazione già condizionale sostituita con `x-bo.pagination`
+- `training-report`: sezione principale "Atleti" in `x-bo.card title="Atleti"`; sezione drilldown esclusa dallo scope (markup custom)
+
+---
+
+## BO01 Fase 1 — Componenti x-bo.* e view pilota (2026-09-08)
+
+Uniformità strutturale UI backoffice: componenti Blade canonici e applicazione alle view pilota.
+
+**Aggiunto:**
+- `x-bo.filters` — box filtri standard (`card-outline card-primary mb-3`)
+- `x-bo.card` — contenitore corpo con slot `actions` (→ `card-tools`) e `footer`
+- `x-bo.empty` — empty state unificato per tabelle e view non-tabella
+- `x-bo.pagination` — footer paginazione condizionale (`hasPages()`)
+- `docs/architecture/ui-backoffice.md` — standard BO01, signature componenti, esempi, view esentate
+
+**Modificato:**
+- `member-list`: filtri in `x-bo.filters`, card in `x-bo.card`, paginazione condizionale via `x-bo.pagination` (fix card-footer always-on)
+- `member-form`: card in `x-bo.card bodyClass="p-3"`, bottoni submit/annulla in slot `footer`
+- Layout backoffice: fallback `page_title` da "Dashboard" a "Iron Gym"
+
+---
+
 ## DOC03 — Swagger UI e OpenAPI spec (2026-09-01)
 
 Documentazione interattiva API accessibile dal backoffice.

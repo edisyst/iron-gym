@@ -121,14 +121,9 @@ php artisan classes:send-reminders --sync   # esegue inline senza queue
 
 ## Feature flags (Laravel Pennant)
 
-| Flag | Condizione | Default |
-|---|---|---|
-| `periodization_engine` | gestore o beta trainer (FEATURE_BETA_TRAINERS) | per utente |
-| `push_notifications` | atleti e trainer | per utente |
-| `group_classes` | FEATURE_GROUP_CLASSES=true | false globale |
-| `financial_reports` | solo gestore | per utente |
+Gestiti via `Setting::bool(key, default)` — sorgente di verità nella tabella `settings`. Toggle dal backoffice: `/backoffice/settings/feature-flags` (solo gestore). Vedere CLAUDE.md per la lista completa dei flag e le relative chiavi.
 
-Gestione via backoffice: `/backoffice/admin/feature-flags` (solo gestore).
+`FEATURE_BETA_TRAINERS` (env, lista email separata da virgole) controlla la platea del flag `periodization_engine`.
 
 ## Ruoli e accesso
 
@@ -142,9 +137,8 @@ Gestione via backoffice: `/backoffice/admin/feature-flags` (solo gestore).
 ## Variabili .env rilevanti
 
 ```
-# Feature flags
+# Feature flags (beta trainer per periodization_engine)
 FEATURE_BETA_TRAINERS=trainer1@email.com,trainer2@email.com
-FEATURE_GROUP_CLASSES=false
 
 # Push PWA
 VAPID_PUBLIC_KEY=...

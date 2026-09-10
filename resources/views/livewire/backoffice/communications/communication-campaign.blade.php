@@ -1,6 +1,6 @@
 <div>
     @if ($sent)
-        <div class="alert alert-success">
+        <div class="alert alert-success" x-data x-init="setTimeout(() => $el.remove(), 4000)">
             <i class="fas fa-check-circle mr-2"></i>
             Campagna inviata in coda. Verrà elaborata dal worker Redis.
         </div>
@@ -96,9 +96,12 @@
                             <button
                                 wire:click="send"
                                 wire:confirm="Inviare la campagna a {{ $this->recipientsCount }} destinatari?"
+                                wire:loading.attr="disabled"
+                                wire:target="send"
                                 class="btn btn-primary"
                                 @if ($this->recipientsCount === 0) disabled @endif
                             >
+                                <span wire:loading wire:target="send" class="spinner-border spinner-border-sm mr-1"></span>
                                 <i class="fas fa-paper-plane mr-1"></i>
                                 Invia campagna
                             </button>
@@ -139,7 +142,7 @@
                         @forelse ($this->recipientsList as $recipient)
                             <div class="py-1 border-bottom">{{ $recipient['name'] }}</div>
                         @empty
-                            <p class="text-muted mb-0">Nessun destinatario.</p>
+                            <x-bo.empty>Nessun destinatario.</x-bo.empty>
                         @endforelse
                     </div>
                     <div class="modal-footer">

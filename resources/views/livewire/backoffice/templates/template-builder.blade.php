@@ -57,7 +57,9 @@
                         <button type="button"
                                 class="btn btn-sm btn-outline-danger"
                                 wire:click="removeSession({{ $session->id }})"
-                                wire:confirm="Eliminare la sessione '{{ $session->name }}' con tutti i suoi esercizi?">
+                                wire:loading.attr="disabled"
+                                wire:confirm="Eliminare la sessione '{{ $session->name }}' con tutti i suoi esercizi?"
+                                aria-label="Rimuovi sessione">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -88,7 +90,9 @@
                                         </div>
                                         <button type="button" class="btn btn-sm btn-outline-danger"
                                                 wire:click="removeExercise({{ $ex->id }})"
-                                                wire:confirm="Rimuovere '{{ $ex->exercise->name_it }}'?">
+                                                wire:loading.attr="disabled"
+                                                wire:confirm="Rimuovere '{{ $ex->exercise->name_it }}'?"
+                                                aria-label="Rimuovi esercizio">
                                             <i class="fas fa-times"></i>
                                         </button>
                                     </div>
@@ -220,9 +224,7 @@
                     </div>
                 </div>
             @empty
-                <div class="text-center text-muted py-4">
-                    Nessuna sessione per la settimana {{ $activeWeek }}.
-                </div>
+                <x-bo.empty>Nessuna sessione per la settimana {{ $activeWeek }}.</x-bo.empty>
             @endforelse
 
             <button type="button" class="btn btn-outline-secondary" wire:click="addSession">

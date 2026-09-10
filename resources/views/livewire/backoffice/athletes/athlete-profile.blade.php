@@ -1,6 +1,6 @@
 <div x-data="{ tab: 'storico' }">
     {{-- Header atleta --}}
-    <div class="card card-outline card-primary mb-3">
+    <div class="card card-outline mb-3">
         <div class="card-body">
             <div class="d-flex align-items-center gap-3">
                 {{-- Avatar iniziali --}}

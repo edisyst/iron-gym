@@ -67,6 +67,12 @@ class GroupClassManager extends Component
         $this->resetPage();
     }
 
+    public function resetFilters(): void
+    {
+        $this->reset(['search', 'filterStatus']);
+        $this->resetPage();
+    }
+
     // -------------------------------------------------------------------------
     // Form CRUD
     // -------------------------------------------------------------------------
@@ -286,6 +292,12 @@ class GroupClassManager extends Component
             'classes' => $occurrences,
             'trainers' => $trainers,
             'selectedClass' => $selectedClass,
-        ])->layout('layouts.backoffice')->layoutData(['page_title' => 'Corsi collettivi']);
+        ])->layout('layouts.backoffice')->layoutData([
+            'page_title' => 'Corsi collettivi',
+            'breadcrumbs' => [
+                ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                ['label' => 'Corsi', 'url' => null],
+            ],
+        ]);
     }
 }

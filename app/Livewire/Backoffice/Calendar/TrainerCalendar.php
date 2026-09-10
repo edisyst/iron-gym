@@ -247,6 +247,12 @@ class TrainerCalendar extends Component
 
         return view('livewire.backoffice.calendar.trainer-calendar', compact(
             'trainers', 'detailBooking', 'members', 'events', 'weekEnd'
-        ))->layout('layouts.backoffice')->layoutData(['page_title' => 'Calendario prenotazioni']);
+        ))->layout('layouts.backoffice')->layoutData([
+            'page_title' => 'Calendario prenotazioni',
+            'breadcrumbs' => [
+                ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                ['label' => 'Calendario', 'url' => null],
+            ],
+        ]);
     }
 }

@@ -777,7 +777,7 @@ class VolumeDemoSeeder extends Seeder
         $membersArr = $members->all();
         $now = Carbon::now();
 
-        // Ora fissa per tipo di corso (varia per non sovrapporsi con FunctionalTestSeeder)
+        // Ora fissa per tipo di corso (varia per non sovrapporsi con ScenarioDemoSeeder)
         $classTimes = ['07:30', '09:30', '11:00', '17:30', '19:00', '20:30'];
 
         foreach ($groupClasses as $gcIdx => $gc) {

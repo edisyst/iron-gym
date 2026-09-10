@@ -21,6 +21,12 @@ class SubscriptionList extends Component
         $this->resetPage();
     }
 
+    public function resetFilters(): void
+    {
+        $this->reset(['filter']);
+        $this->resetPage();
+    }
+
     public function suspend(int $id): void
     {
         abort_unless(auth()->user()->hasRole('gestore'), 403);
@@ -54,6 +60,9 @@ class SubscriptionList extends Component
         return view('livewire.backoffice.subscriptions.subscription-list', [
             'subscriptions' => $query->paginate(15),
         ])->layout('layouts.backoffice')
-            ->layoutData(['page_title' => 'Abbonamenti']);
+            ->layoutData(['page_title' => 'Abbonamenti', 'breadcrumbs' => [
+                ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                ['label' => 'Abbonamenti', 'url' => null],
+            ]]);
     }
 }

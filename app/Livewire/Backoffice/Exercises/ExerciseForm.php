@@ -306,6 +306,13 @@ class ExerciseForm extends Component
             'allMuscles' => Cache::rememberForever('lookup:muscles', fn () => Muscle::orderBy('muscle_group')->orderBy('display_order')->get()),
             'allEquipment' => Cache::rememberForever('lookup:equipment', fn () => Equipment::orderBy('name_it')->get()),
         ])->layout('layouts.backoffice')
-            ->layoutData(['page_title' => $this->exerciseId ? 'Modifica esercizio' : 'Nuovo esercizio']);
+            ->layoutData([
+                'page_title' => $this->exerciseId ? 'Modifica esercizio' : 'Nuovo esercizio',
+                'breadcrumbs' => [
+                    ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                    ['label' => 'Esercizi', 'url' => route('backoffice.exercises.index')],
+                    ['label' => $this->exerciseId ? 'Modifica esercizio' : 'Nuovo esercizio', 'url' => null],
+                ],
+            ]);
     }
 }

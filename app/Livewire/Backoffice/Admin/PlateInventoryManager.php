@@ -103,6 +103,14 @@ class PlateInventoryManager extends Component
         $dumbbells = DumbbellInventory::orderBy('weight_kg')->paginate(30, pageName: 'dumbbellsPage');
 
         return view('livewire.backoffice.admin.plate-inventory-manager', compact('plates', 'dumbbells'))
-            ->layout('layouts.backoffice');
+            ->layout('layouts.backoffice')
+            ->layoutData([
+                'page_title' => 'Inventario dischi',
+                'breadcrumbs' => [
+                    ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                    ['label' => 'Admin', 'url' => null],
+                    ['label' => 'Inventario dischi', 'url' => null],
+                ],
+            ]);
     }
 }

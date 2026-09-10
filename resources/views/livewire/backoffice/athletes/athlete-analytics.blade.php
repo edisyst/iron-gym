@@ -10,7 +10,7 @@
                     @if (count($weightChartData['data']) > 0)
                         <canvas id="weightChart" height="120"></canvas>
                     @else
-                        <p class="text-muted text-center py-3">Nessuna misurazione disponibile.</p>
+                        <x-bo.empty>Nessuna misurazione disponibile.</x-bo.empty>
                     @endif
                 </div>
             </div>
@@ -23,7 +23,8 @@
                     <h3 class="card-title">Top 5 esercizi — e1RM (ultimi 30 giorni)</h3>
                 </div>
                 <div class="card-body p-0">
-                    <table class="table table-sm table-striped mb-0">
+                    <div class="table-responsive">
+                    <table class="table table-sm table-striped table-hover mb-0">
                         <thead>
                             <tr>
                                 <th>Esercizio</th>
@@ -39,12 +40,11 @@
                                     <td>{{ $row['sessions_count'] }}</td>
                                 </tr>
                             @empty
-                                <tr>
-                                    <td colspan="3" class="text-center text-muted">Nessun dato disponibile</td>
-                                </tr>
+                                <x-bo.empty :colspan="3">Nessun dato disponibile</x-bo.empty>
                             @endforelse
                         </tbody>
                     </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -57,7 +57,8 @@
         </div>
         <div class="card-body p-0">
             @if (count($volumeRows) > 0)
-                <table class="table table-sm table-striped mb-0">
+                <div class="table-responsive">
+                <table class="table table-sm table-striped table-hover mb-0">
                     <thead>
                         <tr>
                             <th>Muscolo</th>
@@ -87,8 +88,9 @@
                         @endforeach
                     </tbody>
                 </table>
+                </div>
             @else
-                <p class="text-muted text-center py-3">Nessun mesociclo attivo o settimana in corso.</p>
+                <x-bo.empty>Nessun mesociclo attivo o settimana in corso.</x-bo.empty>
             @endif
         </div>
     </div>

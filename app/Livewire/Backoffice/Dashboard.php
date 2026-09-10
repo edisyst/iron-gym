@@ -73,6 +73,11 @@ class Dashboard extends Component
     {
         return view('livewire.backoffice.dashboard')
             ->layout('layouts.backoffice')
-            ->layoutData(['page_title' => 'Dashboard']);
+            ->layoutData([
+                'page_title' => 'Dashboard',
+                'breadcrumbs' => [
+                    ['label' => 'Dashboard', 'url' => null],
+                ],
+            ]);
     }
 }

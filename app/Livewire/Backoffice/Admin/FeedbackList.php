@@ -32,6 +32,13 @@ class FeedbackList extends Component
         $this->resetPage();
     }
 
+    /** Azzera tutti i filtri e riporta alla prima pagina. */
+    public function resetFilters(): void
+    {
+        $this->reset(['filterType', 'filterFrom', 'filterTo']);
+        $this->resetPage();
+    }
+
     public function saveNotes(int $id, string $notes): void
     {
         FeedbackSubmission::whereKey($id)->update(['internal_notes' => $notes]);
@@ -53,6 +60,13 @@ class FeedbackList extends Component
 
         return view('livewire.backoffice.admin.feedback-list', [
             'feedbacks' => $query->paginate(20),
-        ])->layout('layouts.backoffice', ['page_title' => 'Feedback ricevuti']);
+        ])->layout('layouts.backoffice')->layoutData([
+            'page_title' => 'Feedback ricevuti',
+            'breadcrumbs' => [
+                ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                ['label' => 'Admin', 'url' => null],
+                ['label' => 'Feedback', 'url' => null],
+            ],
+        ]);
     }
 }

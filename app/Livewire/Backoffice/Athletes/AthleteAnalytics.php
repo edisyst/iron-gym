@@ -179,8 +179,22 @@ class AthleteAnalytics extends Component
 
     public function render(): View
     {
+        $athlete = User::with('member')->findOrFail($this->athleteId);
+        $athleteName = $athlete->member
+            ? $athlete->member->first_name.' '.$athlete->member->last_name
+            : $athlete->name;
+
         return view('livewire.backoffice.athletes.athlete-analytics')
-            ->with('athlete', User::findOrFail($this->athleteId))
-            ->layout('layouts.backoffice', ['page_title' => 'Analytics atleta']);
+            ->with('athlete', $athlete)
+            ->layout('layouts.backoffice')
+            ->layoutData([
+                'page_title' => 'Analytics atleta',
+                'breadcrumbs' => [
+                    ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                    ['label' => 'Atleti', 'url' => null],
+                    ['label' => $athleteName, 'url' => route('backoffice.athletes.profile', $this->athleteId)],
+                    ['label' => 'Analytics', 'url' => null],
+                ],
+            ]);
     }
 }

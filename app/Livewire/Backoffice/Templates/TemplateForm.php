@@ -60,6 +60,13 @@ class TemplateForm extends Component
     {
         return view('livewire.backoffice.templates.template-form')
             ->layout('layouts.backoffice')
-            ->layoutData(['page_title' => 'Nuovo template']);
+            ->layoutData([
+                'page_title' => 'Nuovo template',
+                'breadcrumbs' => [
+                    ['label' => 'Home', 'url' => route('backoffice.dashboard')],
+                    ['label' => 'Schede', 'url' => route('backoffice.templates.index')],
+                    ['label' => 'Nuovo template', 'url' => null],
+                ],
+            ]);
     }
 }

@@ -2,6 +2,23 @@
 
 ---
 
+## BO07 — Dropdown Amministrazione in navbar (2026-09-10)
+
+Le voci di menu visibili al solo gestore escono dalla sidebar e confluiscono in un dropdown `Amministrazione` nella navbar superiore, lato sinistro.
+
+**Implementati:**
+- `config/adminlte.php`: nuovo item navbar (`topnav => true`, `can => access-admin-section`, icona `fas fa-user-shield`) con submenu di 6 voci: Report finanziario, Campagne, Feedback utenti, Inventario Dischi, Impostazioni, Comandi Artisan
+- Rimosse dalla sidebar le stesse 6 voci e gli header ora vuoti `COMUNICAZIONE` e `IMPOSTAZIONI`
+- In sidebar restano solo le voci condivise con trainer e receptionist
+- `tests/Feature/NavbarAdminDropdownTest.php`: 3 test (gestore vede il dropdown, trainer e receptionist no)
+- Documentazione: sezione BO07 in `docs/architecture/ui-backoffice.md`, nota navigazione in `CLAUDE.md`
+
+**Nota tecnica:** il menu AdminLTE è memoizzato per processo. Presenza e assenza del dropdown vanno asserite in test separati, non nello stesso test con ruoli diversi.
+
+**QA:** 633 test pass / 6 skipped, Pint conforme.
+
+---
+
 ## BO06 — Chiusura release uniformità UI backoffice (2026-09-09)
 
 Release BO06 chiusa. Completata uniformità strutturale backoffice: ultime raw card convertite, resetFilters esteso a tutte le view con filtri, file orfano rimosso.

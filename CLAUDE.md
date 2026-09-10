@@ -127,6 +127,8 @@ Leggila prima di aggiungere nuovi componenti o route per evitare conflitti e seg
 - `OpeningHoursManager` (`/backoffice/settings/opening-hours`): CRUD orari apertura settimanali + eccezioni per data specifica.
 - `GlobalSearch` (`/backoffice/search`): ricerca live atleti/trainer/template, min 2 caratteri.
 
+**Navigazione backoffice:** le voci solo-gestore (Report finanziario, Campagne, Feedback utenti, Inventario Dischi, Impostazioni, Comandi Artisan) stanno nel dropdown `Amministrazione` in navbar sinistra (`config/adminlte.php`, item `'topnav' => true`, `can: access-admin-section`). La sidebar contiene solo voci condivise con trainer/receptionist. Dettaglio: `docs/architecture/ui-backoffice.md`.
+
 **Nota architetturale:** le view Livewire usano wrapper `<div>` (non `@extends`).
 Il layout è gestito con `->layout('layouts.backoffice')` nel `render()`. Questo pattern è necessario per embeddare componenti via `@livewire` (es. in `AthleteProfile`).
 Exercise model usa `getRouteKeyName() = 'slug'` (route binding su slug).

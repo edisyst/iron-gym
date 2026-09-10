@@ -346,3 +346,33 @@ Le seguenti view hanno il `render()` new-style e `page_title` corretti, ma il co
 - **`py-3` vs `py-4`:** lo standard è `py-4` nell'empty state. Le view non pilota con `py-3` saranno corrette nelle release successive.
 - **Paginazione always-on:** 5 view usano `card-footer` incondizionale (senza `hasPages()`). Corrette in BO01 solo per member-list via `x-bo.pagination`.
 - **Test a rischio alto:** solo `MemberNotesTest` (assert su classe CSS `fa-sticky-note`). Non toccare l'icona senza aggiornare il test.
+
+---
+
+## Navigazione — dropdown "Amministrazione" (BO07)
+
+Le voci di menu visibili **solo al gestore** sono state estratte dalla sidebar e raccolte
+in un dropdown `Amministrazione` nella navbar superiore, lato sinistro
+(`config/adminlte.php` → `menu`, item con `'topnav' => true`).
+
+| Voce | URL | Gate |
+|---|---|---|
+| Report finanziario | `backoffice/reports/manager` | `view-financial-reports` |
+| Campagne | `backoffice/communications/campaign` | `send-campaigns` |
+| Feedback utenti | `backoffice/admin/feedback` | `send-campaigns` |
+| Inventario Dischi | `backoffice/admin/plate-inventory` | `access-admin-section` |
+| Impostazioni | `backoffice/settings` | `access-admin-section` |
+| Comandi Artisan | `backoffice/settings/artisan` | `access-admin-section` |
+
+Il dropdown stesso porta `'can' => 'access-admin-section'`: trainer e receptionist non lo
+vedono affatto. Gli header sidebar `COMUNICAZIONE` e `IMPOSTAZIONI` sono stati rimossi
+perché contenevano solo queste voci.
+
+Restano in sidebar le voci condivise con altri ruoli: `view-access-logs`
+(gestore+receptionist), `access-training-section` / `view-training-reports` /
+`manage-trainer-availability` (gestore+trainer), `view-group-classes` (flag di modulo).
+
+Test di regressione: `tests/Feature/NavbarAdminDropdownTest.php`.
+
+**Nota per i test:** il menu AdminLTE è memoizzato per processo. Non asserire presenza e
+assenza del dropdown per ruoli diversi dentro lo stesso test — servono test separati.

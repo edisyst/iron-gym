@@ -1,26 +1,28 @@
 services:
+  # Applicazione web: risponde su demo.edisyst.com tramite il proxy di Coolify
   app:
     image: ghcr.io/edisyst/iron-gym:demo
+    restart: unless-stopped
     environment:
-      - SERVICE_FQDN_APP_80          # Coolify inietta qui il dominio pubblico
-      - RUN_MIGRATIONS=true
-      - APP_ENV=demo
-      - APP_DEBUG=false
-      - APP_URL=$SERVICE_FQDN_APP
-      - DB_CONNECTION=mysql
-      - DB_HOST=mysql
-      - DB_DATABASE=iron_gym
-      - DB_USERNAME=iron_gym
-      - DB_PASSWORD=$MYSQL_PASSWORD
-      - REDIS_HOST=redis
-      - CACHE_STORE=redis
-      - SESSION_DRIVER=redis
-      - SESSION_SECURE_COOKIE=true
-      - QUEUE_CONNECTION=redis
-      - APP_KEY=$APP_KEY
-      - VAPID_PUBLIC_KEY=$VAPID_PUBLIC_KEY
-      - VAPID_PRIVATE_KEY=$VAPID_PRIVATE_KEY
-      - MAIL_MAILER=log
+      RUN_MIGRATIONS: "true"
+      APP_ENV: demo
+      APP_DEBUG: "false"
+      APP_URL: https://demo.edisyst.com
+      APP_KEY: ${APP_KEY:?}
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: "3306"
+      DB_DATABASE: iron_gym
+      DB_USERNAME: iron_gym
+      DB_PASSWORD: ${MYSQL_PASSWORD:?}
+      REDIS_HOST: redis
+      CACHE_STORE: redis
+      SESSION_DRIVER: redis
+      SESSION_SECURE_COOKIE: "true"
+      QUEUE_CONNECTION: redis
+      MAIL_MAILER: log
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:?}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:?}
     volumes:
       - app-storage:/app/storage/app
     depends_on:
@@ -29,42 +31,85 @@ services:
       redis:
         condition: service_started
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/up"]
+      # Usa PHP, sempre presente nell'immagine, invece di curl che potrebbe mancare
+      test: ["CMD", "php", "-r", "exit(@file_get_contents('http://localhost/up') === false ? 1 : 0);"]
       interval: 30s
       timeout: 5s
       retries: 5
-      start_period: 60s
+      start_period: 90s
 
+  # Esegue i job in coda (notifiche push, campagne, report)
   worker:
     image: ghcr.io/edisyst/iron-gym:demo
+    restart: unless-stopped
     command: php artisan queue:work redis --queue=default --tries=3 --max-time=3600 --sleep=3
     environment:
-      - RUN_MIGRATIONS=false
-      # ripeti qui le stesse variabili di app (DB, Redis, APP_KEY, APP_URL, VAPID)
+      RUN_MIGRATIONS: "false"
+      APP_ENV: demo
+      APP_DEBUG: "false"
+      APP_URL: https://demo.edisyst.com
+      APP_KEY: ${APP_KEY:?}
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: "3306"
+      DB_DATABASE: iron_gym
+      DB_USERNAME: iron_gym
+      DB_PASSWORD: ${MYSQL_PASSWORD:?}
+      REDIS_HOST: redis
+      CACHE_STORE: redis
+      QUEUE_CONNECTION: redis
+      MAIL_MAILER: log
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:?}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:?}
+    volumes:
+      - app-storage:/app/storage/app
     depends_on:
       app:
         condition: service_healthy
-    restart: unless-stopped
+    healthcheck:
+      # Non serve un controllo HTTP: il worker non risponde a richieste web
+      disable: true
 
+  # Esegue le attività pianificate (promemoria, report, pulizie)
   scheduler:
     image: ghcr.io/edisyst/iron-gym:demo
+    restart: unless-stopped
     command: php artisan schedule:work
     environment:
-      - RUN_MIGRATIONS=false
-      # stesse variabili di worker
+      RUN_MIGRATIONS: "false"
+      APP_ENV: demo
+      APP_DEBUG: "false"
+      APP_URL: https://demo.edisyst.com
+      APP_KEY: ${APP_KEY:?}
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: "3306"
+      DB_DATABASE: iron_gym
+      DB_USERNAME: iron_gym
+      DB_PASSWORD: ${MYSQL_PASSWORD:?}
+      REDIS_HOST: redis
+      CACHE_STORE: redis
+      QUEUE_CONNECTION: redis
+      MAIL_MAILER: log
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:?}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:?}
+    volumes:
+      - app-storage:/app/storage/app
     depends_on:
       app:
         condition: service_healthy
-    restart: unless-stopped
+    healthcheck:
+      disable: true
 
   mysql:
     image: mysql:8.4
-    command: --default-authentication-plugin=caching_sha2_password --innodb-buffer-pool-size=256M
+    restart: unless-stopped
+    command: --innodb-buffer-pool-size=256M
     environment:
-      - MYSQL_DATABASE=iron_gym
-      - MYSQL_USER=iron_gym
-      - MYSQL_PASSWORD=$MYSQL_PASSWORD
-      - MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
+      MYSQL_DATABASE: iron_gym
+      MYSQL_USER: iron_gym
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?}
     volumes:
       - mysql-data:/var/lib/mysql
     healthcheck:
@@ -72,9 +117,11 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+      start_period: 30s
 
   redis:
     image: redis:7-alpine
+    restart: unless-stopped
     command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru --save ""
     volumes:
       - redis-data:/data

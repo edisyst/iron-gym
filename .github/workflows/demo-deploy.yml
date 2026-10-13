@@ -14,6 +14,12 @@ jobs:
           php-version: '8.3'
           coverage: none
       - run: composer install --prefer-dist --no-interaction
+      # Asset compilati: i test che renderizzano view con @vite cercano il manifest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci && npm run build
       - run: cp .env.example .env && php artisan key:generate
       - run: ./vendor/bin/pest --stop-on-failure
       - run: ./vendor/bin/phpstan analyse --memory-limit=512M
@@ -47,4 +53,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Trigger deploy su Coolify
-        run: curl -fsS -X GET "${{ secrets.COOLIFY_WEBHOOK_URL }}" -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
+        # Blocco "|": il comando contiene ": " e scritto su una riga sola
+        # renderebbe il file YAML non valido
+        run: |
+          curl -fsS -X GET "${{ secrets.COOLIFY_WEBHOOK_URL }}" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"

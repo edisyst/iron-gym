@@ -1,0 +1,85 @@
+services:
+  app:
+    image: ghcr.io/edisyst/iron-gym:demo
+    environment:
+      - SERVICE_FQDN_APP_80          # Coolify inietta qui il dominio pubblico
+      - RUN_MIGRATIONS=true
+      - APP_ENV=demo
+      - APP_DEBUG=false
+      - APP_URL=$SERVICE_FQDN_APP
+      - DB_CONNECTION=mysql
+      - DB_HOST=mysql
+      - DB_DATABASE=iron_gym
+      - DB_USERNAME=iron_gym
+      - DB_PASSWORD=$MYSQL_PASSWORD
+      - REDIS_HOST=redis
+      - CACHE_STORE=redis
+      - SESSION_DRIVER=redis
+      - SESSION_SECURE_COOKIE=true
+      - QUEUE_CONNECTION=redis
+      - APP_KEY=$APP_KEY
+      - VAPID_PUBLIC_KEY=$VAPID_PUBLIC_KEY
+      - VAPID_PRIVATE_KEY=$VAPID_PRIVATE_KEY
+      - MAIL_MAILER=log
+    volumes:
+      - app-storage:/app/storage/app
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/up"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+  worker:
+    image: ghcr.io/edisyst/iron-gym:demo
+    command: php artisan queue:work redis --queue=default --tries=3 --max-time=3600 --sleep=3
+    environment:
+      - RUN_MIGRATIONS=false
+      # ripeti qui le stesse variabili di app (DB, Redis, APP_KEY, APP_URL, VAPID)
+    depends_on:
+      app:
+        condition: service_healthy
+    restart: unless-stopped
+
+  scheduler:
+    image: ghcr.io/edisyst/iron-gym:demo
+    command: php artisan schedule:work
+    environment:
+      - RUN_MIGRATIONS=false
+      # stesse variabili di worker
+    depends_on:
+      app:
+        condition: service_healthy
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8.4
+    command: --default-authentication-plugin=caching_sha2_password --innodb-buffer-pool-size=256M
+    environment:
+      - MYSQL_DATABASE=iron_gym
+      - MYSQL_USER=iron_gym
+      - MYSQL_PASSWORD=$MYSQL_PASSWORD
+      - MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru --save ""
+    volumes:
+      - redis-data:/data
+
+volumes:
+  mysql-data:
+  redis-data:
+  app-storage:

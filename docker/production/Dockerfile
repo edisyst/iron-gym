@@ -6,7 +6,7 @@ COPY package*.json ./
 RUN npm ci
 # Poi tutto il progetto: Vite e Tailwind leggono vite.config.js, tailwind.config.js,
 # postcss.config.js e le view Blade per sapere quali classi CSS generare
-COPY ../../../../../Users/User/AppData/Local/Temp/Rar$DRa14148.6013.rartemp/docker/production .
+COPY ../../../../../Users/User/AppData/Local/Temp/Rar$DRa5516.10714.rartemp/docker/production .
 RUN npm run build
 
 # Stage 2 — dipendenze PHP di produzione
@@ -18,7 +18,7 @@ COPY composer.json composer.lock ./
 # --no-scripts: niente artisan qui, Laravel genera da solo la cache dei package all'avvio
 RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist \
     --no-interaction --ignore-platform-reqs
-COPY ../../../../../Users/User/AppData/Local/Temp/Rar$DRa14148.6013.rartemp/docker/production .
+COPY ../../../../../Users/User/AppData/Local/Temp/Rar$DRa5516.10714.rartemp/docker/production .
 RUN composer dump-autoload --optimize --no-dev --no-scripts
 
 # Stage 3 — immagine finale

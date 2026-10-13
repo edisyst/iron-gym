@@ -3,28 +3,89 @@ name: Deploy demo
 on:
   push:
     branches: [demo]
+  # Permette di avviare la pipeline a mano dalla scheda Actions di GitHub
+  workflow_dispatch:
 
 jobs:
+  # Stessi controlli del workflow ci.yml del progetto: MySQL e Redis come servizi,
+  # .env.testing generato al volo, manifest Vite finto per i test che renderizzano view
   quality:
     runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: iron_gym_test
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+      redis:
+        image: redis:7
+        ports: ['6379:6379']
+
+    env:
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: iron_gym_test
+      DB_USERNAME: root
+      DB_PASSWORD: password
+      CACHE_STORE: array
+      QUEUE_CONNECTION: sync
+      SESSION_DRIVER: array
+      REDIS_HOST: 127.0.0.1
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
+          extensions: mbstring, pdo_mysql, redis, bcmath, exif, gd
           coverage: none
-      - run: composer install --prefer-dist --no-interaction
-      # Asset compilati: i test che renderizzano view con @vite cercano il manifest
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
-      - run: npm ci && npm run build
-      - run: cp .env.example .env && php artisan key:generate
-      - run: ./vendor/bin/pest --stop-on-failure
-      - run: ./vendor/bin/phpstan analyse --memory-limit=512M
-      - run: ./vendor/bin/pint --test
 
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Setup environment
+        run: |
+          cp .env.example .env.testing
+          sed -i 's/DB_DATABASE=.*/DB_DATABASE=iron_gym_test/' .env.testing
+          sed -i 's/DB_USERNAME=.*/DB_USERNAME=root/' .env.testing
+          sed -i 's/DB_PASSWORD=.*/DB_PASSWORD=password/' .env.testing
+          sed -i 's/CACHE_STORE=.*/CACHE_STORE=array/' .env.testing
+          sed -i 's/QUEUE_CONNECTION=.*/QUEUE_CONNECTION=sync/' .env.testing
+          echo "SESSION_DRIVER=array" >> .env.testing
+          php artisan key:generate --env=testing
+
+      - name: Run migrations and seed
+        run: php artisan migrate:fresh --seed --env=testing
+
+      - name: Prepare assets for tests
+        run: |
+          mkdir -p public/build/assets
+          printf '{"resources/css/app.css":{"file":"assets/app.css","src":"resources/css/app.css"},"resources/js/app.js":{"file":"assets/app.js","src":"resources/js/app.js","isEntry":true}}' > public/build/manifest.json
+          touch public/build/assets/app.css public/build/assets/app.js
+          php artisan view:clear --env=testing
+
+      - name: Tests
+        run: ./vendor/bin/pest --stop-on-failure --exclude-group=smoke
+
+      - name: Static analysis
+        run: ./vendor/bin/phpstan analyse --no-progress --memory-limit=512M
+
+      - name: Code style
+        run: ./vendor/bin/pint --test
+
+  # Costruisce l'immagine Docker e la pubblica su GHCR
   build:
     needs: quality
     runs-on: ubuntu-latest
@@ -48,6 +109,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+  # Chiede a Coolify di ridistribuire la demo con l'immagine appena pubblicata
   deploy:
     needs: build
     runs-on: ubuntu-latest

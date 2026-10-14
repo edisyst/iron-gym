@@ -24,6 +24,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Dietro il reverse proxy di Coolify (Traefik): fidati degli header X-Forwarded-*
+        // per schema https, host e IP del client
+        $middleware->trustProxies(at: '*');
+
         // Alias per i middleware spatie/laravel-permission
         $middleware->alias([
             'role' => RoleMiddleware::class,

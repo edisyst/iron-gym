@@ -9,17 +9,18 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# Stage 2 — dipendenze PHP di produzione
+# Stage 2 — dipendenze PHP, comprese quelle dev: la demo è un ambiente di sviluppo/test,
+# e il codice usa pacchetti dev (Telescope in bootstrap/providers.php, Faker nei seeder)
 FROM composer:2 AS vendor
 WORKDIR /app
 COPY composer.json composer.lock ./
 # --ignore-platform-reqs: questa immagine non ha le estensioni PHP del progetto
 # (gd, intl...), che invece sono installate nello stage finale
 # --no-scripts: niente artisan qui, Laravel genera da solo la cache dei package all'avvio
-RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist \
+RUN composer install --no-scripts --no-autoloader --prefer-dist \
     --no-interaction --ignore-platform-reqs
 COPY . .
-RUN composer dump-autoload --optimize --no-dev --no-scripts
+RUN composer dump-autoload --optimize --no-scripts
 
 # Stage 3 — immagine finale
 FROM dunglas/frankenphp:1-php8.3-bookworm
